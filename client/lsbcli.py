@@ -28,12 +28,18 @@ lsb_ascii = """
 
 def capture_control_c(signal, frame):
     logging.debug("Got Control+C signal!")
-    lsb.xmpp.kill_the_tunnel()
-    lsb.xmpp.disconnect()
-    killing_calibre = subprocess.Popen(['kill', open("lsboo/calibre.pid").read()], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-    logging.debug("Killing calibre after shutting down: %s" % str(killing_calibre.communicate()))
-    deleting_calibre = subprocess.Popen(['rm', 'lsboo/calibre.pid'], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-    logging.debug("Deleting calibre.pid: %s" % str(deleting_calibre.communicate()))
+    
+    try:
+        lsb.xmpp.kill_the_tunnel()
+        lsb.xmpp.disconnect()
+    except:
+        logging.debug("Didn't kill the tunnel.")
+    
+    try:
+        lsb.xmpp.kill_calibre_server()
+    except:
+        logging.debug("Didn't kill calibre.")
+
     sys.exit(0)
 
 def update_status(signal, frame):
@@ -105,7 +111,7 @@ if __name__=='__main__':
     lsb.setup_mucbot(lsb_config.get("xmppconfig", "jid"), lsb_config.get("xmppconfig", "password"), lsb_config.get("xmppconfig", "room"), lsb_config.get("xmppconfig","nick"), lsb_config.get("xmppconfig", "lsbbot"), lsb_config.get("calibreconfig", "calibre-server"), lsb_config.get("calibreconfig", "calibre-port"))
 
     if lsb.jabber_connect():
-        lsb.xmpp.start_calibre_server(3000)
+        lsb.xmpp.start_calibre_server()
         time.sleep(2)
         lsb.xmpp.ask_for_slot()
     else:

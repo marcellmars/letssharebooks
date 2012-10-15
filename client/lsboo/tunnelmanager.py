@@ -127,13 +127,18 @@ class MUCBot(sleekxmpp.ClientXMPP):
         subprocess.Popen(['rm', '-f', 'lsbapp.pid'])
         self.send_message(mto = self.lsbbot, mbody = "__killed_the_slot__,%s" % self.public_key, mtype = 'chat')
 
-    def start_calibre_server(self, port):
+    def start_calibre_server(self):
         self.calibre_proc = subprocess.Popen([self.calibre_path, '-p', self.calibre_port, '--max-cover=300x400', '--pidfile=%s/calibre.pid' % cmd_folder, '--daemonize'], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
         stdout = self.calibre_proc.communicate()
         logging.debug("Calibre server process: stdout/stderr: %s" % str(stdout))
-        logging.debug("Calibre server running on port %s" % str(port))
-        self.send_status_message("Calibre server running on port %s" % str(port))
-
+        logging.debug("Calibre server running on port %s" % str(self.calibre_port))
+        self.send_status_message("Calibre server running on port %s" % str(self.calibre_port))
+    
+    def kill_calibre_server(self):
+        killing_calibre = subprocess.Popen(['kill', open("%s/calibre.pid" % cmd_folder).read()], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        logging.debug("Killing calibre after shutting down: %s" % str(killing_calibre.communicate()))
+        deleting_calibre = subprocess.Popen(['rm', '%s/calibre.pid' % cmd_folder], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        logging.debug("Deleting calibre.pid: %s" % str(deleting_calibre.communicate()))
 
 class LSBooks:
 

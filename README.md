@@ -7,7 +7,7 @@ while running in your terminal it looks like:
 
 
 ===========================================================================
-
+<code>
 .        .             .                   .              .
 |       _|_ |          |                   |              |
 |    .-. |   .--.  .--.|--. .-.  .--..-.   |.-.  .-.  .-. |.-. .--.
@@ -23,7 +23,7 @@ version: 0021
 STATUS: Tunnel established.
 
 To open URL in browser type 1, 2 or 3 and then [Enter] or 4 to exit:
-
+</code>
 ===========================================================================
 
 

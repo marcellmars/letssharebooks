@@ -3,10 +3,12 @@
 
 #!/usr/bin/env python2 ## fucking arch
 
+from __future__ import print_function
 import ConfigParser, os, getpass, time, signal, logging, sys
 import subprocess, time
 import webbrowser
 from lsboo import tunnelmanager as tunnelmanager
+
 
 #imports so pyinstaller can pick dependency
 
@@ -46,10 +48,10 @@ def update_status(signal, frame):
     global lsb_version
     logging.debug("Got signal: %s" % signal)
     subprocess.call(['clear'])
-    print lsb_ascii
-    print "version: %s\n" % lsb_version
-    print lsb.xmpp.get_status_message()
-    print "To open URL in browser type 1, 2 or 3 and then [Enter] or 4 to exit: ",
+    print(lsb_ascii)
+    print("version: %s\n" % lsb_version)
+    print(lsb.xmpp.get_status_message())
+    print("To open URL in browser type 1, 2 or 3 and then [Enter] or 4 to exit: ", end = "")
 
 if __name__=='__main__':
     lsbcli_pid = open("lsbcli.pid","w")
@@ -115,15 +117,15 @@ if __name__=='__main__':
         time.sleep(2)
         lsb.xmpp.ask_for_slot()
     else:
-        print "Didn't connect..."
+        print("Didn't connect...")
         sys.exit(0)
 
     while True:
         def check_your_browser():
-            print '\033[2A'
-            print "Check your browser!\033[0K"
+            print('\033[2A')
+            print("Check your browser!\033[0K")
             time.sleep(2)
-            print '\033[2A'
+            print('\033[2A')
             os.kill(int(open("lsbcli.pid").read()), signal.SIGUSR1)
 
         def open_in_browser(url):
@@ -152,8 +154,8 @@ if __name__=='__main__':
         elif user_input == "ut98awr":
             pass
         else:
-            print '\033[2A'
-            print "Type only 1, 2, 3 or 4 and then [Enter]\033[0K"
-            print '\033[2A'
+            print('\033[2A')
+            print("Type only 1, 2, 3 or 4 and then [Enter]\033[0K")
+            print('\033[2A')
             time.sleep(2)
         time.sleep(.1)

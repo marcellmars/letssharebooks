@@ -27,11 +27,12 @@ else:
 logging.basicConfig(filename = 'letssharebooks.log', level = logging.DEBUG, format ='%(asctime)s: %(filename)s >> %(levelname)s - %(message)s')
 
 class MUCBot(sleekxmpp.ClientXMPP):
-    def __init__(self, jid, password, room, nick, lsbbot):
+    def __init__(self, jid, password, room, nick, lsbbot, calibre_path, calibre_port):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
 
         
-        killing_pid = subprocess.Popen(['rm', '%s/../calibre.pid' % cmd_folder], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        killing_pid = subprocess.Popen(['rm', '%s/calibre.pid' % cmd_folder], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        logging.debug("cmd_folder: %s" % cmd_folder)
         logging.debug("Deleting calibre.pid: %s" % str(killing_pid.communicate()))
 
         self.lsbbot = lsbbot
@@ -40,8 +41,11 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.ssh_proc = None
         self.running_tunnel = False
 
+        self.calibre_path = calibre_path
+        self.calibre_port = calibre_port
+
         self.url = ""
-        self.local_url = "http://localhost:3000"
+        self.local_url = "http://localhost:%s" % self.calibre_port
         self.chat_url = "https://jabber.snipdom.net/chat/example"
         self.status = ""
 
@@ -105,7 +109,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
     def start_the_tunnel(self):
         if not self.ssh_proc:
-            self.ssh_proc = subprocess.Popen(['ssh', '-g', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveInterval=60', '-i', 'letssharebooks.key', '-NR', ':%s:localhost:3000' % self.ssh_port, '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+            self.ssh_proc = subprocess.Popen(['ssh', '-g', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveInterval=60', '-i', 'letssharebooks.key', '-NR', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         #time.sleep(2)
         self.running_tunnel = True
         lsbappid = open("lsbapp.pid", "w")
@@ -124,7 +128,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.send_message(mto = self.lsbbot, mbody = "__killed_the_slot__,%s" % self.public_key, mtype = 'chat')
 
     def start_calibre_server(self, port):
-        self.calibre_proc = subprocess.Popen(['calibre-server', '-p', '3000', '--max-cover=300x400', '--pidfile=%s/../calibre.pid' % cmd_folder, '--daemonize'], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+        self.calibre_proc = subprocess.Popen([self.calibre_path, '-p', self.calibre_port, '--max-cover=300x400', '--pidfile=%s/calibre.pid' % cmd_folder, '--daemonize'], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
         stdout = self.calibre_proc.communicate()
         logging.debug("Calibre server process: stdout/stderr: %s" % str(stdout))
         logging.debug("Calibre server running on port %s" % str(port))
@@ -133,8 +137,8 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
 class LSBooks:
 
-    def setup_mucbot(self, jid, password, room, nick, lsbbot = "lsbbot@jabber.snipdom.net"):
-        self.xmpp = MUCBot(jid, password, room, nick, lsbbot)
+    def setup_mucbot(self, jid, password, room, nick, lsbbot, calibre_path, calibre_port):
+        self.xmpp = MUCBot(jid, password, room, nick, lsbbot, calibre_path, calibre_port)
 
         self.xmpp.register_plugin('xep_0030') # Service Discovery
         self.xmpp.register_plugin('xep_0199') # XMPP Ping

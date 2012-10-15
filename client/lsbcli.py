@@ -30,9 +30,9 @@ def capture_control_c(signal, frame):
     logging.debug("Got Control+C signal!")
     lsb.xmpp.kill_the_tunnel()
     lsb.xmpp.disconnect()
-    killing_calibre = subprocess.Popen(['kill', open("calibre.pid").read()], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    killing_calibre = subprocess.Popen(['kill', open("lsboo/calibre.pid").read()], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     logging.debug("Killing calibre after shutting down: %s" % str(killing_calibre.communicate()))
-    deleting_calibre = subprocess.Popen(['rm', 'calibre.pid'], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    deleting_calibre = subprocess.Popen(['rm', 'lsboo/calibre.pid'], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     logging.debug("Deleting calibre.pid: %s" % str(deleting_calibre.communicate()))
     sys.exit(0)
 
@@ -58,16 +58,51 @@ if __name__=='__main__':
     if os.path.exists("lsbcli.conf"):
         lsb_config.read("lsbcli.conf")
     else:
-        lsb_config.add_section('letsshareconfig')
-        lsb_config.set('letsshareconfig', 'jid', raw_input("Username: "))
-        lsb_config.set('letsshareconfig', 'password', getpass.getpass("Password: "))
-        lsb_config.set('letsshareconfig', 'nick', raw_input("Nick: "))
-        lsb_config.set('letsshareconfig', 'room', "letssharebooks@conference.jabber.snipdom.net")
+        lsb_config.add_section('xmppconfig')
+        lsb_config.set('xmppconfig', 'jid', raw_input("Username: "))
+        lsb_config.set('xmppconfig', 'password', getpass.getpass("Password: "))
+        lsb_config.set('xmppconfig', 'nick', raw_input("Nick: "))
+        lsb_config.set('xmppconfig', 'room', "letssharebooks@conference.jabber.snipdom.net")
+        lsb_config.set('xmppconfig', 'lsbbot', "lsbbot@jabber.snipdom.net")
+       
+        if sys.platform.startswith("lin"):
+            lsb_config.add_section('calibreconfig')
+            calibre_path = subprocess.Popen(['which', 'calibre-server'], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+            calibre_path = calibre_path.communicate()[0][:-1]
+            if calibre_path == "":
+                calibre_path = "unknown"
+            lsb_config.set('calibreconfig', 'calibre-server', calibre_path)
+
+        elif sys.platform.startswith("win"):
+            lsb_config.add_section('calibreconfig')
+            try:
+                calibre_path = "C:\Program Files\calibre2\calibre-server.exe"
+                check_calibre = subprocess.Popen([calibre_path, '--version'], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                if not check_calibre.communicate()[0].startswith("calibre"):
+                    calibre_path = "unknown"
+            except:
+                calibre_path = "unknown"
+
+            lsb_config.set('calibreconfig', 'calibre-server', calibre_path)
+
+        elif sys.platform.startswith("dar"):
+            lsb_config.add_section('calibreconfig')
+            try:
+                calibre_path = "/Applications/calibre.app/Contents/MacOS/calibre-server"
+                check_calibre = subprocess.Popen([calibre_path, '--version'], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                if not check_calibre.communicate()[0].startswith("calibre"):
+                    calibre_path = "unknown"
+            except:
+                calibre_path = "unknown"
+
+            lsb_config.set('calibreconfig', 'calibre-server', calibre_path)
+
+        lsb_config.set('calibreconfig', 'calibre-port', '3000')
         with open("lsbcli.conf", 'w') as fp:
             lsb_config.write(fp)
 
     lsb = tunnelmanager.LSBooks()
-    lsb.setup_mucbot(lsb_config.get("letsshareconfig", "jid"), lsb_config.get("letsshareconfig", "password"), lsb_config.get("letsshareconfig", "room"), lsb_config.get("letsshareconfig","nick"))
+    lsb.setup_mucbot(lsb_config.get("xmppconfig", "jid"), lsb_config.get("xmppconfig", "password"), lsb_config.get("xmppconfig", "room"), lsb_config.get("xmppconfig","nick"), lsb_config.get("xmppconfig", "lsbbot"), lsb_config.get("calibreconfig", "calibre-server"), lsb_config.get("calibreconfig", "calibre-port"))
 
     if lsb.jabber_connect():
         lsb.xmpp.start_calibre_server(3000)

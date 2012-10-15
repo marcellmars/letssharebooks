@@ -4,10 +4,18 @@
 #!/usr/bin/env python2 ## fucking arch
 
 from __future__ import print_function
-import ConfigParser, os, getpass, time, signal, logging, sys
+import os, getpass, time, signal, logging, sys
 import subprocess, time
 import webbrowser
 from lsboo import tunnelmanager as tunnelmanager
+
+if sys.version_info < (3, 0):
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+    import ConfigParser
+else:
+    import configparser as ConfigParser
+    raw_input = input
 
 
 #imports so pyinstaller can pick dependency
@@ -51,10 +59,10 @@ def update_status(signal, frame):
     print(lsb_ascii)
     print("version: %s\n" % lsb_version)
     print(lsb.xmpp.get_status_message())
-    print("To open URL in browser type 1, 2 or 3 and then [Enter] or 4 to exit: ", end = "")
+    print("To open URL in browser type 1, 2 or 3 and then [Enter] or 4 to exit:", end = " ")
 
 if __name__=='__main__':
-    lsbcli_pid = open("lsbcli.pid","w")
+    lsbcli_pid = open("lsboo/lsbcli.pid","w")
     lsbcli_pid.write(str(os.getpid()))
     lsbcli_pid.close()
 
@@ -126,7 +134,7 @@ if __name__=='__main__':
             print("Check your browser!\033[0K")
             time.sleep(2)
             print('\033[2A')
-            os.kill(int(open("lsbcli.pid").read()), signal.SIGUSR1)
+            os.kill(int(open("lsboo/lsbcli.pid").read()), signal.SIGUSR1)
 
         def open_in_browser(url):
             try:
@@ -150,7 +158,7 @@ if __name__=='__main__':
             open_in_browser(lsb.xmpp.chat_url)
             check_your_browser()
         elif user_input == "4":
-            os.kill(int(open("lsbcli.pid").read()), signal.SIGINT)
+            os.kill(int(open("lsboo/lsbcli.pid").read()), signal.SIGINT)
         elif user_input == "ut98awr":
             pass
         else:

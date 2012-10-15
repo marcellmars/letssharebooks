@@ -30,10 +30,11 @@ class MUCBot(sleekxmpp.ClientXMPP):
     def __init__(self, jid, password, room, nick, lsbbot, calibre_path, calibre_port):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
 
-        
-        killing_pid = subprocess.Popen(['rm', '%s/calibre.pid' % cmd_folder], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        logging.debug("cmd_folder: %s" % cmd_folder)
-        logging.debug("Deleting calibre.pid: %s" % str(killing_pid.communicate()))
+        try:
+            os.unlink('%s/calibre.pid' % cmd_folder)
+            logging.debug("Deleted calibre.pid.")
+        except:
+            logging.debug("No calibre.pid to be deleted.")
 
         self.lsbbot = lsbbot
         self.room = room
@@ -60,7 +61,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
     def send_status_message(self, message):
         self.status = message
-        os.kill(int(open(cmd_folder + "/../lsbcli.pid").read()), signal.SIGUSR1)
+        os.kill(int(open(cmd_folder + "/lsbcli.pid").read()), signal.SIGUSR1)
         # preparation for pyinstaller
         #os.kill(int(open("lsbcli.pid").read()), signal.SIGUSR1)
 
@@ -84,7 +85,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
         except IqTimeout:
             logging.error("Timeout. Server is taking too long too respond")
             self.send_status_message("Authorization failed. Check your username and password.")
-            os.kill(int(open(cmd_folder + "/../lsbcli.pid").read()), signal.SIGUSR1)
+            os.kill(int(open(cmd_folder + "/lsbcli.pid").read()), signal.SIGUSR1)
             self.disconnect()
 
     def message(self, msg):
@@ -97,7 +98,10 @@ class MUCBot(sleekxmpp.ClientXMPP):
             logging.debug("Received __no_free_slot__: %s" % msg['body'].split(",")[1])
 
     def generate_key(self):
-        keygen_check = subprocess.check_call('''rm -f letssharebooks.key*; ssh-keygen -q -t rsa -b 2048 -N "" -f letssharebooks.key''', shell = True)
+        os.unlink("letssharebooks.key")
+        os.unlink("letssharebooks.key.pub")
+
+        keygen_check = subprocess.check_call('''ssh-keygen -q -t rsa -b 2048 -N "" -f letssharebooks.key''', shell = True)
         if keygen_check != 0: logging.debug("Generating SSH key failed. :(")
         self.public_key = open("letssharebooks.key.pub", "r").read()
         return self.public_key

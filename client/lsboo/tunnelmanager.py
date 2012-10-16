@@ -61,7 +61,8 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
     def send_status_message(self, message):
         self.status = message
-        os.kill(int(open(cmd_folder + "/lsbcli.pid").read()), signal.SIGUSR1)
+        if not sys.platform.startswith("win"):
+            os.kill(int(open(cmd_folder + "/lsbcli.pid").read()), signal.SIGUSR1)
         # preparation for pyinstaller
         #os.kill(int(open("lsbcli.pid").read()), signal.SIGUSR1)
 
@@ -85,7 +86,8 @@ class MUCBot(sleekxmpp.ClientXMPP):
         except IqTimeout:
             logging.error("Timeout. Server is taking too long too respond")
             self.send_status_message("Authorization failed. Check your username and password.")
-            os.kill(int(open(cmd_folder + "/lsbcli.pid").read()), signal.SIGUSR1)
+            if not sys.platform.startswith("win"):
+                os.kill(int(open(cmd_folder + "/lsbcli.pid").read()), signal.SIGUSR1)
             self.disconnect()
 
     def message(self, msg):

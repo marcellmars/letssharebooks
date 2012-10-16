@@ -72,7 +72,8 @@ if __name__=='__main__':
     lsbcli_pid.close()
 
     signal.signal(signal.SIGINT, capture_control_c)
-    signal.signal(signal.SIGUSR1, update_status)
+    if not sys.platform.startswith("win"):
+        signal.signal(signal.SIGUSR1, update_status)
 
     lsb_config = ConfigParser.SafeConfigParser()
 
@@ -139,7 +140,8 @@ if __name__=='__main__':
             print("Check your browser!\033[0K")
             time.sleep(2)
             print('\033[2A')
-            os.kill(int(open("lsboo/lsbcli.pid").read()), signal.SIGUSR1)
+            if not sys.platform.startswith("win"):
+                os.kill(int(open("lsboo/lsbcli.pid").read()), signal.SIGUSR1)
 
         def open_in_browser(url):
             try:

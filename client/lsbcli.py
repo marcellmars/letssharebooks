@@ -55,7 +55,12 @@ def capture_control_c(signal, frame):
 def update_status(signal, frame):
     global lsb_version
     logging.debug("Got signal: %s" % signal)
-    subprocess.call(['clear'])
+
+    if sys.platform.startswith("win"):
+        subprocess.call(['cls'])
+    else:
+        subprocess.call(['clear'])
+    
     print(lsb_ascii)
     print("version: %s\n" % lsb_version)
     print(lsb.xmpp.get_status_message())

@@ -98,11 +98,12 @@ class MUCBot(sleekxmpp.ClientXMPP):
             logging.debug("Received __no_free_slot__: %s" % msg['body'].split(",")[1])
 
     def generate_key(self):
-        os.unlink("letssharebooks.key")
-        os.unlink("letssharebooks.key.pub")
-
-        keygen_check = subprocess.check_call('''ssh-keygen -q -t rsa -b 2048 -N "" -f letssharebooks.key''', shell = True)
-        if keygen_check != 0: logging.debug("Generating SSH key failed. :(")
+        if not sys.platform.startswith("win"):
+            os.unlink("letssharebooks.key")
+            os.unlink("letssharebooks.key.pub")
+            keygen_check = subprocess.check_call('''ssh-keygen -q -t rsa -b 2048 -N "" -f letssharebooks.key''', shell = True)
+            if keygen_check != 0: logging.debug("Generating SSH key failed. :(")
+        
         self.public_key = open("letssharebooks.key.pub", "r").read()
         return self.public_key
 
@@ -113,7 +114,10 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
     def start_the_tunnel(self):
         if not self.ssh_proc:
-            self.ssh_proc = subprocess.Popen(['ssh', '-g', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveInterval=60', '-i', 'letssharebooks.key', '-NR', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+            if sys.platform.startswith("win"):
+                self.ssh_proc = subprocess.Popen(['plink', '-i', 'letssharebooks.key', '-R', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+            else:
+                self.ssh_proc = subprocess.Popen(['ssh', '-g', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveInterval=60', '-i', 'letssharebooks.key', '-NR', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         #time.sleep(2)
         self.running_tunnel = True
         lsbappid = open("lsbapp.pid", "w")

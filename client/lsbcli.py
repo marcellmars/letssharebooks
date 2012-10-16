@@ -127,8 +127,9 @@ if __name__=='__main__':
     lsb.setup_mucbot(lsb_config.get("xmppconfig", "jid"), lsb_config.get("xmppconfig", "password"), lsb_config.get("xmppconfig", "room"), lsb_config.get("xmppconfig","nick"), lsb_config.get("xmppconfig", "lsbbot"), lsb_config.get("calibreconfig", "calibre-server"), lsb_config.get("calibreconfig", "calibre-port"))
 
     if lsb.jabber_connect():
-        lsb.xmpp.start_calibre_server()
-        time.sleep(2)
+        if not sys.platform.startswith("win):
+            lsb.xmpp.start_calibre_server()
+            time.sleep(2)
         lsb.xmpp.ask_for_slot()
     else:
         print("Didn't connect...")

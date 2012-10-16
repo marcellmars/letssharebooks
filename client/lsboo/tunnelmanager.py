@@ -117,7 +117,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
     def start_the_tunnel(self):
         if not self.ssh_proc:
             if sys.platform.startswith("win"):
-                self.ssh_proc = subprocess.Popen(['plink', '-i', 'letssharebooks.key', '-R', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                self.ssh_proc = subprocess.Popen(['''%s\plink''' % cmd_folder, '-i', 'letssharebooks.key', '-R', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
             else:
                 self.ssh_proc = subprocess.Popen(['ssh', '-g', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveInterval=60', '-i', 'letssharebooks.key', '-NR', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         #time.sleep(2)
@@ -138,7 +138,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.send_message(mto = self.lsbbot, mbody = "__killed_the_slot__,%s" % self.public_key, mtype = 'chat')
 
     def start_calibre_server(self):
-        self.calibre_proc = subprocess.Popen([self.calibre_path, '-p', self.calibre_port, '--max-cover=300x400', '--pidfile=%s/calibre.pid' % cmd_folder, '--daemonize'], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+        self.calibre_proc = subprocess.Popen([self.calibre_path, '--daemonize', '-p', self.calibre_port, '--max-cover=300x400', '--pidfile=%s/calibre.pid' % cmd_folder], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
         stdout = self.calibre_proc.communicate()
         logging.debug("Calibre server process: stdout/stderr: %s" % str(stdout))
         logging.debug("Calibre server running on port %s" % str(self.calibre_port))

@@ -26,7 +26,7 @@ else:
 
 logging.basicConfig(filename = 'lsbcli.log', level = logging.DEBUG, format ='%(asctime)s: %(filename)s >> %(levelname)s - %(message)s')
 
-lsb_version = open("lsb_version", "r").read()
+lsb_version = open("lsbconfig/lsb_version", "r").read()
 
 lsb_ascii = """
 .        .             .                   .              .
@@ -77,8 +77,8 @@ if __name__=='__main__':
 
     lsb_config = ConfigParser.SafeConfigParser()
 
-    if os.path.exists("lsbcli.conf"):
-        lsb_config.read("lsbcli.conf")
+    if os.path.exists("lsbconfig/lsbcli.conf"):
+        lsb_config.read("lsbconfig/lsbcli.conf")
     else:
         lsb_config.add_section('xmppconfig')
         lsb_config.set('xmppconfig', 'jid', raw_input("Username: "))

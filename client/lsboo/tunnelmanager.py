@@ -24,7 +24,7 @@ if sys.version_info < (3, 0):
 else:
     raw_input = input
 
-logging.basicConfig(filename = 'letssharebooks.log', level = logging.DEBUG, format ='%(asctime)s: %(filename)s >> %(levelname)s - %(message)s')
+logging.basicConfig(filename = 'lsbconfig/letssharebooks.log', level = logging.DEBUG, format ='%(asctime)s: %(filename)s >> %(levelname)s - %(message)s')
 
 class MUCBot(sleekxmpp.ClientXMPP):
     def __init__(self, jid, password, room, nick, lsbbot, calibre_path, calibre_port):
@@ -100,13 +100,17 @@ class MUCBot(sleekxmpp.ClientXMPP):
             logging.debug("Received __no_free_slot__: %s" % msg['body'].split(",")[1])
 
     def generate_key(self):
-        if not sys.platform.startswith("win"):
-            os.unlink("letssharebooks.key")
-            os.unlink("letssharebooks.key.pub")
-            keygen_check = subprocess.check_call('''ssh-keygen -q -t rsa -b 2048 -N "" -f letssharebooks.key''', shell = True)
+        if sys.platform.startswith("win"):
+            self.public_key = open("lsbconfig/win.key.pub", "r").read()
+        else:
+            try:
+                os.unlink("lsbconfig/letssharebooks.key")
+                os.unlink("lsbconfig/letssharebooks.key.pub")
+            except:
+                pass
+            keygen_check = subprocess.check_call('''ssh-keygen -q -t rsa -b 2048 -N "" -f lsbconfig/letssharebooks.key''', shell = True)
             if keygen_check != 0: logging.debug("Generating SSH key failed. :(")
-        
-        self.public_key = open("letssharebooks.key.pub", "r").read()
+            self.public_key = open("lsbconfig/letssharebooks.key.pub", "r").read()
         return self.public_key
 
     def ask_for_slot(self):
@@ -117,16 +121,11 @@ class MUCBot(sleekxmpp.ClientXMPP):
     def start_the_tunnel(self):
         if not self.ssh_proc:
             if sys.platform.startswith("win"):
-                self.ssh_proc = subprocess.Popen(['plink', '-i', 'lsb.ppk', '-N', '-R', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
+                self.ssh_proc = subprocess.Popen(['plink', '-i', 'lsbconfig/win.ppk', '-N', '-R', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
             else:
-                self.ssh_proc = subprocess.Popen(['ssh', '-g', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveInterval=60', '-i', 'letssharebooks.key', '-NR', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                self.ssh_proc = subprocess.Popen(['ssh', '-g', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveInterval=60', '-i', 'lsbconfig/letssharebooks.key', '-NR', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         #time.sleep(2)
         self.running_tunnel = True
-        lsbappid = open("lsbapp.pid", "w")
-        lsbappid.write(str(self.ssh_proc.pid))
-        lsbappid.close()
-        #stdout, stderr = self.ssh_proc.communicate()
-        #logging.debug("Establishing SSH erros: %s, %s" % (str(stdout), str(stderr)))
         self.send_message(mto = self.lsbbot, mbody = "__got_the_slot__,%s" % self.ssh_user, mtype = 'chat')
         self.send_status_message("Tunnel established.")
     
@@ -134,7 +133,6 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.ssh_proc.kill()
         self.ssh_proc = None
         self.running_tunnel = False
-        os.unlink('lsbapp.pid')
         self.send_message(mto = self.lsbbot, mbody = "__killed_the_slot__,%s" % self.public_key, mtype = 'chat')
 
     def start_calibre_server(self):

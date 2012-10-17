@@ -57,7 +57,6 @@ def update_status(signal, frame):
     logging.debug("Got signal: %s" % signal)
 
     if sys.platform.startswith("win"):
-        pass
         subprocess.call(['cls'], shell=True)
     else:
         subprocess.call(['clear'])

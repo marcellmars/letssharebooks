@@ -57,7 +57,8 @@ def update_status(signal, frame):
     logging.debug("Got signal: %s" % signal)
 
     if sys.platform.startswith("win"):
-        subprocess.call(['cls'])
+        pass
+        subprocess.call(['cls'], shell=True)
     else:
         subprocess.call(['clear'])
     
@@ -127,7 +128,7 @@ if __name__=='__main__':
     lsb.setup_mucbot(lsb_config.get("xmppconfig", "jid"), lsb_config.get("xmppconfig", "password"), lsb_config.get("xmppconfig", "room"), lsb_config.get("xmppconfig","nick"), lsb_config.get("xmppconfig", "lsbbot"), lsb_config.get("calibreconfig", "calibre-server"), lsb_config.get("calibreconfig", "calibre-port"))
 
     if lsb.jabber_connect():
-        if not sys.platform.startswith("win):
+        if not sys.platform.startswith("win"):
             lsb.xmpp.start_calibre_server()
             time.sleep(2)
         lsb.xmpp.ask_for_slot()
@@ -143,6 +144,8 @@ if __name__=='__main__':
             print('\033[2A')
             if not sys.platform.startswith("win"):
                 os.kill(int(open("lsboo/lsbcli.pid").read()), signal.SIGUSR1)
+            else:
+                update_status("windows", True)
 
         def open_in_browser(url):
             try:
@@ -174,4 +177,7 @@ if __name__=='__main__':
             print("Type only 1, 2, 3 or 4 and then [Enter]\033[0K")
             print('\033[2A')
             time.sleep(2)
+        if sys.platform.startswith("win"):
+            time.sleep(.4)
+            update_status("windows", True)
         time.sleep(.1)

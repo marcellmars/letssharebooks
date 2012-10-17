@@ -117,7 +117,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
     def start_the_tunnel(self):
         if not self.ssh_proc:
             if sys.platform.startswith("win"):
-                self.ssh_proc = subprocess.Popen(['''%s\plink''' % cmd_folder, '-i', 'letssharebooks.key', '-R', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                self.ssh_proc = subprocess.Popen(['plink', '-i', 'lsb.ppk', '-N', '-R', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
             else:
                 self.ssh_proc = subprocess.Popen(['ssh', '-g', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveInterval=60', '-i', 'letssharebooks.key', '-NR', ':%s:localhost:%s' % (self.ssh_port, self.calibre_port), '%s@jabber.snipdom.net' % self.ssh_user], stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         #time.sleep(2)
@@ -134,7 +134,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.ssh_proc.kill()
         self.ssh_proc = None
         self.running_tunnel = False
-        subprocess.Popen(['rm', '-f', 'lsbapp.pid'])
+        os.unlink('lsbapp.pid')
         self.send_message(mto = self.lsbbot, mbody = "__killed_the_slot__,%s" % self.public_key, mtype = 'chat')
 
     def start_calibre_server(self):
@@ -147,8 +147,8 @@ class MUCBot(sleekxmpp.ClientXMPP):
     def kill_calibre_server(self):
         killing_calibre = subprocess.Popen(['kill', open("%s/calibre.pid" % cmd_folder).read()], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         logging.debug("Killing calibre after shutting down: %s" % str(killing_calibre.communicate()))
-        deleting_calibre = subprocess.Popen(['rm', '%s/calibre.pid' % cmd_folder], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        logging.debug("Deleting calibre.pid: %s" % str(deleting_calibre.communicate()))
+        os.unlink('%s/calibre.pid' % cmd_folder)
+        logging.debug("Deleting calibre.pid...")
 
 class LSBooks:
 

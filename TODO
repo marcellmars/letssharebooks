@@ -1,4 +1,4 @@
-* try to use github download .zip through 'latest' tag
+* kill plink.exe on windows after shutting it down
 * check https://www.startssl.com/ for free ssl certificate
 * add Sirkali Ramamrita Ranganathan, Lev Naumovich Tropovskii, Henri E. Bliss, Charles Ammi Cutter, Herbert Putnam, ??? Rusinov  to domain names.
 * check subprocess.communicate and why it blocks sending message. it works if something else (a function) is called after it 

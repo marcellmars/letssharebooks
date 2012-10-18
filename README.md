@@ -25,6 +25,9 @@ To open URL in browser type 1, 2 or 3 and then [Enter] or 4 to exit:
 </pre>
 ===========================================================================
 
+Screencast:
+
+https://www.youtube.com/watch?v=YeSuubCCcGw
 
 
 dependencies:

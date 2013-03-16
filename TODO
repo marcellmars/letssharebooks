@@ -1,3 +1,5 @@
+* big rewrite to get everything setup in a simple port forwarding
+- - - -
 * kill plink.exe on windows after shutting it down
 * check https://www.startssl.com/ for free ssl certificate
 * add Sirkali Ramamrita Ranganathan, Lev Naumovich Tropovskii, Henri E. Bliss, Charles Ammi Cutter, Herbert Putnam, ??? Rusinov  to domain names.

@@ -37,11 +37,13 @@ Here is the code of this simple shell script:
         exec 3>&1
         ssh -N -T ssh.memoryoftheworld.org -l tunnel -R 0:localhost:8080 -p 722 2>&1 1>&3 | sed 's|^Allocated port \([[:digit:]]\{4,5\}\)\(.*\)| Your temporary public URL is http://www\1.memoryoftheworld.org|'
         
-The "echo" lines are just reminding about starting Calibre's content server (by default port 8080), how to check if it works (http://localhost:8080), the easiest reasonably secure web chat conference (http://crpto.cat) and how to shutdown the script.
+The "echo" lines are just reminding about starting Calibre's content server (by default port 8080), how to check if it works locally (http://localhost:8080), about the easiest reasonably secure web chat conference (http://crpto.cat) and how to shutdown the script.
 
 The "ssh" line makes reverse ssh tunnel with dynamic port allocation from the server. The "sed" part only parse the output from server and makes the public URL to be copied and shared.
 
 The whole script has hardcoded domain, ssh user, and ports. It should work for all the newbies. It is super easy to change few things for anyone running calibre-server on non-default port (8080) or running it's own public server.
+
+* Yes, this can be used for free riding with "-D 1234" but until it is misused this server will be left this simple. It's about the trust, right? :)
 
 Server setup
 ============

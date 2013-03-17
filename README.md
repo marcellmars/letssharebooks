@@ -7,15 +7,15 @@ The easiest way to share your book catalog is to run Calibre's content server (h
  2. open the terminal and change directory where you downloaded letssharebooks.sh
  3. run it:
 
-    sh letssharebooks.sh
+         sh letssharebooks.sh
 
  4. wait for the output like this:
-
-    Check if you started Calibre's content server:
-    http://localhost:8080 (help: http://bit.ly111IWwt)
-    Hang out at http://crypto.cat room: letssharebooks
-    Stop sharing books by pressing Ctrl+c
-    Your temporary public URL is http://www56581.memoryoftheworld.org
+        
+        Check if you started Calibre's content server:
+        http://localhost:8080 (help: http://bit.ly111IWwt)
+        Hang out at http://crypto.cat room: letssharebooks
+        Stop sharing books by pressing Ctrl+c
+        Your temporary public URL is http://www56581.memoryoftheworld.org
 
  5. copy your public URL (e.g. http://www56581.memoryoftheworld.org) and share it with your friends
 

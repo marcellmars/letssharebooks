@@ -45,7 +45,7 @@ The "ssh" line makes reverse ssh tunnel with dynamic port allocation from the se
 
 The whole script has hardcoded domain, ssh user, and ports. It should work for all the newbies. It is super easy to change few things for anyone running calibre-server on non-default port (8080) or running it's own public server.
 
-* Yes, this can be used for free riding with "-D 1234" but until it is misused this server will be left this simple. It's about the trust, right? :)
+* Yes, this can be used for free riding with "-D 1234" but until it is misused this server will be left this simple. It's about the trust, right? :) *
 
 Server setup
 ============

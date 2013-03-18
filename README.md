@@ -48,13 +48,19 @@ The whole script has hardcoded domain, ssh user, and ports. It should work for a
 *Yes, this can be used for free riding with "-D 1234" but until it is misused this server will be left this simple. It's about the trust, right? :)*
 
 If you want to start calibre-server without opening GUI I recommend:
+
         calibre-server --max-cover=300x400 -p 8080
+        
 or daemonized:
+
         calibre-server --daemonize --max-cover=300x400 -p 8080
 
 If you run default set up on Mac OSX you should replace calibre-server with:
+
         /Applications/calibre.app/Contents/MacOS/calibre-server
+        
 or on Windows:
+
        C:\Program Files\calibre2\calibre-server.exe       
 
 Server setup

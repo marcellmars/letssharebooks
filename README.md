@@ -4,9 +4,10 @@
 Simple
 ======
 
-The easiest way to share your book catalog is to run Calibre's content server (help: http://bit.ly/111IWwt) and let people access your laptop/desktop computer. If you have a server with public URL and know how to set up reverse ssh port forwarding you are probably already doing that. Great. If not, here is the solution:
+The easiest way to share your book catalog is to run Calibre's content server (help: http://bit.ly/111IWwt) and let people access your laptop/desktop computer. If you have a server with public URL and know how to set up reverse ssh port forwarding you are probably already doing that. Great. If not, here is the solution if you run GNU/Linux or OSX:
+
  0. run Calibre's content server (help: http://bit.ly/111IWwt) 
- 1. if you run GNU/Linux or OSX download [letssharebooks.sh] [1]
+ 1. download [letssharebooks.sh] [1]
  2. open the terminal and change directory where you downloaded [letssharebooks.sh] [1]
  3. run it:
 
@@ -21,6 +22,23 @@ The easiest way to share your book catalog is to run Calibre's content server (h
         Your temporary public URL is http://www56581.memoryoftheworld.org
 
  5. copy your public URL (e.g. http://www56581.memoryoftheworld.org) and share it with your friends
+
+If you run Windows:
+
+ 0. run Calibre's content server (help: http://bit.ly/111IWwt) 
+ 1. download [letssharebooks_windows.zip] [2]
+ 2. get to the directory where you uncommpressed .zip file
+ 3. double-click on letssharebooks file (or letssharebooks.bat if it shows file extension)
+ 4. it will open a window and you should wait for the output like this:
+        
+        Check if you started Calibre's content server:
+        http://localhost:8080 (help: http://bit.ly111IWwt)
+        Hang out at http://crypto.cat room: letssharebooks
+        Stop sharing books by pressing Ctrl+c
+        Your temporary public URL is http://www56581.memoryoftheworld.org
+
+ 5. copy your public URL (e.g. http://www56581.memoryoftheworld.org) and share it with your friends
+
 
 Explanation
 ===========
@@ -131,4 +149,4 @@ There was a version of [let's share books] made by Marcell Mars with ssh autorhi
 Damjan Georgievski (https://github.com/gdamjan), kung fu master, made it dead simple: https://gist.github.com/gdamjan/4586758. Now I just build from there.
 
 [1]: https://raw.github.com/marcellmars/letssharebooks/master/letssharebooks.sh    "letssharebooks.sh"
-
+[2]: https://github.com/marcellmars/letssharebooks/raw/master/windows/letssharebooks_windows.zip "letssharebooks_windows.zip"

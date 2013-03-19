@@ -54,7 +54,7 @@ Here is the code of this simple shell script:
         echo " Stop sharing books by pressing Ctrl+c"
 
         exec 3>&1
-	ssh -N -T -o StrictHostKeyChecking=no -o UserKnownHostsFile=.userknownhostsfile -o TCPKeepAlive=yes -o ServerAliveINterval=60 ssh.memoryoftheworld.org -l tunnel -R 0:localhost:8080 -p 722 2>&1 1>&3 | sed 's|^Allocated port \([[:digit:]]\{4,5\}\)\(.*\)| Your temporary public URL is http://www\1.memoryoftheworld.org|'
+        ssh -N -T -o StrictHostKeyChecking=no -o UserKnownHostsFile=.userknownhostsfile -o TCPKeepAlive=yes -o ServerAliveINterval=60 ssh.memoryoftheworld.org -l tunnel -R 0:localhost:8080 -p 722 2>&1 1>&3 | sed 's|^Allocated port \([[:digit:]]\{4,5\}\)\(.*\)| Your temporary public URL is http://www\1.memoryoftheworld.org|'
         
 The "echo" lines are just reminding about starting Calibre's content server (by default port 8080), how to check if it works locally (http://localhost:8080), about the easiest reasonably secure web chat conference (http://crpto.cat) and how to shutdown the script.
 

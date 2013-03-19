@@ -16,5 +16,3 @@ ssh -N -T -o StrictHostKeyChecking=no -o UserKnownHostsFile=.userknownhostsfile 
 #read PID < /tmp/calibre.pid
 #rm /tmp/calibre.pid
 #trap 'kill $PID' 0
-
-#-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveInterval=60'

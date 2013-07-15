@@ -11,7 +11,7 @@ echo " Stop sharing books by pressing Ctrl+c"
 #/Applications/calibre.app/Contents/MacOS/calibre-server --max-cover=300x400 --pidfile=/tmp/calibre.pid -p 8080&
 
 exec 3>&1
-ssh -N -T -o StrictHostKeyChecking=no -o UserKnownHostsFile=.userknownhostsfile -o TCPKeepAlive=yes -o ServerAliveINterval=60 ssh.memoryoftheworld.org -l tunnel -R 0:localhost:8080 -p 722 2>&1 1>&3 | sed 's|^Allocated port \([[:digit:]]\{4,5\}\)\(.*\)| Your temporary public URL is http://www\1.memoryoftheworld.org|'
+ssh -N -T -o StrictHostKeyChecking=no -o UserKnownHostsFile=.userknownhostsfile -o TCPKeepAlive=yes -o ServerAliveINterval=60 ssh.memoryoftheworld.org -l tunnel -R 0:localhost:8080 -p 722 2>&1 1>&3 | sed 's|^Allocated port \([[:digit:]]\{4,5\}\)\(.*\)| Your temporary public URL is https://www\1.memoryoftheworld.org|'
 
 #read PID < /tmp/calibre.pid
 #rm /tmp/calibre.pid

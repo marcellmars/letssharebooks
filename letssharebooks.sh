@@ -2,7 +2,7 @@
 
 echo " Check if you started Calibre's content server:"
 echo " http://localhost:8080 (help: http://bit.ly111IWwt)"
-echo " Hang out at http://crypto.cat room: letssharebooks"
+echo " Hang out at https://crypto.cat room: letssharebooks"
 echo " Stop sharing books by pressing Ctrl+c"
 
 # uncomment these lines + the three lines at the end to start and kill calibre-server from this script if on linux:

@@ -18,7 +18,7 @@ The easiest way to share your book catalog is to run Calibre's content server (h
         
         Check if you started Calibre's content server:
         http://localhost:8080 (help: http://bit.ly111IWwt)
-        Hang out at https://crypto.cat room: letssharebooks
+        Hang out at https://chat.memoryoftheworld.org
         Stop sharing books by pressing Ctrl+c
         Your temporary public URL is https://www56581.memoryoftheworld.org
 
@@ -34,7 +34,7 @@ If you run Windows:
         
         Check if you started Calibre's content server:
         http://localhost:8080 (help: http://bit.ly111IWwt)
-        Hang out at https://crypto.cat room: letssharebooks
+        Hang out at https://chat.memoryoftheworld.org
         Stop sharing books by pressing Ctrl+c
         Your temporary public URL is https://www56581.memoryoftheworld.org
 
@@ -50,13 +50,13 @@ Here is the code of this simple shell script:
 
         echo " Check if you started Calibre's content server:"
         echo " http://localhost:8080 (help: http://bit.ly111IWwt)"
-        echo " Hang out at https://crypto.cat room: letssharebooks"
+        echo " Hang out at https://chat.memoryoftheworld.org"
         echo " Stop sharing books by pressing Ctrl+c"
 
         exec 3>&1
         ssh -N -T -o StrictHostKeyChecking=no -o UserKnownHostsFile=.userknownhostsfile -o TCPKeepAlive=yes -o ServerAliveINterval=60 ssh.memoryoftheworld.org -l tunnel -R 0:localhost:8080 -p 722 2>&1 1>&3 | sed 's|^Allocated port \([[:digit:]]\{4,5\}\)\(.*\)| Your temporary public URL is https://www\1.memoryoftheworld.org|'
         
-The "echo" lines are just reminding about starting Calibre's content server (by default port 8080), how to check if it works locally (http://localhost:8080), about the easiest reasonably secure web chat conference (https://crypto.cat) and how to shutdown the script.
+The "echo" lines are just reminding about starting Calibre's content server (by default port 8080), how to check if it works locally (http://localhost:8080), where to hang out with other librarians and book lovers and how to shutdown the script.
 
 The "ssh" line makes reverse ssh tunnel with dynamic port allocation from the server. The "sed" part only parse the output from server and makes the public URL to be copied and shared.
 

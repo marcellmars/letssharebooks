@@ -8,7 +8,7 @@ The easiest way to share your book catalog is to run Calibre's content server (h
 
  0. run Calibre's content server (help: http://bit.ly/111IWwt) 
  1. download [letssharebooks.sh] [1] 
- 1a. (or on OSX if you want to install it (or even just run it) do your regular: [letssharebooks.dmg][3] 
+	1a. (or on OSX if you want to install it (or even just run it) do your regular: [letssharebooks.dmg][3] 
  
  2. open the terminal and change directory where you downloaded [letssharebooks.sh] [1] 
  3. run it: 

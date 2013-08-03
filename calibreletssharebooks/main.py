@@ -80,6 +80,7 @@ class LetsShareBooksDialog(QDialog):
         self.lets_share_button.clicked.disconnect(self.stop_share)
         self.lets_share_button.clicked.connect(self.lets_share)
         self.us.share_button_text = "Start sharing"
+        self.us.lsb_url = 'http://www.memoryoftheworld.org'
         self.us.lsb_url_text = '>>> Be a librarian. Share your library. >>>>'
 
         self.us.ssh_proc.kill()

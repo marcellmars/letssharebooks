@@ -11,7 +11,11 @@ __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
 __docformat__ = 'restructuredtext en'
 
 
-del os.environ['LD_LIBRARY_PATH']
+try:
+    del os.environ['LD_LIBRARY_PATH']
+except:
+    pass
+
 open(".userknownhostsfile", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.userknownhostsfile').read())
 
 if False:

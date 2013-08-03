@@ -3,5 +3,5 @@ Let's share books
 
 Created by Marcell Mars
 
-Requires calibre >= 0.9.40
+Requires calibre >= 0.9.30
 

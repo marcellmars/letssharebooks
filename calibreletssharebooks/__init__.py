@@ -14,11 +14,11 @@ class LetsShareBooks(InterfaceActionBase):
     supported_platforms = ['windows', 'osx', 'linux']
     author              = 'Marcell Mars'
     version             = (1, 0, 0)
-    minimum_calibre_version = (0, 9, 40)
+    minimum_calibre_version = (0, 9, 30)
     actual_plugin       = 'calibre_plugins.letssharebooks.ui:LetsShareBooksUI'
 
     def is_customizable(self):
-        return True
+        return False
 
     def config_widget(self):
         # It is important to put this import statement here rather than at the
@@ -35,5 +35,3 @@ class LetsShareBooks(InterfaceActionBase):
         ac = self.actual_plugin_
         if ac is not None:
             ac.apply_settings()
-
-

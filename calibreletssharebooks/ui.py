@@ -13,6 +13,16 @@ if False:
 
 PLUGIN_ICONS = ['images/icon.png', 'images/icon_connected.png']
 
+class UnitedStates:
+    def __init__(self):
+        self.window_title = "Let's share books"
+        self.share_button_text = "Start sharing"
+        self.lsb_url_text = '>>> Be a librarian. Share your library. >>>>'
+        self.lsb_url = 'http://www.memoryoftheworld.org'
+        self.ssh_proc = None
+
+
+
 class LetsShareBooksUI(InterfaceAction):
 
     name = "Let's share books"
@@ -27,13 +37,13 @@ class LetsShareBooksUI(InterfaceAction):
         #self.menu = QMenu(self.gui)
         self.old_actions_unique_map = {}
         #self.qaction.setMenu(self.menu)
-
+        self.us = UnitedStates()
         self.qaction.triggered.connect(self.show_dialog)
 
     def show_dialog(self):
         base_plugin_object = self.interface_action_base_plugin
         do_user_config = base_plugin_object.do_user_config
-        d = LetsShareBooksDialog(self.gui, self.qaction.icon(), do_user_config, self.qaction)
+        d = LetsShareBooksDialog(self.gui, self.qaction.icon(), do_user_config, self.qaction, self.us)
         d.show()
 
     def apply_settings(self):

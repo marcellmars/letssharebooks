@@ -19,11 +19,12 @@ if False:
 
 class LetsShareBooksDialog(QDialog):
 
-    def __init__(self, gui, icon, do_user_config, qaction):
+    def __init__(self, gui, icon, do_user_config, qaction, us):
         QDialog.__init__(self, gui)
         self.gui = gui
         self.do_user_config = do_user_config
         self.qaction = qaction
+        self.us = us
         
         self.main_gui = calibre_main()
         
@@ -31,26 +32,25 @@ class LetsShareBooksDialog(QDialog):
         self.pxmp.load('images/icon_connected.png')
         self.icon_connected = QIcon(self.pxmp)
 
-        self.ssh_proc = None
-
         self.l = QHBoxLayout()
         self.setLayout(self.l)
 
-        self.setWindowTitle("Let's share books")
         self.setWindowIcon(icon)
 
-        self.url_label = QPushButton(".....................")
+        self.lets_share_button = QPushButton()
+        if not self.us.ssh_proc:
+            self.lets_share_button.clicked.connect(self.lets_share)
+        else:
+            self.lets_share_button.clicked.connect(self.stop_share)
+
+        self.l.addWidget(self.lets_share_button)
+
+        self.url_label = QPushButton()
         self.url_label.clicked.connect(self.open_url)
         self.l.addWidget(self.url_label)
 
-        self.lets_share_button = QPushButton("Let's share", self)
-        self.lets_share_button.clicked.connect(self.lets_share)
-        self.l.addWidget(self.lets_share_button)
-
         self.resize(self.sizeHint())
 
-        self.lsb_url = "http://www.memoryoftheworld.org"
-        
         self.se = open("lsb.log", "w+b")
         self.so = self.se
 
@@ -59,51 +59,51 @@ class LetsShareBooksDialog(QDialog):
         os.dup2(self.se.fileno(), sys.stderr.fileno())
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self.check_log)
-        self.timer.start(1000)
+        self.timer.timeout.connect(self.check_and_render)
+        self.timer.start(300)
 
     def lets_share(self):
-        if not self.ssh_proc:
+        if not self.us.ssh_proc:
             self.main_gui.start_content_server()
-            self.proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', 'ssh.memoryoftheworld.org', '-l', 'tunnel', '-R', '0:localhost:8080', '-p', '722'])
+            self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', 'ssh.memoryoftheworld.org', '-l', 'tunnel', '-R', '0:localhost:8080', '-p', '722'])
             self.qaction.setIcon(get_icon('images/icon_connected.png'))
             self.lets_share_button.clicked.disconnect(self.lets_share)
             self.lets_share_button.clicked.connect(self.stop_share)
-            self.lets_share_button.setText("Stop share")
+            self.us.share_button_text = "Stop sharing"
    
     def stop_share(self):
         self.qaction.setIcon(get_icon('images/icon.png'))
         self.lets_share_button.clicked.disconnect(self.stop_share)
         self.lets_share_button.clicked.connect(self.lets_share)
-        self.lets_share_button.setText("Let's share")
-        self.lsb_url = "http://www.memoryoftheworld.org"
-        self.url_label.setText(".....................")
+        self.us.share_button_text = "Start sharing"
+        self.us.lsb_url_text = '>>> Be a librarian. Share your library. >>>>'
 
-        self.proc.kill()
+        self.us.ssh_proc.kill()
         self.main_gui.content_server.exit()
-        self.ssh_proc = None
+        self.us.ssh_proc = None
 
-    def check_log(self):
+    def check_and_render(self):
+        self.setWindowTitle("{0} - {1}".format(self.us.window_title, self.us.lsb_url))
+        self.lets_share_button.setText(self.us.share_button_text)
+        self.url_label.setText(self.us.lsb_url_text)
+        
         self.se.seek(0)
         result = self.se.readlines()
         
         for line in result:
             m = re.match("^Allocated port (.*) for .*", line)
             try:
-                self.lsb_url = 'https://www{0}.memoryoftheworld.org'.format(m.groups()[0])
-                self.url_label.setText("Go to: {0}".format(self.lsb_url))
+                self.us.lsb_url = 'https://www{0}.memoryoftheworld.org'.format(m.groups()[0])
+                self.us.lsb_url_text = "Sharing at: {0}".format(self.us.lsb_url)
 
             except:
                 pass
-                #self.url_label.setText("processing.{0}".format("." * int(random.random()*10)))
         
         self.se.seek(0)
         self.se.truncate()
 
     def open_url(self):
-        webbrowser.open(str(self.lsb_url))
-        if self.lsb_url != "http://www.memoryoftheworld.org":
-            self.url_label.setText("Sharing at: {0}".format(self.lsb_url))
+        webbrowser.open(str(self.us.lsb_url))
 
     def config(self):
         self.do_user_config(parent=self)

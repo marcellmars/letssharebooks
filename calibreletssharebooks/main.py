@@ -84,6 +84,11 @@ class LetsShareBooksDialog(QDialog):
                 background-color: white;
                 color: red;
                 }
+
+        QPushButton#url2 {
+                color: #222;
+                text-align: left;
+        }
         QPushButton#url2:hover {
                 color: red;
                 }
@@ -125,13 +130,19 @@ class LetsShareBooksDialog(QDialog):
         self.l.addWidget(self.arrow_button)
 
         self.ll.addWidget(self.w)
+        self.ll.addSpacing(10)
         
         self.chat_button = QPushButton("Chat room: https://chat.memoryoftheworld.org")
         self.chat_button.setObjectName("url2")
-        self.chat_button.setToolTip('Copy URL to clipboard and check it out in a browser!')
+        self.chat_button.setToolTip('Meetings every thursday at 23:59 (central eruopean time)')
         self.chat_button.clicked.connect(self.open_chat)
         self.ll.addWidget(self.chat_button)
         
+        self.about_project_button = QPushButton('Public Library: http://www.memoryoftheworld.org')
+        self.about_project_button.setObjectName("url2")
+        self.about_project_button.setToolTip('When everyone is librarian, library is everywhere.')
+        self.about_project_button.clicked.connect(self.open_about_project)
+        self.ll.addWidget(self.about_project_button)
         
         self.resize(self.sizeHint())
 
@@ -205,11 +216,16 @@ class LetsShareBooksDialog(QDialog):
             self.clip.setText(self.us.lsb_url)
             webbrowser.open(str(self.us.lsb_url))
             if self.us.lsb_url != "http://www.memoryoftheworld.org":
-                self.us.lsb_url_text = "Your library at: {0}".format(self.us.lsb_url)
+                self.us.lsb_url_text = "Library at: {0}".format(self.us.lsb_url)
 
     def open_chat(self):
         self.clip.setText("https://chat.memoryoftheworld.org")
         webbrowser.open("https://chat.memoryoftheworld.org")
+
+    def open_about_project(self):
+        self.clip.setText("http://www.memoryoftheworld.org")
+        webbrowser.open("http://www.memoryoftheworld.org")
+
 
     def config(self):
         self.do_user_config(parent=self)

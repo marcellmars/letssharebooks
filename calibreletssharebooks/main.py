@@ -48,7 +48,6 @@ class LetsShareBooksDialog(QDialog):
 
         QPushButton { 
                 font-size: 16px; 
-                font: bold;
                 border-style: solid;
                 border-color: red;
                 font-family:'BitstreamVeraSansMono',Consolas,monospace;

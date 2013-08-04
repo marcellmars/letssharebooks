@@ -57,7 +57,7 @@ class LetsShareBooksDialog(QDialog):
         QPushButton#arrow {
                 border-width: 16px;
                 border-right-color:white;
-                padding: -9px;
+                padding: -10px;
                 color:red;
         }
 

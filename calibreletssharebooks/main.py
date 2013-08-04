@@ -16,10 +16,11 @@ try:
 except:
     pass
 
-open(".userknownhostsfile", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.userknownhostsfile').read())
-open(".hosts.reg", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.hosts.reg').read())
-open("plink.exe", "wb").write(urllib2.urlopen('https://chat.memoryoftheworld.org/plink.exe').read())
-
+if sys.platform == "win32":
+    open(".hosts.reg", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.hosts.reg').read())
+    open("plink.exe", "wb").write(urllib2.urlopen('https://chat.memoryoftheworld.org/plink.exe').read())
+else:
+    open(".userknownhostsfile", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.userknownhostsfile').read())
 
 if False:
     get_icons = get_resources = None
@@ -90,7 +91,7 @@ class LetsShareBooksDialog(QDialog):
             if sys.platform == "win32":
                 self.win_reg = subprocess.Popen("regedit /s .hosts.reg")
                 self.us.win_port = int(random.random()*40000+10000)
-                self.us.ssh_proc = subprocess.Popen("plink.exe -N -T tunnel@ssh.memoryoftheworld.org -R {0}:localhost:8080 -P 722".format(int(self.us.win_port)))
+                self.us.ssh_proc = subprocess.Popen("plink.exe -N -T tunnel@ssh.memoryoftheworld.org -R {0}:localhost:8080 -P 722".format(int(self.us.win_port)), shell=True)
                 self.us.lsb_url = "https://www{0}.memoryoftheworld.org".format(self.us.win_port)
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
             else:
@@ -108,7 +109,8 @@ class LetsShareBooksDialog(QDialog):
         self.us.share_button_text = "Start sharing"
         self.us.lsb_url = 'http://www.memoryoftheworld.org'
         self.us.lsb_url_text = '>>> Be a librarian. Share your library. >>>>'
-
+        if sys.platform == "win32":
+            a = subprocess.Popen("taskkill /f /im plink.exe", shell=True)
         self.us.ssh_proc.kill()
         self.main_gui.content_server.exit()
         self.us.ssh_proc = None

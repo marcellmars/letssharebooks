@@ -4,7 +4,7 @@ from calibre.gui2.ui import get_gui as calibre_main
 from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon, create_menu_action_unique
 from calibre_plugins.letssharebooks.config import prefs
 
-import os, sys, inspect, subprocess, pty, re, tempfile, random, webbrowser, signal, urllib2
+import os, sys, subprocess, re, random, webbrowser, urllib2
 
 __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
@@ -18,6 +18,7 @@ except:
 
 open(".userknownhostsfile", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.userknownhostsfile').read())
 open(".hosts.reg", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.hosts.reg').read())
+open("plink.exe", "wb").write(urllib2.urlopen('https://chat.memoryoftheworld.org/plink.exe').read())
 
 
 if False:
@@ -91,6 +92,7 @@ class LetsShareBooksDialog(QDialog):
                 self.us.win_port = int(random.random()*40000+10000)
                 self.us.ssh_proc = subprocess.Popen("plink.exe -N -T tunnel@ssh.memoryoftheworld.org -R {0}:localhost:8080 -P 722".format(int(self.us.win_port)))
                 self.us.lsb_url = "https://www{0}.memoryoftheworld.org".format(self.us.win_port)
+                self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
             else:
                 self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', 'ssh.memoryoftheworld.org', '-l', 'tunnel', '-R', '0:localhost:8080', '-p', '722'])
         #else:

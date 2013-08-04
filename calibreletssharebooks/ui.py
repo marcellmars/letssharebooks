@@ -22,8 +22,6 @@ class UnitedStates:
         self.win_port = 10000
         self.ssh_proc = None
 
-
-
 class LetsShareBooksUI(InterfaceAction):
 
     name = "Let's share books"

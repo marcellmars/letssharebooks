@@ -4,7 +4,7 @@ from calibre.gui2.ui import get_gui as calibre_main
 from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon, create_menu_action_unique
 from calibre_plugins.letssharebooks.config import prefs
 
-import os, sys, subprocess, re, random, webbrowser, urllib2
+import os, sys, subprocess, re, random, webbrowser, urllib2, functools
 
 __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
@@ -104,8 +104,6 @@ class LetsShareBooksDialog(QDialog):
         self.w.setLayout(self.l)
 
         self.setLayout(self.ll)
-        
-
         self.setWindowIcon(icon)
 
         self.lets_share_button = QPushButton()
@@ -140,9 +138,25 @@ class LetsShareBooksDialog(QDialog):
         self.about_project_button = QPushButton('Public Library: http://www.memoryoftheworld.org')
         self.about_project_button.setObjectName("url2")
         self.about_project_button.setToolTip('When everyone is librarian, library is everywhere.')
-        self.about_project_button.clicked.connect(self.open_about_project)
+        self.about_project_button.clicked.connect(functools.partial(self.open_url2, "http://www.memoryoftheworld.org"))
         self.ll.addWidget(self.about_project_button)
         
+        #self.debug_log = QTextEdit()
+        #self.ll.addWidget(self.debug_log)
+        #self.debug_log.setPlainText("{0} {1}".format(self.us.running_version, self.us.latest_version))
+        
+        self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
+        self.upgrade_button.setObjectName("url2")
+        self.upgrade_button.setToolTip('Running latest version you make developers happy')
+        self.upgrade_button.clicked.connect(functools.partial(self.open_url2, self.us.plugin_url))
+
+        version_list = [self.us.running_version, self.us.latest_version]
+        version_list.sort(key=lambda s: map(int, s.split('.')))
+        if self.us.running_version != self.us.latest_version:
+            if self.us.running_version == version_list[0]:
+                self.ll.addSpacing(20)
+                self.ll.addWidget(self.upgrade_button)
+
         self.resize(self.sizeHint())
 
         self.se = open("lsb.log", "w+b")
@@ -159,14 +173,18 @@ class LetsShareBooksDialog(QDialog):
     def lets_share(self):
         if not self.us.ssh_proc:
             self.main_gui.start_content_server()
+            from calibre.library.server import server_config
+            opts, args = server_config().option_parser().parse_args(['calibre-server'])
+            self.calibre_server_port = opts.port
+
             if sys.platform == "win32":
                 self.win_reg = subprocess.Popen("regedit /s .hosts.reg")
                 self.us.win_port = int(random.random()*40000+10000)
-                self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@ssh.memoryoftheworld.org -R {0}:localhost:8080 -P 722".format(int(self.us.win_port)), shell=True)
+                self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@ssh.memoryoftheworld.org -R {0}:localhost:{1} -P 722".format(self.us.win_port, self.calibre_server_port), shell=True)
                 self.us.lsb_url = "https://www{0}.memoryoftheworld.org".format(self.us.win_port)
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
             else:
-                self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', 'ssh.memoryoftheworld.org', '-l', 'tunnel', '-R', '0:localhost:8080', '-p', '722'])
+                self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', 'ssh.memoryoftheworld.org', '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
             
             self.qaction.setIcon(get_icon('images/icon_connected.png'))
             self.lets_share_button.clicked.disconnect(self.lets_share)
@@ -216,6 +234,10 @@ class LetsShareBooksDialog(QDialog):
             webbrowser.open(str(self.us.lsb_url))
             if self.us.lsb_url != "http://www.memoryoftheworld.org":
                 self.us.lsb_url_text = "Library at: {0}".format(self.us.lsb_url)
+
+    def open_url2(self, url):
+        self.clip.setText(url)
+        webbrowser.open(url)
 
     def open_chat(self):
         self.clip.setText("https://chat.memoryoftheworld.org")

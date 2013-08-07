@@ -27,6 +27,7 @@ class UnitedStates:
         self.lsb_url = 'http://www.memoryoftheworld.org'
         self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
         self.win_port = 10000
+        self.us.http_error = None
         self.ssh_proc = None
 
 class LetsShareBooksUI(InterfaceAction):

@@ -130,9 +130,10 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addSpacing(10)
         
         self.chat_button = QPushButton("Chat room: https://chat.memoryoftheworld.org")
+        #self.chat_button.hovered.connect(self.setCursorToHand)
         self.chat_button.setObjectName("url2")
         self.chat_button.setToolTip('Meetings every thursday at 23:59 (central eruopean time)')
-        self.chat_button.clicked.connect(self.open_chat)
+        self.chat_button.clicked.connect(functools.partial(self.open_url2, "https://chat.memoryoftheworld.org"))
         self.ll.addWidget(self.chat_button)
         
         self.about_project_button = QPushButton('Public Library: http://www.memoryoftheworld.org')
@@ -141,9 +142,13 @@ class LetsShareBooksDialog(QDialog):
         self.about_project_button.clicked.connect(functools.partial(self.open_url2, "http://www.memoryoftheworld.org"))
         self.ll.addWidget(self.about_project_button)
         
-        #self.debug_log = QTextEdit()
-        #self.ll.addWidget(self.debug_log)
-        #self.debug_log.setPlainText("{0} {1}".format(self.us.running_version, self.us.latest_version))
+        self.debug_log = QTextEdit()
+        self.ll.addWidget(self.debug_log)
+        try: 
+            fetcho = urllib2.urlopen("https://www54038.memoryoftheworld.org")
+            self.debug_log.setPlainText("{0}".format(fetcho.headers.headers))
+        except urllib2.HTTPError, e:
+            self.debug_log.setPlainText("Error: {0}".format(str(e.reason)))
         
         self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
         self.upgrade_button.setObjectName("url2")
@@ -169,6 +174,7 @@ class LetsShareBooksDialog(QDialog):
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_and_render)
         self.timer.start(300)
+        self.error_timer = QTimer()
 
     def lets_share(self):
         if not self.us.ssh_proc:
@@ -197,7 +203,14 @@ class LetsShareBooksDialog(QDialog):
         self.lets_share_button.clicked.connect(self.lets_share)
         self.us.share_button_text = "Start sharing"
         self.us.lsb_url = 'http://www.memoryoftheworld.org'
-        self.us.lsb_url_text = 'Be a librarian. Share your library.'
+        if self.us.http_error:
+            self.us.lsb_url_text = 'Be a librarian. Share your library.'
+            self.us.http_error = None
+            self.error_timer.timeout.connect(self.check_and_render)
+            self.error_timer.start(100)
+        else:
+            self.us.lsb_url_text = 'Be a librarian. Share your library.'
+
         if sys.platform == "win32":
             a = subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
         self.us.ssh_proc.kill()
@@ -238,15 +251,6 @@ class LetsShareBooksDialog(QDialog):
     def open_url2(self, url):
         self.clip.setText(url)
         webbrowser.open(url)
-
-    def open_chat(self):
-        self.clip.setText("https://chat.memoryoftheworld.org")
-        webbrowser.open("https://chat.memoryoftheworld.org")
-
-    def open_about_project(self):
-        self.clip.setText("http://www.memoryoftheworld.org")
-        webbrowser.open("http://www.memoryoftheworld.org")
-
 
     def config(self):
         self.do_user_config(parent=self)

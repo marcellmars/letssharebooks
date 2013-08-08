@@ -4,7 +4,7 @@ from calibre.gui2.ui import get_gui as calibre_main
 from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon, create_menu_action_unique
 from calibre_plugins.letssharebooks.config import prefs
 
-import os, sys, subprocess, re, random, webbrowser, urllib2, functools
+import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, threading
 
 __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
@@ -144,12 +144,7 @@ class LetsShareBooksDialog(QDialog):
         
         self.debug_log = QTextEdit()
         self.ll.addWidget(self.debug_log)
-        try: 
-            fetcho = urllib2.urlopen("https://www54038.memoryoftheworld.org")
-            self.debug_log.setPlainText("{0}".format(fetcho.headers.headers))
-        except urllib2.HTTPError, e:
-            self.debug_log.setPlainText("Error: {0}".format(str(e.reason)))
-        
+       
         self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
         self.upgrade_button.setObjectName("url2")
         self.upgrade_button.setToolTip('Running latest version you make developers happy')
@@ -175,6 +170,9 @@ class LetsShareBooksDialog(QDialog):
         self.timer.timeout.connect(self.check_and_render)
         self.timer.start(300)
         self.error_timer = QTimer()
+        self.error_timer.timeout.connect(self.check_errors)
+        if self.us.ssh_proc and not self.error_timer.isActive():
+            self.error_timer.start(5000)
 
     def lets_share(self):
         if not self.us.ssh_proc:
@@ -196,26 +194,22 @@ class LetsShareBooksDialog(QDialog):
             self.lets_share_button.clicked.disconnect(self.lets_share)
             self.lets_share_button.clicked.connect(self.stop_share)
             self.us.share_button_text = "Stop sharing"
-   
+            self.error_timer.start(5000)
+            
     def stop_share(self):
+        self.us.lsb_url = 'nourl'
+        if sys.platform == "win32" and not self.us.http_error:
+            a = subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
+        if not self.us.http_error:
+            self.us.ssh_proc.kill()
+            self.us.http_error = None
+        self.main_gui.content_server.exit()
+        self.us.ssh_proc = None
+        
         self.qaction.setIcon(get_icon('images/icon.png'))
         self.lets_share_button.clicked.disconnect(self.stop_share)
         self.lets_share_button.clicked.connect(self.lets_share)
         self.us.share_button_text = "Start sharing"
-        self.us.lsb_url = 'http://www.memoryoftheworld.org'
-        if self.us.http_error:
-            self.us.lsb_url_text = 'Be a librarian. Share your library.'
-            self.us.http_error = None
-            self.error_timer.timeout.connect(self.check_and_render)
-            self.error_timer.start(100)
-        else:
-            self.us.lsb_url_text = 'Be a librarian. Share your library.'
-
-        if sys.platform == "win32":
-            a = subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
-        self.us.ssh_proc.kill()
-        self.main_gui.content_server.exit()
-        self.us.ssh_proc = None
 
     def check_and_render(self):
         self.setWindowTitle("{0} - {1}".format(self.us.window_title, self.us.lsb_url))
@@ -237,15 +231,30 @@ class LetsShareBooksDialog(QDialog):
         
         self.se.seek(0)
         self.se.truncate()
+       
+
+    def check_errors(self):
+        if self.us.lsb_url != "nourl":
+            try: 
+                fetcho = urllib2.urlopen(self.us.lsb_url)
+                self.us.http_error = None
+                self.debug_log.setPlainText("Good: {0} - {1}".format(fetcho.headers.headers, datetime.datetime.now().isoformat()))
+            except urllib2.HTTPError, e:
+                self.error_timer.stop()
+                self.us.http_error = True
+                self.debug_log.setPlainText("Error: {0} - {1}".format(str(e.reason), datetime.datetime.now().isoformat()))
+                self.us.lsb_url_text = 'Lost connection. Please start sharing again.'
+                self.us.url_label_tooltip = '<<<< Click on Start sharing button again.'
+                self.stop_share()
 
     def open_url(self):
-        if self.us.lsb_url == "http://www.memoryoftheworld.org":
+        if self.us.lsb_url == "nourl" and not self.us.http_error:
             self.us.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.'
             self.us.lsb_url_text = '<<<< Be a librarian. Click on Start sharing button.'
         else:
             self.clip.setText(self.us.lsb_url)
             webbrowser.open(str(self.us.lsb_url))
-            if self.us.lsb_url != "http://www.memoryoftheworld.org":
+            if self.us.lsb_url != "nourl":
                 self.us.lsb_url_text = "Library at: {0}".format(self.us.lsb_url)
 
     def open_url2(self, url):

@@ -24,10 +24,10 @@ class UnitedStates:
         self.window_title = "Let's share books"
         self.share_button_text = "Start sharing"
         self.lsb_url_text = 'Be a librarian. Share your library.'
-        self.lsb_url = 'http://www.memoryoftheworld.org'
+        self.lsb_url = 'nourl'
         self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
         self.win_port = 10000
-        self.us.http_error = None
+        self.http_error = None
         self.ssh_proc = None
 
 class LetsShareBooksUI(InterfaceAction):

@@ -27,6 +27,9 @@ class UnitedStates:
         self.lsb_url = 'nourl'
         self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
         self.win_port = 10000
+        self.urllib_result = ""
+        self.lost_connection = None
+        self.urllib_state = None
         self.http_error = None
         self.ssh_proc = None
 

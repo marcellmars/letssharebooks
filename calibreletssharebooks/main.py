@@ -220,7 +220,7 @@ class LetsShareBooksDialog(QDialog):
                 self.us.lsb_url = "https://www{0}.memoryoftheworld.org".format(self.us.win_port)
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
                 self.us.lost_connection = None
-                self.error_timer.start(self_error_timer_period)
+                self.error_timer.start(self.error_timer_period)
             else:
                 self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', 'ssh.memoryoftheworld.org', '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
             

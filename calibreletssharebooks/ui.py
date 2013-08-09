@@ -60,4 +60,3 @@ class LetsShareBooksUI(InterfaceAction):
     def apply_settings(self):
         from calibre_plugins.letssharebooks.config import prefs
         prefs
-

@@ -130,9 +130,17 @@ class LetsShareBooksDialog(QDialog):
         self.lets_share_button = QPushButton()
         self.lets_share_button.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
         self.lets_share_button.setObjectName("share")
-        if not self.us.ssh_proc:
+        if self.us.init_button_state:
+            try:
+                self.lets_share_button.clicked.disconnect(self.stop_share)
+            except:
+                pass
             self.lets_share_button.clicked.connect(self.lets_share)
         else:
+            try:
+                self.lets_share_button.clicked.disconnect(self.lets_share)
+            except:
+                pass
             self.lets_share_button.clicked.connect(self.stop_share)
 
         self.l.addWidget(self.lets_share_button)
@@ -163,8 +171,8 @@ class LetsShareBooksDialog(QDialog):
         self.about_project_button.clicked.connect(functools.partial(self.open_url2, "http://www.memoryoftheworld.org"))
         self.ll.addWidget(self.about_project_button)
         
-        self.debug_log = QTextEdit()
-        self.ll.addWidget(self.debug_log)
+        #self.debug_log = QTextEdit()
+        #self.ll.addWidget(self.debug_log)
        
         self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
         self.upgrade_button.setObjectName("url2")
@@ -194,7 +202,7 @@ class LetsShareBooksDialog(QDialog):
         
         self.error_timer = QTimer()
         self.error_timer.timeout.connect(self.check_error_t)
-        self.error_timer_period = 1000
+        self.error_timer_period = 10000
         if self.us.lsb_url != "nourl" and not self.error_timer.isActive():
             self.error_timer.start(self.error_timer_period)
 
@@ -217,9 +225,13 @@ class LetsShareBooksDialog(QDialog):
                 self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', 'ssh.memoryoftheworld.org', '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
             
             self.qaction.setIcon(get_icon('images/icon_connected.png'))
-            self.lets_share_button.clicked.disconnect(self.lets_share)
+            try:
+                self.lets_share_button.clicked.disconnect(self.lets_share)
+            except:
+                pass
             self.lets_share_button.clicked.connect(self.stop_share)
             self.us.share_button_text = "Stop sharing"
+            self.us.init_button_state = False
             
     def stop_share(self):
         self.error_timer.stop()
@@ -227,19 +239,26 @@ class LetsShareBooksDialog(QDialog):
         if sys.platform == "win32" and not self.us.http_error:
             a = subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
         if not self.us.http_error:
-            self.us.ssh_proc.kill()
+            try:
+                self.us.ssh_proc.kill()
+            except:
+                pass
         self.main_gui.content_server.exit()
         self.us.ssh_proc = None
         
         self.us.http_error = None
 
         self.qaction.setIcon(get_icon('images/icon.png'))
-        self.lets_share_button.clicked.disconnect(self.stop_share)
+        try:
+            self.lets_share_button.clicked.disconnect(self.stop_share)
+        except:
+            pass
         self.lets_share_button.clicked.connect(self.lets_share)
         if not self.us.lost_connection:
             self.us.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.'
             self.us.lsb_url_text = '<<<< Be a librarian. Click on Start sharing button.'
         self.us.share_button_text = "Start sharing"
+        self.us.init_button_state = True
 
     def check_and_render(self):
         self.setWindowTitle("{0} - {1}".format(self.us.window_title, self.us.lsb_url))
@@ -272,10 +291,11 @@ class LetsShareBooksDialog(QDialog):
 
     def check_errors(self):
         if not self.us.http_error:
-            self.debug_log.setPlainText("Good ({2}: {0} - {1}".format(self.us.urllib_result, datetime.datetime.now().isoformat(), self.us.lsb_url))
+            #self.debug_log.setPlainText("Good ({2}: {0} - {1}".format(self.us.urllib_result, datetime.datetime.now().isoformat(), self.us.lsb_url))
+            pass
         elif self.us.http_error:
             self.error_timer.stop()
-            self.debug_log.setPlainText("Erro ({2}): {0} - {1}".format(self.us.urllib_result, datetime.datetime.now().isoformat(), self.us.lsb_url))
+            #self.debug_log.setPlainText("Erro ({2}): {0} - {1}".format(self.us.urllib_result, datetime.datetime.now().isoformat(), self.us.lsb_url))
             self.us.lsb_url_text = 'Lost connection. Please start sharing again.'
             self.us.url_label_tooltip = '<<<< Click on Start sharing button again.'
             self.us.lost_connection = True

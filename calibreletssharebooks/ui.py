@@ -24,9 +24,10 @@ class UnitedStates:
         self.window_title = "Let's share books"
         self.share_button_text = "Start sharing"
         self.lsb_url_text = 'Be a librarian. Share your library.'
-        self.lsb_url = 'nourl'
         self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
         self.win_port = 10000
+        self.init_button_state = True
+        self.lsb_url = 'nourl'
         self.urllib_result = ""
         self.lost_connection = None
         self.urllib_state = None

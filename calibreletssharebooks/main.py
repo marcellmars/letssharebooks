@@ -42,6 +42,12 @@ class UrlLibThread(QThread):
                 self.us.urllib_result = e
                 #print("BANG!")
                 #self.stop()
+            except Exception:
+                # when the whole memoryoftheworld.org gets down
+                self.us.http_error = True
+                self.us.urllib_state = None
+
+    
 
     def stop(self):
         self.terminate()

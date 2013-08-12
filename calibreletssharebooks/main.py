@@ -40,7 +40,7 @@ class UrlLibThread(QThread):
                 self.us.http_error = True
                 self.us.urllib_state = None
                 self.us.urllib_result = e
-                print("BANG!")
+                #print("BANG!")
                 #self.stop()
 
     def stop(self):
@@ -237,13 +237,20 @@ class LetsShareBooksDialog(QDialog):
         self.error_timer.stop()
         self.us.lsb_url = 'nourl'
         if sys.platform == "win32" and not self.us.http_error:
-            a = subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
+            try:
+                a = subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
+            except:
+                pass
         if not self.us.http_error:
             try:
                 self.us.ssh_proc.kill()
             except:
                 pass
-        self.main_gui.content_server.exit()
+        try:
+            self.main_gui.content_server.exit()
+        except:
+            pass
+
         self.us.ssh_proc = None
         
         self.us.http_error = None

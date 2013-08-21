@@ -37,9 +37,10 @@ class UrlLibThread(QThread):
                 if self.us.counter > 10:
                     time.sleep(5)
                 self.us.counter += 1
-                opener = urllib2.build_opener()
-                opener.addheaders = [("User-agent", "Checking {0}".format(self.us.lsb_url))] 
-                self.us.urllib_result = opener.open(self.us.lsb_url).getcode()
+                #opener = urllib2.build_opener()
+                #opener.addheaders = [("User-agent", "Checking {0}".format(self.us.lsb_url))] 
+                #self.us.urllib_result = opener.open(self.us.lsb_url).getcode()
+                self.us.urllib_result = urllib2.urlopen(self.us.lsb_url).getcode() 
                 self.us.http_error = None
                 self.us.check_finished = True
             except urllib2.HTTPError or urllib2.URLError as e:
@@ -267,8 +268,7 @@ class LetsShareBooksDialog(QDialog):
         else:
             self.us.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.'
             self.us.lsb_url_text = '<<<< Be a librarian. Click on Start sharing button.'
-
-              
+        
         self.us.share_button_text = "Start sharing"
         self.us.button_state = "start"
 
@@ -298,7 +298,6 @@ class LetsShareBooksDialog(QDialog):
         
             self.se.seek(0)
             self.se.truncate()
-        
         
         if self.us.urllib_result == 200 and self.us.connecting == True:
             self.us.connecting = False

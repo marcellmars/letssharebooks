@@ -200,11 +200,15 @@ class LetsShareBooksDialog(QDialog):
         os.dup2(self.se.fileno(), sys.stderr.fileno())
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self.check_and_render)
+        #self.timer.timeout.connect(self.check_and_render)
+        self.timer.timeout.connect(self.mockos)
         self.timer_period = 300
         self.timer.start(self.timer_period)
         
         self.error_log = ""
+
+    def mockos(self):
+        pass
 
     def kill_servers(self):
         if sys.platform == "win32" and not self.us.http_error:

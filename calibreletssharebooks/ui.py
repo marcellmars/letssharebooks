@@ -28,12 +28,15 @@ class UnitedStates:
         self.win_port = 10000
         self.button_state = "start"
         self.connecting = False
+        self.disconnecting = False
         self.check_finished = True
+        self.kill_finished = False
         self.lsb_url = 'nourl'
         self.urllib_result = ""
         self.http_error = None
         self.ssh_proc = None
         self.lost_connection = False
+        self.debug_item = None
         self.counter = 0
 
 class LetsShareBooksUI(InterfaceAction):

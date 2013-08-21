@@ -26,13 +26,15 @@ class UnitedStates:
         self.lsb_url_text = 'Be a librarian. Share your library.'
         self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
         self.win_port = 10000
-        self.init_button_state = True
+        self.button_state = "start"
+        self.connecting = False
+        self.check_finished = True
         self.lsb_url = 'nourl'
         self.urllib_result = ""
-        self.lost_connection = None
-        self.urllib_state = None
         self.http_error = None
         self.ssh_proc = None
+        self.lost_connection = False
+        self.counter = 0
 
 class LetsShareBooksUI(InterfaceAction):
 

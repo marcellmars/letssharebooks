@@ -239,6 +239,8 @@ class LetsShareBooksDialog(QDialog):
                 self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@ssh.memoryoftheworld.org -R {0}:localhost:{1} -P 722".format(self.us.win_port, self.calibre_server_port), shell=True)
                 self.us.lsb_url = "https://www{0}.memoryoftheworld.org".format(self.us.win_port)
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
+                self.us.check_finished = False
+                self.urllib_thread.start()
             else:
                 self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', 'ssh.memoryoftheworld.org', '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
             

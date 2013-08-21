@@ -206,7 +206,7 @@ class LetsShareBooksDialog(QDialog):
         self.error_log = ""
 
     def kill_servers(self):
-        if sys.platform == "win32":
+        if sys.platform == "win32" and not self.us.http_error:
             try:
                 a = subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
             except:
@@ -239,7 +239,6 @@ class LetsShareBooksDialog(QDialog):
                 self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@ssh.memoryoftheworld.org -R {0}:localhost:{1} -P 722".format(self.us.win_port, self.calibre_server_port), shell=True)
                 self.us.lsb_url = "https://www{0}.memoryoftheworld.org".format(self.us.win_port)
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
-                time.sleep(2)
                 self.us.check_finished = False
                 self.urllib_thread.start()
             else:
@@ -300,13 +299,14 @@ class LetsShareBooksDialog(QDialog):
             self.se.seek(0)
             self.se.truncate()
         
+        
         if self.us.urllib_result == 200 and self.us.connecting == True:
             self.us.connecting = False
             self.lets_share_button.clicked.connect(self.stop_share)
             self.us.share_button_text = "Stop sharing"
             self.us.button_state = "stop"
 
-        elif self.us.http_error and self.us.button_state != "start":
+        elif self.us.http_error and self.us.button_state != "start" and not self.us.connecting:
             self.us.lost_connection = True
             self.us.http_error = None
             self.stop_share()

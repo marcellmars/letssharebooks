@@ -21,8 +21,10 @@ if sys.platform == "win32":
     if not os.path.isfile("lsbtunnel.exe"):
         open("lsbtunnel.exe", "wb").write(urllib2.urlopen('https://chat.memoryoftheworld.org/plink.exe').read())
 else:
-    open(".userknownhostsfile", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.userknownhostsfile').read())
-
+    try:
+        open(".userknownhostsfile", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.userknownhostsfile').read())
+    except:
+        pass
 if False:
     get_icons = get_resources = None
 
@@ -57,7 +59,7 @@ class UrlLibThread(QThread):
         self.us = unitedstates
 
     def run(self):
-        if self.us.ssh_proc and self.us.lsb_url[:5] == "https":
+        if self.us.ssh_proc and self.us.lsb_url[:4] == "http":
             try:
                 if self.us.counter > 10:
                     time.sleep(5)
@@ -201,8 +203,8 @@ class LetsShareBooksDialog(QDialog):
         self.about_project_button.clicked.connect(functools.partial(self.open_url2, "http://www.memoryoftheworld.org"))
         self.ll.addWidget(self.about_project_button)
         
-        self.debug_log = QListWidget()
-        self.ll.addWidget(self.debug_log)
+        #self.debug_log = QListWidget()
+        #self.ll.addWidget(self.debug_log)
        
         self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
         self.upgrade_button.setObjectName("url2")
@@ -234,7 +236,7 @@ class LetsShareBooksDialog(QDialog):
 
     def lets_share(self):
         self.timer.stop()
-        self.debug_log.addItem("Let's share!")
+        #self.debug_log.addItem("Let's share!")
         self.us.counter = 0
         self.us.lost_connection = False
 
@@ -246,12 +248,13 @@ class LetsShareBooksDialog(QDialog):
             if sys.platform == "win32":
                 self.win_reg = subprocess.Popen("regedit /s .hosts.reg")
                 self.us.win_port = int(random.random()*40000+10000)
-                self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@ssh.memoryoftheworld.org -R {0}:localhost:{1} -P 722".format(self.us.win_port, self.calibre_server_port), shell=True)
-                self.us.lsb_url = "https://www{0}.memoryoftheworld.org".format(self.us.win_port)
+                self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@{2} -R {0}:localhost:{1} -P 722".format(self.us.win_port, self.calibre_server_port, prefs['lsb_server']), shell=True)
+                self.us.lsb_url = "https://www{0}.{1}".format(self.us.win_port, prefs['lsb_server'])
+                #_dev_self.us.lsb_url = "http://www{0}.{1}".format(self.us.win_port, prefs['lsb_server'])
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
                 self.urllib_thread.start()
             else:
-                self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', 'ssh.memoryoftheworld.org', '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
+                self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
             
             self.qaction.setIcon(get_icon('images/icon_connected.png'))
             self.lets_share_button.clicked.disconnect()
@@ -261,9 +264,9 @@ class LetsShareBooksDialog(QDialog):
               
     def stop_share(self):
         self.timer.stop()
-        self.debug_log.addItem("button_state: {0}".format(self.us.button_state))
+        #self.debug_log.addItem("button_state: {0}".format(self.us.button_state))
         self.lets_share_button.clicked.disconnect()
-        self.debug_log.addItem("Stop Share!")
+        #self.debug_log.addItem("Stop Share!")
         self.us.lsb_url = 'nourl'
         self.us.urllib_result = ''
         self.us.disconnecting = True
@@ -275,7 +278,7 @@ class LetsShareBooksDialog(QDialog):
         self.timer.start(self.timer_period)
 
     def check_and_render(self):
-        self.show_debug()
+        #self.show_debug()
         
         if self.us.disconnecting:
             self.us.share_button_text = "Disconnecting..."
@@ -286,52 +289,57 @@ class LetsShareBooksDialog(QDialog):
                 self.us.lsb_url_text = 'Be a librarian. Share your library.'
                 self.us.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
             if self.us.kill_finished:
-                self.debug_log.addItem("Kill finished!")
+                #self.debug_log.addItem("Kill finished!")
                 self.us.button_state = "start"
                 self.us.kill_finished = False
                 self.us.share_button_text = "Start sharing"
                 self.lets_share_button.clicked.connect(self.lets_share) 
-                self.debug_log.addItem("Let's share connect!")
+                #self.debug_log.addItem("Let's share connect!")
                 self.us.disconnecting = False
-
-        if self.us.check_finished:
-            self.debug_log.addItem("Call Thread!")
-            self.us.check_finished = False
-            self.urllib_thread.start()
+        elif self.us.connecting:
+            if self.us.check_finished:
+                #self.debug_log.addItem("Call Thread!")
+                self.us.check_finished = False
+                self.urllib_thread.start()
         
-        if self.us.lsb_url == "nourl" and self.us.ssh_proc and sys.platform != "win32" and not self.us.disconnecting:
-            self.debug_log.addItem("Wait for Allocated port!")
+            if self.us.lsb_url == "nourl" and self.us.ssh_proc and sys.platform != "win32":
+                #self.debug_log.addItem("Wait for Allocated port!")
             
-            self.se.seek(0)
-            result = self.se.readlines()
+                self.se.seek(0)
+                result = self.se.readlines()
         
-            for line in result:
-                m = re.match("^Allocated port (.*) for .*", line)
-                try:
-                    self.us.lsb_url = 'https://www{0}.memoryoftheworld.org'.format(m.groups()[0])
-                    self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
-                    self.us.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
-                    self.us.http_error = None
-                    self.us.check_finished = False
-                    self.urllib_thread.start()
-                except:
-                    pass
+                for line in result:
+                    m = re.match("^Allocated port (.*) for .*", line)
+                    try:
+                        #_production_self.us.lsb_url = 'https://www{0}.{1}'.format(m.groups()[0], prefs['lsb_server'])
+                        self.us.lsb_url = 'http://www{0}.{1}'.format(m.groups()[0], prefs['lsb_server'])
+                        self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
+                        self.us.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
+                        self.us.http_error = None
+                        self.us.check_finished = False
+                        self.urllib_thread.start()
+                    except:
+                        pass
         
-            self.se.seek(0)
-            self.se.truncate()
+                self.se.seek(0)
+                self.se.truncate()
         
-        if self.us.urllib_result == 200 and self.us.connecting:
-            self.debug_log.addItem("Finish Connecting State!")
-            self.us.connecting = False
-            self.lets_share_button.clicked.connect(self.stop_share)
-            self.us.share_button_text = "Stop sharing"
-            self.us.button_state = "stop"
+            if self.us.urllib_result == 200:
+                #self.debug_log.addItem("Finish Connecting State!")
+                self.us.connecting = False
+                self.lets_share_button.clicked.connect(self.stop_share)
+                self.us.share_button_text = "Stop sharing"
+                self.us.button_state = "stop"
 
-        elif self.us.http_error and self.us.button_state != "start" and not self.us.connecting and not self.us.disconnecting:
-            self.debug_log.addItem("Error!")
+        elif self.us.http_error and self.us.button_state != "start":
+            #self.debug_log.addItem("Error!")
             self.us.http_error = None
             self.us.lost_connection = True
             self.stop_share()
+
+        elif self.us.check_finished:
+            self.us.check_finished = False
+            self.urllib_thread.start()
 
         self.setWindowTitle("{0} - {1}".format(self.us.window_title, self.us.lsb_url))
         self.url_label.setToolTip(self.us.url_label_tooltip)
@@ -361,4 +369,4 @@ class LetsShareBooksDialog(QDialog):
 
     def config(self):
         self.do_user_config(parent=self)
-        self.label.setText(prefs['hello_world_msg'])
+        self.label.setText(prefs['lsb_server'])

@@ -20,7 +20,10 @@ class UnitedStates:
     def __init__(self):
         self.plugin_url = "https://github.com/marcellmars/letssharebooks/raw/master/calibreletssharebooks/letssharebooks_calibre.zip"
         self.running_version = ".".join(map(str, lsb.version))
-        self.latest_version = urllib2.urlopen('https://raw.github.com/marcellmars/letssharebooks/master/calibreletssharebooks/_version').read()[:-1].encode("utf-8")
+        try:
+            self.latest_version = urllib2.urlopen('https://raw.github.com/marcellmars/letssharebooks/master/calibreletssharebooks/_version').read()[:-1].encode("utf-8")
+        except:
+            self.latest_version = "0.0.0"
         self.window_title = "Let's share books"
         self.share_button_text = "Start sharing"
         self.lsb_url_text = 'Be a librarian. Share your library.'

@@ -18,7 +18,7 @@ import random
 prefs = JSONConfig('plugins/letssharebooks.conf')
 
 # Set defaults
-prefs.defaults['lsb_username'] = 'lsb_%s' % str(random.random())[2:12]
+prefs.defaults['lsb_server'] = 'memoryoftheworld.org'
 
 class ConfigWidget(QWidget):
 
@@ -27,14 +27,14 @@ class ConfigWidget(QWidget):
         self.l = QHBoxLayout()
         self.setLayout(self.l)
 
-        self.label = QLabel('Username:')
+        self.label = QLabel('Server:')
         self.l.addWidget(self.label)
 
         self.msg = QLineEdit(self)
-        self.msg.setText(prefs['lsb_username'])
+        self.msg.setText(prefs['lsb_server'])
         self.l.addWidget(self.msg)
         self.label.setBuddy(self.msg)
 
     def save_settings(self):
-        prefs['lsb_username'] = unicode(self.msg.text())
+        prefs['lsb_server'] = unicode(self.msg.text())
 

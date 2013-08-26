@@ -13,12 +13,12 @@ class LetsShareBooks(InterfaceActionBase):
     description         = 'Share calibre library through tunnel at http://www.memoryoftheworld.org'
     supported_platforms = ['windows', 'osx', 'linux']
     author              = 'Marcell Mars'
-    version             = (1, 0, 11)
+    version             = (1, 0, 12)
     minimum_calibre_version = (0, 9, 30)
     actual_plugin       = 'calibre_plugins.letssharebooks.ui:LetsShareBooksUI'
 
     def is_customizable(self):
-        return False
+        return True
 
     def config_widget(self):
         # It is important to put this import statement here rather than at the

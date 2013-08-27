@@ -24,6 +24,7 @@ class UnitedStates:
             self.latest_version = urllib2.urlopen('https://raw.github.com/marcellmars/letssharebooks/master/calibreletssharebooks/_version').read()[:-1].encode("utf-8")
         except:
             self.latest_version = "0.0.0"
+        
         self.window_title = "Let's share books"
         self.share_button_text = "Start sharing"
         self.lsb_url_text = 'Be a librarian. Share your library.'
@@ -40,6 +41,9 @@ class UnitedStates:
         self.ssh_proc = None
         self.lost_connection = False
         self.debug_item = None
+        self.debug_counter = 1
+        self.connecting_now = None
+        self.found_url = None
         self.counter = 0
 
 class LetsShareBooksUI(InterfaceAction):

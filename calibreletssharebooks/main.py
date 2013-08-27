@@ -271,14 +271,14 @@ class LetsShareBooksDialog(QDialog):
                 self.us.lsb_url = "https://www{0}.{1}".format(self.us.win_port, prefs['lsb_server'])
                 #_dev_self.us.lsb_url = "http://www{0}.{1}".format(self.us.win_port, prefs['lsb_server'])
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
-                self.urllib_thread.start()
+                self.us.found_url = True
             else:
                 self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
+                self.us.found_url = None
             
             self.qaction.setIcon(get_icon('images/icon_connected.png'))
             self.us.connecting = True
             self.us.connecting_now = datetime.datetime.now()
-            self.us.found_url = None
             self.timer.start(self.timer_period)
               
     def stop_share(self):
@@ -367,7 +367,7 @@ class LetsShareBooksDialog(QDialog):
                 self.us.connecting_now = None
                 self.us.found_url = None
 
-        elif self.us.http_error and self.us.button_state != "start":
+        elif self.us.http_error and self.us.button_state == "stop":
             #self.debug_log.addItem("Error!")
             self.us.http_error = None
             self.us.lost_connection = True

@@ -39,9 +39,11 @@ class JSONBooks:
                 for book_id in books_ids:
                     book = {}
                     book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=base_url, book_metadata_url=book_metadata_url, book_id=book_id)).json()
+                    book['id'] = book_id
                     book['tunnel'] = tunnel
                     book['title'] = book_metadata['title']
                     book['authors'] = book_metadata['authors']
+                    book['domain'] = self.domain
                     all_books.append(book)
 
             open(hash_filename, "w").write(simplejson.dumps(all_books))
@@ -67,6 +69,7 @@ class Root(object):
 <head><title>Libraries</title>
 <script type="application/javascript" src="static/jquery-1.10.2.min.js"></script>
 <script type="application/javascript" src="static/jquery-1.10.2.min.map"></script>
+<link rel="stylesheet" type="text/css" href="static/style.css" />
 <script type='text/javascript'>
 function initpage() {
     $.ajax({
@@ -78,7 +81,7 @@ function initpage() {
       success: function(books) {
                     window.foobar = books;
                     $.each(books, function(n, book) {
-                        $('#content').append('<p>'+ book.title + '</p>'); 
+                        $('#content').append('<div class="cover"><img src="http://www'+ book.tunnel + '.' + book.domain + '/get/cover/' + book.id + '.jpg"></img><h2>' + book.title + '<br/><span>' + book.authors.join(", ")  + '</span></h2><span class="download">Download: <a href="http://www' + book.tunnel + '.' + book.domain + '/get/opf/' + book.id  + book.title + '.opf">.opf</a></span></div>'); 
                     })
       },
       dataType: "json"

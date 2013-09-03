@@ -44,8 +44,8 @@ class JSONBooks:
                     book['authors'] = book_metadata['authors']
                     all_books.append(book)
 
-            open(hash_filename, "w").write(simplejson.dump(all_books))
-        return all_books[0:4]
+            open(hash_filename, "w").write(simplejson.dumps(all_books))
+        return all_books[100:116]
 
 class Root(object):
 
@@ -65,8 +65,8 @@ class Root(object):
         return """
 <html>
 <head><title>Libraries</title>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-<script type="text/javascript" src="static/jquery.min.js"></script>
+<script type="application/javascript" src="static/jquery-1.10.2.min.js"></script>
+<script type="application/javascript" src="static/jquery-1.10.2.min.map"></script>
 <script type='text/javascript'>
 function initpage() {
     $.ajax({
@@ -75,8 +75,11 @@ function initpage() {
       contentType: "application/json",
       processData: false,
       data: $('#updatebox').val(),
-      success: function(data) {
-                    $('#content').append('<p>'+ data + '</p>'); 
+      success: function(books) {
+                    window.foobar = books;
+                    $.each(books, function(n, book) {
+                        $('#content').append('<p>'+ book.title + '</p>'); 
+                    })
       },
       dataType: "json"
     });

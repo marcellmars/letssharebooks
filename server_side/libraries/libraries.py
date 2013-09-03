@@ -2,6 +2,9 @@ import subprocess
 import os
 import cherrypy
 import requests
+import md5
+import glob
+import simplejson
 
 class JSONBooks:
     def __init__(self, domain = "web.dokr"):
@@ -11,15 +14,38 @@ class JSONBooks:
         uid = subprocess.check_output(["grep", "{0}".format(login), "/etc/passwd"]).split()[0].split(":")[2]
         return subprocess.check_output(["/usr/local/bin/get_tunnel_ports.sh", uid]).split()
 
-    def search(self, search):
-        
-
     def get_metadata(self):
-        for port in self.get_tunnel_ports():
-            base_url = 'http://{port}.{domain}/'.format(port=port, domain=self.domain)
-            search = 'ajax/search?query='
+        all_books = []
+        for tunnel in self.get_tunnel_ports():
+            base_url = 'http://www{tunnel}.{domain}/'.format(tunnel=tunnel, domain=self.domain)
+            total_num_url = 'ajax/search?query='
+            total_num = requests.get("{base_url}{total_num_url}".format(base_url=base_url, total_num_url=total_num_url)).json()['total_num']
+            books_ids_url = 'ajax/search?query=&num={total_num}&sort=title'.format(total_num=total_num)
+            books_ids = requests.get("{base_url}{books_ids_url}".format(base_url=base_url, books_ids_url=books_ids_url)).json()['book_ids']
+            books_ids_hash = md5.new("".join((str(book_id) for book_id in books_ids))).hexdigest()
+            hash_files = glob.glob("{books_ids_hash}_*".format(books_ids_hash=books_ids_hash))
+            hash_filename = "{books_ids_hash}_{tunnel}".format(books_ids_hash=books_ids_hash, tunnel=tunnel)
+            if hash_files:
+                if hash_filename in hash_files:
+                    books = simplejson.loads(open(hash_filename, "r").read())
+                    all_books = books
+                else:
+                    books = simplejson.loads(open(glob.glob("{books_ids_hash}_*".format(books_ids_hash=books_ids_hash))[0, "r"]).read())
+                    for book in books:
+                        book['tunnel'] = tunnel
+                    all_books = books
+            else:
+                book_metadata_url = 'ajax/book/'
+                for book_id in books_ids:
+                    book = {}
+                    book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=base_url, book_metadata_url=book_metadata_url, book_id=book_id)).json()
+                    book['tunnel'] = tunnel
+                    book['title'] = book_metadata['title']
+                    book['authors'] = book_metadata['authors']
+                    all_books.append(book)
 
-
+            open(hash_filename, "w").write(simplejson.dump(all_books))
+        return all_books[0:4]
 
 class Root(object):
 

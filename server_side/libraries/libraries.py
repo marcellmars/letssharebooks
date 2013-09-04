@@ -70,7 +70,7 @@ class Root(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
-    def initpage(self):
+    def render_page(self):
         json_books = JSONBooks()
         start_offset = cherrypy.request.json
         print(start_offset['start'])
@@ -85,17 +85,25 @@ class Root(object):
 <head><title>Libraries</title>
 <script type="application/javascript" src="static/jquery-1.10.2.min.js"></script>
 <script type="application/javascript" src="static/jquery-1.10.2.min.map"></script>
+<script type="application/javascript" src="static/jquery-ui.js"></script>
 <link rel="stylesheet" type="text/css" href="static/style.css" />
+<link rel="stylesheet" type="text/css" href="static/jquery-ui.css" />
 <script type='text/javascript'>
-
 var LSB = {}
 LSB.start = 0;
 LSB.offset = 8;
 
-initpage = function() {
+init_page = function() {
+                add_toolbar();
+                render_page();
+}
+
+
+render_page = function() {
+
     $.ajax({
       type: 'POST',
-      url: "initpage",
+      url: "render_page",
       contentType: "application/json",
       processData: false,
       data: JSON.stringify(LSB),
@@ -107,33 +115,38 @@ initpage = function() {
                             formats = formats + '<a href="' + base_url + '/get/' + format + '/' + book.id +'.' + format + '">' + format.toUpperCase() + '</a> '});
                         
                         $('#content').append('<div class="cover"><a href="'+ base_url +'/browse/book/'+ book.id +'" target="_blank"><img src="' + base_url + '/get/cover/' + book.id + '.jpg"></img></a><h2>' + book.title + '<br/><span>' + book.authors.join(", ")  + '</span></h2><span class="download">Metadata: <a href="'+ base_url + '/get/opf/' + book.id  + book.title.replace(/\?/g, "") + '.opf">.opf</a><br/>Download: ' + formats + ' </span></div>')
-
                 })
       },
       dataType: "json"
     });
 }
 
+add_toolbar = function() {
+    $('#content').append('<div id="toolbar"><div id="prev_page"></div><div id="next_page"></div></div>');
+    $('#toolbar').append($('#prev_page').button({label: 'prev'})).click(function() {prev_page()});
+    $('#toolbar').append($('#next_page').button({label: 'next'})).click(function() {next_page()});
+}
+
 next_page = function() {
     LSB.start = LSB.start + LSB.offset;
     $('#content').empty();
-    initpage();
+    add_toolbar();
+    render_page();
 }
 
 prev_page = function() {
     LSB.start = LSB.start - LSB.offset;
     $('#content').empty();
-    initpage();
+    add_toolbar();
+    render_page();
 }
 
-$(document).ready(initpage);
+
+$(document).ready(init_page);
 
 </script>
 </title>
 <body>
-<input type='textbox' id='updatebox' value='{}' size='20' />
-<input type='submit' value='prev' onClick='prev_page(); return false' />
-<input type='submit' value='next' onClick='next_page(); return false' />
 <div id="content">
 </div>
 </body>

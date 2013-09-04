@@ -123,8 +123,10 @@ render_page = function() {
 
 add_toolbar = function() {
     $('#content').append('<div id="toolbar"><div id="prev_page"></div><div id="next_page"></div></div>');
-    $('#toolbar').append($('#prev_page').button({label: 'prev'})).click(function() {prev_page()});
+    $('#toolbar').append($('#prev_page').button({label: 'prev'}))
+    $('#prev_page').click(function() {prev_page()});
     $('#toolbar').append($('#next_page').button({label: 'next'})).click(function() {next_page()});
+    $('#next_page').click(function() {next_page()});
 }
 
 next_page = function() {

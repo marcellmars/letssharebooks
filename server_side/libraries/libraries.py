@@ -5,6 +5,7 @@ import requests
 import md5
 import glob
 import simplejson
+import operator
 
 class JSONBooks:
     def __init__(self, domain = "web.dokr"):
@@ -42,13 +43,15 @@ class JSONBooks:
                     book['id'] = book_id
                     book['tunnel'] = tunnel
                     book['title'] = book_metadata['title']
+                    book['title_sort'] = book_metadata['title_sort']
                     book['authors'] = book_metadata['authors']
                     book['domain'] = self.domain
                     book['formats'] = book_metadata['formats']
                     all_books.append(book)
 
             open(hash_filename, "w").write(simplejson.dumps(all_books))
-        return all_books[100:116]
+        all_books.sort(key=operator.itemgetter('title_sort'))
+        return all_books[900:916]
 
 class Root(object):
 
@@ -57,10 +60,8 @@ class Root(object):
     @cherrypy.tools.json_in()
     def initpage(self):
         json_books = JSONBooks()
-        cl = cherrypy.request.headers['Content-Length']
-        body = cherrypy.request.body.read(int(cl))
-        #body = simplejson.loads(rawbody)
-        # do_something_with(body)
+        #cl = cherrypy.request.headers['Content-Length']
+        #body = cherrypy.request.body.read(int(cl))
         return json_books.get_metadata()
 
     @cherrypy.expose
@@ -80,16 +81,13 @@ function initpage() {
       processData: false,
       data: $('#updatebox').val(),
       success: function(books) {
-                    window.foobar = books;
                     $.each(books, function(n, book) {
-                        console.log(book.formats)
                         var base_url = 'http://www' + book.tunnel + '.' + book.domain
                         var formats = ""
-                        book.formats.map( function(format) { 
-                            console.log(format)
-                            formats = formats + '<a href="' + base_url + '/get/' + format + '/' + book.id + book.title +'.' + format + '">' + format.toUpperCase() + '</a> '});
-                            console.log(formats)
-                        $('#content').append('<div class="cover"><img src="' + base_url + '/get/cover/' + book.id + '.jpg"></img><h2>' + book.title + '<br/><span>' + book.authors.join(", ")  + '</span></h2><span class="download">Metadata: <a href="'+ base_url + '/get/opf/' + book.id  + book.title + '.opf">.opf</a><br/>Download: ' + formats + ' </span></div>')
+                        book.formats.map(function(format) { 
+                            formats = formats + '<a href="' + base_url + '/get/' + format + '/' + book.id +'.' + format + '">' + format.toUpperCase() + '</a> '});
+                        
+                        $('#content').append('<div class="cover"><a href="'+ base_url +'/browse/book/'+ book.id +'" target="_blank"><img src="' + base_url + '/get/cover/' + book.id + '.jpg"></img></a><h2>' + book.title + '<br/><span>' + book.authors.join(", ")  + '</span></h2><span class="download">Metadata: <a href="'+ base_url + '/get/opf/' + book.id  + book.title.replace(/\?/g, "") + '.opf">.opf</a><br/>Download: ' + formats + ' </span></div>')
                 })
       },
       dataType: "json"

@@ -44,6 +44,7 @@ class JSONBooks:
                     book['title'] = book_metadata['title']
                     book['authors'] = book_metadata['authors']
                     book['domain'] = self.domain
+                    book['formats'] = book_metadata['formats']
                     all_books.append(book)
 
             open(hash_filename, "w").write(simplejson.dumps(all_books))
@@ -81,8 +82,15 @@ function initpage() {
       success: function(books) {
                     window.foobar = books;
                     $.each(books, function(n, book) {
-                        $('#content').append('<div class="cover"><img src="http://www'+ book.tunnel + '.' + book.domain + '/get/cover/' + book.id + '.jpg"></img><h2>' + book.title + '<br/><span>' + book.authors.join(", ")  + '</span></h2><span class="download">Download: <a href="http://www' + book.tunnel + '.' + book.domain + '/get/opf/' + book.id  + book.title + '.opf">.opf</a></span></div>'); 
-                    })
+                        console.log(book.formats)
+                        var base_url = 'http://www' + book.tunnel + '.' + book.domain
+                        var formats = ""
+                        book.formats.map( function(format) { 
+                            console.log(format)
+                            formats = formats + '<a href="' + base_url + '/get/' + format + '/' + book.id + book.title +'.' + format + '">' + format.toUpperCase() + '</a> '});
+                            console.log(formats)
+                        $('#content').append('<div class="cover"><img src="' + base_url + '/get/cover/' + book.id + '.jpg"></img><h2>' + book.title + '<br/><span>' + book.authors.join(", ")  + '</span></h2><span class="download">Metadata: <a href="'+ base_url + '/get/opf/' + book.id  + book.title + '.opf">.opf</a><br/>Download: ' + formats + ' </span></div>')
+                })
       },
       dataType: "json"
     });
@@ -95,7 +103,8 @@ $(document).ready(initpage);
 <body>
 <input type='textbox' id='updatebox' value='{}' size='20' />
 <input type='submit' value='Update' onClick='initpage(); return false' />
-<div id="content"></div>
+<div id="content">
+</div>
 </body>
 </html>
 """

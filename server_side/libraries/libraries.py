@@ -15,7 +15,8 @@ class JSONBooks:
         uid = subprocess.check_output(["grep", "{0}".format(login), "/etc/passwd"]).split()[0].split(":")[2]
         return subprocess.check_output(["/usr/local/bin/get_tunnel_ports.sh", uid]).split()
 
-    def get_metadata(self):
+    def get_metadata(self, start, offset):
+        end = start + offset
         all_books = []
         for tunnel in self.get_tunnel_ports():
             base_url = 'http://www{tunnel}.{domain}/'.format(tunnel=tunnel, domain=self.domain)
@@ -51,18 +52,31 @@ class JSONBooks:
 
             open(hash_filename, "w").write(simplejson.dumps(all_books))
         all_books.sort(key=operator.itemgetter('title_sort'))
-        return all_books[900:916]
+        return all_books[start:end]
 
 class Root(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
-    def initpage(self):
-        json_books = JSONBooks()
+    def flip_page(self):
         #cl = cherrypy.request.headers['Content-Length']
         #body = cherrypy.request.body.read(int(cl))
-        return json_books.get_metadata()
+        print(cherrypy.request.json)
+        return cherrypy.request.json
+        #return body
+
+ 
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def initpage(self):
+        json_books = JSONBooks()
+        start_offset = cherrypy.request.json
+        print(start_offset['start'])
+        #cl = cherrypy.request.headers['Content-Length']
+        #body = cherrypy.request.body.read(int(cl))
+        return json_books.get_metadata(start_offset['start'], start_offset['offset'])
 
     @cherrypy.expose
     def index(self):
@@ -73,13 +87,18 @@ class Root(object):
 <script type="application/javascript" src="static/jquery-1.10.2.min.map"></script>
 <link rel="stylesheet" type="text/css" href="static/style.css" />
 <script type='text/javascript'>
-function initpage() {
+
+var LSB = {}
+LSB.start = 0;
+LSB.offset = 8;
+
+initpage = function() {
     $.ajax({
       type: 'POST',
       url: "initpage",
       contentType: "application/json",
       processData: false,
-      data: $('#updatebox').val(),
+      data: JSON.stringify(LSB),
       success: function(books) {
                     $.each(books, function(n, book) {
                         var base_url = 'http://www' + book.tunnel + '.' + book.domain
@@ -88,10 +107,23 @@ function initpage() {
                             formats = formats + '<a href="' + base_url + '/get/' + format + '/' + book.id +'.' + format + '">' + format.toUpperCase() + '</a> '});
                         
                         $('#content').append('<div class="cover"><a href="'+ base_url +'/browse/book/'+ book.id +'" target="_blank"><img src="' + base_url + '/get/cover/' + book.id + '.jpg"></img></a><h2>' + book.title + '<br/><span>' + book.authors.join(", ")  + '</span></h2><span class="download">Metadata: <a href="'+ base_url + '/get/opf/' + book.id  + book.title.replace(/\?/g, "") + '.opf">.opf</a><br/>Download: ' + formats + ' </span></div>')
+
                 })
       },
       dataType: "json"
     });
+}
+
+next_page = function() {
+    LSB.start = LSB.start + LSB.offset;
+    $('#content').empty();
+    initpage();
+}
+
+prev_page = function() {
+    LSB.start = LSB.start - LSB.offset;
+    $('#content').empty();
+    initpage();
 }
 
 $(document).ready(initpage);
@@ -100,7 +132,8 @@ $(document).ready(initpage);
 </title>
 <body>
 <input type='textbox' id='updatebox' value='{}' size='20' />
-<input type='submit' value='Update' onClick='initpage(); return false' />
+<input type='submit' value='prev' onClick='prev_page(); return false' />
+<input type='submit' value='next' onClick='next_page(); return false' />
 <div id="content">
 </div>
 </body>

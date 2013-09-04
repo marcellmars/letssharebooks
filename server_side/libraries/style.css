@@ -1,10 +1,29 @@
+body {
+    background: rgb(224, 224, 224);
+}
+
+#content {
+    display:block;
+    width:960px;
+    margin: 0px auto;
+}
+
+img {
+    position: absolute;
+    padding: 0 0px;
+    margin: 0;
+}
+
 .cover {
     position:relative;
     display:inline-block;
-    width:240px;
+    width:230px;
+    height:340px;
     overflow:hidden;
-    border-right: 2px solid #fff;
-    border-bottom: 4px solid #fff;
+    border-right: 2px solid rgb(224, 224, 224);
+    border-bottom: 4px solid rgb(224, 224, 224);
+    background: rgb(0, 0, 0); /* fallback color */
+    background: rgba(0, 0, 0, 0.9);
 }
 
 h2 {

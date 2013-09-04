@@ -22,7 +22,7 @@ class JSONBooks:
             base_url = 'http://www{tunnel}.{domain}/'.format(tunnel=tunnel, domain=self.domain)
             total_num_url = 'ajax/search?query='
             total_num = requests.get("{base_url}{total_num_url}".format(base_url=base_url, total_num_url=total_num_url)).json()['total_num']
-            books_ids_url = 'ajax/search?query=&num={total_num}&sort=title'.format(total_num=total_num)
+            books_ids_url = 'ajax/search?query=&num={total_num}&sort=last_modified'.format(total_num=total_num)
             books_ids = requests.get("{base_url}{books_ids_url}".format(base_url=base_url, books_ids_url=books_ids_url)).json()['book_ids']
             books_ids_hash = md5.new("".join((str(book_id) for book_id in books_ids))).hexdigest()
             hash_files = glob.glob("{books_ids_hash}_*".format(books_ids_hash=books_ids_hash))

@@ -17,6 +17,7 @@ class JSONBooks:
         return subprocess.check_output(["/usr/local/bin/get_tunnel_ports.sh", uid]).split()
 
     def get_metadata(self, start, offset, query):
+        query = query.encode('utf-8')
         end = start + offset
         all_books = []
         for tunnel in self.get_tunnel_ports():
@@ -24,7 +25,7 @@ class JSONBooks:
             total_num_url = 'ajax/search?query={query}'.format(query=query)
             total_num = requests.get("{base_url}{total_num_url}".format(base_url=base_url, total_num_url=total_num_url)).json()['total_num']
             if total_num == 0:
-                break
+                continue
             books_ids_url = 'ajax/search?query={query}&num={total_num}&sort=last_modified'.format(query=query, total_num=total_num)
             books_ids = requests.get("{base_url}{books_ids_url}".format(base_url=base_url, books_ids_url=books_ids_url)).json()['book_ids']
             books_ids_hash = md5.new("".join((str(book_id) for book_id in books_ids))).hexdigest()
@@ -127,7 +128,7 @@ render_page = function() {
 }
 
 refresh_pagination = function () {
-    $('.pagination').button({label: ' ' + LSB.start + ' - ' + (+LSB.start + +LSB.offset) + ' out of ' + LSB.total_num + ' books ', disabled: true})
+    $('.pagination').button({label: ' ' + (+LSB.start + 1)+ ' - ' + (+LSB.start + +LSB.offset) + ' out of ' + LSB.total_num + ' books ', disabled: true})
 }
 
 add_toolbar = function() {

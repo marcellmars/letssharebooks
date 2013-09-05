@@ -21,8 +21,10 @@ class JSONBooks:
         all_books = []
         for tunnel in self.get_tunnel_ports():
             base_url = 'http://www{tunnel}.{domain}/'.format(tunnel=tunnel, domain=self.domain)
-            total_num_url = 'ajax/search?query='
+            total_num_url = 'ajax/search?query={query}'.format(query=query)
             total_num = requests.get("{base_url}{total_num_url}".format(base_url=base_url, total_num_url=total_num_url)).json()['total_num']
+            if total_num == 0:
+                break
             books_ids_url = 'ajax/search?query={query}&num={total_num}&sort=last_modified'.format(query=query, total_num=total_num)
             books_ids = requests.get("{base_url}{books_ids_url}".format(base_url=base_url, books_ids_url=books_ids_url)).json()['book_ids']
             books_ids_hash = md5.new("".join((str(book_id) for book_id in books_ids))).hexdigest()
@@ -33,7 +35,7 @@ class JSONBooks:
                     books = simplejson.loads(open("{hash_filename}".format(hash_filename=hash_filename), "r").read())
                     all_books = books
                 else:
-                    books = simplejson.loads(open(glob.glob("hashfiles/{books_ids_hash}_*".format(books_ids_hash=books_ids_hash))[0, "r"]).read())
+                    books = simplejson.loads(open(glob.glob("hashfiles/{books_ids_hash}_*".format(books_ids_hash=books_ids_hash))[0], "r").read())
                     for book in books:
                         book['tunnel'] = tunnel
                     all_books = books
@@ -138,7 +140,7 @@ add_toolbar = function() {
     $('#next_page').click(function() {next_page()});
     $('#toolbar').append('<div class="pagination"></div>');
 
-    $('#searchbar').append('<div class="ui-widget"><input id="authors" placeholder="authors"/><input id="titles" placeholder="titles"/><input id="search_all" placeholder="search all"/></div><div id="search"></div>')
+    $('#searchbar').append('<div class="ui-widget"><input id="authors" placeholder="authors"/><input id="titles" placeholder="titles"/><input id="search_all" placeholder="search all metadata"/><div id="search"></div></div>')
     $('#search').button({label: 'search'}).click(search_query)
 
 }
@@ -171,6 +173,8 @@ search_query = function () {
     $('#content').empty();
     add_toolbar()
     render_page()
+    LSB.query = '';
+    LSB.carry = '';
 }
 
 next_page = function() {

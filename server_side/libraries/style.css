@@ -17,8 +17,8 @@ img {
 .cover {
     position:relative;
     display:inline-block;
-    width:230px;
-    height:340px;
+    width:238px;
+    height:360px;
     overflow:hidden;
     border-right: 2px solid rgb(224, 224, 224);
     border-bottom: 4px solid rgb(224, 224, 224);
@@ -57,6 +57,36 @@ a {
     color:white;
 }
 
-#searchbar {
-    display: flex;
+#toolbar, #searchbar {
+    float:top;
+}
+
+#toolbar {
+    text-align: center;
+}
+
+#toolbar #next_page {
+    height:30px;
+    width:90px;
+    float:right;
+}
+
+#toolbar #prev_page {
+    height:30px;
+    width:90px;
+    float:left;
+}
+
+#search {
+    height:28px;
+    width:90px;
+    float:right;
+}
+
+#ui-widget {
+    float:left:
+}
+
+#authors, #titles, #search_all {
+    width:288px;
 }

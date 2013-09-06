@@ -29,14 +29,14 @@ class JSONBooks:
             books_ids_url = 'ajax/search?query={query}&num={total_num}&sort=last_modified'.format(query=query, total_num=total_num)
             books_ids = requests.get("{base_url}{books_ids_url}".format(base_url=base_url, books_ids_url=books_ids_url)).json()['book_ids']
             books_ids_hash = md5.new("".join((str(book_id) for book_id in books_ids))).hexdigest()
-            hash_files = glob.glob("hashfiles/{books_ids_hash}_*".format(books_ids_hash=books_ids_hash))
-            hash_filename = "hashfiles/{books_ids_hash}_{tunnel}".format(books_ids_hash=books_ids_hash, tunnel=tunnel)
+            hash_files = glob.glob("{base_dir}hashfiles/{books_ids_hash}_*".format(base_dir=base_dir, books_ids_hash=books_ids_hash))
+            hash_filename = "{base_dir}hashfiles/{books_ids_hash}_{tunnel}".format(base_dir=base_dir, books_ids_hash=books_ids_hash, tunnel=tunnel)
             if hash_files:
                 if hash_filename in hash_files:
                     books = simplejson.loads(open("{hash_filename}".format(hash_filename=hash_filename), "r").read())
                     all_books = books
                 else:
-                    books = simplejson.loads(open(glob.glob("hashfiles/{books_ids_hash}_*".format(books_ids_hash=books_ids_hash))[0], "r").read())
+                    books = simplejson.loads(open(glob.glob("{base_dir}hashfiles/{books_ids_hash}_*".format(base_dir=base_dir, books_ids_hash=books_ids_hash))[0], "r").read())
                     for book in books:
                         book['tunnel'] = tunnel
                     all_books = books
@@ -216,6 +216,7 @@ $(document).ready(function() {
 </html>
 """
 
+base_dir = "/var/www/libraries/"
 current_dir = os.path.dirname(os.path.abspath(__file__))
 conf = {'/static': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.path.join(current_dir, 'static'),
@@ -224,4 +225,5 @@ conf = {'/static': {'tools.staticdir.on': True,
                                                       'gif': 'image/gif'
                                                        }}}
 cherrypy.server.socket_host = '0.0.0.0'
+cherrypy.server.socket_port = 4321
 cherrypy.quickstart(Root(), '/', config=conf)

@@ -93,6 +93,7 @@ LSB.offset = 8;
 LSB.query = "";
 LSB.carry = "";
 
+
 init_page = function() {
                 add_toolbar();
                 render_page();
@@ -107,6 +108,8 @@ render_page = function() {
       processData: false,
       data: JSON.stringify(LSB),
       success: function(books) {
+                    $('#content').empty();
+                    add_toolbar();
                     toolbar_data = books.pop()
                     LSB.total_num = toolbar_data['total_num']
                     refresh_pagination()
@@ -169,10 +172,7 @@ search_query = function () {
         LSB.carry = '';
     }
     
-    console.log(LSB.query)
     LSB.start = 0;
-    $('#content').empty();
-    add_toolbar()
     render_page()
     LSB.query = '';
     LSB.carry = '';
@@ -183,8 +183,6 @@ next_page = function() {
     if (LSB.start+LSB.offset >= LSB.total_num) {
         LSB.start = LSB.total_num - LSB.offset;
     }
-    $('#content').empty();
-    add_toolbar();
     render_page();
 }
 
@@ -193,19 +191,27 @@ prev_page = function() {
     if (LSB.start <= 0) {
         LSB.start = 0;
     }
-    $('#content').empty();
-    add_toolbar();
     render_page();
 }
 
+$(document).ajaxStart(function() { 
+        $('body').addClass("loading"); 
+    });
 
-$(document).ready(init_page);
+$(document).ajaxStop(function() { 
+        $('body').removeClass("loading"); 
+    });
+
+$(document).ready(function() {
+    init_page();
+});
 
 </script>
 </title>
 <body>
 <div id="content">
 </div>
+<div class="modal"></div>
 </body>
 </html>
 """
@@ -214,6 +220,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 conf = {'/static': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.path.join(current_dir, 'static'),
                     'tools.staticdir.content_types': {'javascript': 'application/javascript',
-                                                      'css': 'text/css'}}}
+                                                      'css': 'text/css',
+                                                      'gif': 'image/gif'
+                                                       }}}
 cherrypy.server.socket_host = '0.0.0.0'
 cherrypy.quickstart(Root(), '/', config=conf)

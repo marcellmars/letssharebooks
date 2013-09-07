@@ -109,3 +109,7 @@ body.loading {
 body.loading .modal {
     display: block;
 }
+
+#authorz {
+    font: bold 12px/16px Helvetica, Sans-Serif; 
+}

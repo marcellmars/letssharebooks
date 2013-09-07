@@ -120,12 +120,22 @@ render_page = function() {
                     $.each(books, function(n, book) {
                         var base_url = 'http://www' + book.tunnel + '.' + book.domain
                         var formats = ""
+                        var authors = '<div id="authorz">'
+
                         book.formats.map(function(format) { 
                             formats = formats + '<a href="' + base_url + '/get/' + format + '/' + book.id +'.' + format + '">' + format.toUpperCase() + '</a> '});
-                        
-                        $('#content').append('<div class="cover"><a href="'+ base_url +'/browse/book/'+ book.id +'" target="_blank"><img src="' + base_url + '/get/cover/' + book.id + '.jpg"></img></a><h2>' + book.title + '<br/><span>' + book.authors.join(", ")  + '</span></h2><span class="download">Metadata: <a href="'+ base_url + '/get/opf/' + book.id  + book.title.replace(/\?/g, "") + '.opf">.opf</a><br/>Download: ' + formats + ' </span></div>')
-                })
-      },
+
+                         book.authors.map(function(author) {
+                                author_s = author.replace("'", " ")
+                                author_param = 'search_author("' + author_s + '")'
+                                authors = authors + "<a id='author' href='#' onClick='" + author_param + "'>" + author + ", </a>&nbsp;"});
+
+                        last_comma = authors.lastIndexOf(",");
+                        authors = authors.substr(0, last_comma) + authors.substr(last_comma + 1) + '</div>'
+                        console.log(authors)
+                        $('#content').append('<div class="cover"><a href="'+ base_url +'/browse/book/'+ book.id +'" target="_blank"><img src="' + base_url + '/get/cover/' + book.id + '.jpg"></img></a><h2>' + book.title + '<br/>' + authors  + '</h2><span class="download">Metadata: <a href="'+ base_url + '/get/opf/' + book.id  + book.title.replace(/\?/g, "") + '.opf">.opf</a><br/>Download: ' + formats + ' </span></div>')
+                });
+    },
       dataType: "json"
     });
 }
@@ -176,6 +186,14 @@ search_query = function () {
     render_page()
     LSB.query = '';
     LSB.carry = '';
+}
+
+search_author = function(author) {
+        LSB.query = "authors:" + author;
+        console.log(LSB.query);
+        LSB.start = 0;
+        render_page();
+        LSB.query = "";
 }
 
 next_page = function() {

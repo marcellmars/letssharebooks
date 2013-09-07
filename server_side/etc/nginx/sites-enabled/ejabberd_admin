@@ -1,0 +1,12 @@
+server {
+	listen 80;
+
+	server_name ejabberd.memoryoftheworld.org;
+
+	location / {
+		proxy_buffering off;
+		tcp_nodelay on;
+		keepalive_timeout 55;
+		proxy_pass https://localhost:5280/;
+	}
+}

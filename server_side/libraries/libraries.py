@@ -187,19 +187,13 @@ render_page = function() {
                          book.authors.map(function(author) {
                                 author_s = author.replace("'", " ")
                                 author_param = 'search_author("' + author_s + '")'
-                                authors = authors + "<a id='author' href='#' onClick='" + author_param + "'>" + author + ", </a>&nbsp;"});
+                                authors = authors + "<a id='author' href='#' title='show only books by " + author_s  + "' onClick='" + author_param + "'>" + author + ", </a>&nbsp;"});
 
                         last_comma = authors.lastIndexOf(",");
                         authors = authors.substr(0, last_comma) + authors.substr(last_comma + 1) + '</div>'
-                        $('#content').append('<div class="cover"><a href="'+ base_url +'/browse/book/'+ book.id +'" target="_blank" id="more_about"><img src="' + base_url + '/get/cover/' + book.id + '.jpg"></img></a><h2>' + book.title + '<br/>' + authors  + '</h2><span class="download">Metadata: <a href="'+ base_url + '/get/opf/' + book.id  + book.title.replace(/\?/g, "") + '.opf">.opf</a><br/>Download: ' + formats + ' </span></div>')
+                        $('#content').append('<div class="cover"><a href="'+ base_url +'/browse/book/'+ book.id +'" target="_blank" id="more_about" title="about this book"><img src="' + base_url + '/get/cover/' + book.id + '.jpg"></img></a><h2><a href="' + base_url + '/browse/book/' + book.id + '" target="_blank" id="more_about" title="about this book">' + book.title + '</a><br/>' + authors  + '</h2><span class="download">Metadata: <a href="'+ base_url + '/get/opf/' + book.id  + book.title.replace(/\?/g, "") + '.opf" title="import metadata directly to calibre">.opf</a><br/>Download: ' + formats + ' </span></div>')
                 });
 
-                    $('.cover').each(function() { 
-                                $(this).click(function() {
-                                    window.open($(this).children('a:first').attr('href'));
-                                    return false;
-                                    });
-                            });
     },
       dataType: "json"
     });
@@ -285,6 +279,10 @@ $(document).ajaxStart(function() {
 $(document).ajaxStop(function() { 
         $('body').removeClass("loading"); 
     });
+
+$(function() {
+    $(document).tooltip({track:true});
+  });
 
 $(document).ready(function() {
     init_page();

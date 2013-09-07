@@ -1,5 +1,5 @@
 body {
-    background: rgb(224, 224, 224);
+    background: rgb(255, 255, 255);
 }
 
 #content {
@@ -60,6 +60,10 @@ a {
 
 #toolbar {
     text-align: center;
+}
+
+#toolbar .pagination {
+    height:30px;
 }
 
 #toolbar #next_page {

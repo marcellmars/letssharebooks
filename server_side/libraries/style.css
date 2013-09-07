@@ -28,7 +28,8 @@ img {
 }
 
 h2 {
-    font: bold 16px/22px Helvetica, Sans-Serif; 
+    font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
+    //font: bold 16px/22px Helvetica, Sans-Serif; 
     color: white; 
     position: absolute; 
     top: -6px; 
@@ -40,14 +41,16 @@ h2 {
 }
 
 h2 span {
-    font: bold 12px/16px Helvetica, Sans-Serif; 
+    //font: bold 12px/16px Helvetica, Sans-Serif; 
+    font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
 .download {
     position:absolute;
     bottom:1px;
     left: 0;
-    font: bold 14px/20px Helvetica, Sans-Serif;
+    //font: bold 14px/20px Helvetica, Sans-Serif;
+    font: bold 16px/22px 'BitstreamVeraSansMono', Consolas, monospace;
     color:white;
     background: rgb(0, 0, 0); /* fallback color */
     background: rgba(0, 0, 0, 0.9);
@@ -115,9 +118,15 @@ body.loading .modal {
 }
 
 #authorz {
-    font: bold 12px/16px Helvetica, Sans-Serif; 
+    //font: bold 12px/16px Helvetica, Sans-Serif; 
+    font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
 #more_about {
     text-decoration: none;
+}
+
+.tooltip {
+    //font: bold 12px/16px Helvetica, Sans-Serif; 
+    font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }

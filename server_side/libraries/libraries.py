@@ -73,7 +73,7 @@ class JSONBooks:
         self.all_books = []
         for tunnel in self.get_tunnel_ports():
             self.tunnel = tunnel
-            self.base_url = 'http://www{tunnel}.{domain}/'.format(tunnel=self.tunnel, domain=self.domain)
+            self.base_url = '{prefix_url}{tunnel}.{domain}/'.format(prefix_url=prefix_url, tunnel=self.tunnel, domain=self.domain)
             self.total_num_url = 'ajax/search?query='
             self.total_num = requests.get("{base_url}{total_num_url}".format(base_url=self.base_url, total_num_url=self.total_num_url)).json()['total_num']
             if self.total_num == 0:
@@ -149,6 +149,7 @@ LSB.offset = 8;
 LSB.query = "";
 LSB.carry = "";
 LSB.processing = "";
+LSB.prefix_url = "http://www"
 
 
 init_page = function() {
@@ -177,7 +178,7 @@ render_page = function() {
                             $('#titles').autocomplete({source: toolbar_data['titles']});
                         });
                     $.each(books, function(n, book) {
-                        var base_url = 'http://www' + book.tunnel + '.' + book.domain
+                        var base_url = LSB.prefix_url + book.tunnel + '.' + book.domain
                         var formats = ""
                         var authors = '<div id="authorz">'
 
@@ -299,6 +300,7 @@ $(document).ready(function() {
 """
 
 base_dir = "/var/www/libraries/"
+prefix_url = "http://www"
 current_dir = os.path.dirname(os.path.abspath(__file__))
 conf = {'/static': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.path.join(current_dir, 'static'),

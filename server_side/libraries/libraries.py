@@ -35,7 +35,7 @@ class UrlLibThread(threading.Thread):
                 mongo_book = self.db.books.find_one({'uuid': book_metadata['uuid']})
                 last_mongo_book = self.db.books.find_one({'uuid': last_book_metadata['uuid']})
                 
-                if last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated:
+                if last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated and last_mongo_book['tunnel'] == self.tunnel:
                     break
 
                 if mongo_book and mongo_book['last_modified'] == book_metadata['last_modified'] and mongo_book['tunnel'] == self.tunnel:
@@ -90,6 +90,18 @@ class JSONBooks:
             thrd.start()
             for book in self.db.books.find({'tunnel':self.tunnel}):
                 self.all_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
+
+        self.all_search_books = []
+        if self.query != "":
+            for book in self.all_books:
+                if self.query.startswith("authors:"):
+                    for boo in book['authors']:
+                        pattern_q = self.query.upper()[8:]
+                        pattern_b = boo.encode('utf-8').upper()
+                        if pattern_b.find(pattern_q) != -1:
+                            self.all_search_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
+
+            self.all_books = self.all_search_books
         
         self.all_books.sort(key=operator.itemgetter('title_sort'))
         authors_key = operator.itemgetter("authors")
@@ -97,7 +109,6 @@ class JSONBooks:
         titles_key = operator.itemgetter("title")
         toolbar_titles = sorted(list(set(map(titles_key, self.all_books))))
         toolbar_data = {"total_num": len(self.all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": self.query, "processing": processing_status}
-        toolbar_data = {"total_num": len(self.all_books), "authors": "", "titles": "", "query": self.query, "processing": processing_status}
         all_books_return = self.all_books[self.start:self.end]
         all_books_return.append(toolbar_data)
         return all_books_return
@@ -155,8 +166,8 @@ render_page = function() {
                     LSB.processing = toolbar_data['processing']
                     refresh_pagination()
                     $(function () {
-                            $('#authors').autocomplete({source: toolbar_data['authors']});
-                            $('#titles').autocomplete({source: toolbar_data['titles']});
+                            $('#authors').autocomplete({source: toolbar_data['authors'], minLength:2});
+                            $('#titles').autocomplete({source: toolbar_data['titles'], minLength:2});
                         });
                     $.each(books, function(n, book) {
                         window.barfoo = book;

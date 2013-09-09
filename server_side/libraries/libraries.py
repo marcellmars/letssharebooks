@@ -5,7 +5,7 @@ import requests
 import md5
 import glob
 import simplejson
-import bson.json_util as json
+import bson.json_util as bjson
 import operator
 import itertools
 import threading
@@ -27,9 +27,17 @@ class UrlLibThread(threading.Thread):
     def run(self):
 
             for book_id in self.books_ids:
+                lsb_updated = "".join(map(str, self.books_ids))
                 book = {}
+
                 book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id)).json()
-                mongo_book = self.db.books.find_one({'uuid':book_metadata['uuid']})
+                last_book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=self.books_ids[-1])).json()
+                mongo_book = self.db.books.find_one({'uuid': book_metadata['uuid']})
+                last_mongo_book = self.db.books.find_one({'uuid': last_book_metadata['uuid']})
+                
+                if last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated:
+                    break
+
                 if mongo_book and mongo_book['last_modified'] == book_metadata['last_modified'] and mongo_book['tunnel'] == self.tunnel:
                     continue
                 elif mongo_book and mongo_book['last_modified'] == book_metadata['last_modified']:
@@ -45,6 +53,7 @@ class UrlLibThread(threading.Thread):
                     book['authors'] = book_metadata['authors']
                     book['domain'] = self.domain
                     book['formats'] = book_metadata['formats']
+                    book['lsb_updated'] = lsb_updated
                     self.db.books.insert(book)
             return
  
@@ -80,7 +89,7 @@ class JSONBooks:
             thrd = UrlLibThread(self.books_ids, self.book_metadata_url, self.domain, self.tunnel, self.base_url)
             thrd.start()
             for book in self.db.books.find({'tunnel':self.tunnel}):
-                self.all_books.append(simplejson.loads(json.dumps(book, default=json.default)))
+                self.all_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
         
         self.all_books.sort(key=operator.itemgetter('title_sort'))
         authors_key = operator.itemgetter("authors")

@@ -25,37 +25,64 @@ class UrlLibThread(threading.Thread):
         self.tunnel = tunnel
 
     def run(self):
+        self.go = True
+        for book_id in self.books_ids: 
+            first_uuid = requests.get("{base_url}{book_metadata_url}1".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url)).json()['uuid']
+            lsb_updated = "{},{}".format(first_uuid, ",".join(map(str, self.books_ids)))
+            book = {}
 
-            for book_id in self.books_ids:
-                lsb_updated = "".join(map(str, self.books_ids))
-                book = {}
-
-                book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id)).json()
+            if self.go:
                 last_book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=self.books_ids[-1])).json()
-                mongo_book = self.db.books.find_one({'uuid': book_metadata['uuid']})
-                last_mongo_book = self.db.books.find_one({'uuid': last_book_metadata['uuid']})
-                
-                if last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated and last_mongo_book['tunnel'] == self.tunnel:
-                    break
 
-                if mongo_book and mongo_book['last_modified'] == book_metadata['last_modified'] and mongo_book['tunnel'] == self.tunnel:
-                    continue
-                elif mongo_book and mongo_book['last_modified'] == book_metadata['last_modified']:
-                    mongo_book['tunnel'] = self.tunnel
-                    self.db.books.save(mongo_book)
-                else:
-                    book['id'] = book_id
-                    book['uuid'] = book_metadata['uuid']
-                    book['last_modified'] = book_metadata['last_modified']
+            last_mongo_book = self.db.books.find_one({'uuid': last_book_metadata['uuid']})
+            
+            if last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated and last_mongo_book['tunnel'] == self.tunnel:
+                print("all the same.")
+                break
+
+            elif last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated:
+                print("all in mongo. different tunnel")
+                for book in self.db.books.find({'lsb_updated': lsb_updated}):
                     book['tunnel'] = self.tunnel
-                    book['title'] = book_metadata['title']
-                    book['title_sort'] = book_metadata['title_sort']
-                    book['authors'] = book_metadata['authors']
-                    book['domain'] = self.domain
-                    book['formats'] = book_metadata['formats']
-                    book['lsb_updated'] = lsb_updated
-                    self.db.books.insert(book)
-            return
+                    self.db.books.save(book)
+                break
+
+            book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id)).json()
+            mongo_book = self.db.books.find_one({'uuid': book_metadata['uuid']})
+
+            if mongo_book and mongo_book['last_modified'] == book_metadata['last_modified'] and mongo_book['tunnel'] == self.tunnel:
+                print("one book is good.")
+                self.go = False
+                continue
+
+            elif mongo_book and mongo_book['last_modified'] == book_metadata['last_modified']:
+                print("one book in mongo. but different tunnel")
+                self.go = False
+                mongo_book['tunnel'] = self.tunnel
+                self.db.books.save(mongo_book)
+            else:
+                print("new book: {}".format(book_metadata['title'].encode('utf-8')))
+                self.go = False
+                book['id'] = book_id
+                book['lsb_updated'] = lsb_updated
+                book['domain'] = self.domain
+                book['tunnel'] = self.tunnel
+                book['uuid'] = book_metadata['uuid']
+                book['last_modified'] = book_metadata['last_modified']
+                book['title'] = book_metadata['title']
+                book['title_sort'] = book_metadata['title_sort']
+                book['authors'] = book_metadata['authors']
+                book['formats'] = book_metadata['formats']
+                book['pubdate'] = book_metadata['pubdate']
+                book['publisher'] = book_metadata['publisher']
+                book['format_metadata'] = book_metadata['format_metadata']
+                book['identifiers'] = book_metadata['identifiers']
+                book['comments'] = book_metadata['comments']
+                book['tags'] = book_metadata['tags']
+                book['user_metadata'] = book_metadata['user_metadata']
+                book['languages'] = book_metadata['languages']
+                self.db.books.insert(book)
+        return
  
 
 class JSONBooks:
@@ -101,13 +128,22 @@ class JSONBooks:
                         if pattern_b.find(pattern_q) != -1:
                             self.all_search_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
 
+                if self.query.startswith("title:"):
+                    pattern_q = self.query.upper()[6:]
+                    pattern_b = book['title'].encode('utf-8').upper()
+                    if pattern_b.find(pattern_q) != -1:
+                        self.all_search_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
+ 
+
             self.all_books = self.all_search_books
-        
+ 
         self.all_books.sort(key=operator.itemgetter('title_sort'))
         authors_key = operator.itemgetter("authors")
         toolbar_authors = sorted(list(set(list(itertools.chain.from_iterable(map(authors_key, self.all_books))))))
         titles_key = operator.itemgetter("title")
         toolbar_titles = sorted(list(set(map(titles_key, self.all_books))))
+        if self.all_books == []:
+            processing_status = " No shared library at the moment. Share your own :)" 
         toolbar_data = {"total_num": len(self.all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": self.query, "processing": processing_status}
         all_books_return = self.all_books[self.start:self.end]
         all_books_return.append(toolbar_data)

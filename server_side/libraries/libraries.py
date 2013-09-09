@@ -33,8 +33,8 @@ class UrlLibThread(threading.Thread):
                 if mongo_book and mongo_book['last_modified'] == book_metadata['last_modified'] and mongo_book['tunnel'] == self.tunnel:
                     continue
                 elif mongo_book and mongo_book['last_modified'] == book_metadata['last_modified']:
-                    book['tunnel'] = self.tunnel
-                    self.db.books.insert(book)
+                    mongo_book['tunnel'] = self.tunnel
+                    self.db.books.save(mongo_book)
                 else:
                     book['id'] = book_id
                     book['uuid'] = book_metadata['uuid']
@@ -79,14 +79,15 @@ class JSONBooks:
             self.book_metadata_url = 'ajax/book/'
             thrd = UrlLibThread(self.books_ids, self.book_metadata_url, self.domain, self.tunnel, self.base_url)
             thrd.start()
-            [self.all_books.append(json.dumps(book, default=json.default)) for book in self.db.books.find({'tunnel':self.tunnel})]
+            for book in self.db.books.find({'tunnel':self.tunnel}):
+                self.all_books.append(simplejson.loads(json.dumps(book, default=json.default)))
         
-        #self.all_books.sort(key=operator.itemgetter('title_sort'))
-        #authors_key = operator.itemgetter("authors")
-        #toolbar_authors = sorted(list(set(list(itertools.chain.from_iterable(map(authors_key, self.all_books))))))
-        #titles_key = operator.itemgetter("title")
-        #toolbar_titles = sorted(list(set(map(titles_key, self.all_books))))
-        #toolbar_data = {"total_num": len(self.all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": self.query, "processing": processing_status}
+        self.all_books.sort(key=operator.itemgetter('title_sort'))
+        authors_key = operator.itemgetter("authors")
+        toolbar_authors = sorted(list(set(list(itertools.chain.from_iterable(map(authors_key, self.all_books))))))
+        titles_key = operator.itemgetter("title")
+        toolbar_titles = sorted(list(set(map(titles_key, self.all_books))))
+        toolbar_data = {"total_num": len(self.all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": self.query, "processing": processing_status}
         toolbar_data = {"total_num": len(self.all_books), "authors": "", "titles": "", "query": self.query, "processing": processing_status}
         all_books_return = self.all_books[self.start:self.end]
         all_books_return.append(toolbar_data)
@@ -148,9 +149,8 @@ render_page = function() {
                             $('#authors').autocomplete({source: toolbar_data['authors']});
                             $('#titles').autocomplete({source: toolbar_data['titles']});
                         });
-                    $.each(books, function(n, bookk) {
-                        window.barfoo = bookk
-                        book = JSON.parse(bookk);
+                    $.each(books, function(n, book) {
+                        window.barfoo = book;
                         var base_url = LSB.prefix_url + book.tunnel + '.' + book.domain
                         var formats = ""
                         var authors = '<div id="authorz">'

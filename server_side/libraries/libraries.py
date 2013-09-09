@@ -5,63 +5,59 @@ import requests
 import md5
 import glob
 import simplejson
+import bson.json_util as json
 import operator
 import itertools
 import threading
 import time
+from pymongo import MongoClient
+import pymongo
 
 class UrlLibThread(threading.Thread):
-    def __init__(self, books_ids, book_metadata_url, domain, tunnel, books_ids_hash, base_url):
+    def __init__(self, books_ids, book_metadata_url, domain, tunnel, base_url):
         threading.Thread.__init__(self)
+        self.mongo_client = MongoClient('172.17.42.1', 49153)
+        self.db = self.mongo_client.letssharebooks
         self.books_ids = books_ids
         self.base_url = base_url
         self.book_metadata_url = book_metadata_url
         self.domain = domain
         self.tunnel = tunnel
-        self.books_ids_hash = books_ids_hash
-        self.hash_filename = "{base_dir}hashfiles/{books_ids_hash}_{tunnel}".format(base_dir=base_dir, books_ids_hash=self.books_ids_hash, tunnel=self.tunnel)
 
     def run(self):
-        all_books = []
-        processing_file_name = "{base_dir}hashfiles/_processing_{books_ids_hash}_{tunnel}".format(base_dir=base_dir, books_ids_hash=self.books_ids_hash, tunnel=self.tunnel)
-
-        if os.path.isfile(processing_file_name):
-            pass
-        else:
-            with open(processing_file_name, "w") as f:
-                f.write("")
 
             for book_id in self.books_ids:
                 book = {}
                 book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id)).json()
-                book['id'] = book_id
-                book['tunnel'] = self.tunnel
-                book['title'] = book_metadata['title']
-                book['title_sort'] = book_metadata['title_sort']
-                book['authors'] = book_metadata['authors']
-                book['domain'] = self.domain
-                book['formats'] = book_metadata['formats']
-                all_books.append(book)
-            os.remove(processing_file_name) 
-            with open("{hash_filename}".format(hash_filename=self.hash_filename), "w") as f:
-                f.write(simplejson.dumps(all_books))
+                mongo_book = self.db.books.find_one({'uuid':book_metadata['uuid']})
+                if mongo_book and mongo_book['last_modified'] == book_metadata['last_modified'] and mongo_book['tunnel'] == self.tunnel:
+                    continue
+                elif mongo_book and mongo_book['last_modified'] == book_metadata['last_modified']:
+                    book['tunnel'] = self.tunnel
+                    self.db.books.insert(book)
+                else:
+                    book['id'] = book_id
+                    book['uuid'] = book_metadata['uuid']
+                    book['last_modified'] = book_metadata['last_modified']
+                    book['tunnel'] = self.tunnel
+                    book['title'] = book_metadata['title']
+                    book['title_sort'] = book_metadata['title_sort']
+                    book['authors'] = book_metadata['authors']
+                    book['domain'] = self.domain
+                    book['formats'] = book_metadata['formats']
+                    self.db.books.insert(book)
             return
  
 
 class JSONBooks:
     def __init__(self, domain = "web.dokr"):
+        self.mongo_client = MongoClient('172.17.42.1', 49153)
+        self.db = self.mongo_client.letssharebooks
         self.domain = domain
 
     def get_tunnel_ports(self, login="tunnel"):
         uid = subprocess.check_output(["grep", "{0}".format(login), "/etc/passwd"]).split()[0].split(":")[2]
         return subprocess.check_output(["/usr/local/bin/get_tunnel_ports.sh", uid]).split()
-
-    def search_metadata(self):
-        with open(self.hash_filename, "r") as f:
-            books_hash = simplejson.loads(f.read())
-
-        for book_id in self.search_books_ids:
-            self.all_books.append([book for book in books_hash if book['id'] == book_id][0])
 
     def get_metadata(self, start, offset, query):
         processing_status = ""
@@ -81,43 +77,17 @@ class JSONBooks:
             self.books_ids_url = 'ajax/search?query=&num={total_num}&sort=last_modified'.format(total_num=self.total_num)
             self.books_ids = requests.get("{base_url}{books_ids_url}".format(base_url=self.base_url, books_ids_url=self.books_ids_url)).json()['book_ids']
             self.book_metadata_url = 'ajax/book/'
-            self.first_uuid = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=self.books_ids[0])).json()['uuid']
-            self.books_ids_hash = md5.new("{first_uuid}{books_ids_string}".format(first_uuid=self.first_uuid, books_ids_string="".join((str(book_id) for book_id in self.books_ids)))).hexdigest()
-            self.hash_filename = "{base_dir}hashfiles/{books_ids_hash}_{tunnel}".format(base_dir=base_dir, books_ids_hash=self.books_ids_hash, tunnel=self.tunnel)
-
-            if self.query != "":
-                self.search_query = 'ajax/search?query={query}'.format(query=self.query)
-                self.search_books_ids = requests.get("{base_url}{search_query}&sort=title".format(base_url=self.base_url, search_query=self.search_query)).json()['book_ids']
-                self.search_metadata()
-                continue
-
-            self.hash_files = glob.glob("{base_dir}hashfiles/{books_ids_hash}_*".format(base_dir=base_dir, books_ids_hash=self.books_ids_hash))
-            if self.hash_files:
-                if self.hash_filename in self.hash_files:
-                    with open(self.hash_filename, "r") as f:
-                        books = simplejson.loads(f.read())
-                    [self.all_books.append(book) for book in books]
-                else:
-                    with open(glob.glob("{base_dir}hashfiles/{books_ids_hash}_*".format(base_dir=base_dir, books_ids_hash=self.books_ids_hash))[0], "r") as f:
-                        books = simplejson.loads(f.read())
-                    for book in books:
-                        book['tunnel'] = tunnel
-                    [self.all_books.append(book) for book in books]
-                    with open(self.hash_filename, "w") as f:
-                        f.write(simplejson.dumps(self.all_books))
-            else:
-                thrd = UrlLibThread(self.books_ids, self.book_metadata_url, self.domain, self.tunnel, self.books_ids_hash, self.base_url)
-                thrd.start()
-                processing_status = " + atm, few new books are coming..."
-                #thrd.join()
-        self.all_books.sort(key=operator.itemgetter('title_sort'))
-        authors_key = operator.itemgetter("authors")
-        toolbar_authors = sorted(list(set(list(itertools.chain.from_iterable(map(authors_key, self.all_books))))))
-        titles_key = operator.itemgetter("title")
-        toolbar_titles = sorted(list(set(map(titles_key, self.all_books))))
-        if glob.glob("{base_dir}hashfiles/_processing_*".format(base_dir=base_dir)):
-            processing_status = " + atm, few new books are coming..."
-        toolbar_data = {"total_num": len(self.all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": self.query, "processing": processing_status}
+            thrd = UrlLibThread(self.books_ids, self.book_metadata_url, self.domain, self.tunnel, self.base_url)
+            thrd.start()
+            [self.all_books.append(json.dumps(book, default=json.default)) for book in self.db.books.find({'tunnel':self.tunnel})]
+        
+        #self.all_books.sort(key=operator.itemgetter('title_sort'))
+        #authors_key = operator.itemgetter("authors")
+        #toolbar_authors = sorted(list(set(list(itertools.chain.from_iterable(map(authors_key, self.all_books))))))
+        #titles_key = operator.itemgetter("title")
+        #toolbar_titles = sorted(list(set(map(titles_key, self.all_books))))
+        #toolbar_data = {"total_num": len(self.all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": self.query, "processing": processing_status}
+        toolbar_data = {"total_num": len(self.all_books), "authors": "", "titles": "", "query": self.query, "processing": processing_status}
         all_books_return = self.all_books[self.start:self.end]
         all_books_return.append(toolbar_data)
         return all_books_return
@@ -167,6 +137,7 @@ render_page = function() {
       data: JSON.stringify(LSB),
       success: function(books) {
                     $('#content').empty();
+                    window.foobar = books;
                     add_toolbar();
                     toolbar_data = books.pop()
                     LSB.total_num = toolbar_data['total_num']
@@ -177,7 +148,9 @@ render_page = function() {
                             $('#authors').autocomplete({source: toolbar_data['authors']});
                             $('#titles').autocomplete({source: toolbar_data['titles']});
                         });
-                    $.each(books, function(n, book) {
+                    $.each(books, function(n, bookk) {
+                        window.barfoo = bookk
+                        book = JSON.parse(bookk);
                         var base_url = LSB.prefix_url + book.tunnel + '.' + book.domain
                         var formats = ""
                         var authors = '<div id="authorz">'

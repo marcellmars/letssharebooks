@@ -27,7 +27,12 @@ class UrlLibThread(threading.Thread):
     def run(self):
         self.go = True
         for book_id in self.books_ids: 
-            first_uuid = requests.get("{base_url}{book_metadata_url}1".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url)).json()['uuid']
+            try:
+                first_uuid = requests.get("{base_url}{book_metadata_url}1".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url)).json()['uuid']
+                if not first.uuid.ok:
+                    pass
+            except:
+                pass
             lsb_updated = "{},{}".format(first_uuid, ",".join(map(str, self.books_ids)))
             book = {}
 
@@ -101,17 +106,30 @@ class JSONBooks:
         self.query = query.encode('utf-8')
         self.start = start
         self.offset = offset
+
         self.end = self.start + self.offset
         self.all_books = []
         for tunnel in self.get_tunnel_ports():
             self.tunnel = tunnel
             self.base_url = '{prefix_url}{tunnel}.{domain}/'.format(prefix_url=prefix_url, tunnel=self.tunnel, domain=self.domain)
             self.total_num_url = 'ajax/search?query='
-            self.total_num = requests.get("{base_url}{total_num_url}".format(base_url=self.base_url, total_num_url=self.total_num_url)).json()['total_num']
-            if self.total_num == 0:
+            
+            try:
+                self.total_num = requests.get("{base_url}{total_num_url}".format(base_url=self.base_url, total_num_url=self.total_num_url)).json()['total_num']
+                if not self.total_num.ok:
+                    continue
+            except:
                 continue
+
             self.books_ids_url = 'ajax/search?query=&num={total_num}&sort=last_modified'.format(total_num=self.total_num)
-            self.books_ids = requests.get("{base_url}{books_ids_url}".format(base_url=self.base_url, books_ids_url=self.books_ids_url)).json()['book_ids']
+            
+            try:
+                self.books_ids = requests.get("{base_url}{books_ids_url}".format(base_url=self.base_url, books_ids_url=self.books_ids_url)).json()['book_ids']
+                if not self.books_ids:
+                    continue
+                except:
+                    continue
+
             self.book_metadata_url = 'ajax/book/'
             thrd = UrlLibThread(self.books_ids, self.book_metadata_url, self.domain, self.tunnel, self.base_url)
             thrd.start()
@@ -142,6 +160,7 @@ class JSONBooks:
         toolbar_authors = sorted(list(set(list(itertools.chain.from_iterable(map(authors_key, self.all_books))))))
         titles_key = operator.itemgetter("title")
         toolbar_titles = sorted(list(set(map(titles_key, self.all_books))))
+        
         if self.all_books == []:
             processing_status = " No shared library at the moment. Share your own :)" 
         toolbar_data = {"total_num": len(self.all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": self.query, "processing": processing_status}

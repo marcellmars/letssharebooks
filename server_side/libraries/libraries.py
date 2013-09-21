@@ -34,6 +34,7 @@ class UrlLibThread(threading.Thread):
                     pass
             except:
                 pass
+
             lsb_updated = "{},{}".format(first_uuid, ",".join(map(str, self.books_ids)))
             book = {}
 
@@ -116,19 +117,25 @@ class JSONBooks:
             self.total_num_url = 'ajax/search?query='
             
             try:
-                self.total_num = requests.get("{base_url}{total_num_url}".format(base_url=self.base_url, total_num_url=self.total_num_url)).json()['total_num']
-                if not self.total_num.ok:
+                self.total_num_request = requests.get("{base_url}{total_num_url}".format(base_url=self.base_url, total_num_url=self.total_num_url))
+                if not self.total_num_request.ok:
                     continue
-            except:
-                continue
+                else:
+                    self.total_num = self.total_num_request.json()['total_num']
 
+            except requests.exceptions.RequestException as e:
+                continue
+            
             self.books_ids_url = 'ajax/search?query=&num={total_num}&sort=last_modified'.format(total_num=self.total_num)
             
             try:
-                self.books_ids = requests.get("{base_url}{books_ids_url}".format(base_url=self.base_url, books_ids_url=self.books_ids_url)).json()['book_ids']
-                if not self.books_ids:
+                self.books_ids_request = requests.get("{base_url}{books_ids_url}".format(base_url=self.base_url, books_ids_url=self.books_ids_url))
+                if not self.books_ids_request.ok:
                     continue
-            except:
+                else:
+                    self.books_ids = self.books_ids_request.json()['book_ids']
+
+            except requests.exceptions.RequestException as e:
                 continue
 
             self.book_metadata_url = 'ajax/book/'

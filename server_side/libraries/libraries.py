@@ -17,8 +17,6 @@ from jinja2 import Environment, FileSystemLoader
 class UrlLibThread(threading.Thread):
     def __init__(self, books_ids, book_metadata_url, domain, tunnel, base_url):
         threading.Thread.__init__(self)
-        self.mongo_client = MongoClient('172.17.42.1', 49153)
-        self.db = self.mongo_client.letssharebooks
         self.books_ids = books_ids
         self.base_url = base_url
         self.book_metadata_url = book_metadata_url
@@ -41,7 +39,7 @@ class UrlLibThread(threading.Thread):
             if self.go:
                 last_book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=self.books_ids[-1])).json()
 
-            last_mongo_book = self.db.books.find_one({'uuid': last_book_metadata['uuid']})
+            last_mongo_book = Db.books.find_one({'uuid': last_book_metadata['uuid']})
             
             if last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated and last_mongo_book['tunnel'] == self.tunnel:
                 print("all the same.")
@@ -49,13 +47,13 @@ class UrlLibThread(threading.Thread):
 
             elif last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated:
                 print("all in mongo. different tunnel")
-                for book in self.db.books.find({'lsb_updated': lsb_updated}):
+                for book in Db.books.find({'lsb_updated': lsb_updated}):
                     book['tunnel'] = self.tunnel
-                    self.db.books.save(book)
+                    Db.books.save(book)
                 break
 
             book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id)).json()
-            mongo_book = self.db.books.find_one({'uuid': book_metadata['uuid']})
+            mongo_book = Db.books.find_one({'uuid': book_metadata['uuid']})
 
             if mongo_book and mongo_book['last_modified'] == book_metadata['last_modified'] and mongo_book['tunnel'] == self.tunnel:
                 print("one book is good.")
@@ -66,7 +64,7 @@ class UrlLibThread(threading.Thread):
                 print("one book in mongo. but different tunnel")
                 self.go = False
                 mongo_book['tunnel'] = self.tunnel
-                self.db.books.save(mongo_book)
+                Db.books.save(mongo_book)
             else:
                 print("new book: {}".format(book_metadata['title'].encode('utf-8')))
                 self.go = False
@@ -88,91 +86,89 @@ class UrlLibThread(threading.Thread):
                 book['tags'] = book_metadata['tags']
                 book['user_metadata'] = book_metadata['user_metadata']
                 book['languages'] = book_metadata['languages']
-                self.db.books.insert(book)
+                Db.books.insert(book)
         return
  
 
 class JSONBooks:
     def __init__(self, domain = "web.dokr"):
-        self.mongo_client = MongoClient('172.17.42.1', 49153)
-        self.db = self.mongo_client.letssharebooks
         self.domain = domain
 
     def get_tunnel_ports(self, login="tunnel"):
         uid = subprocess.check_output(["grep", "{0}".format(login), "/etc/passwd"]).split()[0].split(":")[2]
         return subprocess.check_output(["/usr/local/bin/get_tunnel_ports.sh", uid]).split()
 
+    def get_total_num(self, base_url):
+        total_num_url = 'ajax/search?query='
+        try:
+            total_num_request = requests.get("{base_url}{total_num_url}".format(base_url=base_url, total_num_url=total_num_url))
+            if total_num_request.ok:
+                return total_num_request.json()['total_num']
+            else:
+                return False
+
+        except requests.exceptions.RequestException as e:
+            return False
+
+    def get_books_ids(self, base_url, total_num=1000000):
+        books_ids_url = 'ajax/search?query=&num={total_num}&sort=last_modified'.format(total_num=total_num)
+        try:
+            books_ids_request = requests.get("{base_url}{books_ids_url}".format(base_url=base_url, books_ids_url=books_ids_url))
+            if books_ids_request.ok:
+                return books_ids_request.json()['book_ids']
+            else:
+                return False
+
+        except requests.exceptions.RequestException as e:
+            return False
+
     def get_metadata(self, start, offset, query):
         processing_status = ""
-        self.tunnel = False
-        self.query = query.encode('utf-8')
-        self.start = start
-        self.offset = offset
+        end = start + offset
+        all_books = []
 
-        self.end = self.start + self.offset
-        self.all_books = []
         for tunnel in self.get_tunnel_ports():
-            self.tunnel = tunnel
-            self.base_url = '{prefix_url}{tunnel}.{domain}/'.format(prefix_url=prefix_url, tunnel=self.tunnel, domain=self.domain)
-            self.total_num_url = 'ajax/search?query='
-            
-            try:
-                self.total_num_request = requests.get("{base_url}{total_num_url}".format(base_url=self.base_url, total_num_url=self.total_num_url))
-                if not self.total_num_request.ok:
-                    continue
-                else:
-                    self.total_num = self.total_num_request.json()['total_num']
+            base_url = '{prefix_url}{tunnel}.{domain}/'.format(prefix_url=Prefix_url, tunnel=tunnel, domain=self.domain)
+            #total_num = get_total_num(base_url) 
+            books_ids = self.get_books_ids(base_url)
+            book_metadata_url = 'ajax/book/' 
 
-            except requests.exceptions.RequestException as e:
-                continue
-            
-            self.books_ids_url = 'ajax/search?query=&num={total_num}&sort=last_modified'.format(total_num=self.total_num)
-            
-            try:
-                self.books_ids_request = requests.get("{base_url}{books_ids_url}".format(base_url=self.base_url, books_ids_url=self.books_ids_url))
-                if not self.books_ids_request.ok:
-                    continue
-                else:
-                    self.books_ids = self.books_ids_request.json()['book_ids']
+            if books_ids:
+                thrd = UrlLibThread(books_ids, book_metadata_url, self.domain, tunnel, base_url)
+                thrd.start()
 
-            except requests.exceptions.RequestException as e:
-                continue
+            for book in Db.books.find({'tunnel':tunnel}):
+                all_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
 
-            self.book_metadata_url = 'ajax/book/'
-            thrd = UrlLibThread(self.books_ids, self.book_metadata_url, self.domain, self.tunnel, self.base_url)
-            thrd.start()
-            for book in self.db.books.find({'tunnel':self.tunnel}):
-                self.all_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
-
-        self.all_search_books = []
-        if self.query != "":
-            for book in self.all_books:
-                if self.query.startswith("authors:"):
+        all_search_books = []
+        if query != "":
+            for book in all_books:
+                if query.startswith("authors:"):
                     for boo in book['authors']:
-                        pattern_q = self.query.upper()[8:]
+                        pattern_q = query.upper()[8:]
                         pattern_b = boo.encode('utf-8').upper()
                         if pattern_b.find(pattern_q) != -1:
-                            self.all_search_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
+                            all_search_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
 
-                if self.query.startswith("title:"):
-                    pattern_q = self.query.upper()[6:]
+                if query.startswith("title:"):
+                    pattern_q = query.upper()[6:]
                     pattern_b = book['title'].encode('utf-8').upper()
                     if pattern_b.find(pattern_q) != -1:
-                        self.all_search_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
+                        all_search_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
  
 
-            self.all_books = self.all_search_books
+            all_books = all_search_books
  
-        self.all_books.sort(key=operator.itemgetter('title_sort'))
+        all_books.sort(key=operator.itemgetter('title_sort'))
         authors_key = operator.itemgetter("authors")
-        toolbar_authors = sorted(list(set(list(itertools.chain.from_iterable(map(authors_key, self.all_books))))))
+        toolbar_authors = sorted(list(set(list(itertools.chain.from_iterable(map(authors_key, all_books))))))
         titles_key = operator.itemgetter("title")
-        toolbar_titles = sorted(list(set(map(titles_key, self.all_books))))
+        toolbar_titles = sorted(list(set(map(titles_key, all_books))))
         
-        if self.all_books == []:
+        if all_books == []:
             processing_status = " No shared library at the moment. Share your own :)" 
-        toolbar_data = {"total_num": len(self.all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": self.query, "processing": processing_status}
-        all_books_return = self.all_books[self.start:self.end]
+        toolbar_data = {"total_num": len(all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": query, "processing": processing_status}
+        all_books_return = all_books[start:end]
         all_books_return.append(toolbar_data)
         return all_books_return
 
@@ -184,23 +180,25 @@ class Root(object):
     def render_page(self):
         json_books = JSONBooks()
         json_request = cherrypy.request.json
-        return json_books.get_metadata(json_request['start'], json_request['offset'], json_request['query'])
+        return json_books.get_metadata(json_request['start'], json_request['offset'], json_request['query'].encode('utf-8'))
 
     @cherrypy.expose
     def index(self):
-        tmpl = ENV.get_template('index.html')
+        tmpl = Env.get_template('index.html')
         return tmpl.render()
 
-ENV = Environment(loader=FileSystemLoader('templates'))
-base_dir = "/var/www/libraries/"
-prefix_url = "http://www"
-current_dir = os.path.dirname(os.path.abspath(__file__))
-conf = {'/static': {'tools.staticdir.on': True,
-                    'tools.staticdir.dir': os.path.join(current_dir, 'static'),
+Mongo_client = MongoClient('172.17.42.1', 49153)
+Db = Mongo_client.letssharebooks
+
+Env = Environment(loader=FileSystemLoader('templates'))
+Prefix_url = "http://www"
+Current_dir = os.path.dirname(os.path.abspath(__file__))
+Conf = {'/static': {'tools.staticdir.on': True,
+                    'tools.staticdir.dir': os.path.join(Current_dir, 'static'),
                     'tools.staticdir.content_types': {'js': 'application/javascript',
                                                       'css': 'text/css',
                                                       'gif': 'image/gif'
                                                        }}}
 cherrypy.server.socket_host = '0.0.0.0'
 cherrypy.server.socket_port = 4321
-cherrypy.quickstart(Root(), '/', config=conf)
+cherrypy.quickstart(Root(), '/', config=Conf)

@@ -42,11 +42,9 @@ class UrlLibThread(threading.Thread):
             last_mongo_book = Db.books.find_one({'uuid': last_book_metadata['uuid']})
             
             if last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated and last_mongo_book['tunnel'] == self.tunnel:
-                print("all the same.")
                 break
 
             elif last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated:
-                print("all in mongo. different tunnel")
                 for book in Db.books.find({'lsb_updated': lsb_updated}):
                     book['tunnel'] = self.tunnel
                     Db.books.save(book)
@@ -56,17 +54,14 @@ class UrlLibThread(threading.Thread):
             mongo_book = Db.books.find_one({'uuid': book_metadata['uuid']})
 
             if mongo_book and mongo_book['last_modified'] == book_metadata['last_modified'] and mongo_book['tunnel'] == self.tunnel:
-                print("one book is good.")
                 self.go = False
                 continue
 
             elif mongo_book and mongo_book['last_modified'] == book_metadata['last_modified']:
-                print("one book in mongo. but different tunnel")
                 self.go = False
                 mongo_book['tunnel'] = self.tunnel
                 Db.books.save(mongo_book)
             else:
-                print("new book: {}".format(book_metadata['title'].encode('utf-8')))
                 self.go = False
                 book['id'] = book_id
                 book['lsb_updated'] = lsb_updated
@@ -152,14 +147,14 @@ class JSONBooks:
         if query != "":
             if query.startswith("authors:"):
                 pattern = query.upper()[8:]
-                result =  [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in Db.books.find({"authors":{"$regex": pattern, "$options": 'i'}})]
+                result =  [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in Db.books.find({"authors":{"$regex": pattern, "$options": 'i'}, 'tunnel' : {"$in" : active_tunnels}})]
                 toolbar_data['total_num'] = len(result)
                 result = result[start:end]
                 result.append(toolbar_data)
                 return result
             elif query.startswith("title:"):
                 pattern = query.upper()[6:]
-                result = [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in Db.books.find({"title":{"$regex": pattern, "$options": 'i'}})]
+                result = [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in Db.books.find({"title_sort":{"$regex": pattern, "$options": 'i'}, 'tunnel' : {"$in" : active_tunnels}})]
                 toolbar_data['total_num'] = len(result)
                 result = result[start:end]
                 result.append(toolbar_data)

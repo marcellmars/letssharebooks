@@ -157,9 +157,16 @@ class JSONBooks:
                 result = result[start:end]
                 result.append(toolbar_data)
                 return result
-            if query.startswith("title:"):
+            elif query.startswith("title:"):
                 pattern = query.upper()[6:]
                 result = [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in Db.books.find({"title":{"$regex": pattern, "$options": 'i'}})]
+                toolbar_data['total_num'] = len(result)
+                result = result[start:end]
+                result.append(toolbar_data)
+                return result
+            else:
+                pattern = query.upper()
+                result = [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in Db.books.find({"$or": [{"title": {"$regex": ".*{}.*".format(pattern), "$options": 'i'}}, {"authors":{"$regex":".*{}.*".format(pattern), "$options": 'i'}}, {"comments":{"$regex":".*{}.*".format(pattern), "$options": 'i'}}, {"tags":{"$regex":".*{}.*".format(pattern), "$options": 'i'}}, {"publisher":{"$regex":".*{}.*".format(pattern), "$options": 'i'}}, {"identifiers":{"$regex":".*{}.*".format(pattern), "$options": 'i'}}]})]
                 toolbar_data['total_num'] = len(result)
                 result = result[start:end]
                 result.append(toolbar_data)

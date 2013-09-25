@@ -1,7 +1,7 @@
 var LSB = {}
 LSB.start = 0;
 LSB.total_num = 1;
-LSB.offset = 8;
+LSB.offset = 16;
 LSB.query = "";
 LSB.carry = "";
 LSB.processing = "";

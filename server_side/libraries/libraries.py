@@ -126,6 +126,7 @@ class JSONBooks:
         processing_status = ""
         end = start + offset
         all_books = []
+        active_tunnels = []
 
         for tunnel in self.get_tunnel_ports():
             base_url = '{prefix_url}{tunnel}.{domain}/'.format(prefix_url=Prefix_url, tunnel=tunnel, domain=self.domain)
@@ -134,43 +135,35 @@ class JSONBooks:
             book_metadata_url = 'ajax/book/' 
 
             if books_ids:
+                active_tunnels.append(tunnel)
                 thrd = UrlLibThread(books_ids, book_metadata_url, self.domain, tunnel, base_url)
                 thrd.start()
 
-            for book in Db.books.find({'tunnel':tunnel}):
-                all_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
-
-        all_search_books = []
-        if query != "":
-            for book in all_books:
-                if query.startswith("authors:"):
-                    for boo in book['authors']:
-                        pattern_q = query.upper()[8:]
-                        pattern_b = boo.encode('utf-8').upper()
-                        if pattern_b.find(pattern_q) != -1:
-                            all_search_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
-
-                if query.startswith("title:"):
-                    pattern_q = query.upper()[6:]
-                    pattern_b = book['title'].encode('utf-8').upper()
-                    if pattern_b.find(pattern_q) != -1:
-                        all_search_books.append(simplejson.loads(bjson.dumps(book, default=bjson.default)))
- 
-
-            all_books = all_search_books
- 
-        all_books.sort(key=operator.itemgetter('title_sort'))
-        authors_key = operator.itemgetter("authors")
-        toolbar_authors = sorted(list(set(list(itertools.chain.from_iterable(map(authors_key, all_books))))))
-        titles_key = operator.itemgetter("title")
-        toolbar_titles = sorted(list(set(map(titles_key, all_books))))
-        
-        if all_books == []:
+        result = []
+        mongo_result = Db.books.find({'tunnel': {"$in" : active_tunnels}})
+        total_num = mongo_result.count()
+        toolbar_authors = sorted(mongo_result.distinct('authors'))
+        toolbar_titles = sorted(mongo_result.distinct('title_sort'))
+        if total_num == 0:
             processing_status = " No shared library at the moment. Share your own :)" 
-        toolbar_data = {"total_num": len(all_books), "authors": toolbar_authors, "titles": toolbar_titles, "query": query, "processing": processing_status}
-        all_books_return = all_books[start:end]
-        all_books_return.append(toolbar_data)
-        return all_books_return
+
+        toolbar_data = {"total_num": total_num, "authors": toolbar_authors, "titles": toolbar_titles, "query": query, "processing": processing_status}
+
+        if query != "":
+            if query.startswith("authors:"):
+                pattern = query.upper()[8:]
+                result =  [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in Db.books.find({"authors":{"$regex": pattern, "$options": 'i'}})][start:end]
+                result.append(toolbar_data)
+                return result
+            if query.startswith("title:"):
+                pattern = query.upper()[6:]
+                result = [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in Db.books.find({"title":{"$regex": pattern, "$options": 'i'}})][start:end]
+                result.append(toolbar_data)
+                return result
+
+        result = [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in mongo_result.sort("title_sort", 1).skip(start).limit(offset)]
+        result.append(toolbar_data)
+        return result
 
 class Root(object):
  

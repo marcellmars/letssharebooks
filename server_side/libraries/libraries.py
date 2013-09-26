@@ -10,6 +10,7 @@ import operator
 import itertools
 import threading
 import time
+import uuid
 from pymongo import MongoClient
 import pymongo
 from jinja2 import Environment, FileSystemLoader
@@ -22,68 +23,85 @@ class UrlLibThread(threading.Thread):
         self.book_metadata_url = book_metadata_url
         self.domain = domain
         self.tunnel = tunnel
+        self.seqs = []
+    
+    def compare_lists(self, a, b):
+        if len(a) <= 0 or len(b) <=0:
+            print("self.seqs: {}".format(self.seqs))
+            return self.seqs
+        self.rez = [i for i,j in zip(a,b) if i == j]
+        self.seqs.append(self.rez)
+        self.compare_lists(a[len(self.rez)+1:], b[len(self.rez):])
+
+    def get_book_metadata(self, book_id):
+        try:
+            book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id))
+            if book_metadata.ok:
+                return book_metadata.json()
+            else:
+                return False
+
+        except requests.exceptions.RequestException as e:
+            return False
+
+    def insert_new_books(self, new_books_ids, library_uuid, exit=False):
+        book = {}
+        for book_id in new_books_ids:
+            book_metadata = self.get_book_metadata(book_id)
+            if not book_metadata:
+                return
+
+            book['id'] = book_id
+            book['domain'] = self.domain
+            book['tunnel'] = self.tunnel
+            book['library_uuid'] = library_uuid
+            
+            if 'last_modified' in book_metadata:
+                book['last_modified'] = book_metadata['last_modified']
+            else:
+                book['last_modified'] = book_metadata['timestamp']
+            
+            keys = ['uuid', 'title', 'title_sort', 'authors', 'formats', 'pubdate', 'publisher', 'format_metadata', 'idetifiers', 'comments', 'tags', 'user_metadata', 'languages']
+            for key in keys:
+                if key in book_metadata:
+                    book[key] = book_metadata[key]
+            
+            Db.books.insert(book)
+            Db.libraries.update({'library_uuid': library_uuid}, {'$push': {'book_uuids' : book['uuid'], 'books_ids' : book['id']}}, upsert=True)
+        if exit:
+            return
 
     def run(self):
-        self.go = True
-        for book_id in self.books_ids: 
-            try:
-                first_uuid = requests.get("{base_url}{book_metadata_url}1".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url)).json()['uuid']
-                if not first.uuid.ok:
-                    pass
-            except:
-                pass
-
-            lsb_updated = "{},{}".format(first_uuid, ",".join(map(str, self.books_ids)))
-            book = {}
-
-            if self.go:
-                last_book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=self.books_ids[-1])).json()
-
-            last_mongo_book = Db.books.find_one({'uuid': last_book_metadata['uuid']})
-            
-            if last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated and last_mongo_book['tunnel'] == self.tunnel:
+        library_uuid = str(uuid.uuid4())
+        for book_id in self.books_ids:
+            book = self.get_book_metadata(book_id)
+            if not book:
                 break
 
-            elif last_mongo_book and last_mongo_book['lsb_updated'] == lsb_updated:
-                for book in Db.books.find({'lsb_updated': lsb_updated}):
-                    book['tunnel'] = self.tunnel
-                    Db.books.save(book)
+            library = Db.libraries.find_one({'book_uuids': {'$in':[book['uuid']]}})
+            if library:
+                library_uuid = library['library_uuid']
+                for ujid in Db.libraries.find({'library_uuid': library_uuid }).distinct('book_uuids'):
+                    Db.books.update({'uuid': ujid}, {'$set': {'tunnel': self.tunnel}}, upsert=False, multi=True)
+
+                self.seqs = []
+                self.compare_lists(library['books_ids'], self.books_ids)
+                old_books_ids = list(itertools.chain.from_iterable(self.seqs))
+                print("old_books_ids: {}".format(old_books_ids))
+                new_books_ids = [book_id for book_id in old_books_ids if book_id not in set(self.books_ids)]
+                print("new_books_ids: {}".format(new_books_ids))
+                removed_books_ids = [book_id for book_id in library['books_ids'] if book_id not in set(self.books_ids)]
+                print("removed_books_ids: {}".format(removed_books_ids))
+                for book_id in removed_books_ids:
+                    book_uuid = Db.books.find_one({'library_uuid' : library_uuid, 'id' : book_id})['uuid']
+                    Db.libraries.update({'library_uuid': library_uuid}, {'$pull': {'books_ids' : book_id, 'book_uuids': book_uuid}})
+                    Db.books.remove({'library_uuid' : library_uuid, 'id' : book_id})
+                self.insert_new_books(new_books_ids, library_uuid, exit=True)
                 break
-
-            book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id)).json()
-            mongo_book = Db.books.find_one({'uuid': book_metadata['uuid']})
-
-            if mongo_book and mongo_book['last_modified'] == book_metadata['last_modified'] and mongo_book['tunnel'] == self.tunnel:
-                self.go = False
-                continue
-
-            elif mongo_book and mongo_book['last_modified'] == book_metadata['last_modified']:
-                self.go = False
-                mongo_book['tunnel'] = self.tunnel
-                Db.books.save(mongo_book)
             else:
-                self.go = False
-                book['id'] = book_id
-                book['lsb_updated'] = lsb_updated
-                book['domain'] = self.domain
-                book['tunnel'] = self.tunnel
-                book['uuid'] = book_metadata['uuid']
-                book['last_modified'] = book_metadata['last_modified']
-                book['title'] = book_metadata['title']
-                book['title_sort'] = book_metadata['title_sort']
-                book['authors'] = book_metadata['authors']
-                book['formats'] = book_metadata['formats']
-                book['pubdate'] = book_metadata['pubdate']
-                book['publisher'] = book_metadata['publisher']
-                book['format_metadata'] = book_metadata['format_metadata']
-                book['identifiers'] = book_metadata['identifiers']
-                book['comments'] = book_metadata['comments']
-                book['tags'] = book_metadata['tags']
-                book['user_metadata'] = book_metadata['user_metadata']
-                book['languages'] = book_metadata['languages']
-                Db.books.insert(book)
+                self.insert_new_books([book_id], library_uuid)
         return
- 
+
 
 class JSONBooks:
     def __init__(self, domain = "web.dokr"):

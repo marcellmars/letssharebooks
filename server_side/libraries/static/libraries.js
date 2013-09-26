@@ -19,7 +19,7 @@ var add_toolbar = function () {
     $('#toolbar').append('<div class="pagination"></div>');
 
     $('#searchbar').append('<div class="ui-widget"><input id="authors" placeholder="authors"/><input id="titles" placeholder="titles"/><input id="search_all" placeholder="search all metadata"/><div id="search"></div></div>');
-    $('#search').button({label: 'SEARCH'}).click(search_query(););
+    $('#search').button({label: 'SEARCH'}).click(search_query());
 };
 
 var display_books = function (books) {

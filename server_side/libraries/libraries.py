@@ -25,11 +25,20 @@ class UrlLibThread(threading.Thread):
         self.seqs = []
     
     def compare_lists(self, a, b):
-        if len(a) <= 0 or len(b) <=0:
-            return self.seqs
-        self.rez = [i for i,j in zip(a,b) if i == j]
-        self.seqs.append(self.rez)
-        self.compare_lists(a[len(self.rez)+1:], b[len(self.rez):])
+        def loop_it(a, b):
+            print("a: {}".format(a))
+            print("b: {}".format(b))
+            print("seqs: {}".format(self.seqs))
+            if len(a) <= 0 or len(b) <=0:
+                return
+            self.rez = [i for i,j in zip(a,b) if i == j]
+            self.seqs.append(self.rez)
+            loop_it(a[len(self.rez)+1:], b[len(self.rez):])
+        a.reverse()
+        b.reverse()
+        loop_it(a,b)
+        self.seqs.reverse()
+        return self.seqs
 
     def get_book_metadata(self, book_id):
         try:
@@ -77,6 +86,8 @@ class UrlLibThread(threading.Thread):
     def run(self):
         library_uuid = str(uuid.uuid4())
         while Db.books_ids_proxy.find_one({'tunnel': self.tunnel}, {'books_ids': {'$slice': -1}})['books_ids'] != []:
+            books_ids = Db.books_ids_proxy.find_one({'tunnel':self.tunnel})['books_ids']
+            books_ids.reverse()
             book_id = Db.books_ids_proxy.find_one({'tunnel': self.tunnel}, {'books_ids':{'$slice':-1}})['books_ids'][0]
             Db.books_ids_proxy.update({'tunnel': self.tunnel}, {'$pop':{'books_ids': 1}})
             book = self.get_book_metadata(book_id)
@@ -92,12 +103,11 @@ class UrlLibThread(threading.Thread):
                         Db.books.update({'uuid': ujid}, {'$set': {'tunnel': self.tunnel}}, upsert=False, multi=True)
 
                 self.seqs = []
-                books_ids = Db.books_ids_proxy.find_one({'tunnel':self.tunnel})['books_ids']
-                books_ids.reverse()
-                #print("books_ids_proxy: {} {}".format(books_ids[0:10], books_ids[-10:]))
+                print("books_ids_proxy: {} {}".format(books_ids[0:10], books_ids[-10:]))
                 print("library['books_ids']: {} {}".format(library['books_ids'][0:10], library['books_ids'][-10:]))
-                self.compare_lists(library['books_ids'], books_ids)
-                old_books_ids = list(itertools.chain.from_iterable(self.seqs))
+                seqz = self.compare_lists(library['books_ids'], books_ids)
+                old_books_ids = list(itertools.chain.from_iterable(seqz))
+                #old_books_ids = list(itertools.chain.from_iterable(self.compare_lists(books_ids, library['books_ids'])))
                 print("old_books_ids: {} {}".format(old_books_ids[0:10],old_books_ids[-10:] ))
                 new_books_ids = [book_id for book_id in books_ids if book_id not in set(old_books_ids)]
                 print("new_books_ids: {} {}".format(new_books_ids[0:10], new_books_ids[-10:]))

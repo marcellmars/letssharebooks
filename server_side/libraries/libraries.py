@@ -26,18 +26,15 @@ class UrlLibThread(threading.Thread):
     
     def compare_lists(self, a, b):
         def loop_it(a, b):
-            print("a: {}".format(a))
-            print("b: {}".format(b))
-            print("seqs: {}".format(self.seqs))
             if len(a) <= 0 or len(b) <=0:
                 return
             self.rez = [i for i,j in zip(a,b) if i == j]
             self.seqs.append(self.rez)
             loop_it(a[len(self.rez)+1:], b[len(self.rez):])
-        a.reverse()
-        b.reverse()
+        #a.reverse()
+        #b.reverse()
         loop_it(a,b)
-        self.seqs.reverse()
+        #self.seqs.reverse()
         return self.seqs
 
     def get_book_metadata(self, book_id):
@@ -51,12 +48,15 @@ class UrlLibThread(threading.Thread):
         except requests.exceptions.RequestException as e:
             return False
 
-    def insert_new_book(self, book_id, library_uuid):
+    def insert_new_book(self, book_id, library_uuid, bookk={}):
         book = {}
-        book_metadata = self.get_book_metadata(book_id)
-        if not book_metadata:
-            return
-
+        if bookk != {}:
+            book_metadata = bookk
+        else:
+            book_metadata = self.get_book_metadata(book_id)
+            if not book_metadata:
+                return
+       
         book['id'] = book_id
         book['domain'] = self.domain
         book['tunnel'] = self.tunnel
@@ -79,23 +79,24 @@ class UrlLibThread(threading.Thread):
     def insert_new_books(self, new_books_ids, library_uuid):
         Db.new_books_ids_proxy.update({'library_uuid': library_uuid}, {'$set':{'new_books_ids': new_books_ids}}, upsert=True)
         while Db.new_books_ids_proxy.find_one({'library_uuid': library_uuid}, {'new_books_ids': {'$slice': -1}})['new_books_ids'] != []:
-            book_id = Db.new_books_ids_proxy.find_one({'library_uuid': library_uuid}, {'new_books_ids':{'$slice':-1}})['new_books_ids'][0]
-            Db.new_books_ids_proxy.update({'library_uuid': library_uuid}, {'$pop':{'new_books_ids':1}})
+            book_id = Db.new_books_ids_proxy.find_one({'library_uuid': library_uuid}, {'new_books_ids':{'$slice': -1}})['new_books_ids'][0]
+            Db.new_books_ids_proxy.update({'library_uuid': library_uuid}, {'$pop':{'new_books_ids': 1}})
             self.insert_new_book(book_id, library_uuid)
+        #Db.books_ids_proxy.remove({"tunnel": tunnel}) # let's find which books_ids_proxy gets kicked out.
 
     def run(self):
         library_uuid = str(uuid.uuid4())
-        while Db.books_ids_proxy.find_one({'tunnel': self.tunnel}, {'books_ids': {'$slice': -1}})['books_ids'] != []:
-            books_ids = Db.books_ids_proxy.find_one({'tunnel':self.tunnel})['books_ids']
-            books_ids.reverse()
-            book_id = Db.books_ids_proxy.find_one({'tunnel': self.tunnel}, {'books_ids':{'$slice':-1}})['books_ids'][0]
-            Db.books_ids_proxy.update({'tunnel': self.tunnel}, {'$pop':{'books_ids': 1}})
+        while Db.books_ids_proxy.find_one({'tunnel': self.tunnel}, {'books_ids': {'$slice': 1}})['books_ids'] != []:
+            books_ids = Db.books_ids_proxy.find_one({'tunnel': self.tunnel})['books_ids']
+            #books_ids.reverse()
+            book_id = Db.books_ids_proxy.find_one({'tunnel': self.tunnel}, {'books_ids':{'$slice':1}})['books_ids'][0]
             book = self.get_book_metadata(book_id)
 
             if not book:
                 return
 
-            library = Db.libraries.find_one({'book_uuids': {'$in':[book['uuid']]}})
+            Db.books_ids_proxy.update({'tunnel': self.tunnel}, {'$pop': {'books_ids': -1}})
+            library = Db.libraries.find_one({'book_uuids': {'$in': [book['uuid']]}})
             if library:
                 library_uuid = library['library_uuid']
                 if Db.books.find_one({'uuid': book['uuid']})['tunnel'] != self.tunnel:
@@ -103,11 +104,12 @@ class UrlLibThread(threading.Thread):
                         Db.books.update({'uuid': ujid}, {'$set': {'tunnel': self.tunnel}}, upsert=False, multi=True)
 
                 self.seqs = []
-                print("books_ids_proxy: {} {}".format(books_ids[0:10], books_ids[-10:]))
-                print("library['books_ids']: {} {}".format(library['books_ids'][0:10], library['books_ids'][-10:]))
-                seqz = self.compare_lists(library['books_ids'], books_ids)
+                print("books_ids_proxy: {} {} ; length={}".format(books_ids[0:10], books_ids[-10:],len(books_ids)))
+                print("library['books_ids']: {} {}; length={}".format(library['books_ids'][0:10], library['books_ids'][-10:], len(library['books_ids'])))
+                lib_books_ids = library['books_ids']
+                #lib_books_ids.reverse()
+                seqz = self.compare_lists(lib_books_ids, books_ids)
                 old_books_ids = list(itertools.chain.from_iterable(seqz))
-                #old_books_ids = list(itertools.chain.from_iterable(self.compare_lists(books_ids, library['books_ids'])))
                 print("old_books_ids: {} {}".format(old_books_ids[0:10],old_books_ids[-10:] ))
                 new_books_ids = [book_id for book_id in books_ids if book_id not in set(old_books_ids)]
                 print("new_books_ids: {} {}".format(new_books_ids[0:10], new_books_ids[-10:]))
@@ -116,12 +118,13 @@ class UrlLibThread(threading.Thread):
                 for book_id in removed_books_ids:
                     book_uuid = Db.books.find_one({'library_uuid' : library_uuid, 'id' : book_id})['uuid']
                     Db.libraries.update({'library_uuid': library_uuid}, {'$pull': {'books_ids' : book_id, 'book_uuids': book_uuid}})
-                    Db.books.remove({'library_uuid' : library_uuid, 'id' : book_id})
+                    Db.books.remove({'uuid': book_uuid})
                 if new_books_ids != []:
                     self.insert_new_books(new_books_ids, library_uuid)
+                Db.libraries.update({'library_uuid': library_uuid}, {'$set' : {'books_ids' : books_ids}})
                 return
             else:
-                self.insert_new_book(book_id, library_uuid)
+                self.insert_new_book(book_id, library_uuid, bookk=book)
         return
 
 
@@ -171,7 +174,7 @@ class JSONBooks:
 
             if books_ids:
                 active_tunnels.append(tunnel)
-                Db.books_ids_proxy.update({'tunnel':tunnel}, {'$set':{'books_ids': books_ids}}, upsert=True)
+                Db.books_ids_proxy.update({'tunnel': tunnel}, {'$set':{'books_ids': books_ids}}, upsert=True)
                 thrd = UrlLibThread(book_metadata_url, self.domain, tunnel, base_url)
                 thrd.start()
 

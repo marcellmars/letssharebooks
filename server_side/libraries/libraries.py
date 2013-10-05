@@ -82,7 +82,6 @@ class UrlLibThread(threading.Thread):
             book_id = Db.new_books_ids_proxy.find_one({'library_uuid': library_uuid}, {'new_books_ids':{'$slice': -1}})['new_books_ids'][0]
             Db.new_books_ids_proxy.update({'library_uuid': library_uuid}, {'$pop':{'new_books_ids': 1}})
             self.insert_new_book(book_id, library_uuid)
-        #Db.books_ids_proxy.remove({"tunnel": tunnel}) # let's find which books_ids_proxy gets kicked out.
 
     def run(self):
         library_uuid = str(uuid.uuid4())
@@ -100,6 +99,7 @@ class UrlLibThread(threading.Thread):
             if library:
                 library_uuid = library['library_uuid']
                 if Db.books.find_one({'uuid': book['uuid']})['tunnel'] != self.tunnel:
+                    #Db.books.update({'uuid': book['uuid']}, {'$set' : {'tunnel': self.tunnel}}, upsert=False)
                     for ujid in Db.libraries.find({'library_uuid': library_uuid }).distinct('book_uuids'):
                         Db.books.update({'uuid': ujid}, {'$set': {'tunnel': self.tunnel}}, upsert=False, multi=True)
 
@@ -111,7 +111,8 @@ class UrlLibThread(threading.Thread):
                 seqz = self.compare_lists(lib_books_ids, books_ids)
                 old_books_ids = list(itertools.chain.from_iterable(seqz))
                 print("old_books_ids: {} {}".format(old_books_ids[0:10],old_books_ids[-10:] ))
-                new_books_ids = [book_id for book_id in books_ids if book_id not in set(old_books_ids)]
+                lib_new_books_ids = Db.libraries.find_one({'library_uuid' : library_uuid})['books_ids']
+                new_books_ids = [book_id for book_id in books_ids if book_id not in set(old_books_ids) or book_id not in set(lib_new_books_ids)]
                 print("new_books_ids: {} {}".format(new_books_ids[0:10], new_books_ids[-10:]))
                 removed_books_ids = [book_id for book_id in library['books_ids'] if book_id not in set(books_ids)]
                 print("removed_books_ids: {}".format(removed_books_ids))
@@ -121,7 +122,7 @@ class UrlLibThread(threading.Thread):
                     Db.books.remove({'uuid': book_uuid})
                 if new_books_ids != []:
                     self.insert_new_books(new_books_ids, library_uuid)
-                Db.libraries.update({'library_uuid': library_uuid}, {'$set' : {'books_ids' : books_ids}})
+                #Db.libraries.update({'library_uuid': library_uuid}, {'$set' : {'books_ids' : books_ids}})
                 return
             else:
                 self.insert_new_book(book_id, library_uuid, bookk=book)
@@ -130,6 +131,7 @@ class UrlLibThread(threading.Thread):
 
 class JSONBooks:
     def __init__(self, domain = "web.dokr"):
+    #def __init__(self, domain = "memoryoftheworld.org"): ### production
         self.domain = domain
 
     def get_tunnel_ports(self, login="tunnel"):
@@ -231,11 +233,13 @@ class Root(object):
         return tmpl.render()
 
 Mongo_client = MongoClient('172.17.42.1', 49153)
+#Mongo_client = MongoClient('localhost', 27017) ### production
 Db = Mongo_client.letssharebooks
 
-Env = Environment(loader=FileSystemLoader('templates'))
-Prefix_url = "http://www"
 Current_dir = os.path.dirname(os.path.abspath(__file__))
+Env = Environment(loader=FileSystemLoader('{}/templates'.format(Current_dir)))
+Prefix_url = "http://www"
+#Prefix_url = "https://www" ### production
 Conf = {'/static': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.path.join(Current_dir, 'static'),
                     'tools.staticdir.content_types': {'js': 'application/javascript',

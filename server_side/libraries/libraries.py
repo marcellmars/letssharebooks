@@ -16,9 +16,8 @@ import pymongo
 from jinja2 import Environment, FileSystemLoader
 
 class UrlLibThread(threading.Thread):
-    def __init__(self, books_ids, book_metadata_url, domain, tunnel, base_url):
+    def __init__(self, book_metadata_url, domain, tunnel, base_url):
         threading.Thread.__init__(self)
-        self.books_ids = books_ids
         self.base_url = base_url
         self.book_metadata_url = book_metadata_url
         self.domain = domain
@@ -26,12 +25,17 @@ class UrlLibThread(threading.Thread):
         self.seqs = []
     
     def compare_lists(self, a, b):
-        if len(a) <= 0 or len(b) <=0:
-            print("self.seqs: {}".format(self.seqs))
-            return self.seqs
-        self.rez = [i for i,j in zip(a,b) if i == j]
-        self.seqs.append(self.rez)
-        self.compare_lists(a[len(self.rez)+1:], b[len(self.rez):])
+        def loop_it(a, b):
+            if len(a) <= 0 or len(b) <=0:
+                return
+            self.rez = [i for i,j in zip(a,b) if i == j]
+            self.seqs.append(self.rez)
+            loop_it(a[len(self.rez)+1:], b[len(self.rez):])
+        #a.reverse()
+        #b.reverse()
+        loop_it(a,b)
+        #self.seqs.reverse()
+        return self.seqs
 
     def get_book_metadata(self, book_id):
         try:
@@ -44,67 +48,90 @@ class UrlLibThread(threading.Thread):
         except requests.exceptions.RequestException as e:
             return False
 
-    def insert_new_books(self, new_books_ids, library_uuid, exit=False):
+    def insert_new_book(self, book_id, library_uuid, bookk={}):
         book = {}
-        for book_id in new_books_ids:
+        if bookk != {}:
+            book_metadata = bookk
+        else:
             book_metadata = self.get_book_metadata(book_id)
             if not book_metadata:
                 return
-
-            book['id'] = book_id
-            book['domain'] = self.domain
-            book['tunnel'] = self.tunnel
-            book['library_uuid'] = library_uuid
-            
-            if 'last_modified' in book_metadata:
-                book['last_modified'] = book_metadata['last_modified']
-            else:
-                book['last_modified'] = book_metadata['timestamp']
-            
-            keys = ['uuid', 'title', 'title_sort', 'authors', 'formats', 'pubdate', 'publisher', 'format_metadata', 'idetifiers', 'comments', 'tags', 'user_metadata', 'languages']
-            for key in keys:
-                if key in book_metadata:
-                    book[key] = book_metadata[key]
-            
-            Db.books.insert(book)
+       
+        book['id'] = book_id
+        book['domain'] = self.domain
+        book['tunnel'] = self.tunnel
+        book['library_uuid'] = library_uuid
+        
+        if 'last_modified' in book_metadata:
+            book['last_modified'] = book_metadata['last_modified']
+        else:
+            book['last_modified'] = book_metadata['timestamp']
+        
+        keys = ['uuid', 'title', 'title_sort', 'authors', 'formats', 'pubdate', 'publisher', 'format_metadata', 'idetifiers', 'comments', 'tags', 'user_metadata', 'languages']
+        for key in keys:
+            if key in book_metadata:
+                book[key] = book_metadata[key]
+        
+        Db.books.update({'uuid': book_metadata['uuid']}, book, upsert=True)
+        if book['uuid'] not in Db.libraries.distinct('book_uuids'):
             Db.libraries.update({'library_uuid': library_uuid}, {'$push': {'book_uuids' : book['uuid'], 'books_ids' : book['id']}}, upsert=True)
-        if exit:
-            return
+    
+    def insert_new_books(self, new_books_ids, library_uuid):
+        Db.new_books_ids_proxy.update({'library_uuid': library_uuid}, {'$set':{'new_books_ids': new_books_ids}}, upsert=True)
+        while Db.new_books_ids_proxy.find_one({'library_uuid': library_uuid}, {'new_books_ids': {'$slice': -1}})['new_books_ids'] != []:
+            book_id = Db.new_books_ids_proxy.find_one({'library_uuid': library_uuid}, {'new_books_ids':{'$slice': -1}})['new_books_ids'][0]
+            Db.new_books_ids_proxy.update({'library_uuid': library_uuid}, {'$pop':{'new_books_ids': 1}})
+            self.insert_new_book(book_id, library_uuid)
 
     def run(self):
         library_uuid = str(uuid.uuid4())
-        for book_id in self.books_ids:
+        while Db.books_ids_proxy.find_one({'tunnel': self.tunnel}, {'books_ids': {'$slice': 1}})['books_ids'] != []:
+            books_ids = Db.books_ids_proxy.find_one({'tunnel': self.tunnel})['books_ids']
+            #books_ids.reverse()
+            book_id = Db.books_ids_proxy.find_one({'tunnel': self.tunnel}, {'books_ids':{'$slice':1}})['books_ids'][0]
             book = self.get_book_metadata(book_id)
-            if not book:
-                break
 
-            library = Db.libraries.find_one({'book_uuids': {'$in':[book['uuid']]}})
+            if not book:
+                return
+
+            Db.books_ids_proxy.update({'tunnel': self.tunnel}, {'$pop': {'books_ids': -1}})
+            library = Db.libraries.find_one({'book_uuids': {'$in': [book['uuid']]}})
             if library:
                 library_uuid = library['library_uuid']
-                for ujid in Db.libraries.find({'library_uuid': library_uuid }).distinct('book_uuids'):
-                    Db.books.update({'uuid': ujid}, {'$set': {'tunnel': self.tunnel}}, upsert=False, multi=True)
+                if Db.books.find_one({'uuid': book['uuid']})['tunnel'] != self.tunnel:
+                    #Db.books.update({'uuid': book['uuid']}, {'$set' : {'tunnel': self.tunnel}}, upsert=False)
+                    for ujid in Db.libraries.find({'library_uuid': library_uuid }).distinct('book_uuids'):
+                        Db.books.update({'uuid': ujid}, {'$set': {'tunnel': self.tunnel}}, upsert=False, multi=True)
 
                 self.seqs = []
-                self.compare_lists(library['books_ids'], self.books_ids)
-                old_books_ids = list(itertools.chain.from_iterable(self.seqs))
-                print("old_books_ids: {}".format(old_books_ids))
-                new_books_ids = [book_id for book_id in old_books_ids if book_id not in set(self.books_ids)]
-                print("new_books_ids: {}".format(new_books_ids))
-                removed_books_ids = [book_id for book_id in library['books_ids'] if book_id not in set(self.books_ids)]
+                print("books_ids_proxy: {} {} ; length={}".format(books_ids[0:10], books_ids[-10:],len(books_ids)))
+                print("library['books_ids']: {} {}; length={}".format(library['books_ids'][0:10], library['books_ids'][-10:], len(library['books_ids'])))
+                lib_books_ids = library['books_ids']
+                #lib_books_ids.reverse()
+                seqz = self.compare_lists(lib_books_ids, books_ids)
+                old_books_ids = list(itertools.chain.from_iterable(seqz))
+                print("old_books_ids: {} {}".format(old_books_ids[0:10],old_books_ids[-10:] ))
+                lib_new_books_ids = Db.libraries.find_one({'library_uuid' : library_uuid})['books_ids']
+                new_books_ids = [book_id for book_id in books_ids if book_id not in set(old_books_ids) or book_id not in set(lib_new_books_ids)]
+                print("new_books_ids: {} {}".format(new_books_ids[0:10], new_books_ids[-10:]))
+                removed_books_ids = [book_id for book_id in library['books_ids'] if book_id not in set(books_ids)]
                 print("removed_books_ids: {}".format(removed_books_ids))
                 for book_id in removed_books_ids:
                     book_uuid = Db.books.find_one({'library_uuid' : library_uuid, 'id' : book_id})['uuid']
                     Db.libraries.update({'library_uuid': library_uuid}, {'$pull': {'books_ids' : book_id, 'book_uuids': book_uuid}})
-                    Db.books.remove({'library_uuid' : library_uuid, 'id' : book_id})
-                self.insert_new_books(new_books_ids, library_uuid, exit=True)
-                break
+                    Db.books.remove({'uuid': book_uuid})
+                if new_books_ids != []:
+                    self.insert_new_books(new_books_ids, library_uuid)
+                #Db.libraries.update({'library_uuid': library_uuid}, {'$set' : {'books_ids' : books_ids}})
+                return
             else:
-                self.insert_new_books([book_id], library_uuid)
+                self.insert_new_book(book_id, library_uuid, bookk=book)
         return
 
 
 class JSONBooks:
     def __init__(self, domain = "web.dokr"):
+    #def __init__(self, domain = "memoryoftheworld.org"): ### production
         self.domain = domain
 
     def get_tunnel_ports(self, login="tunnel"):
@@ -145,11 +172,12 @@ class JSONBooks:
             base_url = '{prefix_url}{tunnel}.{domain}/'.format(prefix_url=Prefix_url, tunnel=tunnel, domain=self.domain)
             #total_num = get_total_num(base_url) 
             books_ids = self.get_books_ids(base_url)
-            book_metadata_url = 'ajax/book/' 
+            book_metadata_url = 'ajax/book/'
 
             if books_ids:
                 active_tunnels.append(tunnel)
-                thrd = UrlLibThread(books_ids, book_metadata_url, self.domain, tunnel, base_url)
+                Db.books_ids_proxy.update({'tunnel': tunnel}, {'$set':{'books_ids': books_ids}}, upsert=True)
+                thrd = UrlLibThread(book_metadata_url, self.domain, tunnel, base_url)
                 thrd.start()
 
         result = []
@@ -205,11 +233,13 @@ class Root(object):
         return tmpl.render()
 
 Mongo_client = MongoClient('172.17.42.1', 49153)
+#Mongo_client = MongoClient('localhost', 27017) ### production
 Db = Mongo_client.letssharebooks
 
-Env = Environment(loader=FileSystemLoader('templates'))
-Prefix_url = "http://www"
 Current_dir = os.path.dirname(os.path.abspath(__file__))
+Env = Environment(loader=FileSystemLoader('{}/templates'.format(Current_dir)))
+Prefix_url = "http://www"
+#Prefix_url = "https://www" ### production
 Conf = {'/static': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.path.join(Current_dir, 'static'),
                     'tools.staticdir.content_types': {'js': 'application/javascript',

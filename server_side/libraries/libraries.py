@@ -1,6 +1,5 @@
 import subprocess
 import os
-import cherrypy
 import requests
 import md5
 import glob
@@ -11,9 +10,12 @@ import itertools
 import threading
 import time
 import uuid
-from pymongo import MongoClient
 import pymongo
 from jinja2 import Environment, FileSystemLoader
+
+def import_catalog(catalog):
+    for book in catalog:
+        DB.books.insert(book)
 
 class UrlLibThread(threading.Thread):
     def __init__(self, book_metadata_url, domain, tunnel, base_url):
@@ -216,65 +218,3 @@ class JSONBooks:
         result = [simplejson.loads(bjson.dumps(book, default=bjson.default)) for book in mongo_result.sort("title_sort", 1).skip(start).limit(offset)]
         result.append(toolbar_data)
         return result
-
-class Root(object):
-    @cherrypy.expose
-    @cherrypy.tools.json_out()
-    @cherrypy.tools.json_in()
-    def render_page(self):
-        json_books = JSONBooks()
-        json_request = cherrypy.request.json
-        return json_books.get_metadata(
-            json_request['start'],
-            json_request['offset'],
-            json_request['query'].encode('utf-8'))
-
-    @cherrypy.expose
-    def index(self):
-        tmpl = ENV.get_template('index.html')
-        return tmpl.render()
-
-    # f = open('...', 'r')
-    # r = requests.post("http://localhost:4321/upload", files={'uploaded_file': f})
-    @cherrypy.expose
-    def upload(self, uploaded_file):
-        return 'ok %s' % uploaded_file.filename
-
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-ENV = Environment(loader=FileSystemLoader('{}/templates'.format(CURRENT_DIR)))
-CONF = {'/static': {'tools.staticdir.on': True,
-                    'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'static'),
-                    'tools.staticdir.content_types': {'js': 'application/javascript',
-                                                      'css': 'text/css',
-                                                      'gif': 'image/gif'
-                                                      }}}
-
-###############################################################################
-# app entry point
-###############################################################################
-def start_app(port=4321, production=False):
-    mongo_addr = '127.0.0.1'
-    mongo_port = 27017
-    PREFIX_URL = 'http://www'
-    if production == 'live':
-        mongo_addr = 'localhost'
-        mongo_port = 27017
-        PREFIX_URL = 'https://www'
-    elif production == 'docker':
-        mongo_addr = '172.17.42.1'
-        mongo_port = 27017
-        PREFIX_URL = 'http://www'
-
-    try:
-        Mongo_client = MongoClient(mongo_addr, mongo_port)
-        Db = Mongo_client.letssharebooks
-    except Exception, e:
-        print 'unable to connect to mongodb!'
-        return
-    
-    cherrypy.server.socket_host = '0.0.0.0'
-    cherrypy.server.socket_port = 4321
-    cherrypy.quickstart(Root(), '/', config=CONF)
-
-if __name__ == '__main__':
-    start_app()

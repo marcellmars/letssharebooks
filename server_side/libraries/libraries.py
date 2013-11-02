@@ -169,7 +169,7 @@ class JSONBooks:
         active_tunnels = []
 
         for tunnel in self.get_tunnel_ports():
-            base_url = '{prefix_url}{tunnel}.{domain}/'.format(prefix_url=Prefix_url, tunnel=tunnel, domain=self.domain)
+            base_url = '{prefix_url}{tunnel}.{domain}/'.format(prefix_url=PREFIX_URL, tunnel=tunnel, domain=self.domain)
             #total_num = get_total_num(base_url) 
             books_ids = self.get_books_ids(base_url)
             book_metadata_url = 'ajax/book/'
@@ -218,34 +218,63 @@ class JSONBooks:
         return result
 
 class Root(object):
- 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def render_page(self):
         json_books = JSONBooks()
         json_request = cherrypy.request.json
-        return json_books.get_metadata(json_request['start'], json_request['offset'], json_request['query'].encode('utf-8'))
+        return json_books.get_metadata(
+            json_request['start'],
+            json_request['offset'],
+            json_request['query'].encode('utf-8'))
 
     @cherrypy.expose
     def index(self):
-        tmpl = Env.get_template('index.html')
+        tmpl = ENV.get_template('index.html')
         return tmpl.render()
 
-Mongo_client = MongoClient('172.17.42.1', 49153)
-#Mongo_client = MongoClient('localhost', 27017) ### production
-Db = Mongo_client.letssharebooks
+    # f = open('...', 'r')
+    # r = requests.post("http://localhost:4321/upload", files={'uploaded_file': f})
+    @cherrypy.expose
+    def upload(self, uploaded_file):
+        return 'ok %s' % uploaded_file.filename
 
-Current_dir = os.path.dirname(os.path.abspath(__file__))
-Env = Environment(loader=FileSystemLoader('{}/templates'.format(Current_dir)))
-Prefix_url = "http://www"
-#Prefix_url = "https://www" ### production
-Conf = {'/static': {'tools.staticdir.on': True,
-                    'tools.staticdir.dir': os.path.join(Current_dir, 'static'),
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ENV = Environment(loader=FileSystemLoader('{}/templates'.format(CURRENT_DIR)))
+CONF = {'/static': {'tools.staticdir.on': True,
+                    'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'static'),
                     'tools.staticdir.content_types': {'js': 'application/javascript',
                                                       'css': 'text/css',
                                                       'gif': 'image/gif'
-                                                       }}}
-cherrypy.server.socket_host = '0.0.0.0'
-cherrypy.server.socket_port = 4321
-cherrypy.quickstart(Root(), '/', config=Conf)
+                                                      }}}
+
+###############################################################################
+# app entry point
+###############################################################################
+def start_app(port=4321, production=False):
+    mongo_addr = '127.0.0.1'
+    mongo_port = 27017
+    PREFIX_URL = 'http://www'
+    if production == 'live':
+        mongo_addr = 'localhost'
+        mongo_port = 27017
+        PREFIX_URL = 'https://www'
+    elif production == 'docker':
+        mongo_addr = '172.17.42.1'
+        mongo_port = 27017
+        PREFIX_URL = 'http://www'
+
+    try:
+        Mongo_client = MongoClient(mongo_addr, mongo_port)
+        Db = Mongo_client.letssharebooks
+    except Exception, e:
+        print 'unable to connect to mongodb!'
+        return
+    
+    cherrypy.server.socket_host = '0.0.0.0'
+    cherrypy.server.socket_port = 4321
+    cherrypy.quickstart(Root(), '/', config=CONF)
+
+if __name__ == '__main__':
+    start_app()

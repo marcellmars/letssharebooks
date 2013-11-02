@@ -1,3 +1,7 @@
+/* ----------------------------------------------------------------------------
+ * Global configuration and state
+ * ----------------------------------------------------------------------------
+ */
 var LSB = {
     start: 0,
     total_num: 1,
@@ -76,15 +80,15 @@ var render_book = function(i, book) {
 };
 
 /* ----------------------------------------------------------------------------
+ * Analyzes server response and updates toolbar and paginator
  * Iterates through json book list and calls render_book;
- * toolbar and pagination
  * ----------------------------------------------------------------------------
  */
-var display_books = function (books) {
+var parse_response = function (data) {
     $('#content').empty();
     add_toolbar();
     /* last item in books list is actually data about toolbar*/
-    var toolbar_data = books.pop();
+    var toolbar_data = data.pop();
     LSB.total_num = toolbar_data.total_num;
     LSB.query = toolbar_data.query;
     LSB.processing = toolbar_data.processing;
@@ -95,7 +99,7 @@ var display_books = function (books) {
         $('#titles').autocomplete(
             {source: toolbar_data.titles, minLength: 2});
     });
-    $.each(books, render_book);
+    $.each(data, render_book);
 };
 
 /* ----------------------------------------------------------------------------
@@ -104,7 +108,7 @@ var display_books = function (books) {
  */
 var render_page = function () {
     // begin: testing
-    display_books(render_page_fix_response);
+    parse_response(render_page_fix_response);
     // end: testing
     // $.ajax({
     //     type: 'POST',
@@ -113,8 +117,8 @@ var render_page = function () {
     //     processData: false,
     //     data: JSON.stringify(LSB),
     //     dataType: 'json',
-    //     success: function (books) {
-    //         display_books(books);
+    //     success: function (data) {
+    //         parse_response(data);
     //     }
     // });
 };

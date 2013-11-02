@@ -9,7 +9,8 @@ var LSB = {
 };
 
 /* ----------------------------------------------------------------------------
- * Renders single book
+ * Adds complete toolbar to the top of the page
+ * ----------------------------------------------------------------------------
  */
 var add_toolbar = function () {
     $('#content').append([
@@ -32,6 +33,7 @@ var add_toolbar = function () {
 
 /* ----------------------------------------------------------------------------
  * Renders single book
+ * ----------------------------------------------------------------------------
  */
 var render_book = function(i, book) {
     window.barfoo = book;
@@ -72,6 +74,11 @@ var render_book = function(i, book) {
     $('#content').append(book_content);  
 };
 
+/* ----------------------------------------------------------------------------
+ * Iterates through json book list and calls render_book;
+ * toolbar and pagination
+ * ----------------------------------------------------------------------------
+ */
 var display_books = function (books) {
     $('#content').empty();
     window.foobar = books;
@@ -88,6 +95,10 @@ var display_books = function (books) {
     $.each(books, render_book);
 };
 
+/* ----------------------------------------------------------------------------
+ * Main ajax entry point
+ * ----------------------------------------------------------------------------
+ */
 var render_page = function () {
     // begin: testing
     display_books(render_page_fix_response);

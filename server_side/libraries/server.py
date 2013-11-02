@@ -6,6 +6,7 @@ import simplejson
 from pymongo import MongoClient
 import pymongo
 from jinja2 import Environment, FileSystemLoader
+import libraries
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ENV = Environment(loader=FileSystemLoader('{}/templates'.format(CURRENT_DIR)))
@@ -44,7 +45,12 @@ class Root(object):
     def upload_catalog(self, uploaded_file):
         content = uploaded_file.file.read()
         catalog = simplejson.loads(content)
+        libraries.import_catalog(DB, catalog)
         return 'ok %s' % uploaded_file.filename
+
+    @cherrypy.expose
+    def get_catalog(self, uuid):
+        return libraries.get_catalog(DB, uuid)
 
 #------------------------------------------------------------------------------
 # app entry point

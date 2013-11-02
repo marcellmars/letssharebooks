@@ -28,7 +28,9 @@ var add_toolbar = function () {
         '<div class="ui-widget"><input id="authors" placeholder="authors"/>',
         '<input id="titles" placeholder="titles"/><input id="search_all" placeholder="search all metadata"/>',
         '<div id="search"></div></div>'].join(''));
-    //$('#search').button({label: 'SEARCH'}).click(search_query());
+    $('#search').button({label: 'SEARCH'}).click(function() {
+        search_query();
+    });
 };
 
 /* ----------------------------------------------------------------------------
@@ -36,7 +38,6 @@ var add_toolbar = function () {
  * ----------------------------------------------------------------------------
  */
 var render_book = function(i, book) {
-    window.barfoo = book;
     var formats = '';
     var base_url = [
         LSB.prefix_url,
@@ -81,16 +82,18 @@ var render_book = function(i, book) {
  */
 var display_books = function (books) {
     $('#content').empty();
-    window.foobar = books;
     add_toolbar();
+    /* last item in books list is actually data about toolbar*/
     var toolbar_data = books.pop();
     LSB.total_num = toolbar_data.total_num;
     LSB.query = toolbar_data.query;
     LSB.processing = toolbar_data.processing;
     refresh_pagination();
     $(function () {
-        $('#authors').autocomplete({source: toolbar_data.authors, minLength: 2});
-        $('#titles').autocomplete({source: toolbar_data.titles, minLength: 2});
+        $('#authors').autocomplete(
+            {source: toolbar_data.authors, minLength: 2});
+        $('#titles').autocomplete(
+            {source: toolbar_data.titles, minLength: 2});
     });
     $.each(books, render_book);
 };
@@ -117,8 +120,9 @@ var render_page = function () {
 };
 
 var refresh_pagination = function () {
-    var paginator_text = ['HOME (', LSB.start + 1, ' - ', LSB.start + LSB.offset,
-                          ' out of ', LSB.total_num, ' books', LSB.processing, ')'];
+    var paginator_text = [
+        'HOME (', LSB.start + 1, ' - ', LSB.start + LSB.offset,
+        ' out of ', LSB.total_num, ' books', LSB.processing, ')'];
     paginator_text = paginator_text.join('');
     $('.pagination').button(
         {label: paginator_text}

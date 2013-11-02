@@ -82,12 +82,14 @@ var render_book = function(i, book) {
 /* ----------------------------------------------------------------------------
  * Analyzes server response and updates toolbar and paginator
  * Iterates through json book list and calls render_book;
+ * parameter data: list of length n, where first n-1 items are books, and
+ * last item is a search/toolbar configuration
  * ----------------------------------------------------------------------------
  */
 var parse_response = function (data) {
     $('#content').empty();
     add_toolbar();
-    /* last item in books list is actually data about toolbar*/
+    /* last item in retrieved list is actually data about toolbar */
     var toolbar_data = data.pop();
     LSB.total_num = toolbar_data.total_num;
     LSB.query = toolbar_data.query;

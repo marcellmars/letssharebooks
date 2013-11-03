@@ -52,6 +52,11 @@ class Root(object):
     def get_catalog(self, uuid):
         return libraries.get_catalog(DB, uuid)
 
+    # ajax backend for fetching books
+    @cherrypy.expose
+    def get_books(self):
+        return libraries.get_books(DB)
+
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------

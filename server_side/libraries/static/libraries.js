@@ -86,21 +86,26 @@ var render_book = function(i, book) {
  * last item is a search/toolbar configuration
  * ----------------------------------------------------------------------------
  */
+// var parse_response = function (data) {
+//     $('#content').empty();
+//     add_toolbar();
+//     /* last item in retrieved list is actually data about toolbar */
+//     var toolbar_data = data.pop();
+//     LSB.total_num = toolbar_data.total_num;
+//     LSB.query = toolbar_data.query;
+//     LSB.processing = toolbar_data.processing;
+//     refresh_pagination();
+//     $(function () {
+//         $('#authors').autocomplete(
+//             {source: toolbar_data.authors, minLength: 2});
+//         $('#titles').autocomplete(
+//             {source: toolbar_data.titles, minLength: 2});
+//     });
+//     $.each(data, render_book);
+// };
+
 var parse_response = function (data) {
     $('#content').empty();
-    add_toolbar();
-    /* last item in retrieved list is actually data about toolbar */
-    var toolbar_data = data.pop();
-    LSB.total_num = toolbar_data.total_num;
-    LSB.query = toolbar_data.query;
-    LSB.processing = toolbar_data.processing;
-    refresh_pagination();
-    $(function () {
-        $('#authors').autocomplete(
-            {source: toolbar_data.authors, minLength: 2});
-        $('#titles').autocomplete(
-            {source: toolbar_data.titles, minLength: 2});
-    });
     $.each(data, render_book);
 };
 
@@ -110,7 +115,7 @@ var parse_response = function (data) {
  */
 var render_page = function () {
     // begin: testing
-    parse_response(render_page_fix_response);
+    //parse_response(render_page_fix_response);
     // end: testing
     // $.ajax({
     //     type: 'POST',
@@ -123,6 +128,17 @@ var render_page = function () {
     //         parse_response(data);
     //     }
     // });
+    $.ajax({
+        type: 'POST',
+        url: 'render_page',
+        contentType: 'application/json',
+        processData: false,
+        data: JSON.stringify(LSB),
+        dataType: 'json',
+        success: function (data) {
+            parse_response(data);
+        }
+    });
 };
 
 var refresh_pagination = function () {

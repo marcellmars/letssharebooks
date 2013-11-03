@@ -6,6 +6,8 @@ import uuid
 import simplejson as json
 from bson import json_util
 
+#------------------------------------------------------------------------------
+
 def add_library(db, library_uuid, books, last_modified):
     books_uuid = []
     # insert books in the global library and take uuids
@@ -13,11 +15,14 @@ def add_library(db, library_uuid, books, last_modified):
         db.books.insert(book)
         books_uuid.append(book['uuid'])
     # update catalog metadata collection
-    db.catalog.update({'library_uuid':library_uuid},
+    db.catalog.update({'library_uuid': library_uuid},
                       {'$set':{'books': books_uuid,
-                               'last_modified': last_modified}},
+                               'last_modified': last_modified,
+                               'tunnel':1234}},
                       upsert=True, multi=False)
 
+#------------------------------------------------------------------------------
+    
 def import_catalog(db, catalog):
     library_uuid = catalog['library_uuid']
     last_modified = catalog['last_modified']
@@ -41,13 +46,26 @@ def import_catalog(db, catalog):
     else:
         print 'nothing changed...'
 
+#------------------------------------------------------------------------------
+        
 def get_catalog(db, uuid):
     return serialize2json(
         [i for i in db.catalog.find({'library_uuid':uuid})])
-    
+
+#------------------------------------------------------------------------------
+        
+def get_books(db):
+    lib_uuids = [i['library_uuid'] for i in db.catalog.find({'tunnel':{ '$gt': 0 }})]
+    books = db.books.find({'library_uuid':{'$in':lib_uuids}})
+    return serialize2json([b for b in books])
+
+#------------------------------------------------------------------------------    
+
 def serialize2json(data):
     '''
     Pretty print for json
     '''
     return json.dumps(data, sort_keys=True,
                       indent=4, default=json_util.default)
+
+#------------------------------------------------------------------------------

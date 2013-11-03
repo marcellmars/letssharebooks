@@ -2,7 +2,7 @@
  * Global configuration and state
  * ----------------------------------------------------------------------------
  */
-var PREFIX_URL = ''
+var PREFIX_URL = 'https://www'
 var STATE = {
     page: 1,
 };

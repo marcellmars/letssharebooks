@@ -105,7 +105,7 @@ class MetadataLibThread(QThread):
         try:
             book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id))
             if book_metadata.ok:
-                return book_metadata.json()
+                return book_metadata.content
             else:
                 return False
 
@@ -135,14 +135,16 @@ class MetadataLibThread(QThread):
             with zipfile.ZipFile('library.json.zip', 'w', mode) as zif:
                 with open('library.json', 'w') as file:
                     prefs = JSONConfig('plugins/letssharebooks.conf')
-                    json_string += "{{'library_uuid': {},".format(str(prefs['library_uuid']))
-                    json_string += "'last_modified': '1383473174.624734',"
+                    json_string += '{{"library_uuid": "{}",'.format(str(prefs['library_uuid']))
+                    json_string += '"last_modified": "1383473174.624734", '
+                    json_string += '"books" : ['
                     for book in map(self.get_book_metadata, books_ids):
-                        json_string += "{}\n".format(str(book))
-                    json_string += "}"
+                        json_string += "{},\n".format(book)
+                    json_string = json_string[:-2] + "]}"
                     file.write(json_string)
                 file.close()
                 zif.write('library.json')
+                zif.close()
             with open('library.json.zip', 'r') as file:
                 r = requests.post("http://localhost:4321/upload_catalog", files={'uploaded_file': file})
             

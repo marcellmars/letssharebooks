@@ -5,7 +5,19 @@
     <link rel="stylesheet" type="text/css" href="static/jquery-ui-1.10.3.custom.min.css" />
   </head>
   <body>
-    <div id="header"></div>
+    <div id="header">
+      <div id="toolbar">
+        <div id="prev_page"></div>
+        <div id="next_page"></div>
+        <div class="pagination"></div>
+      </div>
+      <div id="searchbar">
+        <div class="ui-widget"><input id="authors" placeholder="authors"/>
+          <input id="titles" placeholder="titles"/><input id="search_all" placeholder="search all metadata"/>
+          <div id="search"></div>
+        </div>
+      </div>
+    </div>
     <div id="content"></div>
     <div class="modal"></div>
   </body>

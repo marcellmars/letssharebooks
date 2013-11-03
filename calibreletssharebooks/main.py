@@ -5,7 +5,8 @@ from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resource
 from calibre_plugins.letssharebooks.config import prefs
 from calibre_plugins.letssharebooks import requests
 from calibre.library.server import server_config
-import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, threading, time
+import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, threading, time, zipfile, StringIO, zlib
+from calibre.utils.config import JSONConfig
 
 
 __license__   = 'GPL v3'
@@ -67,8 +68,10 @@ class UrlLibThread(QThread):
     def run(self):
         if self.us.ssh_proc and self.us.lsb_url[:4] == "http":
             try:
-                if self.us.counter > 30:
-                    time.sleep(5)
+                if self.us.counter < 30:
+                    time.sleep(1)
+                else:
+                    time.sleep(30)
                 self.us.counter += 1
                 opener = urllib2.build_opener()
                 opener.addheaders = [("User-agent", "Checking {0}".format(self.us.lsb_url))] 
@@ -95,7 +98,7 @@ class MetadataLibThread(QThread):
         self.debug_log = debug_log
         opts, args = server_config().option_parser().parse_args(['calibre-server'])
         self.calibre_server_port = opts.port
-        self.base_url = "http://localhost:{calibre_server_port}/".format(calibre_server_port=self.calibre_server_port)
+        self.base_url = "http://127.0.0.1:{calibre_server_port}/".format(calibre_server_port=self.calibre_server_port)
         self.book_metadata_url = 'ajax/book/'
 
     def get_book_metadata(self, book_id):
@@ -124,14 +127,24 @@ class MetadataLibThread(QThread):
     def run(self):
         books_ids = self.get_books_ids()
         if books_ids:
-            with open("/tmp/library.json", "w") as f:
-                f.write(str(time.time()) + "\n")
-                f.seek(0,2)
-                for book in map(self.get_book_metadata, books_ids):
-                    f.write("{}\n".format(str(book)))
-                    f.seek(0,2)
-                f.write(str(time.time()) + "\n")
-                f.seek(0,2)
+            json_string = ""
+            try:
+                mode = zipfile.ZIP_DEFLATED
+            except:
+                mode = zipfile.ZIP_STORED
+            with zipfile.ZipFile("/tmp/library.json.zip", "w", mode) as zif:
+                with open("/tmp/library.json", "w") as file:
+                    prefs = JSONConfig('plugins/letssharebooks.conf')
+                    json_string += "{{'library_uuid': {},".format(str(prefs['library_uuid']))
+                    json_string += "'last_modified': '1383473174.624734',"
+                    for book in map(self.get_book_metadata, books_ids):
+                        json_string += "{}\n".format(str(book))
+                    json_string += "}"
+                    file.write(json_string)
+                file.close()
+                zif.write("/tmp/library.json")
+            self.debug_log.addItem("Done!")
+            return
 
 class LetsShareBooksDialog(QDialog):
     def __init__(self, gui, icon, do_user_config, qaction, us):

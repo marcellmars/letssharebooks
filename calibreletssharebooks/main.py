@@ -3,8 +3,11 @@ from PyQt4.Qt import QDialog, QHBoxLayout, QPushButton, QMessageBox, QLabel, QTi
 from calibre.gui2.ui import get_gui as calibre_main
 from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon, create_menu_action_unique
 from calibre_plugins.letssharebooks.config import prefs
+from calibre_plugins.letssharebooks import requests
 from calibre.library.server import server_config
-import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, threading, time
+import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, threading, time, zipfile, StringIO, zlib
+from calibre.utils.config import JSONConfig
+
 
 __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
@@ -65,8 +68,10 @@ class UrlLibThread(QThread):
     def run(self):
         if self.us.ssh_proc and self.us.lsb_url[:4] == "http":
             try:
-                if self.us.counter > 30:
-                    time.sleep(5)
+                if self.us.counter < 30:
+                    time.sleep(1)
+                else:
+                    time.sleep(30)
                 self.us.counter += 1
                 opener = urllib2.build_opener()
                 opener.addheaders = [("User-agent", "Checking {0}".format(self.us.lsb_url))] 
@@ -87,6 +92,60 @@ class UrlLibThread(QThread):
     def stop(self):
         self.terminate()
 
+class MetadataLibThread(QThread):
+    def __init__(self, debug_log):
+        QThread.__init__(self)
+        self.debug_log = debug_log
+        opts, args = server_config().option_parser().parse_args(['calibre-server'])
+        self.calibre_server_port = opts.port
+        self.base_url = "http://127.0.0.1:{calibre_server_port}/".format(calibre_server_port=self.calibre_server_port)
+        self.book_metadata_url = 'ajax/book/'
+
+    def get_book_metadata(self, book_id):
+        try:
+            book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id))
+            if book_metadata.ok:
+                return book_metadata.json()
+            else:
+                return False
+
+        except requests.exceptions.RequestException as e:
+            return False
+
+    def get_books_ids(self, total_num=1000000):
+        books_ids_url = 'ajax/search?query=&num={total_num}&sort=last_modified'.format(total_num=total_num)
+        try:
+            books_ids_request = requests.get("{base_url}{books_ids_url}".format(base_url=self.base_url, books_ids_url=books_ids_url))
+            if books_ids_request.ok:
+                return books_ids_request.json()['book_ids']
+            else:
+                return False
+
+        except requests.exceptions.RequestException as e:
+            return False
+
+    def run(self):
+        books_ids = self.get_books_ids()
+        if books_ids:
+            json_string = ""
+            try:
+                mode = zipfile.ZIP_DEFLATED
+            except:
+                mode = zipfile.ZIP_STORED
+            with zipfile.ZipFile("/tmp/library.json.zip", "w", mode) as zif:
+                with open("/tmp/library.json", "w") as file:
+                    prefs = JSONConfig('plugins/letssharebooks.conf')
+                    json_string += "{{'library_uuid': {},".format(str(prefs['library_uuid']))
+                    json_string += "'last_modified': '1383473174.624734',"
+                    for book in map(self.get_book_metadata, books_ids):
+                        json_string += "{}\n".format(str(book))
+                    json_string += "}"
+                    file.write(json_string)
+                file.close()
+                zif.write("/tmp/library.json")
+            self.debug_log.addItem("Done!")
+            return
+
 class LetsShareBooksDialog(QDialog):
     def __init__(self, gui, icon, do_user_config, qaction, us):
         QDialog.__init__(self, gui)
@@ -100,6 +159,7 @@ class LetsShareBooksDialog(QDialog):
         self.urllib_thread = UrlLibThread(self.us)
         self.kill_servers_thread = KillServersThread(self.us)
 
+        
         self.us.check_finished = True
         
         self.pxmp = QPixmap()
@@ -219,10 +279,18 @@ class LetsShareBooksDialog(QDialog):
         self.about_project_button.clicked.connect(functools.partial(self.open_url2, "http://www.memoryoftheworld.org"))
         self.ll.addWidget(self.about_project_button)
         
-        #self.debug_log = QListWidget()
-        #self.ll.addWidget(self.debug_log)
-        #self.debug_log.addItem("Initiatied!")
-       
+        self.debug_log = QListWidget()
+        self.ll.addWidget(self.debug_log)
+        self.debug_log.addItem("Initiatied!")
+      
+        self.metadata_thread = MetadataLibThread(self.debug_log)
+        
+        self.metadata_button = QPushButton("Get library metadata!")
+        self.metadata_button.setObjectName("url2")
+        self.metadata_button.setToolTip('Get library metadata!')
+        self.metadata_button.clicked.connect(self.get_metadata)
+        self.ll.addWidget(self.metadata_button)
+
         self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
         self.upgrade_button.setObjectName("url2")
         self.upgrade_button.setToolTip('Running latest version you make developers happy')
@@ -406,6 +474,9 @@ class LetsShareBooksDialog(QDialog):
     def open_url2(self, url):
         self.clip.setText(url)
         webbrowser.open(url)
+
+    def get_metadata(self):
+        self.metadata_thread.start()
 
     def show_debug(self):
         if self.us.debug_item:

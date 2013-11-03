@@ -22,8 +22,15 @@ def add_library(db, library_uuid, books, last_modified):
     books_uuid = []
     # insert books in the global library and take uuids
     for book in books:
-        db.books.insert(book)
-        books_uuid.append(book['uuid'])
+        try:
+            db.books.insert(book)
+            books_uuid.append(book['uuid'])
+        except Exception, e:
+            for k in book.keys():
+                new_key = key.replace('.', '')
+                book[new_key] = book[key]
+                db.books.insert(book)
+                books_uuid.append(book['uuid'])
     # update catalog metadata collection
     db.catalog.update({'library_uuid': library_uuid},
                       {'$set':{'books': books_uuid,

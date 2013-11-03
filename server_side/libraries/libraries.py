@@ -7,7 +7,7 @@ import traceback
 import simplejson as json
 from bson import json_util
 
-def paginate(cursor, page=1, per_page=5):
+def paginate(cursor, page=1, per_page=16):
     '''
     Use this in request with pagination
     '''
@@ -38,6 +38,7 @@ def add_library(db, library_uuid, books, last_modified):
     books_uuid = []
     # insert books in the global library and take uuids
     for book in books:
+        book['library_uuid'] = library_uuid
         try:
             db.books.insert(book)
             books_uuid.append(book['uuid'])

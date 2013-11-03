@@ -3,6 +3,7 @@
 #------------------------------------------------------------------------------
 
 import uuid
+import traceback
 import simplejson as json
 from bson import json_util
 
@@ -18,12 +19,32 @@ def paginate(cursor, page=1, per_page=5):
 
 #------------------------------------------------------------------------------
 
+def replace_dot(d):
+    '''
+    Remove dots from keys in dict d
+    '''
+    for k,v in d.iteritems():
+        if isinstance(v, dict):
+            d[k] = replace_dot(v)
+        else:
+            if k.find('.') >= 0:
+                del d[k]
+                new_key = k.replace('.', '')
+                d[new_key] = v
+
+#------------------------------------------------------------------------------
+
 def add_library(db, library_uuid, books, last_modified):
     books_uuid = []
     # insert books in the global library and take uuids
     for book in books:
-        db.books.insert(book)
-        books_uuid.append(book['uuid'])
+        try:
+            db.books.insert(book)
+            books_uuid.append(book['uuid'])
+        except Exception, e:
+            replace_dot(book)
+            db.books.insert(book)
+            books_uuid.append(book['uuid'])
     # update catalog metadata collection
     db.catalog.update({'library_uuid': library_uuid},
                       {'$set':{'books': books_uuid,

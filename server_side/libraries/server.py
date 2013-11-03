@@ -6,6 +6,7 @@ import simplejson
 from pymongo import MongoClient
 import pymongo
 from jinja2 import Environment, FileSystemLoader
+import zipfile
 import libraries
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -45,6 +46,11 @@ class Root(object):
     def upload_catalog(self, uploaded_file):
         try:
             content = uploaded_file.file.read()
+            out = open(uploaded_file.filename, "wb")
+            out.write(content)
+            out.close()
+            zfile = zipfile.ZipFile(uploaded_file.filename)
+            content = zfile.read('library.json')
             catalog = simplejson.loads(content)
             libraries.import_catalog(DB, catalog)
             return 'ok %s' % uploaded_file.filename

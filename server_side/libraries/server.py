@@ -55,7 +55,8 @@ class Root(object):
             libraries.import_catalog(DB, catalog)
             return 'ok %s' % uploaded_file.filename
         except Exception, e:
-            return 'oooops, error: %s' % e.message
+            import traceback
+            return 'oooops, error: %s' % traceback.print_exc()
 
     @cherrypy.expose
     def get_catalog(self, uuid):

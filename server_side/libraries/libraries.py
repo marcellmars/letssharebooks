@@ -6,6 +6,16 @@ import uuid
 import simplejson as json
 from bson import json_util
 
+def paginate(cursor, page=1, per_page=20):
+    '''
+    Use this in request with pagination
+    '''
+    items = cursor.skip((page-1) * per_page).limit(per_page)
+    nextPage = page + 1
+    if items.count(True) < per_page:
+        nextPage = None
+    return (items, nextPage)
+
 #------------------------------------------------------------------------------
 
 def add_library(db, library_uuid, books, last_modified):
@@ -54,10 +64,11 @@ def get_catalog(db, uuid):
 
 #------------------------------------------------------------------------------
         
-def get_books(db):
+def get_books(db, page):
     lib_uuids = [i['library_uuid'] for i in db.catalog.find({'tunnel':{ '$gt': 0 }})]
     books = db.books.find({'library_uuid':{'$in':lib_uuids}})
-    return serialize2json([b for b in books])
+    items, nextPage = paginate(books, page)
+    return serialize2json(list(items))
 
 #------------------------------------------------------------------------------    
 

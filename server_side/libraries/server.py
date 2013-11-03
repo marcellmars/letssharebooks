@@ -54,8 +54,10 @@ class Root(object):
 
     # ajax backend for fetching books
     @cherrypy.expose
+    @cherrypy.tools.json_in()
     def get_books(self):
-        return libraries.get_books(DB)
+        req = cherrypy.request.json
+        return libraries.get_books(DB, req['page'])
 
 #------------------------------------------------------------------------------
 # app entry point

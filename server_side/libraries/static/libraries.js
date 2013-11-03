@@ -12,15 +12,19 @@ var LSB = {
     prefix_url: 'http://www'
 };
 
+var STATE = {
+    page: 1,
+};
+
 /* ----------------------------------------------------------------------------
  * Adds complete toolbar to the top of the page
  * ----------------------------------------------------------------------------
  */
 var add_toolbar = function () {
-    $('#content').append([
+    $('#header').append([
         '<div id="toolbar"><div id="prev_page"></div>',
         '<div id="next_page"></div></div>'].join(''));
-    $('#content').append('<div id="searchbar"></div>');
+    $('#header').append('<div id="searchbar"></div>');
 
     $('#toolbar').append($('#prev_page').button({label: '<<<'}));
     $('#prev_page').click(function () {prev_page(); });
@@ -114,26 +118,12 @@ var parse_response = function (data) {
  * ----------------------------------------------------------------------------
  */
 var render_page = function () {
-    // begin: testing
-    //parse_response(render_page_fix_response);
-    // end: testing
-    // $.ajax({
-    //     type: 'POST',
-    //     url: 'render_page',
-    //     contentType: 'application/json',
-    //     processData: false,
-    //     data: JSON.stringify(LSB),
-    //     dataType: 'json',
-    //     success: function (data) {
-    //         parse_response(data);
-    //     }
-    // });
     $.ajax({
         type: 'POST',
-        url: 'render_page',
+        url: 'get_books',
         contentType: 'application/json',
         processData: false,
-        data: JSON.stringify(LSB),
+        data: JSON.stringify(STATE),
         dataType: 'json',
         success: function (data) {
             parse_response(data);
@@ -191,10 +181,7 @@ var search_author = function (author) {
 };
 
 var next_page = function () {
-    LSB.start = LSB.start + LSB.offset;
-    if (LSB.start+LSB.offset >= LSB.total_num) {
-        LSB.start = LSB.total_num - LSB.offset;
-    }
+    STATE.page += 1;
     render_page();
 };
 

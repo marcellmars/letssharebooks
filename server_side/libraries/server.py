@@ -7,6 +7,7 @@ from pymongo import MongoClient
 import pymongo
 from jinja2 import Environment, FileSystemLoader
 import zipfile
+import traceback
 import libraries
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -55,7 +56,6 @@ class Root(object):
             libraries.import_catalog(DB, catalog)
             return 'ok %s' % uploaded_file.filename
         except Exception, e:
-            import traceback
             return 'oooops, error: %s' % traceback.print_exc()
 
     @cherrypy.expose

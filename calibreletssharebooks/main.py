@@ -132,8 +132,8 @@ class MetadataLibThread(QThread):
                 mode = zipfile.ZIP_DEFLATED
             except:
                 mode = zipfile.ZIP_STORED
-            with zipfile.ZipFile("/tmp/library.json.zip", "w", mode) as zif:
-                with open("/tmp/library.json", "w") as file:
+            with zipfile.ZipFile('library.json.zip', 'w', mode) as zif:
+                with open('library.json', 'w') as file:
                     prefs = JSONConfig('plugins/letssharebooks.conf')
                     json_string += "{{'library_uuid': {},".format(str(prefs['library_uuid']))
                     json_string += "'last_modified': '1383473174.624734',"
@@ -142,8 +142,11 @@ class MetadataLibThread(QThread):
                     json_string += "}"
                     file.write(json_string)
                 file.close()
-                zif.write("/tmp/library.json")
-            self.debug_log.addItem("Done!")
+                zif.write('library.json')
+            with open('library.json.zip', 'r') as file:
+                r = requests.post("http://localhost:4321/upload_catalog", files={'uploaded_file': file})
+            
+            self.debug_log.addItem(r.content)
             return
 
 class LetsShareBooksDialog(QDialog):

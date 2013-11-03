@@ -32,6 +32,8 @@ var add_toolbar = function () {
     $('#next_page').click(function () {next_page(); });
     $('#toolbar').append('<div class="pagination"></div>');
 
+    $('#prev_page').hide();
+
     $('#searchbar').append([
         '<div class="ui-widget"><input id="authors" placeholder="authors"/>',
         '<input id="titles" placeholder="titles"/><input id="search_all" placeholder="search all metadata"/>',
@@ -109,8 +111,11 @@ var render_book = function(i, book) {
 // };
 
 var parse_response = function (data) {
+    if (data['next_page'] === null) {
+        $('#next_page').hide();
+    };
     $('#content').empty();
-    $.each(data, render_book);
+    $.each(data['books'], render_book);
 };
 
 /* ----------------------------------------------------------------------------
@@ -129,6 +134,26 @@ var render_page = function () {
             parse_response(data);
         }
     });
+};
+
+var next_page = function () {
+    STATE.page += 1;
+    $('#prev_page').show();
+    render_page();
+};
+
+var prev_page = function () {
+    STATE.page -= 1;
+    $('#next_page').show();
+    if (STATE.page <= 1) {
+        $('#prev_page').hide();
+    }
+    render_page();
+};
+
+var init_page = function () {
+    add_toolbar();
+    render_page();
 };
 
 var refresh_pagination = function () {
@@ -178,24 +203,6 @@ var search_author = function (author) {
     LSB.start = 0;
     render_page();
     LSB.query = "";
-};
-
-var next_page = function () {
-    STATE.page += 1;
-    render_page();
-};
-
-var prev_page = function () {
-    LSB.start = LSB.start - LSB.offset;
-    if (LSB.start <= 0) {
-        LSB.start = 0;
-    }
-    render_page();
-};
-
-var init_page = function () {
-    add_toolbar();
-    render_page();
 };
 
 $(document).ajaxStart(function () { 

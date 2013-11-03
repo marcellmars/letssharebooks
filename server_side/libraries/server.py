@@ -43,10 +43,13 @@ class Root(object):
     # end-point for uploading user catalogs
     @cherrypy.expose
     def upload_catalog(self, uploaded_file):
-        content = uploaded_file.file.read()
-        catalog = simplejson.loads(content)
-        libraries.import_catalog(DB, catalog)
-        return 'ok %s' % uploaded_file.filename
+        try:
+            content = uploaded_file.file.read()
+            catalog = simplejson.loads(content)
+            libraries.import_catalog(DB, catalog)
+            return 'ok %s' % uploaded_file.filename
+        except Exception, e:
+            return 'oooops, error: %s' % e.message
 
     @cherrypy.expose
     def get_catalog(self, uuid):

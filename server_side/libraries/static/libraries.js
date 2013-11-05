@@ -84,6 +84,10 @@ var parse_response = function (data) {
 /* --------------------------------------------------------------------------*/
 
 var update_pagination_info = function (items_on_page, total_num_of_items) {
+    if (total_num_of_items == 0) {
+        $('#page-msg').attr('value', '0 books');
+        return;
+    }
     var offset = (STATE.page-1) * ITEMS_PER_PAGE + 1;
     var total = 100;
     var msg = ['(',

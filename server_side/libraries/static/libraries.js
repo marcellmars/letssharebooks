@@ -76,7 +76,7 @@ var render_book = function(i, book) {
 
 var parse_response = function (data) {
     if (data['next_page'] === null) {
-        $('#next_page').hide();
+        modify_button('#next_page', 'not-active');
     };
     $('#content').empty();
     $.each(data['books'], render_book);

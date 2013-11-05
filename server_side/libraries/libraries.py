@@ -89,10 +89,12 @@ def get_books(db, page):
     # get all books that belong to libraries with active tunnel
     books = db.books.find({'library_uuid':{'$in':lib_uuids}})
     # paginate books
-    items, next_page = paginate(books, page)
+    items, next_page, on_page, total = paginate(books, page)
     # return serialized books with availability of next page
     return serialize2json({'books': list(items),
-                           'next_page': next_page})
+                           'next_page': next_page,
+                           'on_page': on_page,
+                           'total': total})
 
 #------------------------------------------------------------------------------    
 
@@ -111,9 +113,10 @@ def paginate(cursor, page=1, per_page=settings.ITEMS_PER_PAGE):
     '''
     items = cursor.skip((page-1) * per_page).limit(per_page)
     next_page = page + 1
-    if items.count(True) < per_page:
+    num_items_page = items.count(True)
+    if num_items_page < per_page:
         next_page = None
-    return (items, next_page)
+    return (items, next_page, num_items_page, cursor.count())
 
 #------------------------------------------------------------------------------
 

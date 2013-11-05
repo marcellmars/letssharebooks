@@ -73,7 +73,7 @@ var render_page = function () {
 /* --------------------------------------------------------------------------*/
 
 var parse_response = function (data) {
-    update_pagination_info(data);
+    update_pagination_info(data['on_page'], data['total']);
     if (data['next_page'] === null) {
         modify_button('#next_page', 'not-active');
     };
@@ -83,15 +83,15 @@ var parse_response = function (data) {
 
 /* --------------------------------------------------------------------------*/
 
-var update_pagination_info = function (data) {
-    var offset = (STATE.page-1) * ITEMS_PER_PAGE;
+var update_pagination_info = function (items_on_page, total_num_of_items) {
+    var offset = (STATE.page-1) * ITEMS_PER_PAGE + 1;
     var total = 100;
     var msg = ['(',
                offset,
                '-',
-               offset + ITEMS_PER_PAGE,
+               offset + items_on_page - 1,
                'out of',
-               total,
+               total_num_of_items,
                'books )'].join(' ');
     $('#page-msg').attr('value', msg);
 };

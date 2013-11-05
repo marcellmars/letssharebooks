@@ -3,7 +3,8 @@
  * ----------------------------------------------------------------------------
  */
 
-var PREFIX_URL = 'https://www'
+var PREFIX_URL = 'https://www';
+var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
 };
@@ -72,11 +73,27 @@ var render_page = function () {
 /* --------------------------------------------------------------------------*/
 
 var parse_response = function (data) {
+    update_pagination_info(data);
     if (data['next_page'] === null) {
         modify_button('#next_page', 'not-active');
     };
     $('#content').empty();
     $.each(data['books'], render_book);
+};
+
+/* --------------------------------------------------------------------------*/
+
+var update_pagination_info = function (data) {
+    var offset = (STATE.page-1) * ITEMS_PER_PAGE;
+    var total = 100;
+    var msg = ['(',
+               offset,
+               '-',
+               offset + ITEMS_PER_PAGE,
+               'out of',
+               total,
+               'books )'].join(' ');
+    $('#page-msg').attr('value', msg);
 };
 
 /* --------------------------------------------------------------------------*/

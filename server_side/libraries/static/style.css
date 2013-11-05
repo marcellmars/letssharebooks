@@ -66,6 +66,7 @@ a {
 
 #toolbar {
     margin-bottom: 3px;
+    text-align: center;
 }
 
 #toolbar .pagination {
@@ -93,14 +94,15 @@ a {
 }
 
 #toolbar #prev_page {
-}
-
-#toolbar #pagination {
-    width: 400px;
+    float: left;
 }
 
 #toolbar #next_page {
     float: right;
+}
+
+#toolbar #page-msg {
+    width: 400px;
 }
 
 #search {

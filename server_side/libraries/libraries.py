@@ -46,7 +46,8 @@ def import_catalog(db, catalog):
 
 def add_library(db, library_uuid, books, last_modified):
     '''
-    Adds books to the database and modifies catalog entry
+    Adds books to the database and modifies catalog entry. Mostly used with
+    import_catalog function.
     '''
     books_uuid = []
     # insert books in the global library and take uuids

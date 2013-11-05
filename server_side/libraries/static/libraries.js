@@ -2,6 +2,7 @@
  * Global configuration and state
  * ----------------------------------------------------------------------------
  */
+
 var PREFIX_URL = 'https://www'
 var STATE = {
     page: 1,
@@ -50,42 +51,10 @@ var render_book = function(i, book) {
 };
 
 /* ----------------------------------------------------------------------------
- * Analyzes server response and updates toolbar and paginator
- * Iterates through json book list and calls render_book;
- * parameter data: list of length n, where first n-1 items are books, and
- * last item is a search/toolbar configuration
- * ----------------------------------------------------------------------------
- */
-// var parse_response = function (data) {
-//     $('#content').empty();
-//     init_toolbar();
-//     /* last item in retrieved list is actually data about toolbar */
-//     var toolbar_data = data.pop();
-//     LSB.total_num = toolbar_data.total_num;
-//     LSB.query = toolbar_data.query;
-//     LSB.processing = toolbar_data.processing;
-//     refresh_pagination();
-//     $(function () {
-//         $('#authors').autocomplete(
-//             {source: toolbar_data.authors, minLength: 2});
-//         $('#titles').autocomplete(
-//             {source: toolbar_data.titles, minLength: 2});
-//     });
-//     $.each(data, render_book);
-// };
-
-var parse_response = function (data) {
-    if (data['next_page'] === null) {
-        modify_button('#next_page', 'not-active');
-    };
-    $('#content').empty();
-    $.each(data['books'], render_book);
-};
-
-/* ----------------------------------------------------------------------------
  * Main ajax entry point
  * ----------------------------------------------------------------------------
  */
+
 var render_page = function () {
     $.ajax({
         type: 'POST',
@@ -101,6 +70,17 @@ var render_page = function () {
 };
 
 /* --------------------------------------------------------------------------*/
+
+var parse_response = function (data) {
+    if (data['next_page'] === null) {
+        modify_button('#next_page', 'not-active');
+    };
+    $('#content').empty();
+    $.each(data['books'], render_book);
+};
+
+/* --------------------------------------------------------------------------*/
+
 var next_page = function () {
     STATE.page += 1;
     modify_button('#prev_page', 'active');
@@ -108,6 +88,7 @@ var next_page = function () {
 };
 
 /* --------------------------------------------------------------------------*/
+
 var prev_page = function () {
     STATE.page -= 1;
     modify_button('#next_page', 'active');
@@ -122,6 +103,7 @@ var prev_page = function () {
  * Adds complete toolbar to the top of the page
  * ----------------------------------------------------------------------------
  */
+
 var init_toolbar = function () {
     $('#prev_page').click(function () {prev_page(); });
     $('#next_page').click(function () {next_page(); });
@@ -130,6 +112,11 @@ var init_toolbar = function () {
     });
     modify_button('#prev_page', 'not-active');
 };
+
+/* ----------------------------------------------------------------------------
+ * Changes state of the prev/next page buttons
+ * ----------------------------------------------------------------------------
+ */
 
 var modify_button = function (button, state) {
     var elem = $(button);
@@ -145,12 +132,14 @@ var modify_button = function (button, state) {
 };
 
 /* --------------------------------------------------------------------------*/
+
 var init_page = function () {
     init_toolbar();
     render_page();
 };
 
 /* --------------------------------------------------------------------------*/
+
 var search_query = function () {
     if ($('#authors').val()) {
         LSB.query = 'authors:' + $('#authors').val();
@@ -181,6 +170,7 @@ var search_query = function () {
 };
 
 /* --------------------------------------------------------------------------*/
+
 var search_author = function (author) {
     LSB.query = "authors:" + author;
     console.log(LSB.query);
@@ -190,21 +180,25 @@ var search_author = function (author) {
 };
 
 /* --------------------------------------------------------------------------*/
+
 $(document).ajaxStart(function () { 
     $('body').addClass("loading"); 
 });
 
 /* --------------------------------------------------------------------------*/
+
 $(document).ajaxStop(function () { 
     $('body').removeClass("loading"); 
 });
 
 /* --------------------------------------------------------------------------*/
+
 $(function () {
     $(document).tooltip({track:true});
 });
 
 /* --------------------------------------------------------------------------*/
+
 $(document).ready(function () {
     init_page();
 });

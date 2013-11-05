@@ -3,12 +3,13 @@ import cherrypy
 import requests
 import glob
 import simplejson
-from pymongo import MongoClient
 import pymongo
-from jinja2 import Environment, FileSystemLoader
 import zipfile
 import traceback
 import libraries
+import settings
+from jinja2 import Environment, FileSystemLoader
+from pymongo import MongoClient
 
 #------------------------------------------------------------------------------
 
@@ -74,28 +75,18 @@ class Root(object):
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------
-def start_app(port=4321, production=False):
-    mongo_addr = '127.0.0.1'
-    mongo_port = 27017
-    PREFIX_URL = 'http://www'
-    if production == 'live':
-        mongo_addr = 'localhost'
-        mongo_port = 27017
-        PREFIX_URL = 'https://www'
-    elif production == 'docker':
-        mongo_addr = '172.17.42.1'
-        mongo_port = 27017
-        PREFIX_URL = 'http://www'
+def start_app(env='local'):
     try:
         global DB
-        Mongo_client = MongoClient(mongo_addr, mongo_port)
-        DB = Mongo_client.letssharebooks
+        Mongo_client = MongoClient(settings.SERVER[env]['mongo_addr'],
+                                   settings.SERVER[env]['mongo_port'])
+        DB = Mongo_client[settings.DBNAME]
     except Exception, e:
         print 'unable to connect to mongodb!'
         return
     
-    cherrypy.server.socket_host = '0.0.0.0'
-    cherrypy.server.socket_port = 4321
+    cherrypy.server.socket_host = settings.HOST
+    cherrypy.server.socket_port = settings.PORT
     cherrypy.quickstart(Root(), '/', config=CONF)
 
 if __name__ == '__main__':

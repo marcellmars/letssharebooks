@@ -6,10 +6,7 @@ import uuid
 import traceback
 import simplejson as json
 from bson import json_util
-
-#------------------------------------------------------------------------------
-
-ITEMS_PER_PAGE = 16
+import settings
 
 #------------------------------------------------------------------------------
 
@@ -108,7 +105,7 @@ def serialize2json(data):
 
 #------------------------------------------------------------------------------
 
-def paginate(cursor, page=1, per_page=ITEMS_PER_PAGE):
+def paginate(cursor, page=1, per_page=settings.ITEMS_PER_PAGE):
     '''
     Use this in request with pagination
     '''
@@ -132,3 +129,5 @@ def remove_dots_from_dict(d):
                 del d[k]
                 new_key = k.replace('.', '')
                 d[new_key] = v
+
+#------------------------------------------------------------------------------

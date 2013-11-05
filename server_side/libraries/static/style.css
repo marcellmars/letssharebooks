@@ -1,12 +1,11 @@
 body {
     background: rgb(255, 255, 255);
-}
-
-#content {
-    display:block;
-    width:960px;
+    display: block;
+    width: 960px;
     margin: 0px auto;
 }
+
+#content {}
 
 img {
     position: absolute;
@@ -61,38 +60,58 @@ a {
     color:white;
 }
 
+#header {
+    margin-bottom: 7px;
+}
+
 #toolbar {
-    text-align: center;
+    margin-bottom: 3px;
 }
 
 #toolbar .pagination {
-    height:30px;
+    height: 30px;
 }
 
-#toolbar #next_page {
-    height:30px;
-    width:90px;
-    float:right;
+.button {
+    cursor: pointer;
+    font-family: 'BitstreamVeraSansMono',Consolas,monospace;
+    font-size: 1em;
+    height: 30px;
+    width: 90px;
+}
+
+.active {
+    background-color: #ff0000;
+    color: #ffffff;
+    border: none;
+}
+
+.not-active {
+    background-color: #ffffff;
+    color: #ff0000;
+    border: 1px solid #ff0000;
 }
 
 #toolbar #prev_page {
-    height:30px;
-    width:90px;
-    float:left;
+}
+
+#toolbar #pagination {
+    width: 400px;
+}
+
+#toolbar #next_page {
+    float: right;
 }
 
 #search {
-    height:28px;
-    width:90px;
-    float:right;
-}
-
-#ui-widget {
-    float:left;
+    height: 28px;
+    width: 90px;
+    float: right;
 }
 
 #authors, #titles, #search_all {
-    width:288px;
+    width: 278px;
+    font-size: 1em;
 }
 
 .modal {

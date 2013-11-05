@@ -7,15 +7,15 @@
   <body>
     <div id="header">
       <div id="toolbar">
-        <div id="prev_page"></div>
-        <div id="next_page"></div>
-        <div class="pagination"></div>
+        <input id="prev_page" type="button" value="&lt;&lt;&lt;" class="button" />
+        <span id="pagination"></span>
+        <input id="next_page" type="button" value="&gt;&gt;&gt;" class="button active" />
       </div>
       <div id="searchbar">
-        <div class="ui-widget"><input id="authors" placeholder="authors"/>
-          <input id="titles" placeholder="titles"/><input id="search_all" placeholder="search all metadata"/>
-          <div id="search"></div>
-        </div>
+        <input id="authors" placeholder="authors" />
+        <input id="titles" placeholder="titles" />
+        <input id="search_all" placeholder="search all metadata" />
+        <input id="search" type="button" value="SEARCH" class="button active" />
       </div>
     </div>
     <div id="content"></div>

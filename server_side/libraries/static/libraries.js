@@ -103,16 +103,17 @@ var render_page = function () {
 /* --------------------------------------------------------------------------*/
 var next_page = function () {
     STATE.page += 1;
-    $('#prev_page').show();
+    modify_button('#prev_page', 'active');
     render_page();
 };
 
 /* --------------------------------------------------------------------------*/
 var prev_page = function () {
     STATE.page -= 1;
+    modify_button('#next_page', 'active');
     $('#next_page').show();
     if (STATE.page <= 1) {
-        $('#prev_page').hide();
+        modify_button('#prev_page', 'not-active');
     }
     render_page();
 };
@@ -122,14 +123,25 @@ var prev_page = function () {
  * ----------------------------------------------------------------------------
  */
 var init_toolbar = function () {
-    $('#toolbar').append($('#prev_page').button({label: '<<<'}));
     $('#prev_page').click(function () {prev_page(); });
-    $('#toolbar').append($('#next_page').button({label: '>>>'}));
     $('#next_page').click(function () {next_page(); });
-    $('#search').button({label: 'SEARCH'}).click(function() {
+    $('#search').click(function() {
         search_query();
     });
-    $('#prev_page').hide();
+    modify_button('#prev_page', 'not-active');
+};
+
+var modify_button = function (button, state) {
+    var elem = $(button);
+    if (state == 'active') {
+        elem.attr('disabled', false);
+        elem.removeClass('not-active');
+        elem.addClass('active');
+    } else if (state == 'not-active') {
+        elem.attr('disabled', true);
+        elem.removeClass('active');
+        elem.addClass('not-active');
+    }
 };
 
 /* --------------------------------------------------------------------------*/

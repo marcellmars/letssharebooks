@@ -33,7 +33,7 @@ class Root(object):
         Index page
         '''
         tmpl = ENV.get_template('index.html')
-        return tmpl.render()
+        return tmpl.render(app_name=settings.APP_NAME)
 
     @cherrypy.expose
     def upload_catalog(self, uploaded_file):

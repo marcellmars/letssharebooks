@@ -38,3 +38,4 @@ DBNAME = 'letssharebooks'
 
 HOST = '0.0.0.0'
 PORT = 4321
+APP_NAME = 'memory of the world library'

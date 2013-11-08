@@ -88,13 +88,17 @@ def get_books(db, page):
             {'tunnel':{ '$gt': 0 }})]
     # get all books that belong to libraries with active tunnel
     books = db.books.find({'library_uuid':{'$in':lib_uuids}})
+    authors = books.distinct('authors')
+    titles = books.distinct('title_sort')
     # paginate books
     items, next_page, on_page, total = paginate(books, page)
     # return serialized books with availability of next page
     return serialize2json({'books': list(items),
                            'next_page': next_page,
                            'on_page': on_page,
-                           'total': total})
+                           'total': total,
+                           'authors': authors,
+                           'titles': titles})
 
 #------------------------------------------------------------------------------    
 

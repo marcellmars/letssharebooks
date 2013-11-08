@@ -73,6 +73,7 @@ var render_page = function () {
 /* --------------------------------------------------------------------------*/
 
 var parse_response = function (data) {
+    update_autocomplete(data);
     update_pagination_info(data['on_page'], data['total']);
     if (data['next_page'] === null) {
         modify_button('#next_page', 'not-active');
@@ -98,6 +99,15 @@ var update_pagination_info = function (items_on_page, total_num_of_items) {
                total_num_of_items,
                'books )'].join(' ');
     $('#page-msg').attr('value', msg);
+};
+
+/* --------------------------------------------------------------------------*/
+
+var update_autocomplete = function(data) {
+    $('#authors').autocomplete({source: data['authors'],
+                                minLength:2});
+    $('#titles').autocomplete({source: data['titles'],
+                               minLength:2});
 };
 
 /* --------------------------------------------------------------------------*/

@@ -8,47 +8,59 @@ var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
 };
+var LSB = {};
+
+/* ----------------------------------------------------------------------------
+ * Precompile templates
+ * ----------------------------------------------------------------------------
+ */
+
+var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim()),
+    book_string_parts_tmpl = _.template($('#book-parts-tmpl').text().trim()),
+    book_content_tmpl = _.template($('#book-content-tmpl').text().trim());
 
 /* ----------------------------------------------------------------------------
  * Renders single book
  * ----------------------------------------------------------------------------
  */
 var render_book = function(i, book) {
-    var formats = '';
-    var base_url = [
-        PREFIX_URL,
-        book.tunnel,
-        '.',
-        book.domain].join('');
-    var authors = '<div id="authorz">';
+    var formats = '',
+        base_url = [ PREFIX_URL, book.tunnel, '.', book.domain ].join(''),
+        authors = '<div id="authorz">';
     
     book.formats.map(function (format) {
-        var string_parts = [
-            '<a href="', base_url, '/get/', format, '/', book.id,
-            '.', format, '">', format.toUpperCase(), '</a>'].join('');
+        var string_parts = book_string_parts_tmpl({
+          'base_url': base_url,
+          'format': format,
+          'book': book
+        });
         formats = formats + string_parts;
     });
+
     book.authors.map(function (author) {
-        var author_s = author.replace("'", " ");
-        var author_param = 'search_author("' + author_s + '")';
-        var string_parts = [
-            "<a id='author' href='#' title='show only books by ", author_s,
-            "' onClick='", author_param, "'>", author, ", </a>&nbsp;"].join('');
-        authors = authors + string_parts;
+        var author_s = author.replace("'", " "),
+            author_param = 'search_author("' + author_s + '")',
+            author_html = author_string_parts_tmpl({
+              'author_s': author_s,
+              'author': author
+            });
+        authors = authors + author_html;
+    });
+
+    $(document).on('click', '.author', function(e) {
+      search_author($(this).data('authors'));
     });
 
     var last_comma = authors.lastIndexOf(',');
     authors = authors.substr(0, last_comma) + authors.substr(last_comma + 1) + '</div>';
-    var book_content = [
-        '<div class="cover"><a href="', base_url, '/browse/book/', book.id,
-        '" target="_blank" id="more_about" title="about this book"><img src="',
-        base_url, '/get/cover/', book.id, '.jpg"></img></a><h2><a href="', base_url,
-        '/browse/book/', book.id, '" target="_blank" id="more_about" title="about this book">',
-        book.title, '</a><br/>', authors, '</h2><span class="download">Metadata: <a href="',
-        base_url, '/get/opf/', book.id, ' ', book.title.replace(/\?/g, ""),
-        '.opf" title="import metadata directly to calibre">.opf</a><br/>Download: ',
-        formats, ' </span></div>'].join('');
-    $('#content').append(book_content);  
+    var book_content = book_content_tmpl({
+      'base_url': base_url,
+      'book': book,
+      'book_title_stripped': book.title.replace(/\?/g, ''),
+      'authors': authors,
+      'formats': formats
+    });
+    $('#content').append(book_content);
 };
 
 /* ----------------------------------------------------------------------------

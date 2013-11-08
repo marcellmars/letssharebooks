@@ -78,16 +78,24 @@ def get_catalog(db, uuid):
 
 #------------------------------------------------------------------------------
         
-def get_books(db, page):
+def get_books(db, page, query=''):
     '''
     Reads and returns books from the database.
     page: parameter for _paginate_ function
     '''
+    # query
+    q = {}
     # get all libraries that have active ssh tunnel
     lib_uuids = [i['library_uuid'] for i in db.catalog.find(
             {'tunnel':{ '$gt': 0 }})]
+    q['library_uuid'] = {'$in':lib_uuids}
+    # extract search parameters
+    if query:
+        authors = query.split(':')[1]
+        q['authors'] = {"$regex": authors, "$options": 'i'}    
+    
     # get all books that belong to libraries with active tunnel
-    books = db.books.find({'library_uuid':{'$in':lib_uuids}})
+    books = db.books.find(q)
     authors = books.distinct('authors')
     titles = books.distinct('title_sort')
     # paginate books

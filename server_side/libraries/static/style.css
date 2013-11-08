@@ -111,7 +111,8 @@ a {
     float: right;
 }
 
-#authors, #titles, #search_all {
+
+#authors, .#titles, #search_all {
     width: 278px;
     font-size: 1em;
 }
@@ -143,7 +144,7 @@ body.loading .modal {
     font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
-#more_about {
+.more_about {
     text-decoration: none;
 }
 

@@ -23,7 +23,7 @@
   </body>
 
   <script type="text/x-template" id="string-parts-tmpl">
-    <a id="author" data-authors="<%- author_s %>" href="#" title="show only books by <%- author_s %>"><%- author %></a>
+    <a class="author" data-authors="<%- author_s %>" href="#" title="show only books by <%- author_s %>"><%- author %></a>
   </script>
 
   <script type="text/x-template" id="book-parts-tmpl">
@@ -32,8 +32,8 @@
 
   <script type="text/x-template" id="book-content-tmpl">
     <div class="cover">
-      <a href="<%= base_url %>/browse/book/<%= book.id %>" target="_blank" id="more_about" title="about this book"><img src="<%= base_url %>/get/cover/<%= book.id %>.jpg" /></a>
-      <h2><a href="<%= base_url %>/browse/book/<%= book.id %>" target="_blank" id="more_about" title="about this book"><%= book.title %></a><br /><%= authors %></h2>
+      <a href="<%= base_url %>/browse/book/<%= book.id %>" target="_blank" class="more_about" title="about this book"><img src="<%= base_url %>/get/cover/<%= book.id %>.jpg" /></a>
+      <h2><a href="<%= base_url %>/browse/book/<%= book.id %>" target="_blank" class="more_about" title="about this book"><%= book.title %></a><br /><%= authors %></h2>
       <span class="download">Metadata: <a href="<%= base_url %>/get/opf/<%= book.id %><%= book_title_stripped %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
     </div>
   </script>

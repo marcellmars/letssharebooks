@@ -7,6 +7,7 @@ var PREFIX_URL = 'https://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
+    query: ''
 };
 var LSB = {};
 
@@ -215,11 +216,8 @@ var search_query = function () {
 /* --------------------------------------------------------------------------*/
 
 var search_author = function (author) {
-    LSB.query = "authors:" + author;
-    console.log(LSB.query);
-    LSB.start = 0;
+    STATE.query = "authors:" + author;
     render_page();
-    LSB.query = "";
 };
 
 /* --------------------------------------------------------------------------*/

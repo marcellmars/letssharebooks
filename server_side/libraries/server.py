@@ -70,7 +70,9 @@ class Root(object):
         Ajax backend for fetching books
         '''
         req = cherrypy.request.json
-        return libraries.get_books(DB, req['page'])
+        page = req.get('page')
+        query = req.get('query')
+        return libraries.get_books(DB, page, query)
 
 #------------------------------------------------------------------------------
 # app entry point

@@ -94,6 +94,8 @@ var parse_response = function (data) {
     update_pagination_info(data['on_page'], data['total']);
     if (data['next_page'] === null) {
         modify_button('#next_page', 'not-active');
+    } else {
+        modify_button('#next_page', 'active');
     };
     $('#content').empty();
     $.each(data['books'], render_book);

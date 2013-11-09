@@ -110,7 +110,7 @@ var update_pagination_info = function (items_on_page, total_num_of_items) {
     }
     var offset = (STATE.page-1) * ITEMS_PER_PAGE + 1;
     var total = 100;
-    var msg = ['(',
+    var msg = ['HOME (',
                offset,
                '-',
                offset + items_on_page - 1,
@@ -157,6 +157,7 @@ var prev_page = function () {
 var init_toolbar = function () {
     $('#prev_page').click(function () {prev_page(); });
     $('#next_page').click(function () {next_page(); });
+    $('#page-msg').click(function () {location.reload(); });
     $('#search').click(function() {
         search_query();
     });

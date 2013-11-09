@@ -15,6 +15,29 @@ var STATE = {
 };
 var LSB = {};
 
+var state_field_mapping = {
+  'author': '#authors',
+  'title': '#titles',
+  'metadata': '#search_all'
+};
+
+/* ----------------------------------------------------------------------------
+ * Browser history stuff
+ * ----------------------------------------------------------------------------
+ */
+
+var push_to_history = function() {
+  var data = {};
+
+  _.each(state_field_mapping, function(field, property) {
+    data[property] = $(field).val();
+  });
+
+  var serialized = $.param(data);
+
+  history.pushState(data, '', '#'+serialized);
+};
+
 /* ----------------------------------------------------------------------------
  * Precompile templates
  * ----------------------------------------------------------------------------
@@ -207,6 +230,7 @@ var search_query = function () {
     q.search_all = $('#search_all').val();
     STATE.query = q;
     STATE.page = 1;
+    push_to_history();
     render_page();
 };
 
@@ -241,14 +265,9 @@ $(function () {
  */
 
 var handle_hash_state = function(state) {
-  var deserialized = $.deparam(state),
-      field_mapping = {
-        'author': '#authors',
-        'title': '#titles',
-        'metadata': '#search_all'
-      };
+  var deserialized = $.deparam(state);
 
-  _.each(field_mapping, function(field, property) {
+  _.each(state_field_mapping, function(field, property) {
     $(field).val(deserialized[property]);
   });
 

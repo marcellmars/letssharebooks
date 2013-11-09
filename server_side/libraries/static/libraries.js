@@ -7,7 +7,11 @@ var PREFIX_URL = 'https://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
-    query: ''
+    query: {
+        'authors': '',
+        'titles': '',
+        'search_all': '',
+    }
 };
 var LSB = {};
 
@@ -185,39 +189,19 @@ var init_page = function () {
 /* --------------------------------------------------------------------------*/
 
 var search_query = function () {
-    if ($('#authors').val()) {
-        LSB.query = 'authors:' + $('#authors').val();
-        LSB.carry = " OR ";
-    } else {
-        LSB.query = '';
-        LSB.carry = '';
-    }
-    if ($('#titles').val()) {
-        LSB.query += LSB.carry + 'title:' + $('#titles').val();
-        LSB.carry = " OR ";
-    } else if (LSB.carry != " OR ") {
-        LSB.query = '';
-        LSB.carry = '';
-    }
-
-    if ($('#search_all').val()) {
-        LSB.query += LSB.carry + $('#search_all').val();
-    } else if (LSB.carry != " OR ") {
-        LSB.query = '';
-        LSB.carry = '';
-    }
-    
-    LSB.start = 0;
+    q = {};
+    q.authors = $('#authors').val();
+    q.titles = $('#titles').val();
+    q.search_all = $('#search_all').val();
+    STATE.query = q;
     render_page();
-    LSB.query = '';
-    LSB.carry = '';
 };
 
 /* --------------------------------------------------------------------------*/
 
 var search_author = function (author) {
-    STATE.query = "authors:" + author;
-    render_page();
+    $('#authors').val(author);
+    search_query();
 };
 
 /* --------------------------------------------------------------------------*/

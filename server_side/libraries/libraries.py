@@ -78,7 +78,7 @@ def get_catalog(db, uuid):
 
 #------------------------------------------------------------------------------
         
-def get_books(db, page, query=''):
+def get_books(db, page, query={}):
     '''
     Reads and returns books from the database.
     page: parameter for _paginate_ function
@@ -90,10 +90,18 @@ def get_books(db, page, query=''):
             {'tunnel':{ '$gt': 0 }})]
     q['library_uuid'] = {'$in':lib_uuids}
     # extract search parameters
-    if query:
-        authors = query.split(':')[1]
-        q['authors'] = {"$regex": authors, "$options": 'i'}    
-    
+    for k,v in query.iteritems():
+        if v != '' and k in ['authors', 'titles']:
+            q[k] = {"$regex": v, "$options": 'i'}
+        # elif v != '':
+        #     q = {"$or": [
+        #             {"title": {"$regex": ".*{}.*".format(v), "$options": 'i'}},
+        #             {"authors":{"$regex":".*{}.*".format(v), "$options": 'i'}},
+        #             {"comments":{"$regex":".*{}.*".format(v), "$options": 'i'}},
+        #             {"tags":{"$regex":".*{}.*".format(v), "$options": 'i'}},
+        #             {"publisher":{"$regex":".*{}.*".format(v), "$options": 'i'}},
+        #             {"identifiers":{"$regex":".*{}.*".format(v), "$options": 'i'}}]}
+
     # get all books that belong to libraries with active tunnel
     books = db.books.find(q)
     authors = books.distinct('authors')

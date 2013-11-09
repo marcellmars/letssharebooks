@@ -157,7 +157,10 @@ var prev_page = function () {
 var init_toolbar = function () {
     $('#prev_page').click(function () {prev_page(); });
     $('#next_page').click(function () {next_page(); });
-    $('#page-msg').click(function () {location.reload(); });
+    $('#page-msg').click(function () {
+      window.location.hash = '';
+      location.reload();
+    });
     $('#search').click(function() {
         search_query();
     });
@@ -231,6 +234,31 @@ $(document).ajaxStop(function () {
 $(function () {
     $(document).tooltip({track:true});
 });
+
+/* ----------------------------------------------------------------------------
+ * Handle onload browser history
+ * ----------------------------------------------------------------------------
+ */
+
+var handle_hash_state = function(state) {
+  var deserialized = $.deparam(state),
+      field_mapping = {
+        'author': '#authors',
+        'title': '#titles',
+        'metadata': '#search_all'
+      };
+
+  _.each(field_mapping, function(field, property) {
+    $(field).val(deserialized[property]);
+  });
+
+  return search_query();
+};
+
+if (window.location.hash != '') {
+  var state = window.location.hash.substr(1);
+  handle_hash_state(state);
+}
 
 /* --------------------------------------------------------------------------*/
 

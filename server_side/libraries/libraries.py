@@ -154,3 +154,33 @@ def remove_dots_from_dict(d):
                 d[new_key] = v
 
 #------------------------------------------------------------------------------
+
+def batch_update_library():
+    def get_tunnel_ports(self, login='tunnel'):
+        uids = subprocess.check_output(
+            ['grep', '{0}'.format(login), '/etc/passwd'])
+        uid = uids.split()[0].split(':')[2]
+        return subprocess.check_output(
+            ['/usr/local/bin/get_tunnel_ports.sh', uid]).split()
+
+    domain = 'web.dokr'
+    active_tunnels = []
+    for tunnel in get_tunnel_ports():
+        base_url = '{prefix_url}{tunnel}.{domain}/'.format(
+            prefix_url=settings.ENV['prefix_url'],
+            tunnel=tunnel,
+            domain=domain)
+        #total_num = get_total_num(base_url)
+        book_metadata_url = 'ajax/book/'
+        books_ids = get_books_ids(base_url)
+        if books_ids:
+            active_tunnels.append(tunnel)
+            Db.books_ids_proxy.update(
+                {'tunnel': tunnel},
+                {'$set':{'books_ids': books_ids}}, upsert=True)
+            thrd = UrlLibThread(''.join(map(str, books_ids)),
+                                book_metadata_url,
+                                domain,
+                                tunnel,
+                                base_url)
+            thrd.start()

@@ -14,7 +14,7 @@ from pymongo import MongoClient
 #------------------------------------------------------------------------------
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-ENV = Environment(loader=FileSystemLoader('{}/templates'.format(CURRENT_DIR)))
+ENVIRONMENT = Environment(loader=FileSystemLoader('{}/templates'.format(CURRENT_DIR)))
 CONF = {'/static': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'static'),
                     'tools.staticdir.content_types': {'js': 'application/javascript',
@@ -32,7 +32,7 @@ class Root(object):
         '''
         Index page
         '''
-        tmpl = ENV.get_template('index.html')
+        tmpl = ENVIRONMENT.get_template('index.html')
         return tmpl.render(app_name=settings.APP_NAME)
 
     @cherrypy.expose
@@ -77,11 +77,11 @@ class Root(object):
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------
-def start_app(env='local'):
+def start_app():
     try:
         global DB
-        Mongo_client = MongoClient(settings.SERVER[env]['mongo_addr'],
-                                   settings.SERVER[env]['mongo_port'])
+        Mongo_client = MongoClient(settings.ENV['mongo_addr'],
+                                   settings.ENV['mongo_port'])
         DB = Mongo_client[settings.DBNAME]
     except Exception, e:
         print 'unable to connect to mongodb!'

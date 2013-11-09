@@ -191,7 +191,7 @@ var init_page = function () {
 var search_query = function () {
     q = {};
     q.authors = $('#authors').val();
-    q.titles = $('#titles').val();
+    q.title = $('#titles').val();
     q.search_all = $('#search_all').val();
     STATE.query = q;
     render_page();

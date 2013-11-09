@@ -33,6 +33,8 @@ var push_to_history = function() {
     data[property] = $(field).val();
   });
 
+  data.page = STATE.page;
+
   var serialized = $.param(data);
 
   history.pushState(data, '', '#'+serialized);
@@ -97,6 +99,8 @@ var render_book = function(i, book) {
  */
 
 var render_page = function () {
+    push_to_history();
+
     $.ajax({
         type: 'POST',
         url: 'get_books',
@@ -181,6 +185,12 @@ var init_toolbar = function () {
     $('#prev_page').click(function () {prev_page(); });
     $('#next_page').click(function () {next_page(); });
     $('#page-msg').click(function () {
+      // going back to the homepage lists ALL books in the DB
+      // (i.e. resets the search)
+      _.each(state_field_mapping, function(field, property) {
+        $(field).val('');
+      });
+
       window.location.hash = '';
       location.reload();
     });
@@ -218,7 +228,12 @@ var modify_button = function (button, state) {
 
 var init_page = function () {
     init_toolbar();
-    render_page();
+    if (window.location.hash != '') {
+      var state = window.location.hash.substr(1);
+      handle_hash_state(state);
+    } else {
+      render_page();
+    }
 };
 
 /* --------------------------------------------------------------------------*/
@@ -229,9 +244,26 @@ var search_query = function () {
     q.title = $('#titles').val();
     q.search_all = $('#search_all').val();
     STATE.query = q;
-    STATE.page = 1;
-    push_to_history();
     render_page();
+};
+
+/* ----------------------------------------------------------------------------
+ * Handle onload browser history
+ * ----------------------------------------------------------------------------
+ */
+
+var handle_hash_state = function(state) {
+  var deserialized = $.deparam(state);
+
+  _.each(state_field_mapping, function(field, property) {
+    $(field).val(deserialized[property]);
+  });
+
+  if (deserialized.hasOwnProperty('page')) {
+    STATE.page = parseInt(deserialized['page'], 10);
+  }
+
+  return search_query();
 };
 
 /* --------------------------------------------------------------------------*/
@@ -258,26 +290,6 @@ $(document).ajaxStop(function () {
 $(function () {
     $(document).tooltip({track:true});
 });
-
-/* ----------------------------------------------------------------------------
- * Handle onload browser history
- * ----------------------------------------------------------------------------
- */
-
-var handle_hash_state = function(state) {
-  var deserialized = $.deparam(state);
-
-  _.each(state_field_mapping, function(field, property) {
-    $(field).val(deserialized[property]);
-  });
-
-  return search_query();
-};
-
-if (window.location.hash != '') {
-  var state = window.location.hash.substr(1);
-  handle_hash_state(state);
-}
 
 /* --------------------------------------------------------------------------*/
 

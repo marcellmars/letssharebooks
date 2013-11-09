@@ -159,6 +159,12 @@ var init_toolbar = function () {
         search_query();
     });
     modify_button('#prev_page', 'not-active');
+    $('#authors, #titles, #search_all').bind('keydown',function(e) {
+        /* if enter is pressed */
+        if(e.which == 13) {
+            search_query();
+        }
+    })
 };
 
 /* ----------------------------------------------------------------------------
@@ -194,6 +200,7 @@ var search_query = function () {
     q.title = $('#titles').val();
     q.search_all = $('#search_all').val();
     STATE.query = q;
+    STATE.page = 1;
     render_page();
 };
 

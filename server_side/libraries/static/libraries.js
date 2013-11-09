@@ -39,7 +39,7 @@ var render_book = function(i, book) {
           'format': format,
           'book': book
         });
-        formats = formats + string_parts;
+        formats = formats + " " + string_parts;
     });
 
     book.authors.map(function (author) {

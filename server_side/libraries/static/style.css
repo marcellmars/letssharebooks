@@ -1,12 +1,11 @@
 body {
     background: rgb(255, 255, 255);
-}
-
-#content {
-    display:block;
-    width:960px;
+    display: block;
+    width: 960px;
     margin: 0px auto;
 }
+
+#content {}
 
 img {
     position: absolute;
@@ -61,38 +60,61 @@ a {
     color:white;
 }
 
+#header {
+    margin-bottom: 7px;
+}
+
 #toolbar {
+    margin-bottom: 3px;
     text-align: center;
 }
 
 #toolbar .pagination {
-    height:30px;
+    height: 30px;
 }
 
-#toolbar #next_page {
-    height:30px;
-    width:90px;
-    float:right;
+.button {
+    cursor: pointer;
+    font-family: 'BitstreamVeraSansMono',Consolas,monospace;
+    font-size: 1em;
+    height: 30px;
+    width: 90px;
+}
+
+.active {
+    background-color: #ff0000;
+    color: #ffffff;
+    border: none;
+}
+
+.not-active {
+    background-color: #ffffff;
+    color: #ff0000;
+    border: 1px solid #ff0000;
 }
 
 #toolbar #prev_page {
-    height:30px;
-    width:90px;
-    float:left;
+    float: left;
+}
+
+#toolbar #next_page {
+    float: right;
+}
+
+#toolbar #page-msg {
+    width: 400px;
 }
 
 #search {
-    height:28px;
-    width:90px;
-    float:right;
+    height: 28px;
+    width: 90px;
+    float: right;
 }
 
-#ui-widget {
-    float:left;
-}
 
-#authors, #titles, #search_all {
-    width:288px;
+#authors, .#titles, #search_all {
+    width: 278px;
+    font-size: 1em;
 }
 
 .modal {
@@ -122,7 +144,7 @@ body.loading .modal {
     font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
-#more_about {
+.more_about {
     text-decoration: none;
 }
 

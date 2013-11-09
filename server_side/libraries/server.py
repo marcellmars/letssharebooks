@@ -3,12 +3,15 @@ import cherrypy
 import requests
 import glob
 import simplejson
-from pymongo import MongoClient
 import pymongo
-from jinja2 import Environment, FileSystemLoader
 import zipfile
 import traceback
 import libraries
+import settings
+from jinja2 import Environment, FileSystemLoader
+from pymongo import MongoClient
+
+#------------------------------------------------------------------------------
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ENV = Environment(loader=FileSystemLoader('{}/templates'.format(CURRENT_DIR)))
@@ -24,34 +27,29 @@ DB = None
 # Exposed resources
 #------------------------------------------------------------------------------
 class Root(object):
-    # basic index page
     @cherrypy.expose
     def index(self):
+        '''
+        Index page
+        '''
         tmpl = ENV.get_template('index.html')
-        return tmpl.render()
+        return tmpl.render(app_name=settings.APP_NAME)
 
-    # ajax backend for fetching books
-    @cherrypy.expose
-    @cherrypy.tools.json_out()
-    @cherrypy.tools.json_in()
-    def render_page(self):
-        json_books = JSONBooks()
-        json_request = cherrypy.request.json
-        return json_books.get_metadata(
-            json_request['start'],
-            json_request['offset'],
-            json_request['query'].encode('utf-8'))
-
-    # end-point for uploading user catalogs
     @cherrypy.expose
     def upload_catalog(self, uploaded_file):
+        '''
+        End-point for uploading user catalogs
+        '''
         try:
+            # read temporary file and write to disk
             content = uploaded_file.file.read()
             out = open(uploaded_file.filename, "wb")
             out.write(content)
             out.close()
+            # unzip file
             zfile = zipfile.ZipFile(uploaded_file.filename)
             content = zfile.read('library.json')
+            # decode from json and import to database
             catalog = simplejson.loads(content)
             libraries.import_catalog(DB, catalog)
             return 'ok %s' % uploaded_file.filename
@@ -60,41 +58,37 @@ class Root(object):
 
     @cherrypy.expose
     def get_catalog(self, uuid):
+        '''
+        Returns whole catalog
+        '''
         return libraries.get_catalog(DB, uuid)
 
-    # ajax backend for fetching books
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def get_books(self):
+        '''
+        Ajax backend for fetching books
+        '''
         req = cherrypy.request.json
-        return libraries.get_books(DB, req['page'])
+        page = req.get('page')
+        query = req.get('query')
+        return libraries.get_books(DB, page, query)
 
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------
-def start_app(port=4321, production=False):
-    mongo_addr = '127.0.0.1'
-    mongo_port = 27017
-    PREFIX_URL = 'http://www'
-    if production == 'live':
-        mongo_addr = 'localhost'
-        mongo_port = 27017
-        PREFIX_URL = 'https://www'
-    elif production == 'docker':
-        mongo_addr = '172.17.42.1'
-        mongo_port = 27017
-        PREFIX_URL = 'http://www'
-
+def start_app(env='local'):
     try:
         global DB
-        Mongo_client = MongoClient(mongo_addr, mongo_port)
-        DB = Mongo_client.letssharebooks
+        Mongo_client = MongoClient(settings.SERVER[env]['mongo_addr'],
+                                   settings.SERVER[env]['mongo_port'])
+        DB = Mongo_client[settings.DBNAME]
     except Exception, e:
         print 'unable to connect to mongodb!'
         return
     
-    cherrypy.server.socket_host = '0.0.0.0'
-    cherrypy.server.socket_port = 4321
+    cherrypy.server.socket_host = settings.HOST
+    cherrypy.server.socket_port = settings.PORT
     cherrypy.quickstart(Root(), '/', config=CONF)
 
 if __name__ == '__main__':

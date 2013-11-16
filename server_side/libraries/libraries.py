@@ -47,7 +47,10 @@ def remove_from_library(db, library_uuid, books_uuids):
     '''
     Remove books from the library and update catalog
     '''
+    if len(books_uuids) == 0:
+        return
     for uuid in books_uuids:
+        print 'removing %s' % uuid
         db.books.remove({'uuid':uuid})
     db.catalog.update({'library_uuid': library_uuid},
                       {'$pull': {'books': {'$in': books_uuids}}},
@@ -60,6 +63,8 @@ def add_to_library(db, library_uuid, books):
     Adds books to the database and modifies catalog entry. Mostly used with
     import_catalog function.
     '''
+    if len(books) == 0:
+        return
     books_uuid = []
     # insert books in the global library and take uuids
     for book in books:

@@ -91,7 +91,7 @@ def get_catalog(db, uuid):
     Read catalog entry from the database and return json representation
     '''
     return serialize2json(
-        [i for i in db.catalog.find({'library_uuid':uuid})])
+        db.catalog.find_one({'library_uuid':uuid}))
 
 #------------------------------------------------------------------------------
         

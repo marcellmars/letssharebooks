@@ -18,30 +18,44 @@ def import_catalog(db, catalog):
     '''
     library_uuid = catalog['library_uuid']
     last_modified = catalog['last_modified']
-    books = catalog['books']
     # if never seen this library before...
     db_cat = db.catalog.find_one({'library_uuid':library_uuid})
     if not db_cat:
-        print 'new library...'
-        add_library(db, library_uuid, books, last_modified)
+        print 'new library %s' % library_uuid
+        add_to_library(db, library_uuid, catalog['books']['add'])
+        update_catalog_timestamp(db, library_uuid, last_modified)
         return
-    # this library is already in the db -- is it in sync?
-    db_cat_len = len(db_cat['books'])
-    added_books = len(books) > db_cat_len
-    changed_timestamp = last_modified != db_cat['last_modified']
-    if added_books or changed_timestamp:
-        # user library has changed -- update needed
-        print 'updating library %s' % library_uuid
-        # first remove all books
-        db.books.remove({'library_uuid':library_uuid})
-        # add books and create catalog entry
-        add_library(db, library_uuid, books, last_modified)
-    else:
-        print 'nothing changed...'
+
+    # now the case when library should be synchronized
+    print 'updating library %s' % library_uuid
+    # first remove books as requested
+    remove_from_library(db, library_uuid, catalog['books']['remove'])
+    # add books as requested
+    add_to_library(db, library_uuid, catalog['books']['add'])
+    update_catalog_timestamp(db, library_uuid, last_modified)
 
 #------------------------------------------------------------------------------
 
-def add_library(db, library_uuid, books, last_modified):
+def update_catalog_timestamp(db, library_uuid, last_modified):
+    db.catalog.update({'library_uuid': library_uuid},
+                      {'$set': {'last_modified': last_modified}},
+                      upsert=True, multi=False)
+
+#------------------------------------------------------------------------------
+
+def remove_from_library(db, library_uuid, books_uuids):
+    '''
+    Remove books from the library and update catalog
+    '''
+    for uuid in books_uuids:
+        db.books.remove({'uuid':uuid})
+    db.catalog.update({'library_uuid': library_uuid},
+                      {'$pull': {'books': {'$in': books_uuids}}},
+                      upsert=True, multi=False)
+    
+#------------------------------------------------------------------------------
+    
+def add_to_library(db, library_uuid, books):
     '''
     Adds books to the database and modifies catalog entry. Mostly used with
     import_catalog function.
@@ -62,9 +76,7 @@ def add_library(db, library_uuid, books, last_modified):
             books_uuid.append(book['uuid'])
     # update catalog metadata collection
     db.catalog.update({'library_uuid': library_uuid},
-                      {'$set':{'books': books_uuid,
-                               'last_modified': last_modified,
-                               'tunnel':1234}}, # testing...
+                      {'$push': {'books': { '$each': books_uuid}}},
                       upsert=True, multi=False)
 
 #------------------------------------------------------------------------------
@@ -86,8 +98,7 @@ def get_books(db, page, query={}):
     # query
     q = {}
     # get all libraries that have active ssh tunnel
-    lib_uuids = [i['library_uuid'] for i in db.catalog.find(
-            {'tunnel':{ '$gt': 0 }})]
+    lib_uuids = [i['library_uuid'] for i in db.catalog.find()]
     q['library_uuid'] = {'$in':lib_uuids}
     # extract search parameters
     for k,v in query.iteritems():

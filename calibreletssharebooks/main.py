@@ -5,7 +5,7 @@ from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resource
 from calibre_plugins.letssharebooks.config import prefs
 from calibre_plugins.letssharebooks import requests
 from calibre.library.server import server_config
-import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, threading, time, zipfile, StringIO, zlib
+import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, threading, time, zipfile, StringIO, zlib, json
 from calibre.utils.config import JSONConfig
 
 
@@ -93,63 +93,58 @@ class UrlLibThread(QThread):
         self.terminate()
 
 class MetadataLibThread(QThread):
-    def __init__(self, debug_log):
+    def __init__(self, main_gui):
         QThread.__init__(self)
-        self.debug_log = debug_log
-        opts, args = server_config().option_parser().parse_args(['calibre-server'])
-        self.calibre_server_port = opts.port
-        self.base_url = "http://127.0.0.1:{calibre_server_port}/".format(calibre_server_port=self.calibre_server_port)
-        self.book_metadata_url = 'ajax/book/'
+        self.main_gui = main_gui
+        self.sql_db = self.main_gui.current_db
+        self.library_id = self.sql_db.library_id
 
-    def get_book_metadata(self, book_id):
-        try:
-            book_metadata = requests.get("{base_url}{book_metadata_url}{book_id}".format(base_url=self.base_url, book_metadata_url=self.book_metadata_url, book_id=book_id))
-            if book_metadata.ok:
-                return book_metadata.content
-            else:
-                return False
-
-        except requests.exceptions.RequestException as e:
-            return False
-
-    def get_books_ids(self, total_num=1000000):
-        books_ids_url = 'ajax/search?query=&num={total_num}&sort=last_modified'.format(total_num=total_num)
-        try:
-            books_ids_request = requests.get("{base_url}{books_ids_url}".format(base_url=self.base_url, books_ids_url=books_ids_url))
-            if books_ids_request.ok:
-                return books_ids_request.json()['book_ids']
-            else:
-                return False
-
-        except requests.exceptions.RequestException as e:
-            return False
+    def get_book_metadata(self):
+        books_metadata = []
+        for book_id in self.sql_db.all_ids():
+            book_metadata = {}
+            book_meta = self.sql_db.get_metadata(book_id, index_is_id = True)
+            for field in book_meta.standard_field_keys():
+                book_metadata[field] = getattr(book_meta, field)
+            for field in book_meta.custom_field_keys():
+                book_metadata[field] = getattr(book_meta, field)
+            try:
+                book_metadata['last_modified']
+            except:
+                book_metadata['last_modified'] = book_metadata['timestamp']
+            books_metadata.append(book_metadata)
+        return books_metadata
 
     def run(self):
-        books_ids = self.get_books_ids()
-        if books_ids:
-            json_string = ""
-            try:
-                mode = zipfile.ZIP_DEFLATED
-            except:
-                mode = zipfile.ZIP_STORED
-            with zipfile.ZipFile('library.json.zip', 'w', mode) as zif:
-                with open('library.json', 'w') as file:
-                    prefs = JSONConfig('plugins/letssharebooks.conf')
-                    json_string += '{{"library_uuid": "{}",'.format(str(prefs['library_uuid']))
-                    json_string += '"last_modified": "1383473174.624734", '
-                    json_string += '"books" : ['
-                    for book in map(self.get_book_metadata, books_ids):
-                        json_string += "{},\n".format(book)
-                    json_string = json_string[:-2] + "]}"
-                    file.write(json_string)
-                file.close()
-                zif.write('library.json')
-                zif.close()
-            with open('library.json.zip', 'r') as file:
-                r = requests.post("http://localhost:4321/upload_catalog", files={'uploaded_file': file})
-            
-            self.debug_log.addItem(r.content)
-            return
+        json_string = u""
+        try:
+            mode = zipfile.ZIP_DEFLATED
+        except:
+            mode = zipfile.ZIP_STORED
+        with zipfile.ZipFile('library.json.zip', 'w', mode) as zif:
+            with open('library.json', 'w') as file:
+                prefs = JSONConfig('plugins/letssharebooks.conf')
+                json_string += '{{"library_uuid": "{}",'.format(str(self.library_id))
+                json_string += '"last_modified": "{}", '.format("21341234")#book_metadata['last_modified'])
+                json_string += '"books" : {'
+                json_string += '"remove": [],'
+                json_string += '"add": ['
+                books_metadata = self.get_book_metadata()
+                for book_field in books_metadata:
+                    json_string += '{'
+                    json_string += '"{}" : "{}", '.format(book_field, books_metadata[book_field])
+                    json_string += json_string[:-2]
+                    json_string += '}'
+                json_string += '}}'
+                file.write(json_string)
+            file.close()
+            zif.write('library.json')
+            zif.close()
+        with open('library.json.zip', 'r') as file:
+            r = requests.post("http://localhost:4321/upload_catalog", files={'uploaded_file': file})
+
+        self.debug_log.addItem(r.content)
+        return
 
 class LetsShareBooksDialog(QDialog):
     def __init__(self, gui, icon, do_user_config, qaction, us):
@@ -288,7 +283,7 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.debug_log)
         self.debug_log.addItem("Initiatied!")
       
-        self.metadata_thread = MetadataLibThread(self.debug_log)
+        self.metadata_thread = MetadataLibThread(self.main_gui)
         
         self.metadata_button = QPushButton("Get library metadata!")
         self.metadata_button.setObjectName("url2")

@@ -3,6 +3,7 @@
  * ----------------------------------------------------------------------------
  */
 
+var DOMAIN = 'memoryoftheworld.org'
 var PREFIX_URL = 'https://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
@@ -55,7 +56,7 @@ var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim())
  */
 var render_book = function(i, book) {
     var formats = '',
-        base_url = [ PREFIX_URL, book.tunnel, '.', book.domain ].join(''),
+        base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join(''),
         authors = '<div id="authorz">';
     
     book.formats.map(function (format) {

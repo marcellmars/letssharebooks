@@ -92,9 +92,11 @@ class UrlLibThread(QThread):
     def stop(self):
         self.terminate()
 
-class MetadataLibThread(QThread):
-    def __init__(self, main_gui):
-        QThread.__init__(self)
+#class MetadataLibThread(QThread):
+class MetadataLibThread():
+    def __init__(self, debug_log, main_gui):
+        #QThread.__init__(self)
+        self.debug_log = debug_log
         self.main_gui = main_gui
         self.sql_db = self.main_gui.current_db
         self.library_id = self.sql_db.library_id
@@ -105,9 +107,10 @@ class MetadataLibThread(QThread):
             book_metadata = {}
             book_meta = self.sql_db.get_metadata(book_id, index_is_id = True)
             for field in book_meta.standard_field_keys():
-                book_metadata[field] = getattr(book_meta, field)
+                book_metadata[field] = str(getattr(book_meta, field))
+
             for field in book_meta.custom_field_keys():
-                book_metadata[field] = getattr(book_meta, field)
+                book_metadata[field] = str(getattr(book_meta, field))
             try:
                 book_metadata['last_modified']
             except:
@@ -116,7 +119,7 @@ class MetadataLibThread(QThread):
         return books_metadata
 
     def run(self):
-        json_string = u""
+        library = {}
         try:
             mode = zipfile.ZIP_DEFLATED
         except:
@@ -124,18 +127,13 @@ class MetadataLibThread(QThread):
         with zipfile.ZipFile('library.json.zip', 'w', mode) as zif:
             with open('library.json', 'w') as file:
                 prefs = JSONConfig('plugins/letssharebooks.conf')
-                json_string += '{{"library_uuid": "{}",'.format(str(self.library_id))
-                json_string += '"last_modified": "{}", '.format("21341234")#book_metadata['last_modified'])
-                json_string += '"books" : {'
-                json_string += '"remove": [],'
-                json_string += '"add": ['
+                library['library_uuid'] = str(self.library_id)
+                library['last_modified'] = str(datetime.datetime.now())
+                library['books'] = {}
                 books_metadata = self.get_book_metadata()
-                for book_field in books_metadata:
-                    json_string += '{'
-                    json_string += '"{}" : "{}", '.format(book_field, books_metadata[book_field])
-                    json_string += json_string[:-2]
-                    json_string += '}'
-                json_string += '}}'
+                library['books']['remove'] = []
+                library['books']['add'] = books_metadata
+                json_string = json.dumps(library)
                 file.write(json_string)
             file.close()
             zif.write('library.json')
@@ -283,7 +281,7 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.debug_log)
         self.debug_log.addItem("Initiatied!")
       
-        self.metadata_thread = MetadataLibThread(self.main_gui)
+        self.metadata_thread = MetadataLibThread(self.debug_log, self.main_gui)
         
         self.metadata_button = QPushButton("Get library metadata!")
         self.metadata_button.setObjectName("url2")
@@ -476,7 +474,8 @@ class LetsShareBooksDialog(QDialog):
         webbrowser.open(url)
 
     def get_metadata(self):
-        self.metadata_thread.start()
+        #self.metadata_thread.start()
+        self.metadata_thread.run()
 
     def show_debug(self):
         if self.us.debug_item:

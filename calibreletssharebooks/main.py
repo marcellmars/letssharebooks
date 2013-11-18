@@ -144,7 +144,7 @@ class MetadataLibThread():
             with open('library.json', 'w') as file:
                 library['library_uuid'] = self.library_id
                 library['last_modified'] = str(sorted([book['last_modified'] for book in books_metadata])[-1])
-                library['tunnel_port'] = self.us.port
+                library['tunnel'] = self.us.port
                 library['books'] = {}
                 library['books']['remove'] = [book['uuid'] for book in books_metadata if book['uuid'] in removed_books]
                 library['books']['add'] = [book for book in books_metadata if book['uuid'] in added_books]

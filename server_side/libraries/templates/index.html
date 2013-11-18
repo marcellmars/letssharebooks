@@ -27,14 +27,14 @@
   </script>
 
   <script type="text/x-template" id="book-parts-tmpl">
-    <a href="<%= base_url %>/get/<%= format %>/<%= book.id %>.<%= format %>"><%= format.toUpperCase() %></a>
+    <a href="<%= base_url %>/get/<%= format %>/<%= book.application_id %>.<%= format %>"><%= format.toUpperCase() %></a>
   </script>
 
   <script type="text/x-template" id="book-content-tmpl">
     <div class="cover">
-      <a href="<%= base_url %>/browse/book/<%= book.id %>" target="_blank" class="more_about" title="about this book"><img src="<%= base_url %>/get/cover/<%= book.id %>.jpg" /></a>
-      <h2><a href="<%= base_url %>/browse/book/<%= book.id %>" target="_blank" class="more_about" title="about this book"><%= book.title %></a><br /><%= authors %></h2>
-      <span class="download">Metadata: <a href="<%= base_url %>/get/opf/<%= book.id %> <%= book_title_stripped %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
+      <a href="<%= base_url %>/browse/book/<%= book.application_id %>" target="_blank" class="more_about" title="about this book"><img src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" /></a>
+      <h2><a href="<%= base_url %>/browse/book/<%= book.application_id %>" target="_blank" class="more_about" title="about this book"><%= book.title %></a><br /><%= authors %></h2>
+      <span class="download">Metadata: <a href="<%= base_url %>/get/opf/<%= book.application_id %> <%= book_title_stripped %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
     </div>
   </script>
 

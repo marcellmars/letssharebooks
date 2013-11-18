@@ -18,11 +18,12 @@ def import_catalog(db, catalog):
     '''
     library_uuid = catalog['library_uuid']
     last_modified = catalog['last_modified']
+    tunnel = catalog['tunnel']
     # if never seen this library before...
     db_cat = db.catalog.find_one({'library_uuid':library_uuid})
     if not db_cat:
         print 'new library %s' % library_uuid
-        add_to_library(db, library_uuid, catalog['books']['add'])
+        add_to_library(db, library_uuid, tunnel, catalog['books']['add'])
         update_catalog_timestamp(db, library_uuid, last_modified)
         return
 
@@ -58,7 +59,7 @@ def remove_from_library(db, library_uuid, books_uuids):
     
 #------------------------------------------------------------------------------
     
-def add_to_library(db, library_uuid, books):
+def add_to_library(db, library_uuid, tunnel, books):
     '''
     Adds books to the database and modifies catalog entry. Mostly used with
     import_catalog function.
@@ -70,6 +71,7 @@ def add_to_library(db, library_uuid, books):
     for book in books:
         # add id of the library to the each book
         book['library_uuid'] = library_uuid
+        book['tunnel'] = tunnel
         try:
             db.books.insert(book)
             # collect book uuids for catalog entry

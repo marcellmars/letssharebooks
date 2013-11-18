@@ -68,10 +68,7 @@ class UrlLibThread(QThread):
     def run(self):
         if self.us.ssh_proc and self.us.lsb_url[:4] == "http":
             try:
-                if self.us.counter < 30:
-                    time.sleep(1)
-                else:
-                    time.sleep(30)
+                time.sleep(120)
                 self.us.counter += 1
                 opener = urllib2.build_opener()
                 opener.addheaders = [("User-agent", "Checking {0}".format(self.us.lsb_url))] 

@@ -29,7 +29,6 @@ class UnitedStates:
         self.share_button_text = "Start sharing"
         self.lsb_url_text = 'Be a librarian. Share your library.'
         self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
-        self.win_port = 10000
         self.button_state = "start"
         self.connecting = False
         self.disconnecting = False
@@ -45,6 +44,7 @@ class UnitedStates:
         self.connecting_now = None
         self.found_url = None
         self.counter = 0
+        self.port = ""
 
 class LetsShareBooksUI(InterfaceAction):
 

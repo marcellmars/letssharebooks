@@ -76,7 +76,6 @@ class UrlLibThread(QThread):
                 opener = urllib2.build_opener()
                 opener.addheaders = [("User-agent", "Checking {0}".format(self.us.lsb_url))] 
                 self.us.urllib_result = opener.open(self.us.lsb_url).getcode()
-                #self.us.urllib_result = urllib2.urlopen(self.us.lsb_url).getcode() 
                 self.us.http_error = None
                 self.us.check_finished = True
             except urllib2.HTTPError or urllib2.URLError as e:
@@ -94,12 +93,12 @@ class UrlLibThread(QThread):
 
 #class MetadataLibThread(QThread):
 class MetadataLibThread():
-    def __init__(self, debug_log, main_gui):
+    def __init__(self, debug_log, sql_db, unitedstates):
         #QThread.__init__(self)
+        self.us = unitedstates
         self.debug_log = debug_log
-        self.main_gui = main_gui
-        self.sql_db = self.main_gui.current_db
-        self.library_id = self.sql_db.library_id
+        self.sql_db = sql_db
+        self.library_id = str(self.sql_db.library_id)
 
     def get_book_metadata(self):
         books_metadata = []
@@ -118,7 +117,24 @@ class MetadataLibThread():
             books_metadata.append(book_metadata)
         return books_metadata
 
+    def get_server_list(self, uuid):
+        #r = requests.get("https://library.{}/get_catalog".format(prefs['lsb_server'], params={'uuid': uuid})
+        r = requests.get("http://localhost:4321/get_catalog", params={'uuid': uuid})
+        catalog = json.loads(r.content)
+        if catalog is None:
+            return []
+        else:
+            return catalog['books']
+
     def run(self):
+        books_metadata = self.get_book_metadata() 
+        
+        server_list = set(self.get_server_list(self.library_id))
+        local_list = set([book['uuid'] for book in books_metadata])
+        
+        removed_books = server_list - local_list
+        added_books = local_list - server_list
+
         library = {}
         try:
             mode = zipfile.ZIP_DEFLATED
@@ -126,13 +142,12 @@ class MetadataLibThread():
             mode = zipfile.ZIP_STORED
         with zipfile.ZipFile('library.json.zip', 'w', mode) as zif:
             with open('library.json', 'w') as file:
-                prefs = JSONConfig('plugins/letssharebooks.conf')
-                library['library_uuid'] = str(self.library_id)
-                library['last_modified'] = str(datetime.datetime.now())
+                library['library_uuid'] = self.library_id
+                library['last_modified'] = str(sorted([book['last_modified'] for book in books_metadata])[-1])
+                library['tunnel_port'] = self.us.port
                 library['books'] = {}
-                books_metadata = self.get_book_metadata()
-                library['books']['remove'] = []
-                library['books']['add'] = books_metadata
+                library['books']['remove'] = [book['uuid'] for book in books_metadata if book['uuid'] in removed_books]
+                library['books']['add'] = [book for book in books_metadata if book['uuid'] in added_books]
                 json_string = json.dumps(library)
                 file.write(json_string)
             file.close()
@@ -281,7 +296,8 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.debug_log)
         self.debug_log.addItem("Initiatied!")
       
-        self.metadata_thread = MetadataLibThread(self.debug_log, self.main_gui)
+        self.sql_db = self.gui.current_db
+        self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
         
         self.metadata_button = QPushButton("Get library metadata!")
         self.metadata_button.setObjectName("url2")
@@ -332,9 +348,9 @@ class LetsShareBooksDialog(QDialog):
 
             if sys.platform == "win32":
                 self.win_reg = subprocess.Popen("regedit /s .hosts.reg")
-                self.us.win_port = int(random.random()*40000+10000)
-                self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@{2} -R {0}:localhost:{1} -P 722".format(self.us.win_port, self.calibre_server_port, prefs['lsb_server']), shell=True)
-                self.us.lsb_url = "https://www{0}.{1}".format(self.us.win_port, prefs['lsb_server'])
+                self.us.port = str(int(random.random()*40000+10000))
+                self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@{2} -R {0}:localhost:{1} -P 722".format(self.us.port, self.calibre_server_port, prefs['lsb_server']), shell=True)
+                self.us.lsb_url = "https://www{0}.{1}".format(self.us.port, prefs['lsb_server'])
                 #_dev_self.us.lsb_url = "http://www{0}.{1}".format(self.us.win_port, prefs['lsb_server'])
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
                 self.us.found_url = True
@@ -413,7 +429,8 @@ class LetsShareBooksDialog(QDialog):
                     m = re.match("^Allocated port (.*) for .*", line)
                     try:
                         #self.debug_log.addItem(self.us.lsb_url)
-                        self.us.lsb_url = 'https://www{0}.{1}'.format(m.groups()[0], prefs['lsb_server'])
+                        self.us.port = m.groups()[0]
+                        self.us.lsb_url = 'https://www{0}.{1}'.format(self.us.port, prefs['lsb_server'])
                         #_dev_self.us.lsb_url = 'http://www{0}.{1}'.format(m.groups()[0], prefs['lsb_server'])
                         self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
                         self.us.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'

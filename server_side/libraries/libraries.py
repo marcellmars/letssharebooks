@@ -15,7 +15,8 @@ PUBLIC_BOOK_FIELDS = {
     'title':1,
     'formats':1,
     'authors':1,
-    'tunnel':1
+    'tunnel':1,
+    '_id': 0
     }
 
 #------------------------------------------------------------------------------
@@ -104,7 +105,8 @@ def get_catalog(db, uuid):
     Read catalog entry from the database and return json representation
     '''
     return serialize2json(
-        db.catalog.find_one({'library_uuid':uuid}))
+        db.catalog.find_one({'library_uuid':uuid},
+                            {'books':1, 'last_modified':1, '_id' : 0}))
 
 #------------------------------------------------------------------------------
         

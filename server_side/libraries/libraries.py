@@ -24,7 +24,7 @@ def import_catalog(db, catalog):
     if not db_cat:
         print 'new library %s' % library_uuid
         add_to_library(db, library_uuid, tunnel, catalog['books']['add'])
-        update_catalog_timestamp(db, library_uuid, last_modified)
+        update_catalog(db, library_uuid, last_modified, tunnel)
         return
 
     # now the case when library should be synchronized
@@ -32,14 +32,15 @@ def import_catalog(db, catalog):
     # first remove books as requested
     remove_from_library(db, library_uuid, catalog['books']['remove'])
     # add books as requested
-    add_to_library(db, library_uuid, catalog['books']['add'])
-    update_catalog_timestamp(db, library_uuid, last_modified)
+    add_to_library(db, library_uuid, tunnel, catalog['books']['add'])
+    update_catalog(db, library_uuid, last_modified, tunnel)
 
 #------------------------------------------------------------------------------
 
-def update_catalog_timestamp(db, library_uuid, last_modified):
+def update_catalog(db, library_uuid, last_modified, tunnel):
     db.catalog.update({'library_uuid': library_uuid},
-                      {'$set': {'last_modified': last_modified}},
+                      {'$set': {'last_modified': last_modified,
+                                'tunnel':tunnel}},
                       upsert=True, multi=False)
 
 #------------------------------------------------------------------------------
@@ -83,7 +84,7 @@ def add_to_library(db, library_uuid, tunnel, books):
             books_uuid.append(book['uuid'])
     # update catalog metadata collection
     db.catalog.update({'library_uuid': library_uuid},
-                      {'$push': {'books': { '$each': books_uuid}}},
+                      {'$pushAll': {'books': books_uuid}},
                       upsert=True, multi=False)
 
 #------------------------------------------------------------------------------
@@ -105,8 +106,8 @@ def get_books(db, page, query={}):
     # query
     q = {}
     # get all libraries that have active ssh tunnel
-    lib_uuids = [i['library_uuid'] for i in db.catalog.find()]
-    q['library_uuid'] = {'$in':lib_uuids}
+    lib_uuids = [i['library_uuid'] for i in db.catalog.find({'tunnel': {'$gt':0}})]
+    q['library_uuid'] = {'$in': lib_uuids}
     # extract search parameters
     for k,v in query.iteritems():
         if v != '' and k in ['authors', 'titles']:

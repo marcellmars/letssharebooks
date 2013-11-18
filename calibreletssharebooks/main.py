@@ -68,7 +68,10 @@ class UrlLibThread(QThread):
     def run(self):
         if self.us.ssh_proc and self.us.lsb_url[:4] == "http":
             try:
-                time.sleep(120)
+                if self.us.counter < 60:
+                    time.sleep(2)
+                else:
+                    time.sleep(30) 
                 self.us.counter += 1
                 opener = urllib2.build_opener()
                 opener.addheaders = [("User-agent", "Checking {0}".format(self.us.lsb_url))] 
@@ -88,10 +91,10 @@ class UrlLibThread(QThread):
     def stop(self):
         self.terminate()
 
-#class MetadataLibThread(QThread):
-class MetadataLibThread():
+class MetadataLibThread(QThread):
+#class MetadataLibThread():
     def __init__(self, debug_log, sql_db, unitedstates):
-        #QThread.__init__(self)
+        QThread.__init__(self)
         self.us = unitedstates
         self.debug_log = debug_log
         self.sql_db = sql_db
@@ -289,18 +292,18 @@ class LetsShareBooksDialog(QDialog):
         self.about_project_button.clicked.connect(functools.partial(self.open_url2, "http://www.memoryoftheworld.org"))
         self.ll.addWidget(self.about_project_button)
         
-        #self.debug_log = QListWidget()
-        #self.ll.addWidget(self.debug_log)
-        #self.debug_log.addItem("Initiatied!")
+        self.debug_log = QListWidget()
+        self.ll.addWidget(self.debug_log)
+        self.debug_log.addItem("Initiatied!")
       
-        #self.sql_db = self.gui.current_db
-        #self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
+        self.sql_db = self.gui.current_db
+        self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
         
-        #self.metadata_button = QPushButton("Get library metadata!")
-        #self.metadata_button.setObjectName("url2")
-        #self.metadata_button.setToolTip('Get library metadata!')
-        #self.metadata_button.clicked.connect(self.get_metadata)
-        #self.ll.addWidget(self.metadata_button)
+        self.metadata_button = QPushButton("Get library metadata!")
+        self.metadata_button.setObjectName("url2")
+        self.metadata_button.setToolTip('Get library metadata!')
+        self.metadata_button.clicked.connect(self.get_metadata)
+        self.ll.addWidget(self.metadata_button)
 
         self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
         self.upgrade_button.setObjectName("url2")
@@ -405,7 +408,7 @@ class LetsShareBooksDialog(QDialog):
 
         elif self.us.connecting:
             if self.us.connecting_now:
-                if (datetime.datetime.now() - self.us.connecting_now) > datetime.timedelta(seconds=10):
+                if (datetime.datetime.now() - self.us.connecting_now) > datetime.timedelta(seconds=130):
                     #self.debug_log.addItem("Timeout!")
                     self.us.http_error = None
                     self.us.lost_connection = True
@@ -488,8 +491,8 @@ class LetsShareBooksDialog(QDialog):
         webbrowser.open(url)
 
     def get_metadata(self):
-        #self.metadata_thread.start()
-        self.metadata_thread.run()
+        self.metadata_thread.start()
+        #self.metadata_thread.run()
 
     def show_debug(self):
         if self.us.debug_item:

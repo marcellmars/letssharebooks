@@ -10,6 +10,16 @@ import settings
 
 #------------------------------------------------------------------------------
 
+PUBLIC_BOOK_FIELDS = {
+    'application_id':1,
+    'title':1,
+    'formats':1,
+    'authors':1,
+    'tunnel':1
+    }
+
+#------------------------------------------------------------------------------
+
 def import_catalog(db, catalog):
     '''
     Imports user calibre catalog to the database.
@@ -122,7 +132,7 @@ def get_books(db, page, query={}):
                     {"identifiers":{"$regex":".*{}.*".format(v), "$options": 'i'}}]}
 
     # get all books that belong to libraries with active tunnel
-    books = db.books.find(q)
+    books = db.books.find(q, PUBLIC_BOOK_FIELDS)
     authors = books.distinct('authors')
     titles = books.distinct('title_sort')
     # paginate books

@@ -292,18 +292,18 @@ class LetsShareBooksDialog(QDialog):
         self.about_project_button.clicked.connect(functools.partial(self.open_url2, "http://www.memoryoftheworld.org"))
         self.ll.addWidget(self.about_project_button)
         
-        self.debug_log = QListWidget()
-        self.ll.addWidget(self.debug_log)
-        self.debug_log.addItem("Initiatied!")
+        #self.debug_log = QListWidget()
+        #self.ll.addWidget(self.debug_log)
+        #self.debug_log.addItem("Initiatied!")
       
-        self.sql_db = self.gui.current_db
-        self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
+        #self.sql_db = self.gui.current_db
+        #self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
         
-        self.metadata_button = QPushButton("Get library metadata!")
-        self.metadata_button.setObjectName("url2")
-        self.metadata_button.setToolTip('Get library metadata!')
-        self.metadata_button.clicked.connect(self.get_metadata)
-        self.ll.addWidget(self.metadata_button)
+        #self.metadata_button = QPushButton("Get library metadata!")
+        #self.metadata_button.setObjectName("url2")
+        #self.metadata_button.setToolTip('Get library metadata!')
+        #self.metadata_button.clicked.connect(self.get_metadata)
+        #self.ll.addWidget(self.metadata_button)
 
         self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
         self.upgrade_button.setObjectName("url2")
@@ -319,7 +319,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.resize(self.sizeHint())
 
-        self.se = open("lsb.log", "w+b")
+        self.se = open("/tmp/lsb.log", "w+b")
         self.so = self.se
 
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)

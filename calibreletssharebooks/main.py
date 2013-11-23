@@ -1,5 +1,5 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
-from PyQt4.Qt import QDialog, QHBoxLayout, QPushButton, QMessageBox, QLabel, QTimer, QTextEdit, QLineEdit, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QThread, QListWidget
+from PyQt4.Qt import QDialog, QHBoxLayout, QPushButton, QMessageBox, QLabel, QTimer, QTextEdit, QLineEdit, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QThread, QListWidget, QStringList
 from calibre.gui2.ui import get_gui as calibre_main
 from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon, create_menu_action_unique
 from calibre_plugins.letssharebooks.config import prefs
@@ -7,7 +7,6 @@ from calibre_plugins.letssharebooks import requests
 from calibre.library.server import server_config
 import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, threading, time, zipfile, StringIO, zlib, json
 from calibre.utils.config import JSONConfig
-
 
 __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
@@ -106,21 +105,37 @@ class MetadataLibThread(QThread):
             book_metadata = {}
             book_meta = self.sql_db.get_metadata(book_id, index_is_id = True)
             for field in book_meta.standard_field_keys():
-                book_metadata[field] = str(getattr(book_meta, field))
+                #self.debug_log.addItem("field: {}".format(field))
+                if field == 'last_modified' or field == 'timestamp' or field == 'pubdate':
+                    book_metadata[field] = str(getattr(book_meta, field))
+                    #self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
+                elif field == 'formats':
+                    formats = getattr(book_meta, field)
+                    book_metadata[field] = []
+                    if formats:
+                        book_metadata[field] = [book_format for book_format in formats]
+                else:
+                    book_metadata[field] = getattr(book_meta, field)
+                    #self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
 
             for field in book_meta.custom_field_keys():
-                book_metadata[field] = str(getattr(book_meta, field))
+                if field == 'last_modified' or field == 'timestamp' or field == 'pubdate':
+                    book_metadata[field] = str(getattr(book_meta, field))
+                else:
+                    book_metadata[field] = getattr(book_meta, field)
+
             try:
                 book_metadata['last_modified']
             except:
                 book_metadata['last_modified'] = book_metadata['timestamp']
+            
             books_metadata.append(book_metadata)
         return books_metadata
 
     def get_server_list(self, uuid):
-        #r = requests.get("https://library.{}/get_catalog".format(prefs['lsb_server'], params={'uuid': uuid})
-        r = requests.get("http://localhost:4321/get_catalog", params={'uuid': uuid})
-        catalog = json.loads(r.content)
+        #r = requests.get("https://library.{}/get_catalog".format(prefs['lsb_server'], params={'uuid': uuid}))
+        r = requests.get("http://library.{}/get_catalog".format(prefs['lsb_server']), params={'uuid': uuid})
+        catalog = r.json()
         if catalog is None:
             return []
         else:
@@ -128,7 +143,7 @@ class MetadataLibThread(QThread):
 
     def run(self):
         books_metadata = self.get_book_metadata() 
-        
+        #map(self.debug_log.addItem, map(str, books_metadata))
         server_list = set(self.get_server_list(self.library_id))
         local_list = set([book['uuid'] for book in books_metadata])
         
@@ -144,7 +159,7 @@ class MetadataLibThread(QThread):
             with open('library.json', 'w') as file:
                 library['library_uuid'] = self.library_id
                 library['last_modified'] = str(sorted([book['last_modified'] for book in books_metadata])[-1])
-                library['tunnel'] = self.us.port
+                library['tunnel'] = int(self.us.port)
                 library['books'] = {}
                 library['books']['remove'] = [book['uuid'] for book in books_metadata if book['uuid'] in removed_books]
                 library['books']['add'] = [book for book in books_metadata if book['uuid'] in added_books]
@@ -355,7 +370,8 @@ class LetsShareBooksDialog(QDialog):
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
                 self.us.found_url = True
             else:
-                self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
+                #self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
+                self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
                 self.us.found_url = None
             
             self.qaction.setIcon(get_icon('images/icon_connected.png'))
@@ -430,8 +446,8 @@ class LetsShareBooksDialog(QDialog):
                     try:
                         #self.debug_log.addItem(self.us.lsb_url)
                         self.us.port = m.groups()[0]
-                        self.us.lsb_url = 'https://www{0}.{1}'.format(self.us.port, prefs['lsb_server'])
-                        #_dev_self.us.lsb_url = 'http://www{0}.{1}'.format(m.groups()[0], prefs['lsb_server'])
+                        #self.us.lsb_url = 'https://www{0}.{1}'.format(self.us.port, prefs['lsb_server'])
+                        self.us.lsb_url = 'http://www{0}.{1}'.format(m.groups()[0], prefs['lsb_server'])
                         self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
                         self.us.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
                         self.us.http_error = None

@@ -3,8 +3,10 @@
  * ----------------------------------------------------------------------------
  */
 
-var DOMAIN = 'memoryoftheworld.org'
-var PREFIX_URL = 'https://www';
+//var DOMAIN = 'memoryoftheworld.org'
+var DOMAIN = 'web.dokr'
+//var PREFIX_URL = 'https://www';
+var PREFIX_URL = 'http://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
@@ -110,6 +112,7 @@ var render_page = function () {
         data: JSON.stringify(STATE),
         dataType: 'json',
         success: function (data) {
+            console.log(data);
             parse_response(data);
         }
     });

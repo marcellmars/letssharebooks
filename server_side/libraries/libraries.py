@@ -4,8 +4,8 @@
 
 import uuid
 import traceback
-import simplejson as json
-from bson import json_util
+#import simplejson as json
+from bson import json_util as json
 import settings
 
 #------------------------------------------------------------------------------
@@ -119,6 +119,7 @@ def get_books(db, page, query={}):
     q = {}
     # get all libraries that have active ssh tunnel
     lib_uuids = [i['library_uuid'] for i in db.catalog.find({'tunnel': {'$gt':0}})]
+    print("lib_uuids: {}".format(db.catalog.find({'tunnel': {'$gt':0}})))
     q['library_uuid'] = {'$in': lib_uuids}
     # extract search parameters
     for k,v in query.iteritems():
@@ -154,7 +155,7 @@ def serialize2json(data):
     Pretty print for json
     '''
     return json.dumps(data, sort_keys=True,
-                      indent=4, default=json_util.default)
+                      indent=4, default=json.default)
 
 #------------------------------------------------------------------------------
 

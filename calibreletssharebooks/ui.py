@@ -44,7 +44,7 @@ class UnitedStates:
         self.connecting_now = None
         self.found_url = None
         self.counter = 0
-        self.port = ""
+        self.port = 0
 
 class LetsShareBooksUI(InterfaceAction):
 

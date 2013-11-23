@@ -2,6 +2,9 @@ TODO
 
 [TOC]
 
+view this document here: https://stackedit.io/viewer#!provider=gist&gistId=7610794&filename=LetsShareBoks_TODO.md
+
+
 # [let's share books] Calibre plugin
 
 - if library is changed in calibre session it should notify libray.memoryoftheworld.org and update the metadata on serever

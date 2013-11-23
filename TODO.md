@@ -1,5 +1,7 @@
 TODO
 
+[TOC]
+
 # [let's share books] Calibre plugin
 
 - if library is changed in calibre session it should notify libray.memoryoftheworld.org and update the metadata on serever

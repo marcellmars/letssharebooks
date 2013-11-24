@@ -106,29 +106,44 @@ class MetadataLibThread(QThread):
             book_meta = self.sql_db.get_metadata(book_id, index_is_id = True)
             for field in book_meta.standard_field_keys():
                 #self.debug_log.addItem("field: {}".format(field))
-                if field == 'last_modified' or field == 'timestamp' or field == 'pubdate':
+                if field in ['last_modified', 'timestamp', 'pubdate']:
                     book_metadata[field] = str(getattr(book_meta, field))
                     #self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
                 elif field == 'formats':
                     formats = getattr(book_meta, field)
                     book_metadata[field] = []
                     if formats:
-                        book_metadata[field] = [book_format for book_format in formats]
+                        book_metadata[field] = [book_format for book_format in formats] 
                 else:
                     book_metadata[field] = getattr(book_meta, field)
                     #self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
 
             for field in book_meta.custom_field_keys():
+                #self.debug_log.addItem("field: {}".format(field))
                 if field == 'last_modified' or field == 'timestamp' or field == 'pubdate':
                     book_metadata[field] = str(getattr(book_meta, field))
+                    #self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
                 else:
                     book_metadata[field] = getattr(book_meta, field)
-
+                    #self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
             try:
                 book_metadata['last_modified']
             except:
                 book_metadata['last_modified'] = book_metadata['timestamp']
             
+            format_metadata = getattr(book_meta, 'format_metadata')
+            formats_metadata = {}
+            if format_metadata:
+                for book_format in format_metadata.iteritems():
+                    format_fields = {}
+                    for format_field in book_format[1].iteritems():
+                        if format_field[0] == 'mtime':
+                            format_fields[format_field[0]] = str(format_field[1])
+                        else:
+                            format_fields[format_field[0]] = format_field[1]
+                    formats_metadata[book_format[0]] = format_fields
+            book_metadata['format_metadata'] = formats_metadata
+
             books_metadata.append(book_metadata)
         return books_metadata
 

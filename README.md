@@ -4,9 +4,9 @@
 Calibre plugin
 ======
 
-The easiest way to share your book catalog is to run Calibre's content server (help: http://bit.ly/111IWwt) and let people access your laptop/desktop computer. If you have a server with public URL and know how to set up reverse ssh port forwarding you are probably already doing that. 
+The easiest way to share your book catalog is to run Calibre's content server (help: http://bit.ly/111IWwt) and let people access your laptop/desktop computer. If you have a server with public URL and know how to set up reverse ssh port forwarding you are probably already doing that.
 
-Great. 
+Great.
 
 If not, you should use Calibre plugin:
 

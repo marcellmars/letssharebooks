@@ -6,17 +6,23 @@ SERVER = {
     'local': {
         'mongo_addr': '127.0.0.1',
         'mongo_port': 27017,
-        'prefix_url': 'http://www'
+        'prefix_url': 'http://www',
+        'host': '0.0.0.0',
+        'port': 4321,
         },
     'live': {
         'mongo_addr': 'localhost',
         'mongo_port': 27017,
-        'prefix_url' : 'https://www'
+        'prefix_url' : 'https://www',
+        'host': '0.0.0.0',
+        'port': 80,
         },
     'docker': {
         'mongo_addr': '172.17.42.1',
         'mongo_port': 27017,
-        'prefix_url': 'http://www'
+        'prefix_url': 'http://www',
+        'host': '0.0.0.0',
+        'port': 4321,
         }
     }
 
@@ -38,6 +44,4 @@ DBNAME = 'letssharebooks'
 # Web app
 #------------------------------------------------------------------------------
 
-HOST = '0.0.0.0'
-PORT = 4321
 APP_NAME = 'memory of the world library'

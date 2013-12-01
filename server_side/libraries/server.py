@@ -6,6 +6,7 @@ import simplejson
 import pymongo
 import zipfile
 import traceback
+import argparse
 import libraries
 import settings
 from jinja2 import Environment, FileSystemLoader
@@ -78,7 +79,9 @@ class Root(object):
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------
-def start_app():
+def start_app(env):
+    if env:
+        settings.ENV = settings.SERVER[env]
     try:
         global DB
         Mongo_client = MongoClient(settings.ENV['mongo_addr'],
@@ -88,9 +91,12 @@ def start_app():
         print 'unable to connect to mongodb!'
         return
     
-    cherrypy.server.socket_host = settings.HOST
-    cherrypy.server.socket_port = settings.PORT
+    cherrypy.server.socket_host = settings.ENV['host']
+    cherrypy.server.socket_port = settings.ENV['port']
     cherrypy.quickstart(Root(), '/', config=CONF)
 
 if __name__ == '__main__':
-    start_app()
+    parser = argparse.ArgumentParser(description='lsb server')
+    parser.add_argument('--env', help="server environment (local|live|docker)")
+    args = parser.parse_args()
+    start_app(args.env)

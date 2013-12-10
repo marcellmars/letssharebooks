@@ -9,6 +9,9 @@ import traceback
 import argparse
 import libraries
 import settings
+import uuid
+import zipfile
+import simplejson
 from jinja2 import Environment, FileSystemLoader
 from pymongo import MongoClient
 
@@ -44,16 +47,24 @@ class Root(object):
         try:
             # read temporary file and write to disk
             content = uploaded_file.file.read()
-            out = open(uploaded_file.filename, "wb")
+            # generate unique filename
+            filename = '%s-%s' % (uploaded_file.filename, uuid.uuid4())
+            out = open(filename, "wb")
             out.write(content)
             out.close()
             # unzip file
-            zfile = zipfile.ZipFile(uploaded_file.filename)
+            zfile = zipfile.ZipFile(filename)
             content = zfile.read('library.json')
             # decode from json and import to database
             catalog = simplejson.loads(content)
             libraries.import_catalog(DB, catalog)
             return 'ok %s' % uploaded_file.filename
+        except KeyError, e:
+            return 'oooops, error: %s' % e
+        except zipfile.BadZipfile, e:
+            return 'oooops, error: %s' % e
+        except simplejson.JSONDecodeError, e:
+            return 'oooops, error: JSONDecode -- %s' % e
         except Exception, e:
             print traceback.print_exc()
             return 'oooops, error!'

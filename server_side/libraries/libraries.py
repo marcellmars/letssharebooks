@@ -4,7 +4,6 @@
 
 import uuid
 import traceback
-#import simplejson as json
 from bson import json_util as json
 import settings
 
@@ -30,21 +29,15 @@ def import_catalog(db, catalog):
     library_uuid = catalog['library_uuid']
     last_modified = catalog['last_modified']
     tunnel = catalog['tunnel']
-    # if never seen this library before...
+    # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid':library_uuid})
-    if not db_cat:
-        print 'new library %s' % library_uuid
-        add_to_library(db, library_uuid, tunnel, catalog['books']['add'])
-        update_catalog(db, library_uuid, last_modified, tunnel)
-        return
-
-    # now the case when library should be synchronized
-    print 'updating library %s' % library_uuid
-    # first remove books as requested
-    remove_from_library(db, library_uuid, catalog['books']['remove'])
-    # add books as requested
+    if db_cat:
+        # remove books as requested
+        remove_from_library(db, library_uuid, catalog['books']['remove'])
+    # add books as requested (for new library and for sync)
     add_to_library(db, library_uuid, tunnel, catalog['books']['add'])
     update_catalog(db, library_uuid, last_modified, tunnel)
+    return
 
 #------------------------------------------------------------------------------
 
@@ -186,33 +179,3 @@ def remove_dots_from_dict(d):
                 d[new_key] = v
 
 #------------------------------------------------------------------------------
-
-def batch_update_library():
-    def get_tunnel_ports(self, login='tunnel'):
-        uids = subprocess.check_output(
-            ['grep', '{0}'.format(login), '/etc/passwd'])
-        uid = uids.split()[0].split(':')[2]
-        return subprocess.check_output(
-            ['/usr/local/bin/get_tunnel_ports.sh', uid]).split()
-
-    domain = 'web.dokr'
-    active_tunnels = []
-    for tunnel in get_tunnel_ports():
-        base_url = '{prefix_url}{tunnel}.{domain}/'.format(
-            prefix_url=settings.ENV['prefix_url'],
-            tunnel=tunnel,
-            domain=domain)
-        #total_num = get_total_num(base_url)
-        book_metadata_url = 'ajax/book/'
-        books_ids = get_books_ids(base_url)
-        if books_ids:
-            active_tunnels.append(tunnel)
-            Db.books_ids_proxy.update(
-                {'tunnel': tunnel},
-                {'$set':{'books_ids': books_ids}}, upsert=True)
-            thrd = UrlLibThread(''.join(map(str, books_ids)),
-                                book_metadata_url,
-                                domain,
-                                tunnel,
-                                base_url)
-            thrd.start()

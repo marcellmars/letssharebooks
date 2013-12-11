@@ -106,6 +106,15 @@ def get_catalog(db, uuid):
 
 #------------------------------------------------------------------------------
         
+def get_book(db, uuid):
+    '''
+    Returns book with the param uuid
+    '''
+    return serialize2json(
+        db.books.find_one({'uuid':uuid}, PUBLIC_BOOK_FIELDS))
+
+#------------------------------------------------------------------------------
+        
 def get_books(db, page, query={}):
     '''
     Reads and returns books from the database.

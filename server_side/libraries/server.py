@@ -40,6 +40,15 @@ class Root(object):
         return tmpl.render(app_name=settings.APP_NAME)
 
     @cherrypy.expose
+    def book(self, uuid):
+        '''
+        Single book page
+        '''
+        book = libraries.get_book(DB, uuid=uuid)
+        tmpl = ENVIRONMENT.get_template('book.html')
+        return tmpl.render(book=book)
+
+    @cherrypy.expose
     def upload_catalog(self, uploaded_file):
         '''
         End-point for uploading user catalogs

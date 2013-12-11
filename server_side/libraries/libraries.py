@@ -15,6 +15,7 @@ PUBLIC_BOOK_FIELDS = {
     'formats':1,
     'authors':1,
     'tunnel':1,
+    'uuid':1,
     '_id': 0
     }
 
@@ -110,8 +111,8 @@ def get_book(db, uuid):
     '''
     Returns book with the param uuid
     '''
-    return serialize2json(
-        db.books.find_one({'uuid':uuid}, PUBLIC_BOOK_FIELDS))
+    book = db.books.find_one({'uuid':uuid}, PUBLIC_BOOK_FIELDS)
+    return book
 
 #------------------------------------------------------------------------------
         

@@ -1,5 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-todo...
+<a href="{{ book.base_url }}/browse/book/{{ book.application_id }}" target="_blank" class="more_about" title="about this book">
+  <img src="{{ book.base_url }}/get/cover/{{ book.application_id }}.jpg" /></a>
+<h2>
+  <a href="{{ book.base_url }}/browse/book/{{ book.application_id }}" target="_blank" class="more_about" title="about this book">{{ book.title }}</a>
+  <br />
+  {{ book.authors }}
+</h2>
+<span class="download">Metadata: <a href="{{ book.base_url }}/get/opf/{{ book.application_id }} {{ book_title_stripped }}.opf" title="import metadata directly to calibre">.opf</a>
+  <br />Download: {{ book.formats }}
+</span>
 {% endblock %}

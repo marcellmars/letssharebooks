@@ -78,7 +78,10 @@ def add_to_library(db, library_uuid, tunnel, books):
         book['library_uuid'] = library_uuid
         book['tunnel'] = tunnel
         try:
-            db.books.insert(book)
+            #db.books.insert(book)
+            db.books.update({'uuid': book['uuid']},
+                            book,
+                            upsert=True, multi=False)
             # collect book uuids for catalog entry
             books_uuid.append(book['uuid'])
         except Exception, e:

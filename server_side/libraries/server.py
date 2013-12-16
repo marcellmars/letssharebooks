@@ -31,6 +31,7 @@ DB = None
 # Exposed resources
 #------------------------------------------------------------------------------
 class Root(object):
+
     @cherrypy.expose
     def index(self):
         '''
@@ -57,7 +58,9 @@ class Root(object):
             # read temporary file and write to disk
             content = uploaded_file.file.read()
             # generate unique filename
-            filename = '%s-%s' % (uploaded_file.filename, uuid.uuid4())
+            if not os.path.exists('tmp'):
+                os.makedirs('tmp')
+            filename = 'tmp/%s-%s' % (uploaded_file.filename, uuid.uuid4())
             out = open(filename, "wb")
             out.write(content)
             out.close()

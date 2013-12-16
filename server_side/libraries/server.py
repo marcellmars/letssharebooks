@@ -9,8 +9,6 @@ import traceback
 import argparse
 import libraries
 import settings
-import uuid
-import zipfile
 import simplejson
 from jinja2 import Environment, FileSystemLoader
 from pymongo import MongoClient
@@ -55,22 +53,8 @@ class Root(object):
         End-point for uploading user catalogs
         '''
         try:
-            # read temporary file and write to disk
-            content = uploaded_file.file.read()
-            # generate unique filename
-            if not os.path.exists('tmp'):
-                os.makedirs('tmp')
-            filename = 'tmp/%s-%s' % (uploaded_file.filename, uuid.uuid4())
-            out = open(filename, "wb")
-            out.write(content)
-            out.close()
-            # unzip file
-            zfile = zipfile.ZipFile(filename)
-            content = zfile.read('library.json')
-            # decode from json and import to database
-            catalog = simplejson.loads(content)
-            libraries.import_catalog(DB, catalog)
-            return 'ok %s' % uploaded_file.filename
+            res = libraries.handle_uploaded_catalog(uploaded_file, DB)
+            return res
         except KeyError, e:
             return 'oooops, error: %s' % e
         except zipfile.BadZipfile, e:

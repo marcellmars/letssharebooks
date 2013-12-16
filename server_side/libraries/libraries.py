@@ -2,10 +2,14 @@
 # main library functionalities and api
 #------------------------------------------------------------------------------
 
+import os
 import uuid
+import zipfile
+import simplejson
 import traceback
 from bson import json_util as json
 import settings
+import utils
 
 #------------------------------------------------------------------------------
 
@@ -38,7 +42,7 @@ def import_catalog(db, catalog):
     # add books as requested (for new library and for sync)
     add_to_library(db, library_uuid, tunnel, catalog['books']['add'])
     update_catalog(db, library_uuid, last_modified, tunnel)
-    return
+    return library_uuid
 
 #------------------------------------------------------------------------------
 
@@ -87,7 +91,7 @@ def add_to_library(db, library_uuid, tunnel, books):
             books_uuid.append(book['uuid'])
         except Exception, e:
             # some books have dots in keys - not good for mongo
-            remove_dots_from_dict(book)
+            utils.remove_dots_from_dict(book)
             db.books.insert(book)
             books_uuid.append(book['uuid'])
     # update catalog metadata collection
@@ -178,17 +182,21 @@ def paginate(cursor, page=1, per_page=settings.ITEMS_PER_PAGE):
 
 #------------------------------------------------------------------------------
 
-def remove_dots_from_dict(d):
+def handle_uploaded_catalog(uploaded_file, db):
     '''
-    Remove dots from keys in dict d
+    Opens, unzips and parses uploaded catalog and imports books to the db
     '''
-    for k,v in d.iteritems():
-        if isinstance(v, dict):
-            d[k] = remove_dots_from_dict(v)
-        else:
-            if k.find('.') >= 0:
-                del d[k]
-                new_key = k.replace('.', '')
-                d[new_key] = v
-
-#------------------------------------------------------------------------------
+    if not os.path.exists('tmp'):
+        os.makedirs('tmp')
+    content = uploaded_file.file.read()
+    # generate unique filename
+    filename = 'tmp/%s-%s' % (uploaded_file.filename, uuid.uuid4())
+    with open(filename, "wb") as f:
+        f.write(content)
+    # unzip file
+    with zipfile.ZipFile(filename) as zfile:
+        content = zfile.read('library.json')
+    # decode from json and import to database
+    catalog = simplejson.loads(content)
+    res = import_catalog(db, catalog)
+    return res    

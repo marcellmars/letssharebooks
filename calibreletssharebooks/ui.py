@@ -1,7 +1,7 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
 from calibre.gui2.actions import InterfaceAction
 from calibre_plugins.letssharebooks.main import LetsShareBooksDialog
-from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon, create_menu_action_unique
+from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 
 import urllib2
@@ -16,6 +16,7 @@ if False:
 
 PLUGIN_ICONS = ['images/icon.png', 'images/icon_connected.png']
 
+
 class UnitedStates:
     def __init__(self):
         self.plugin_url = "https://github.com/marcellmars/letssharebooks/raw/master/calibreletssharebooks/letssharebooks_calibre.zip"
@@ -24,7 +25,7 @@ class UnitedStates:
             self.latest_version = urllib2.urlopen('https://raw.github.com/marcellmars/letssharebooks/master/calibreletssharebooks/_version').read()[:-1].encode("utf-8")
         except:
             self.latest_version = "0.0.0"
-        
+
         self.window_title = "Let's share books"
         self.share_button_text = "Start sharing"
         self.lsb_url_text = 'Be a librarian. Share your library.'
@@ -45,6 +46,7 @@ class UnitedStates:
         self.found_url = None
         self.counter = 0
         self.port = 0
+
 
 class LetsShareBooksUI(InterfaceAction):
 

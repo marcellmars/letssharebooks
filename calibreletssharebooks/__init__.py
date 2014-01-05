@@ -8,12 +8,13 @@ __docformat__ = 'restructuredtext en'
 # The class that all Interface Action plugin wrappers must inherit from
 from calibre.customize import InterfaceActionBase
 
+
 class LetsShareBooks(InterfaceActionBase):
     name                = "Let's share books"
     description         = 'Share calibre library through tunnel at http://www.memoryoftheworld.org'
     supported_platforms = ['windows', 'osx', 'linux']
     author              = 'Marcell Mars'
-    version             = (1, 0, 17)
+    version             = (1, 0, 18)
     minimum_calibre_version = (0, 9, 30)
     actual_plugin       = 'calibre_plugins.letssharebooks.ui:LetsShareBooksUI'
 

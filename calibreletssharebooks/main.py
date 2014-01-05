@@ -1,12 +1,11 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
-from PyQt4.Qt import QDialog, QHBoxLayout, QPushButton, QMessageBox, QLabel, QTimer, QTextEdit, QLineEdit, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QThread, QListWidget, QStringList
+from PyQt4.Qt import QDialog, QHBoxLayout, QPushButton, QTimer, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QThread, QListWidget
 from calibre.gui2.ui import get_gui as calibre_main
-from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon, create_menu_action_unique
+from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
 from calibre_plugins.letssharebooks import requests
 from calibre.library.server import server_config
-import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, threading, time, zipfile, StringIO, zlib, json
-from calibre.utils.config import JSONConfig
+import os, sys, subprocess, re, random, webbrowser, urllib2, functools, datetime, time, zipfile, json, tempfile
 
 __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
@@ -30,6 +29,7 @@ else:
 if False:
     get_icons = get_resources = None
 
+
 class KillServersThread(QThread):
     def __init__(self, unitedstates):
         QThread.__init__(self)
@@ -39,7 +39,7 @@ class KillServersThread(QThread):
     def run(self):
         if sys.platform == "win32":
             try:
-                a = subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
+                subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
             except Exception as e:
                 self.us.debug_item = e
         else:
@@ -59,6 +59,7 @@ class KillServersThread(QThread):
     def stop(self):
         self.terminate()
 
+
 class UrlLibThread(QThread):
     def __init__(self, unitedstates):
         QThread.__init__(self)
@@ -70,10 +71,10 @@ class UrlLibThread(QThread):
                 if self.us.counter < 60:
                     time.sleep(2)
                 else:
-                    time.sleep(30) 
+                    time.sleep(30)
                 self.us.counter += 1
                 opener = urllib2.build_opener()
-                opener.addheaders = [("User-agent", "Checking {0}".format(self.us.lsb_url))] 
+                opener.addheaders = [("User-agent", "Checking {0}".format(self.us.lsb_url))]
                 self.us.urllib_result = opener.open(self.us.lsb_url).getcode()
                 self.us.http_error = None
                 self.us.check_finished = True
@@ -90,6 +91,7 @@ class UrlLibThread(QThread):
     def stop(self):
         self.terminate()
 
+
 class MetadataLibThread(QThread):
 #class MetadataLibThread():
     def __init__(self, debug_log, sql_db, unitedstates):
@@ -103,7 +105,7 @@ class MetadataLibThread(QThread):
         books_metadata = []
         for book_id in self.sql_db.all_ids():
             book_metadata = {}
-            book_meta = self.sql_db.get_metadata(book_id, index_is_id = True)
+            book_meta = self.sql_db.get_metadata(book_id, index_is_id=True)
             for field in book_meta.standard_field_keys():
                 #self.debug_log.addItem("field: {}".format(field))
                 if field in ['last_modified', 'timestamp', 'pubdate']:
@@ -113,7 +115,7 @@ class MetadataLibThread(QThread):
                     formats = getattr(book_meta, field)
                     book_metadata[field] = []
                     if formats:
-                        book_metadata[field] = [book_format for book_format in formats] 
+                        book_metadata[field] = [book_format for book_format in formats]
                 else:
                     book_metadata[field] = getattr(book_meta, field)
                     #self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
@@ -130,7 +132,7 @@ class MetadataLibThread(QThread):
                 book_metadata['last_modified']
             except:
                 book_metadata['last_modified'] = book_metadata['timestamp']
-            
+
             format_metadata = getattr(book_meta, 'format_metadata')
             formats_metadata = {}
             if format_metadata:
@@ -157,11 +159,11 @@ class MetadataLibThread(QThread):
             return catalog['books']
 
     def run(self):
-        books_metadata = self.get_book_metadata() 
+        books_metadata = self.get_book_metadata()
         #map(self.debug_log.addItem, map(str, books_metadata))
         server_list = set(self.get_server_list(self.library_id))
         local_list = set([book['uuid'] for book in books_metadata])
-        
+
         removed_books = server_list - local_list
         added_books = local_list - server_list
 
@@ -189,6 +191,7 @@ class MetadataLibThread(QThread):
         self.debug_log.addItem(r.content)
         return
 
+
 class LetsShareBooksDialog(QDialog):
     def __init__(self, gui, icon, do_user_config, qaction, us):
         QDialog.__init__(self, gui)
@@ -198,13 +201,12 @@ class LetsShareBooksDialog(QDialog):
         self.us = us
         self.clip = QApplication.clipboard()
         self.main_gui = calibre_main()
-        
+
         self.urllib_thread = UrlLibThread(self.us)
         self.kill_servers_thread = KillServersThread(self.us)
 
-        
         self.us.check_finished = True
-        
+
         self.pxmp = QPixmap()
         self.pxmp.load('images/icon_connected.png')
         self.icon_connected = QIcon(self.pxmp)
@@ -214,8 +216,8 @@ class LetsShareBooksDialog(QDialog):
                 background-color: white;
         }
 
-        QPushButton { 
-                font-size: 16px; 
+        QPushButton {
+                font-size: 16px;
                 border-style: solid;
                 border-color: red;
                 font-family:'BitstreamVeraSansMono',Consolas,monospace;
@@ -235,7 +237,7 @@ class LetsShareBooksDialog(QDialog):
                 color: white;
                 text-align: left;
                }
-        
+
         QPushButton#url:hover {
                 background-color: white;
                 color: red;
@@ -263,7 +265,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.ll = QVBoxLayout()
         #self.ll.setSpacing(1)
-        
+
         self.l = QHBoxLayout()
         self.l.setSpacing(0)
         self.l.setMargin(0)
@@ -278,7 +280,7 @@ class LetsShareBooksDialog(QDialog):
         self.lets_share_button.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
         self.lets_share_button.setObjectName("share")
         self.lets_share_button.clicked.connect(self.lets_share)
-        
+
         self.stop_share_button = QPushButton()
         self.stop_share_button.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
         self.stop_share_button.setObjectName("share")
@@ -286,7 +288,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.l.addWidget(self.lets_share_button)
         self.l.addWidget(self.stop_share_button)
-        
+
         if self.us.button_state == "start":
             self.lets_share_button.show()
             self.stop_share_button.hide()
@@ -301,35 +303,35 @@ class LetsShareBooksDialog(QDialog):
         self.url_label.setObjectName("url")
         self.url_label.clicked.connect(self.open_url)
         self.l.addWidget(self.url_label)
-        
+
         self.arrow_button = QPushButton("_____")
         self.arrow_button.setObjectName("arrow")
         self.l.addWidget(self.arrow_button)
 
         self.ll.addWidget(self.w)
         self.ll.addSpacing(10)
-        
+
         self.chat_button = QPushButton("Chat room: https://chat.memoryoftheworld.org")
         #self.chat_button.hovered.connect(self.setCursorToHand)
         self.chat_button.setObjectName("url2")
         self.chat_button.setToolTip('Meetings every thursday at 23:59 (central eruopean time)')
         self.chat_button.clicked.connect(functools.partial(self.open_url2, "https://chat.memoryoftheworld.org"))
         self.ll.addWidget(self.chat_button)
-        
+
         self.about_project_button = QPushButton('Public Library: http://www.memoryoftheworld.org')
         self.about_project_button.setObjectName("url2")
         self.about_project_button.setToolTip('When everyone is librarian, library is everywhere.')
         self.about_project_button.clicked.connect(functools.partial(self.open_url2, "http://www.memoryoftheworld.org"))
         self.ll.addWidget(self.about_project_button)
-        
+
         self.debug_log = QListWidget()
         self.ll.addWidget(self.debug_log)
         self.debug_log.addItem("Initiatied!")
-        self.debug_log.hide()        
- 
+        self.debug_log.hide()
+
         self.sql_db = self.gui.current_db
         self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
-        
+
         self.metadata_button = QPushButton("Get library metadata!")
         self.metadata_button.setObjectName("url2")
         self.metadata_button.setToolTip('Get library metadata!')
@@ -351,7 +353,8 @@ class LetsShareBooksDialog(QDialog):
 
         self.resize(self.sizeHint())
 
-        self.se = open("/tmp/lsb.log", "w+b")
+        #self.se = open("/tmp/lsb.log", "w+b")
+        self.se = tempfile.NamedTemporaryFile()
         self.so = self.se
 
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -362,7 +365,7 @@ class LetsShareBooksDialog(QDialog):
         self.timer.timeout.connect(self.check_and_render)
         self.timer_period = 300
         self.timer.start(self.timer_period)
-        
+
         self.error_log = ""
 
     def lets_share(self):
@@ -390,12 +393,12 @@ class LetsShareBooksDialog(QDialog):
                 self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=/tmp/.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
                 #self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
                 self.us.found_url = None
-            
+
             self.qaction.setIcon(get_icon('images/icon_connected.png'))
             self.us.connecting = True
             self.us.connecting_now = datetime.datetime.now()
             self.timer.start(self.timer_period)
-              
+
     def stop_share(self):
         self.stop_share_button.setEnabled(False)
         #self.debug_log.addItem("Stop Share!")
@@ -405,7 +408,7 @@ class LetsShareBooksDialog(QDialog):
         self.us.disconnecting = True
 
         self.qaction.setIcon(get_icon('images/icon.png'))
-        
+
         self.kill_servers_thread.start()
 
         self.timer.start(self.timer_period)
@@ -420,8 +423,7 @@ class LetsShareBooksDialog(QDialog):
             self.lets_share_button.hide()
             self.stop_share_button.show()
             self.stop_share_button.setText(self.us.share_button_text)
-       
-        
+
         if self.us.disconnecting:
             self.us.share_button_text = "Disconnecting..."
             if self.us.lost_connection:
@@ -454,10 +456,10 @@ class LetsShareBooksDialog(QDialog):
 
             if self.us.lsb_url == "nourl" and self.us.ssh_proc and sys.platform != "win32":
                 #self.debug_log.addItem("Wait for Allocated port!")
-            
+
                 self.se.seek(0)
                 result = self.se.readlines()
-        
+
                 for line in result:
                     m = re.match("^Allocated port (.*) for .*", line)
                     try:
@@ -471,7 +473,7 @@ class LetsShareBooksDialog(QDialog):
                         self.us.found_url = True
                     except:
                         pass
-        
+
             elif self.us.urllib_result == 200:
                 #self.debug_log.addItem("Finish Connecting State!")
                 self.se.seek(0)
@@ -489,8 +491,7 @@ class LetsShareBooksDialog(QDialog):
             self.us.lost_connection = True
             self.stop_share()
 
-
-        elif self.us.check_finished: 
+        elif self.us.check_finished:
             #if self.debug_log.item(self.debug_log.count()-1).text()[:10] == "Finally Ca":
             #    self.us.debug_counter = self.us.debug_counter + 1
             #else:

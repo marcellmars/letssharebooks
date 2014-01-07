@@ -1,4 +1,4 @@
-FROM librarian/supervisor
+FROM librarian/ssh_tunnel
 
 MAINTAINER Marcell Mars "https://github.com/marcellmars" # version:002
 

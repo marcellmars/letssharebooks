@@ -6,10 +6,12 @@ RUN mkdir -p /var/run/sshd
 
 RUN apt-get -y install openssh-server 
 ADD sshd_config_tunnel /etc/ssh/
+
 ADD ssh_tunnel.conf /etc/supervisor/conf.d/
 
 RUN useradd tunnel
 RUN passwd -d tunnel
 
+ENTRYPOINT ["/usr/local/bin/supervisord"]
 # sudo docker build -t librarian/ssh_tunnel .
 

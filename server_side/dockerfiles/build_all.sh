@@ -10,4 +10,8 @@ cd ../nginx/
 docker build -t librarian/nginx .
 cd ../cherrypy/
 docker build -t librarian/cherrypy .
+cd ../library/
+docker build -t librarian/library .
+cd ../mongodb/
+docker build -t librarian/mongodb .
 

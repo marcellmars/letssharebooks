@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------
 # server configuration
 #------------------------------------------------------------------------------
+import os
 
 SERVER = {
     'local': {
@@ -18,7 +19,7 @@ SERVER = {
         'port': 80,
         },
     'docker': {
-        'mongo_addr': '172.17.42.1',
+        'mongo_addr': os.environ["MONGODB_PORT_27017_TCP_ADDR"],
         'mongo_port': 27017,
         'prefix_url': 'http://www',
         'host': '0.0.0.0',
@@ -26,7 +27,7 @@ SERVER = {
         }
     }
 
-ENV = SERVER['local']
+ENV = SERVER['docker']
 
 #------------------------------------------------------------------------------
 # search

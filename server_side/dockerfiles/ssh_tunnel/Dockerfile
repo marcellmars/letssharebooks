@@ -12,6 +12,6 @@ ADD ssh_tunnel.conf /etc/supervisor/conf.d/
 RUN useradd tunnel
 RUN passwd -d tunnel
 
-ENTRYPOINT ["/usr/local/bin/supervisord"]
+#ENTRYPOINT ["/usr/local/bin/supervisord"]
 # sudo docker build -t librarian/ssh_tunnel .
 

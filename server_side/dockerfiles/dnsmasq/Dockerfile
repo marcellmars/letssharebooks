@@ -8,7 +8,7 @@ ADD dnsmasq.conf /etc/supervisor/conf.d/
 ADD current_ip.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/current_ip.sh
 
-ENTRYPOINT ["/usr/local/bin/supervisord"]
+#ENTRYPOINT ["/usr/local/bin/supervisord"]
 # sudo docker build -t librarian/dnsmasq .
 
 

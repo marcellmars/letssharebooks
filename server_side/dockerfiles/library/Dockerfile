@@ -1,6 +1,6 @@
 FROM librarian/cherrypy
 
-MAINTAINER Marcell Mars "https://github.com/marcellmars" # version:001
+MAINTAINER Marcell Mars "https://github.com/marcellmars" # version:002
 
 RUN mkdir -p /var/www/
 ADD libraries/ /var/www/libraries/

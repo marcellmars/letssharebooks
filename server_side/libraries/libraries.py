@@ -10,6 +10,7 @@ import traceback
 from bson import json_util as json
 import settings
 import utils
+import pickle
 
 #------------------------------------------------------------------------------
 
@@ -22,6 +23,14 @@ PUBLIC_BOOK_FIELDS = {
     'uuid':1,
     '_id': 0
     }
+
+#------------------------------------------------------------------------------
+
+def get_active_tunnels():
+    try:
+        return pickle.load(open("/tmp/active_tunnel_ports","rb"))
+    except:
+        return []
 
 #------------------------------------------------------------------------------
 
@@ -47,6 +56,10 @@ def import_catalog(db, catalog):
 #------------------------------------------------------------------------------
 
 def update_catalog(db, library_uuid, last_modified, tunnel):
+    # set tunnel to 0 if there is a library with the same tunnel from before
+    old_libraries = [b['library_uuid'] for b in db.catalog.find({'tunnel': tunnel})]
+    db.catalog.update({'library_uuid': {'$in': old_libraries}}, {'$set': {'tunnel': 0}}, upsert=True)
+
     db.catalog.update({'library_uuid': library_uuid},
                       {'$set': {'last_modified': last_modified,
                                 'tunnel':tunnel}},
@@ -60,15 +73,15 @@ def remove_from_library(db, library_uuid, books_uuids):
     '''
     if len(books_uuids) == 0:
         return
-    for uuid in books_uuids:
-        print 'removing %s' % uuid
-        db.books.remove({'uuid':uuid})
+    for uid in books_uuids:
+        print 'removing %s' % uid
+        db.books.remove({'uuid':uid})
     db.catalog.update({'library_uuid': library_uuid},
                       {'$pull': {'books': {'$in': books_uuids}}},
                       upsert=True, multi=False)
-    
+
 #------------------------------------------------------------------------------
-    
+
 def add_to_library(db, library_uuid, tunnel, books):
     '''
     Adds books to the database and modifies catalog entry. Mostly used with
@@ -100,7 +113,7 @@ def add_to_library(db, library_uuid, tunnel, books):
                       upsert=True, multi=False)
 
 #------------------------------------------------------------------------------
-        
+
 def get_catalog(db, uuid):
     '''
     Read catalog entry from the database and return json representation
@@ -110,7 +123,7 @@ def get_catalog(db, uuid):
                             {'books':1, 'last_modified':1, '_id' : 0}))
 
 #------------------------------------------------------------------------------
-        
+
 def get_book(db, uuid):
     '''
     Returns book with the param uuid
@@ -119,7 +132,7 @@ def get_book(db, uuid):
     return book
 
 #------------------------------------------------------------------------------
-        
+
 def get_books(db, page, query={}):
     '''
     Reads and returns books from the database.
@@ -128,8 +141,7 @@ def get_books(db, page, query={}):
     # query
     q = {}
     # get all libraries that have active ssh tunnel
-    lib_uuids = [i['library_uuid'] for i in db.catalog.find({'tunnel': {'$gt':0}})]
-    print("lib_uuids: {}".format(db.catalog.find({'tunnel': {'$gt':0}})))
+    lib_uuids = [i['library_uuid'] for i in db.catalog.find({'tunnel': {'$in': get_active_tunnels()}})]
     q['library_uuid'] = {'$in': lib_uuids}
     # extract search parameters
     for k,v in query.iteritems():
@@ -158,7 +170,7 @@ def get_books(db, page, query={}):
                            'authors': authors,
                            'titles': titles})
 
-#------------------------------------------------------------------------------    
+#------------------------------------------------------------------------------
 
 def serialize2json(data):
     '''
@@ -199,4 +211,4 @@ def handle_uploaded_catalog(uploaded_file, db):
     # decode from json and import to database
     catalog = simplejson.loads(content)
     res = import_catalog(db, catalog)
-    return res    
+    return res

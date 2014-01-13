@@ -2,7 +2,7 @@ FROM librarian/nginx
 
 MAINTAINER Marcell Mars "https://github.com/marcellmars" # version:002
 
-RUN apt-get -y install iproute2 
+RUN apt-get -y install iproute
 RUN pip install cherrypy requests pymongo simplejson jinja2
 
 ADD get_tunnel_ports.sh /usr/local/bin/

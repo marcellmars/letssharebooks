@@ -186,7 +186,7 @@ class MetadataLibThread(QThread):
             zif.write('library.json')
             zif.close()
         with open('library.json.zip', 'r') as file:
-            r = requests.post("http://localhost:4321/upload_catalog", files={'uploaded_file': file})
+            r = requests.post("http://library.{}:4321/upload_catalog".format(self.lsb_url), files={'uploaded_file': file})
 
         self.debug_log.addItem(r.content)
         return
@@ -337,7 +337,7 @@ class LetsShareBooksDialog(QDialog):
         self.metadata_button.setToolTip('Get library metadata!')
         self.metadata_button.clicked.connect(self.get_metadata)
         self.ll.addWidget(self.metadata_button)
-        self.metadata_button.hide()
+        self.metadata_button.show()
 
         self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
         self.upgrade_button.setObjectName("url2")
@@ -353,8 +353,8 @@ class LetsShareBooksDialog(QDialog):
 
         self.resize(self.sizeHint())
 
-        #self.se = open("/tmp/lsb.log", "w+b")
-        self.se = tempfile.NamedTemporaryFile()
+        self.se = open("/tmp/lsb.log", "w+b")
+        #self.se = tempfile.NamedTemporaryFile()
         self.so = self.se
 
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -390,8 +390,8 @@ class LetsShareBooksDialog(QDialog):
                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
                 self.us.found_url = True
             else:
-                self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=/tmp/.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
-                #self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
+                #self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=/tmp/.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
+                self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'TCPKeepAlive=yes', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'CheckHostIP=no', '-o', 'StrictHostKeyChecking=no','-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
                 self.us.found_url = None
 
             self.qaction.setIcon(get_icon('images/icon_connected.png'))
@@ -465,8 +465,8 @@ class LetsShareBooksDialog(QDialog):
                     try:
                         #self.debug_log.addItem(self.us.lsb_url)
                         self.us.port = m.groups()[0]
-                        self.us.lsb_url = 'https://www{0}.{1}'.format(self.us.port, prefs['lsb_server'])
-                        #self.us.lsb_url = 'http://www{0}.{1}'.format(m.groups()[0], prefs['lsb_server'])
+                        #self.us.lsb_url = 'https://www{0}.{1}'.format(self.us.port, prefs['lsb_server'])
+                        self.us.lsb_url = 'http://www{0}.{1}'.format(m.groups()[0], prefs['lsb_server'])
                         self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
                         self.us.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
                         self.us.http_error = None

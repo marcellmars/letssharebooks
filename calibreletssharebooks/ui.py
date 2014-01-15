@@ -27,24 +27,10 @@ class UnitedStates:
             self.latest_version = "0.0.0"
 
         self.window_title = "Let's share books"
-        self.share_button_text = "Start sharing"
         self.lsb_url_text = 'Be a librarian. Share your library.'
         self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
-        self.button_state = "start"
-        self.connecting = False
-        self.disconnecting = False
-        self.check_finished = True
-        self.kill_finished = False
         self.lsb_url = 'nourl'
-        self.urllib_result = ""
-        self.http_error = None
-        self.ssh_proc = None
-        self.lost_connection = False
-        self.debug_item = None
-        self.debug_counter = 1
-        self.connecting_now = None
-        self.found_url = None
-        self.counter = 0
+        self.machine_state = 1
         self.port = 0
 
 

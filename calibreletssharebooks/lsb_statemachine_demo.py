@@ -15,11 +15,13 @@ class Window(QtGui.QWidget):
 
         self.button = QtGui.QPushButton()
         self.label = QtGui.QLabel()
+        self.babel = QtGui.QLabel()
 
         layout = QtGui.QVBoxLayout(self)
         layout.addWidget(self.edit)
         layout.addWidget(self.button)
         layout.addWidget(self.label)
+        layout.addWidget(self.babel)
 
         self.machine = QtCore.QStateMachine()
 
@@ -27,6 +29,8 @@ class Window(QtGui.QWidget):
         self.on.assignProperty(self.button, 'text', 'Start')
 
         self.calibreWebServer = QtCore.QState()
+        self.calibreWebServer.setObjectName("calibreWebServer")
+        self.calibreWebServer.entered.connect(self.trigger)
         self.calibreWebServer.assignProperty(self.button, 'text', 'Stop')
         self.calibreWebServer.assignProperty(self.label, 'text', 'Starting Calibre web server...')
 
@@ -70,6 +74,12 @@ class Window(QtGui.QWidget):
         if text == 'lost_ssh':
             self.lostRemoteWebServer.emit()
 
+    def trigger(self):
+        self.babel.setText("triggered")
+        for c in self.machine.configuration():
+            print type(c)
+            print c.objectName()
+        self.startedCalibreWebServer.emit()
 
 app = QtGui.QApplication(sys.argv)
 window = Window()

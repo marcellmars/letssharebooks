@@ -10,6 +10,6 @@ RUN apt-get update
 RUN apt-get install mongodb-10gen
 RUN mkdir -p /data/db
 EXPOSE 27017 27017
-ENTRYPOINT ["usr/bin/mongod"]
+ENTRYPOINT ["/usr/bin/mongod"]
 
 # sudo docker build -t librarian/mongodb .

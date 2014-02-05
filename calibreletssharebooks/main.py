@@ -1,5 +1,5 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
-from PyQt4.Qt import QLabel, QDialog, QHBoxLayout, QPushButton, QTimer, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QThread, QListWidget, QLineEdit
+from PyQt4.Qt import QLabel, QDialog, QHBoxLayout, QPushButton, QTimer, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QListWidget, QLineEdit
 from PyQt4 import QtCore
 from calibre.gui2.ui import get_gui as calibre_main
 from calibre_plugins.letssharebooks.common_utils import get_icon
@@ -38,8 +38,11 @@ class LetsShareBooksDialog(QDialog):
     lost_ssh_connection = QtCore.pyqtSignal()
 
     def __init__(self, gui, icon, do_user_config, qaction, us):
+        #print(dir(calibre_main()))
+        #sql_db = calibre_main().current_db
         QDialog.__init__(self, gui)
         self.gui = gui
+        #self.sql_db = sql_db
         self.do_user_config = do_user_config
         self.qaction = qaction
         self.us = us
@@ -160,7 +163,6 @@ class LetsShareBooksDialog(QDialog):
         self.debug_log.addItem("Initiatied!")
         self.debug_log.hide()
 
-        self.sql_db = self.gui.current_db
         #self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
 
         self.metadata_button = QPushButton("Get library metadata!")
@@ -308,6 +310,7 @@ class LetsShareBooksDialog(QDialog):
     def closeEvent(self, e):
         for state in self.machine.configuration():
             self.us.machine_state = state.objectName()
+        print("close popup!")
         self.hide()
 
     def config(self):

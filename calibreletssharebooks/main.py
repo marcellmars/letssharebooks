@@ -119,7 +119,7 @@ class LetsShareBooksDialog(QDialog):
         self.setWindowIcon(icon)
 
         self.edit = QLineEdit()
-        self.edit.textChanged.connect(self.handleTextChanged)
+        self.edit.textChanged.connect(self.handle_text_changed)
         self.ll.addWidget(self.edit)
 
         self.debug_label = QLabel()
@@ -225,8 +225,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.off = QtCore.QState()
         self.off.setObjectName("off")
-        self.off.entered.connect(lambda: self.render("Stop sharing", 'Be a librarian. Share your library.'
-))
+        self.off.entered.connect(lambda: self.render("Stop sharing", 'Be a librarian. Share your library.', off = True))
         self.off.assignProperty(self.debug_label, 'text', 'Start again...')
 
         self.on.addTransition(self.lets_share_button.clicked, self.calibre_web_server)
@@ -250,19 +249,39 @@ class LetsShareBooksDialog(QDialog):
         self.machine.addState(self.ssh_server_established)
         self.machine.addState(self.off)
 
-        if isinstance(self.us.machine_state, int):
-            self.machine.setInitialState(self.on)
-        else:
-            print("self.{}".format(self.us.machine_state))
-            self.machine.setInitialState(eval("self.{}".format(self.us.machine_state)))
-
+#        if isinstance(self.us.machine_state, int):
+#            self.machine.setInitialState(self.on)
+#        else:
+#            print("self.{}".format(self.us.machine_state))
+#            self.machine.setInitialState(eval("self.{}".format(self.us.machine_state)))
+        self.machine.setInitialState(self.on)
         self.machine.start()
 
         #------------------------------------------------------------------------------
 
-    def render(self, button_label, lsb_url_text):
-        if lsb_url_text == 'Be a librarian. Share your library.':
-            self.us.lsb_url_text = lsb_url_text
+    def disconnect_all(self):
+        if sys.platform == "win32":
+            try:
+                subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
+            except Exception as e:
+                self.debug_label.setText(str(e))
+        else:
+            try:
+                self.us.ssh_proc.kill()
+            except Exception as e:
+                self.debug_label.setText(str(e))
+        try:
+            self.main_gui.content_server.exit()
+        except Exception as e:
+            self.debug_label.setText(str(e))
+
+        self.qaction.setIcon(get_icon('images/icon.png'))
+        self.us.ssh_proc = None
+
+    def render(self, button_label, lsb_url_text, off = False):
+        if off:
+            self.disconnect_all()
+        self.us.lsb_url_text = lsb_url_text
         self.lets_share_button.setText(button_label)
         self.url_label.setText(lsb_url_text)
 
@@ -317,7 +336,7 @@ class LetsShareBooksDialog(QDialog):
         self.do_user_config(parent=self)
         self.label.setText(prefs['lsb_server'])
 
-    def handleTextChanged(self, text):
+    def handle_text_changed(self, text):
         if text == 'calibre':
             self.started_calibre_web_server.emit()
         if text == 'ssh':

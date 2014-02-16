@@ -1,10 +1,11 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
-from PyQt4.Qt import QLabel, QDialog, QHBoxLayout, QPushButton, QTimer, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QListWidget, QLineEdit
+from PyQt4.Qt import QLabel, QDialog, QHBoxLayout, QPushButton, QTimer, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QListWidget, QLineEdit, QThread
 from PyQt4 import QtCore
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
+from calibre_plugins.letssharebooks import requests
 from calibre.library.server import server_config
-import os, sys, subprocess, re, random, urllib2, webbrowser, time
+import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time
 
 #from calibre_plugins.letssharebooks import requests
 
@@ -30,12 +31,44 @@ else:
 if False:
     get_icons = get_resources = None
 
+class ConnectionCheck(QThread):
+    lost_connection = QtCore.pyqtSignal()
+    connection_ok = QtCore.pyqtSignal()
+
+    def __init__(self):
+        QThread.__init__(self)
+
+    def increase_time(self, x,y):
+        while True:
+            yield x
+            if x < 140:
+                x, y = y, x + y
+
+    def add_urls(self, urls):
+        self.urls = urls
+
+    def run(self):
+        time.sleep(5)
+        inc_time = self.increase_time(1,2)
+        gotcha = True
+        try:
+            while gotcha:
+                for url in self.urls:
+                    if requests.get(url).ok:
+                        self.connection_ok.emit()
+                    else:
+                        self.lost_connection.emit()
+                        gotcha = False
+                        self.terminate()
+                time.sleep(inc_time.next())
+        except:
+            self.lost_connection.emit()
+            self.terminate()
 
 class LetsShareBooksDialog(QDialog):
     started_calibre_web_server = QtCore.pyqtSignal()
+    calibre_didnt_start = QtCore.pyqtSignal()
     established_ssh_tunnel = QtCore.pyqtSignal()
-    lost_calibre_web_server = QtCore.pyqtSignal()
-    lost_ssh_connection = QtCore.pyqtSignal()
 
     def __init__(self, gui, icon, do_user_config, qaction, us):
         QDialog.__init__(self, gui)
@@ -44,6 +77,8 @@ class LetsShareBooksDialog(QDialog):
         self.qaction = qaction
         self.us = us
         #self.sql_db = sql_db
+
+        self.check_connection = ConnectionCheck()
 
         self.clip = QApplication.clipboard()
         self.pxmp = QPixmap()
@@ -185,8 +220,8 @@ class LetsShareBooksDialog(QDialog):
 
         #- parsing/tee log file -----------------------------------------------------------------------------
 
-        self.se = open("/tmp/lsb.log", "w+b")
-        #self.se = tempfile.NamedTemporaryFile()
+        #self.se = open("/tmp/lsb.log", "w+b")
+        self.se = tempfile.NamedTemporaryFile()
         self.so = self.se
 
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -217,6 +252,7 @@ class LetsShareBooksDialog(QDialog):
         self.ssh_server_established = QtCore.QState()
         self.ssh_server_established.setObjectName("ssh_server_established")
         self.ssh_server_established.entered.connect(lambda: self.render("Stop sharing", self.us.lsb_url_text))
+        self.ssh_server_established.entered.connect(lambda: self.check_connections())
         self.ssh_server_established.assignProperty(self.debug_label, 'text', 'Established SSH tunnel...')
 
         self.url_label_clicked = QtCore.QState()
@@ -232,16 +268,16 @@ class LetsShareBooksDialog(QDialog):
         self.on.addTransition(self.lets_share_button.clicked, self.calibre_web_server)
 
         self.calibre_web_server.addTransition(self.lets_share_button.clicked, self.off)
+        self.calibre_web_server.addTransition(self.calibre_didnt_start, self.off)
         self.calibre_web_server.addTransition(self.started_calibre_web_server, self.ssh_server)
 
         self.ssh_server.addTransition(self.lets_share_button.clicked, self.off)
-        self.ssh_server.addTransition(self.lost_calibre_web_server, self.off)
+        self.ssh_server.addTransition(self.check_connection.lost_connection, self.off)
         self.ssh_server.addTransition(self.established_ssh_tunnel, self.ssh_server_established)
 
         self.ssh_server_established.addTransition(self.lets_share_button.clicked, self.off)
         self.ssh_server_established.addTransition(self.url_label.clicked, self.url_label_clicked)
-        self.ssh_server_established.addTransition(self.lost_calibre_web_server, self.off)
-        self.ssh_server_established.addTransition(self.lost_ssh_connection, self.off)
+        self.ssh_server_established.addTransition(self.check_connection.lost_connection, self.off)
 
         self.url_label_clicked.addTransition(self.ssh_server_established)
 
@@ -263,8 +299,16 @@ class LetsShareBooksDialog(QDialog):
         self.machine.start()
 
         #------------------------------------------------------------------------------
+    def check_connections(self):
+        self.qaction.setIcon(get_icon('images/icon_connected.png'))
+        self.check_connection.add_urls(["http://localhost:{}".format(self.calibre_server_port), self.us.lsb_url])
+        self.check_connection.start()
 
     def disconnect_all(self):
+        self.check_connection.terminate()
+        del self.check_connection
+        self.check_connection = ConnectionCheck()
+
         if sys.platform == "win32":
             try:
                 subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
@@ -280,8 +324,11 @@ class LetsShareBooksDialog(QDialog):
         except Exception as e:
             self.debug_label.setText(str(e))
 
+        self.main_gui.content_server = None
         self.qaction.setIcon(get_icon('images/icon.png'))
         self.us.lsb_url_text = "Be a librarian. Share your library."
+        self.us.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.'
+
         self.us.lsb_url = "nourl"
         self.us.ssh_proc = None
 
@@ -289,6 +336,7 @@ class LetsShareBooksDialog(QDialog):
         self.us.lsb_url_text = lsb_url_text
         self.lets_share_button.setText(button_label)
         self.url_label.setText(lsb_url_text)
+        self.url_label.setToolTip(self.us.url_label_tooltip)
 
     def establish_ssh_server(self):
         if sys.platform == "win32":
@@ -297,6 +345,7 @@ class LetsShareBooksDialog(QDialog):
             self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@{2} -R {0}:localhost:{1} -P 722".format(self.us.port, self.calibre_server_port, prefs['lsb_server']), shell=True)
             self.us.lsb_url = "https://www{0}.{1}".format(self.us.port, prefs['lsb_server'])
             self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
+            self.established_ssh_tunnel.emit()
         else:
             #self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=/tmp/.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
             self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'TCPKeepAlive=yes', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no','-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
@@ -326,14 +375,16 @@ class LetsShareBooksDialog(QDialog):
                             QTimer.singleShot(500, parse_log)
                 parse_log()
 
-        self.qaction.setIcon(get_icon('images/icon_connected.png'))
 
 
     def start_calibre_server(self):
-        self.main_gui.start_content_server()
-        opts, args = server_config().option_parser().parse_args(['calibre-server'])
-        self.calibre_server_port = opts.port
-        self.started_calibre_web_server.emit()
+        if self.main_gui.content_server is None:
+            self.main_gui.start_content_server()
+            opts, args = server_config().option_parser().parse_args(['calibre-server'])
+            self.calibre_server_port = opts.port
+            self.started_calibre_web_server.emit()
+        else:
+            self.calibre_didnt_start.emit()
 
     def config(self):
         self.do_user_config(parent=self)

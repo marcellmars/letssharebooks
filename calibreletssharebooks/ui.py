@@ -32,6 +32,7 @@ class UnitedStates:
         self.lsb_url = 'nourl'
         self.machine_state = 1
         self.port = 0
+        self.init_db = True
 
 
 class LetsShareBooksUI(InterfaceAction):

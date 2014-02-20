@@ -16,7 +16,6 @@ var STATE = {
         'search_all': '',
     }
 };
-var LSB = {};
 
 var state_field_mapping = {
   'author': '#authors',

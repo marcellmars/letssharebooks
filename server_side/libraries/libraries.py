@@ -45,12 +45,14 @@ def import_catalog(db, catalog):
     tunnel = catalog['tunnel']
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid':library_uuid})
+    print("db_cat:{}".format(db_cat))
     if db_cat:
         # remove books as requested
         remove_from_library(db, library_uuid, catalog['books']['remove'])
     # add books as requested (for new library and for sync)
     add_to_library(db, library_uuid, tunnel, catalog['books']['add'])
     update_catalog(db, library_uuid, last_modified, tunnel)
+
     return library_uuid
 
 #------------------------------------------------------------------------------
@@ -59,7 +61,6 @@ def update_catalog(db, library_uuid, last_modified, tunnel):
     # set tunnel to 0 if there is a library with the same tunnel from before
     old_libraries = [b['library_uuid'] for b in db.catalog.find({'tunnel': tunnel})]
     db.catalog.update({'library_uuid': {'$in': old_libraries}}, {'$set': {'tunnel': 0}}, upsert=True)
-
     db.catalog.update({'library_uuid': library_uuid},
                       {'$set': {'last_modified': last_modified,
                                 'tunnel':tunnel}},
@@ -142,6 +143,8 @@ def get_books(db, page, query={}):
     q = {}
     # get all libraries that have active ssh tunnel
     lib_uuids = [i['library_uuid'] for i in db.catalog.find({'tunnel': {'$in': get_active_tunnels()}})]
+    print("GET_ACTIVE_TUNNELS: {}".format(get_active_tunnels()))
+    print("LIB_UUIDS:{}".format(lib_uuids))
     q['library_uuid'] = {'$in': lib_uuids}
     # extract search parameters
     for k,v in query.iteritems():
@@ -157,6 +160,7 @@ def get_books(db, page, query={}):
                     {"identifiers":{"$regex":".*{}.*".format(v), "$options": 'i'}}]}
 
     # get all books that belong to libraries with active tunnel
+    print("QUERY:{}".format(q))
     books = db.books.find(q, PUBLIC_BOOK_FIELDS)
     authors = books.distinct('authors')
     titles = books.distinct('title_sort')

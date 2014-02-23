@@ -46,6 +46,7 @@ def import_catalog(db, catalog):
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid':library_uuid})
     print("db_cat:{}".format(db_cat))
+    print("books_add: {}; books_remoce: {}".format(catalog['books']['add'], catalog['books']['remove']))
     if db_cat:
         # remove books as requested
         remove_from_library(db, library_uuid, catalog['books']['remove'])
@@ -65,7 +66,8 @@ def update_catalog(db, library_uuid, last_modified, tunnel):
                       {'$set': {'last_modified': last_modified,
                                 'tunnel':tunnel}},
                       upsert=True, multi=False)
-
+    # update tunnel to the current one for all books in current library
+    db.books.update({'library_uuid': library_uuid}, {'$set': {'tunnel': tunnel}}, multi=True)
 #------------------------------------------------------------------------------
 
 def remove_from_library(db, library_uuid, books_uuids):

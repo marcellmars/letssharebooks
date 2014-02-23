@@ -3,7 +3,8 @@ from calibre.gui2.actions import InterfaceAction
 from calibre_plugins.letssharebooks.main import LetsShareBooksDialog
 from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
-from PyQt4.Qt import QWidgetAction, QToolButton, QMenu
+from PyQt4.Qt import QWidgetAction, QToolButton, QMenu, QObject
+from PyQt4 import QtCore
 import urllib2
 
 __license__   = 'GPL v3'
@@ -17,8 +18,10 @@ if False:
 PLUGIN_ICONS = ['images/icon.png', 'images/icon_connected.png']
 
 
-class UnitedStates:
+class UnitedStates(QObject):
+    library_changed = QtCore.pyqtSignal()
     def __init__(self):
+        QObject.__init__(self)
         self.plugin_url = "https://github.com/marcellmars/letssharebooks/raw/master/calibreletssharebooks/letssharebooks_calibre.zip"
         self.running_version = ".".join(map(str, lsb.version))
         try:
@@ -34,6 +37,8 @@ class UnitedStates:
         self.port = 0
         self.init_db = True
 
+    def library_changed_emit(self):
+        self.library_changed.emit()
 
 class LetsShareBooksUI(InterfaceAction):
 
@@ -59,6 +64,9 @@ class LetsShareBooksUI(InterfaceAction):
         a = QWidgetAction(m)
         a.setDefaultWidget(d)
         m.addAction(a)
+
+    def library_changed(self, db):
+        self.us.library_changed_emit()
 
     def apply_settings(self):
         from calibre_plugins.letssharebooks.config import prefs

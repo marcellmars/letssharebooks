@@ -11,7 +11,7 @@ def main():
     tp = []
     for port in get_tunnel_ports():
         if requests.get("{prefix}www{port}.{host}".format(prefix=PREFIX, port=str(port), host=HOST)):
-            tp.append(port)
+            tp.append(int(port))
     pickle.dump(tp, open("/tmp/active_tunnel_ports","wb"))
 
 PREFIX = "http://"

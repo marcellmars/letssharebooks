@@ -5,7 +5,7 @@ from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
 from calibre_plugins.letssharebooks import requests
 from calibre.library.server import server_config
-import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json
+import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, datetime
 
 #from calibre_plugins.letssharebooks import requests
 
@@ -13,6 +13,8 @@ __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
 __docformat__ = 'restructuredtext en'
 
+#SERVER_PREFIX = "https"
+SERVER_PREFIX = "http"
 
 try:
     del os.environ['LD_LIBRARY_PATH']
@@ -32,13 +34,13 @@ if False:
     get_icons = get_resources = None
 
 class MetadataLibThread(QThread):
-#class MetadataLibThread():
-    def __init__(self, debug_log, sql_db, unitedstates):
+    uploaded = QtCore.pyqtSignal()
+    upload_error = QtCore.pyqtSignal()
+    def __init__(self, us, sql_db):
         QThread.__init__(self)
-        self.us = unitedstates
-        self.debug_log = debug_log
+        self.us = us
         self.sql_db = sql_db
-        self.library_id = str(self.sql_db.library_id)
+        self.library_id = self.sql_db.library_id
 
     def get_book_metadata(self):
         books_metadata = []
@@ -46,10 +48,8 @@ class MetadataLibThread(QThread):
             book_metadata = {}
             book_meta = self.sql_db.get_metadata(book_id, index_is_id=True)
             for field in book_meta.standard_field_keys():
-                self.debug_log.addItem("field: {}".format(field))
                 if field in ['last_modified', 'timestamp', 'pubdate']:
                     book_metadata[field] = str(getattr(book_meta, field))
-                    self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
                 elif field == 'formats':
                     formats = getattr(book_meta, field)
                     book_metadata[field] = []
@@ -57,16 +57,12 @@ class MetadataLibThread(QThread):
                         book_metadata[field] = [book_format for book_format in formats]
                 else:
                     book_metadata[field] = getattr(book_meta, field)
-                    self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
 
             for field in book_meta.custom_field_keys():
-                #self.debug_log.addItem("field: {}".format(field))
                 if field == 'last_modified' or field == 'timestamp' or field == 'pubdate':
                     book_metadata[field] = str(getattr(book_meta, field))
-                    #self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
                 else:
                     book_metadata[field] = getattr(book_meta, field)
-                    #self.debug_log.addItem("value: {}".format(str(book_metadata[field])))
             try:
                 book_metadata['last_modified']
 
@@ -90,18 +86,19 @@ class MetadataLibThread(QThread):
         return books_metadata
 
     def get_server_list(self, uuid):
-        #r = requests.get("https://library.{}/get_catalog".format(prefs['lsb_server'], params={'uuid': uuid}))
-        print(uuid)
-        r = requests.get("http://library.{}/get_catalog".format(prefs['lsb_server']), params={'uuid': uuid})
-        catalog = r.json()
+        try:
+            r = requests.get("{}://library.{}/get_catalog".format(SERVER_PREFIX, prefs['lsb_server']), params={'uuid': uuid})
+            catalog = r.json()
+        except:
+            catalog = None
         if catalog is None:
             return []
         else:
             return catalog['books']
 
     def run(self):
+        start = datetime.datetime.now()
         books_metadata = self.get_book_metadata()
-        #map(self.debug_log.addItem, map(str, books_metadata))
         server_list = set(self.get_server_list(self.library_id))
         local_list = set([book['uuid'] for book in books_metadata])
 
@@ -127,10 +124,17 @@ class MetadataLibThread(QThread):
             zif.write('library.json')
             zif.close()
         with open('library.json.zip', 'r') as file:
-            #r = requests.post("https://library.{}/upload_catalog".format(self.lsb_url), files={'uploaded_file': file})
-            r = requests.post("http://library.{}/upload_catalog".format(prefs['lsb_server']), files={'uploaded_file': file})
+            try:
+                r = requests.post("{}://library.{}/upload_catalog".format(SERVER_PREFIX, prefs['lsb_server']), files={'uploaded_file': file}, verify=False)
+                if r.ok:
+                    self.uploaded.emit()
+                else:
+                    self.upload_error.emit()
+            except:
+                self.upload_error.emit()
 
-        self.debug_log.addItem(r.content)
+        end = datetime.datetime.now() - start
+        print("metadata_thread: {}".format(end.total_seconds()))
         return
 
 class ConnectionCheck(QThread):
@@ -319,6 +323,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.resize(self.sizeHint())
 
+        self.us.library_changed.connect(self.change_library)
         #- parsing/tee log file -----------------------------------------------------------------------------
 
         self.se = open("/tmp/lsb.log", "w+b")
@@ -398,16 +403,20 @@ class LetsShareBooksDialog(QDialog):
         #------------------------------------------------------------------------------
 
     def get_metadata(self):
-        #self.metadata_thread.start()
-        self.metadata_thread.run()
+        self.metadata_thread.start()
+        #self.metadata_thread.run()
+
+    def change_library(self):
+        from calibre.gui2.ui import get_gui
+        self.sql_db = get_gui().current_db
+        self.metadata_thread = MetadataLibThread(self.us, self.sql_db)
+        self.metadata_thread.uploaded.connect(lambda: self.debug_log.addItem("uploaded!"))
+        self.metadata_thread.upload_error.connect(lambda: self.debug_log.addItem("upload_ERROR!"))
 
     def db_init(self):
         if self.us.init_db:
             self.us.init_db = False
-            from calibre.gui2.ui import get_gui
-            self.sql_db = get_gui().current_db
-            self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
-            print(self.sql_db)
+            self.change_library()
 
     def check_connections(self):
         self.qaction.setIcon(get_icon('images/icon_connected.png'))
@@ -453,12 +462,10 @@ class LetsShareBooksDialog(QDialog):
             self.win_reg = subprocess.Popen("regedit /s .hosts.reg")
             self.us.port = str(int(random.random()*40000+10000))
             self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@{2} -R {0}:localhost:{1} -P 722".format(self.us.port, self.calibre_server_port, prefs['lsb_server']), shell=True)
-            #self.us.lsb_url = "https://www{0}.{1}".format(self.us.port, prefs['lsb_server'])
-            self.us.lsb_url = "http://www{0}.{1}".format(self.us.port, prefs['lsb_server'])
-            self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
+            self.us.lsb_url = "{}://www{}.{}".format(SERVER_PREFIX, self.us.port, prefs['lsb_server'])
+            self.us.lsb_url_text = "Go to: {}".format(self.us.lsb_url)
             self.established_ssh_tunnel.emit()
         else:
-            #self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'UserKnownHostsFile=/tmp/.userknownhostsfile', '-o', 'TCPKeepAlive=yes', '-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
             self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'TCPKeepAlive=yes', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no','-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
             if self.us.ssh_proc:
                 def parse_log():
@@ -473,8 +480,7 @@ class LetsShareBooksDialog(QDialog):
                             m = re.match("^Allocated port (.*) for .*", line)
                             try:
                                 self.us.port = m.groups()[0]
-                                #self.us.lsb_url = 'https://www{0}.{1}'.format(self.us.port, prefs['lsb_server'])
-                                self.us.lsb_url = 'http://www{0}.{1}'.format(self.us.port, prefs['lsb_server'])
+                                self.us.lsb_url = '{}://www{}.{}'.format(SERVER_PREFIX, self.us.port, prefs['lsb_server'])
                                 self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
                                 self.us.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
                                 self.established_ssh_tunnel.emit()
@@ -510,15 +516,3 @@ class LetsShareBooksDialog(QDialog):
             self.us.machine_state = state.objectName()
         print("close popup!")
         self.hide()
-
-#    def handle_text_changed(self, text):
-#        if text == 'calibre':
-#            self.started_calibre_web_server.emit()
-#        if text == 'ssh':
-#            self.established_ssh_tunnel.emit()
-#        if text == 'lost_calibre':
-#            self.lost_calibre_web_server.emit()
-#        if text == 'lost_ssh':
-#            self.lost_ssh_connection.emit()
-
-

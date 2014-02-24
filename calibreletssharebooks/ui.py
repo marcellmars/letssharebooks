@@ -29,14 +29,6 @@ class UnitedStates(QObject):
         except:
             self.latest_version = "0.0.0"
 
-        self.window_title = "Let's share books"
-        self.lsb_url_text = 'Be a librarian. Share your library.'
-        self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
-        self.lsb_url = 'nourl'
-        self.machine_state = 1
-        self.port = 0
-        self.init_db = True
-
     def library_changed_emit(self):
         self.library_changed.emit()
 

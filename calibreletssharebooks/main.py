@@ -4,6 +4,7 @@ from PyQt4 import QtCore
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
 from calibre_plugins.letssharebooks import requests
+from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre.library.server import server_config
 import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, datetime
 
@@ -25,22 +26,24 @@ if sys.platform == "win32":
     open(".hosts.reg", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.hosts.reg').read())
     if not os.path.isfile("lsbtunnel.exe"):
         open("lsbtunnel.exe", "wb").write(urllib2.urlopen('https://chat.memoryoftheworld.org/plink.exe').read())
-else:
-    try:
-        open("/tmp/.userknownhostsfile", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.userknownhostsfile').read())
-    except:
-        pass
+
+# it should work without .userknownhostsfile
+#else:
+#    try:
+#        open("/tmp/.userknownhostsfile", "w").write(urllib2.urlopen('https://chat.memoryoftheworld.org/.userknownhostsfile').read())
+#    except:
+#        pass
+
 if False:
     get_icons = get_resources = None
 
 class MetadataLibThread(QThread):
     uploaded = QtCore.pyqtSignal()
     upload_error = QtCore.pyqtSignal()
-    def __init__(self, us, sql_db):
+    def __init__(self, port, sql_db):
         QThread.__init__(self)
-        self.us = us
-        #self.sql_db = sql_db
-        #self.library_id = self.sql_db.library_id
+        self.port = port
+        self.sql_db = sql_db
 
     def get_book_metadata(self):
         books_metadata = []
@@ -98,8 +101,8 @@ class MetadataLibThread(QThread):
             return catalog['books']
 
     def run(self):
-        from calibre.gui2.ui import get_gui
-        self.sql_db = get_gui().current_db
+        #from calibre.gui2.ui import get_gui
+        #self.sql_db = get_gui().current_db
         print("threaded db is now {}".format(self.sql_db.library_id))
         start = datetime.datetime.now()
         books_metadata = self.get_book_metadata()
@@ -118,7 +121,7 @@ class MetadataLibThread(QThread):
             with open('library.json', 'w') as file:
                 library['library_uuid'] = self.sql_db.library_id
                 library['last_modified'] = str(sorted([book['last_modified'] for book in books_metadata])[-1])
-                library['tunnel'] = int(self.us.port)
+                library['tunnel'] = int(self.port)
                 library['books'] = {}
                 library['books']['remove'] = list(removed_books)
                 library['books']['add'] = [book for book in books_metadata if book['uuid'] in added_books]
@@ -187,6 +190,10 @@ class LetsShareBooksDialog(QDialog):
         self.do_user_config = do_user_config
         self.qaction = qaction
         self.us = us
+
+        self.lsb_url_text = 'Be a librarian. Share your library.'
+        self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
+        self.lsb_url = 'nourl'
 
         self.check_connection = ConnectionCheck()
 
@@ -314,10 +321,20 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.metadata_button)
         self.metadata_button.show()
 
-        self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.us.latest_version))
+        #- check if there is a new version of plugin ----------------------------------------------
+
+        self.plugin_url = "https://github.com/marcellmars/letssharebooks/raw/master/calibreletssharebooks/letssharebooks_calibre.zip"
+        self.running_version = ".".join(map(str, lsb.version))
+        try:
+            r = requests.get('https://raw.github.com/marcellmars/letssharebooks/master/calibreletssharebooks/_version', timeout=3)
+            self.latest_version = r.text[-1]
+        except:
+            self.latest_version = "0.0.0"
+
+        self.upgrade_button = QPushButton('Please download and upgrade from {0} to {1} version of plugin.'.format(self.us.running_version, self.latest_version))
         self.upgrade_button.setObjectName("url2")
         self.upgrade_button.setToolTip('Running latest version you make developers happy')
-        #self.upgrade_button.clicked.connect(functools.partial(self.open_url2, self.us.plugin_url))
+        #self.upgrade_button.clicked.connect(functools.partial(self.open_url2, self..plugin_url))
 
         version_list = [self.us.running_version, self.us.latest_version]
         version_list.sort(key=lambda s: map(int, s.split('.')))
@@ -326,33 +343,32 @@ class LetsShareBooksDialog(QDialog):
                 self.ll.addSpacing(20)
                 self.ll.addWidget(self.upgrade_button)
 
+        #------------------------------------------------------------------------------------------
+
         self.resize(self.sizeHint())
 
-        self.us.library_changed.connect(self.change_library)
-        #- parsing/tee log file -----------------------------------------------------------------------------
+        #- parsing/tee log file -------------------------------------------------------------------
 
-        self.se = open("/tmp/lsb.log", "w+b")
-        #self.se = tempfile.NamedTemporaryFile()
+        #self.se = open("/tmp/lsb.log", "w+b")
+        self.se = tempfile.NamedTemporaryFile()
         self.so = self.se
 
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
         os.dup2(self.so.fileno(), sys.stdout.fileno())
         os.dup2(self.se.fileno(), sys.stderr.fileno())
 
-        #- state machine -----------------------------------------------------------------------------
-        self.debug_label.setText(str(self.us.machine_state))
+        #- state machine --------------------------------------------------------------------------
 
         self.machine = QtCore.QStateMachine()
 
         self.on = QtCore.QState()
         self.on.setObjectName("on")
-        self.on.entered.connect(lambda: self.render("Start sharing", self.us.lsb_url_text))
-        self.on.entered.connect(lambda: self.db_init())
+        self.on.entered.connect(lambda: self.render("Start sharing", self.lsb_url_text))
 
         self.calibre_web_server = QtCore.QState()
         self.calibre_web_server.setObjectName("calibre_web_server")
         self.calibre_web_server.entered.connect(self.start_calibre_server)
-        self.calibre_web_server.entered.connect(lambda: self.render("Stop sharing", self.us.lsb_url_text))
+        self.calibre_web_server.entered.connect(lambda: self.render("Stop sharing", self.lsb_url_text))
         self.calibre_web_server.assignProperty(self.debug_label, 'text', 'Starting Calibre web server...')
 
         self.ssh_server = QtCore.QState()
@@ -363,14 +379,19 @@ class LetsShareBooksDialog(QDialog):
 
         self.ssh_server_established = QtCore.QState()
         self.ssh_server_established.setObjectName("ssh_server_established")
-        self.ssh_server_established.entered.connect(lambda: self.render("Stop sharing", self.us.lsb_url_text))
-        self.ssh_server_established.entered.connect(lambda: self.check_connections())
+        self.ssh_server_established.entered.connect(lambda: self.render("Stop sharing", self.lsb_url_text))
+        self.ssh_server_established.entered.connect(self.check_connections)
+        self.ssh_server_established.entered.connect(self.sync_metadata)
         self.ssh_server_established.assignProperty(self.debug_label, 'text', 'Established SSH tunnel...')
 
         self.url_label_clicked = QtCore.QState()
         self.url_label_clicked.setObjectName("url_label_clicked")
-        self.url_label_clicked.entered.connect(lambda: self.open_url(self.us.lsb_url))
+        self.url_label_clicked.entered.connect(lambda: self.open_url(self.lsb_url))
         self.url_label_clicked.assignProperty(self.debug_label, 'text', 'URL label clicked!')
+
+        self.library_state_changed = QtCore.QState()
+        self.library_state_changed.setObjectName("library_state_changed")
+        self.library_state_changed.entered.connect(self.sync_metadata)
 
         self.off = QtCore.QState()
         self.off.setObjectName("off")
@@ -390,8 +411,10 @@ class LetsShareBooksDialog(QDialog):
         self.ssh_server_established.addTransition(self.lets_share_button.clicked, self.off)
         self.ssh_server_established.addTransition(self.url_label.clicked, self.url_label_clicked)
         self.ssh_server_established.addTransition(self.check_connection.lost_connection, self.off)
+        self.ssh_server_established.addTransition(self.us.library_changed, self.library_state_changed)
 
         self.url_label_clicked.addTransition(self.ssh_server_established)
+        self.library_state_changed.addTransition(self.ssh_server_established)
 
         self.off.addTransition(self.on)
 
@@ -400,21 +423,23 @@ class LetsShareBooksDialog(QDialog):
         self.machine.addState(self.ssh_server)
         self.machine.addState(self.ssh_server_established)
         self.machine.addState(self.url_label_clicked)
+        self.machine.addState(self.library_state_changed)
         self.machine.addState(self.off)
 
         self.machine.setInitialState(self.on)
         self.machine.start()
 
-        #------------------------------------------------------------------------------
+        #------------------------------------------------------------------------------------------
     def sql_db_changed(self, event, ids):
+        # this could be used for better update on added/removed books
         print("{} db_changed event: {}".format(self.sql_db.library_id, event))
         print("{} db_changed ids: {}".format(self.sql_db.library_id, ids))
+        if not self.metadata_thread.isRunning():
+            self.sync_metadata()
+        else:
+            print("metadata_thread is running! no sync!")
 
     def sync_metadata(self):
-        self.metadata_thread.start()
-        #self.metadata_thread.run()
-
-    def change_library(self):
         from calibre.gui2.ui import get_gui
         try:
             del self.sql_db
@@ -423,18 +448,14 @@ class LetsShareBooksDialog(QDialog):
         self.sql_db = get_gui().current_db
         print("current db is now {}".format(self.sql_db.library_id))
         self.sql_db.add_listener(self.sql_db_changed)
-        self.metadata_thread = MetadataLibThread(self.us, self.sql_db)
+        self.metadata_thread = MetadataLibThread(self.port, self.sql_db)
         self.metadata_thread.uploaded.connect(lambda: self.debug_log.addItem("uploaded!"))
         self.metadata_thread.upload_error.connect(lambda: self.debug_log.addItem("upload_ERROR!"))
-
-    def db_init(self):
-        if self.us.init_db:
-            self.us.init_db = False
-            self.change_library()
+        self.metadata_thread.start()
 
     def check_connections(self):
         self.qaction.setIcon(get_icon('images/icon_connected.png'))
-        self.check_connection.add_urls(["http://localhost:{}".format(self.calibre_server_port), self.us.lsb_url])
+        self.check_connection.add_urls(["http://localhost:{}".format(self.calibre_server_port), self.lsb_url])
         self.check_connection.start()
 
     def disconnect_all(self):
@@ -449,7 +470,7 @@ class LetsShareBooksDialog(QDialog):
                 self.debug_label.setText(str(e))
         else:
             try:
-                self.us.ssh_proc.kill()
+                self.ssh_proc.kill()
             except Exception as e:
                 self.debug_label.setText(str(e))
         try:
@@ -459,29 +480,29 @@ class LetsShareBooksDialog(QDialog):
 
         self.main_gui.content_server = None
         self.qaction.setIcon(get_icon('images/icon.png'))
-        self.us.lsb_url_text = "Be a librarian. Share your library."
-        self.us.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.'
+        self.lsb_url_text = "Be a librarian. Share your library."
+        self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.'
 
-        self.us.lsb_url = "nourl"
-        self.us.ssh_proc = None
+        self.lsb_url = "nourl"
+        self.ssh_proc = None
 
     def render(self, button_label, lsb_url_text):
-        self.us.lsb_url_text = lsb_url_text
+        self.lsb_url_text = lsb_url_text
         self.lets_share_button.setText(button_label)
         self.url_label.setText(lsb_url_text)
-        self.url_label.setToolTip(self.us.url_label_tooltip)
+        self.url_label.setToolTip(self.url_label_tooltip)
 
     def establish_ssh_server(self):
         if sys.platform == "win32":
             self.win_reg = subprocess.Popen("regedit /s .hosts.reg")
-            self.us.port = str(int(random.random()*40000+10000))
-            self.us.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@{2} -R {0}:localhost:{1} -P 722".format(self.us.port, self.calibre_server_port, prefs['lsb_server']), shell=True)
-            self.us.lsb_url = "{}://www{}.{}".format(SERVER_PREFIX, self.us.port, prefs['lsb_server'])
-            self.us.lsb_url_text = "Go to: {}".format(self.us.lsb_url)
-            self.established_ssh_tunnel.emit()
+            self.port = str(int(random.random()*40000+10000))
+            self.ssh_proc = subprocess.Popen("lsbtunnel.exe -N -T tunnel@{2} -R {0}:localhost:{1} -P 722".format(self.port, self.calibre_server_port, prefs['lsb_server']), shell=True)
+            self.lsb_url = "{}://www{}.{}".format(SERVER_PREFIX, self.port, prefs['lsb_server'])
+            self.lsb_url_text = "Go to: {}".format(self.lsb_url)
+            QTimer.singleShot(3000, self.established_ssh_tunnel.emit)
         else:
-            self.us.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'TCPKeepAlive=yes', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no','-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
-            if self.us.ssh_proc:
+            self.ssh_proc = subprocess.Popen(['ssh', '-T', '-N', '-g', '-o', 'TCPKeepAlive=yes', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no','-o', 'ServerAliveINterval=60', prefs['lsb_server'], '-l', 'tunnel', '-R', '0:localhost:{0}'.format(self.calibre_server_port), '-p', '722'])
+            if self.ssh_proc:
                 def parse_log():
                     gotcha = False
                     try:
@@ -493,10 +514,10 @@ class LetsShareBooksDialog(QDialog):
                         for line in result:
                             m = re.match("^Allocated port (.*) for .*", line)
                             try:
-                                self.us.port = m.groups()[0]
-                                self.us.lsb_url = '{}://www{}.{}'.format(SERVER_PREFIX, self.us.port, prefs['lsb_server'])
-                                self.us.lsb_url_text = "Go to: {0}".format(self.us.lsb_url)
-                                self.us.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
+                                self.port = m.groups()[0]
+                                self.lsb_url = '{}://www{}.{}'.format(SERVER_PREFIX, self.port, prefs['lsb_server'])
+                                self.lsb_url_text = "Go to: {0}".format(self.lsb_url)
+                                self.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
                                 self.established_ssh_tunnel.emit()
                                 gotcha = True
                             except:
@@ -526,7 +547,5 @@ class LetsShareBooksDialog(QDialog):
         webbrowser.open(url)
 
     def closeEvent(self, e):
-        for state in self.machine.configuration():
-            self.us.machine_state = state.objectName()
         print("close popup!")
         self.hide()

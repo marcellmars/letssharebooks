@@ -39,8 +39,8 @@ class MetadataLibThread(QThread):
     def __init__(self, us, sql_db):
         QThread.__init__(self)
         self.us = us
-        self.sql_db = sql_db
-        self.library_id = self.sql_db.library_id
+        #self.sql_db = sql_db
+        #self.library_id = self.sql_db.library_id
 
     def get_book_metadata(self):
         books_metadata = []
@@ -91,20 +91,24 @@ class MetadataLibThread(QThread):
             catalog = r.json()
         except:
             catalog = None
+            self.upload_error.emit()
         if catalog is None:
             return []
         else:
             return catalog['books']
 
     def run(self):
+        from calibre.gui2.ui import get_gui
+        self.sql_db = get_gui().current_db
+        print("threaded db is now {}".format(self.sql_db.library_id))
         start = datetime.datetime.now()
         books_metadata = self.get_book_metadata()
-        server_list = set(self.get_server_list(self.library_id))
+        server_list = set(self.get_server_list(self.sql_db.library_id))
         local_list = set([book['uuid'] for book in books_metadata])
-
+        print("server list: {}; local list: {}".format(server_list, local_list))
         removed_books = server_list - local_list
         added_books = local_list - server_list
-
+        print("removed books: {}; added books: {}".format(removed_books, added_books))
         library = {}
         try:
             mode = zipfile.ZIP_DEFLATED
@@ -112,12 +116,13 @@ class MetadataLibThread(QThread):
             mode = zipfile.ZIP_STORED
         with zipfile.ZipFile('library.json.zip', 'w', mode) as zif:
             with open('library.json', 'w') as file:
-                library['library_uuid'] = self.library_id
+                library['library_uuid'] = self.sql_db.library_id
                 library['last_modified'] = str(sorted([book['last_modified'] for book in books_metadata])[-1])
                 library['tunnel'] = int(self.us.port)
                 library['books'] = {}
-                library['books']['remove'] = [book['uuid'] for book in books_metadata if book['uuid'] in removed_books]
+                library['books']['remove'] = list(removed_books)
                 library['books']['add'] = [book for book in books_metadata if book['uuid'] in added_books]
+                print("in .zip books['add']: {}; books['remove']: {}".format(library['books']['add'], library['books']['remove']))
                 json_string = json.dumps(library)
                 file.write(json_string)
             file.close()
@@ -305,7 +310,7 @@ class LetsShareBooksDialog(QDialog):
         self.metadata_button = QPushButton("Get library metadata!")
         self.metadata_button.setObjectName("url2")
         self.metadata_button.setToolTip('Get library metadata!')
-        self.metadata_button.clicked.connect(self.get_metadata)
+        self.metadata_button.clicked.connect(self.sync_metadata)
         self.ll.addWidget(self.metadata_button)
         self.metadata_button.show()
 
@@ -401,14 +406,23 @@ class LetsShareBooksDialog(QDialog):
         self.machine.start()
 
         #------------------------------------------------------------------------------
+    def sql_db_changed(self, event, ids):
+        print("{} db_changed event: {}".format(self.sql_db.library_id, event))
+        print("{} db_changed ids: {}".format(self.sql_db.library_id, ids))
 
-    def get_metadata(self):
+    def sync_metadata(self):
         self.metadata_thread.start()
         #self.metadata_thread.run()
 
     def change_library(self):
         from calibre.gui2.ui import get_gui
+        try:
+            del self.sql_db
+        except:
+            pass
         self.sql_db = get_gui().current_db
+        print("current db is now {}".format(self.sql_db.library_id))
+        self.sql_db.add_listener(self.sql_db_changed)
         self.metadata_thread = MetadataLibThread(self.us, self.sql_db)
         self.metadata_thread.uploaded.connect(lambda: self.debug_log.addItem("uploaded!"))
         self.metadata_thread.upload_error.connect(lambda: self.debug_log.addItem("upload_ERROR!"))

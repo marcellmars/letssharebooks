@@ -46,7 +46,7 @@ def import_catalog(db, catalog):
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid':library_uuid})
     print("db_cat:{}".format(db_cat))
-    print("books_add: {}; books_remoce: {}".format(catalog['books']['add'], catalog['books']['remove']))
+    print("books_add: {}; books_remove: {}".format(catalog['books']['add'], catalog['books']['remove']))
     if db_cat:
         # remove books as requested
         remove_from_library(db, library_uuid, catalog['books']['remove'])
@@ -99,7 +99,7 @@ def add_to_library(db, library_uuid, tunnel, books):
         book['library_uuid'] = library_uuid
         book['tunnel'] = tunnel
         try:
-            #db.books.insert(book)
+            db.books.insert(book)
             db.books.update({'uuid': book['uuid']},
                             book,
                             upsert=True, multi=False)

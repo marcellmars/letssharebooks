@@ -66,6 +66,7 @@ class LetsShareBooksUI(InterfaceAction):
         m.addAction(a)
 
     def library_changed(self, db):
+        print("library_change: {}".format(db.library_id))
         self.us.library_changed_emit()
 
     def apply_settings(self):

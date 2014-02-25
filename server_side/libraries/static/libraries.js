@@ -80,7 +80,6 @@ var render_book = function(i, book) {
     });
 
     $(document).on('click', '.author', function(e) {
-      STATE.page = 1;
       search_author($(this).data('authors'));
     });
 
@@ -248,6 +247,7 @@ var search_query = function () {
     q.title = $('#titles').val();
     q.search_all = $('#search_all').val();
     STATE.query = q;
+    STATE.page = 1;
     render_page();
 };
 

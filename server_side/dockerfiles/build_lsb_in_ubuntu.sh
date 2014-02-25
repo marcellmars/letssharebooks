@@ -1,3 +1,5 @@
+#!/bin/sh
+
 mkdir -p /var/log/supervisor
 mkdir -p /var/run/supervisor
 locale-gen en_US en_US.UTF-8

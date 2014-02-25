@@ -6,6 +6,8 @@ from calibre_plugins.letssharebooks.config import prefs
 from calibre_plugins.letssharebooks import requests
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre.library.server import server_config
+from calibre_plugins.letssharebooks.shuffle_names import get_libranon
+
 import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, datetime
 
 #from calibre_plugins.letssharebooks import requests
@@ -252,7 +254,19 @@ class LetsShareBooksDialog(QDialog):
         QPushButton#url2:hover {
                 color: red;
                 }
-                """)
+
+        QLineEdit#edit {
+                background-color: white;
+                color: black;
+                font-size: 16px;
+                border-style: solid;
+                border-color: red;
+                font-family:'BitstreamVeraSansMono',Consolas,monospace;
+                text-transform: uppercase;
+        }
+
+
+        """)
 
         self.ll = QVBoxLayout()
         #self.ll.setSpacing(1)
@@ -267,12 +281,9 @@ class LetsShareBooksDialog(QDialog):
         self.setLayout(self.ll)
         self.setWindowIcon(icon)
 
-        self.edit = QLineEdit()
-        #self.edit.textChanged.connect(self.handle_text_changed)
-        self.ll.addWidget(self.edit)
-
         self.debug_label = QLabel()
         self.ll.addWidget(self.debug_label)
+        self.debug_label.hide()
 
         self.lets_share_button = QPushButton()
         self.lets_share_button.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
@@ -292,6 +303,28 @@ class LetsShareBooksDialog(QDialog):
         self.l.addWidget(self.arrow_button)
 
         self.ll.addWidget(self.w)
+        self.ll.addSpacing(5)
+
+        self.libranon_layout = QHBoxLayout()
+        self.libranon_layout.setSpacing(0)
+        self.libranon_layout.setMargin(0)
+        #self.l.setContentsMargins(0,0,0,0)
+        self.libranon_container = QWidget()
+        self.libranon_container.setLayout(self.libranon_layout)
+
+        self.edit = QLineEdit()
+        self.edit.setObjectName("edit")
+        self.edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.edit.setText(get_libranon())
+        #self.edit.textChanged.connect(self.handle_text_changed)
+
+        self.save_libranon = QPushButton("librarian: ")
+        self.save_libranon.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        self.save_libranon.setObjectName("share")
+        self.libranon_layout.addWidget(self.save_libranon)
+        self.libranon_layout.addWidget(self.edit)
+
+        self.ll.addWidget(self.libranon_container)
         self.ll.addSpacing(10)
 
         self.chat_button = QPushButton("Chat room: https://chat.memoryoftheworld.org")
@@ -310,6 +343,7 @@ class LetsShareBooksDialog(QDialog):
         self.debug_log = QListWidget()
         self.ll.addWidget(self.debug_log)
         self.debug_log.addItem("Initiatied!")
+        self.debug_log.addItem(get_libranon())
         self.debug_log.show()
 
         #self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
@@ -349,8 +383,8 @@ class LetsShareBooksDialog(QDialog):
 
         #- parsing/tee log file -------------------------------------------------------------------
 
-        #self.se = open("/tmp/lsb.log", "w+b")
-        self.se = tempfile.NamedTemporaryFile()
+        self.se = open("/tmp/lsb.log", "w+b")
+        #self.se = tempfile.NamedTemporaryFile()
         self.so = self.se
 
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)

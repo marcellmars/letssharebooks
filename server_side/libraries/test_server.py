@@ -10,6 +10,11 @@ import settings
 import libraries
 
 #------------------------------------------------------------------------------
+# WARNING: this test suite is far from complete. testing database should be
+# prepared before running these tests!
+# 1. run local test server: $ python server.py --env test
+# 2. cd test/; python upload.py --file library.json.zip 
+#------------------------------------------------------------------------------
             
 def setUpModule():
     settings.ENV = settings.SERVER['test']
@@ -43,7 +48,6 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertGreater(response.body[0].find('memory of the world'), -1)
 
     def test_get_books(self):
-        # then try to get them
         params = {'page':1,
                   'query':{'authors':'','titles':'','search_all':''}}
         response = self.request('/get_books', method='POST',
@@ -55,7 +59,6 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(len(data['titles']), 81)
         self.assertEqual(len(data['authors']), 92)
         
-
 #------------------------------------------------------------------------------
 
 if __name__ == '__main__':

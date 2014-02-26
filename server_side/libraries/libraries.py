@@ -28,6 +28,7 @@ PUBLIC_BOOK_FIELDS = {
 #------------------------------------------------------------------------------
 
 def get_active_tunnels():
+    # return [12345]
     try:
         return pickle.load(open("/tmp/active_tunnel_ports","rb"))
     except:
@@ -61,14 +62,18 @@ def import_catalog(db, catalog):
 
 def update_catalog(db, library_uuid, last_modified, tunnel):
     # set tunnel to 0 if there is a library with the same tunnel from before
-    old_libraries = [b['library_uuid'] for b in db.catalog.find({'tunnel': tunnel})]
-    db.catalog.update({'library_uuid': {'$in': old_libraries}}, {'$set': {'tunnel': 0}}, upsert=True)
+    old_libraries = [b['library_uuid']
+                     for b in db.catalog.find({'tunnel': tunnel})]
+    db.catalog.update({'library_uuid': {'$in': old_libraries}},
+                      {'$set': {'tunnel': 0}}, upsert=True)
     db.catalog.update({'library_uuid': library_uuid},
                       {'$set': {'last_modified': last_modified,
                                 'tunnel':tunnel}},
                       upsert=True, multi=False)
     # update tunnel to the current one for all books in current library
-    db.books.update({'library_uuid': library_uuid}, {'$set': {'tunnel': tunnel}}, multi=True)
+    db.books.update({'library_uuid': library_uuid},
+                    {'$set': {'tunnel': tunnel}},
+                    multi=True)
 #------------------------------------------------------------------------------
 
 def remove_from_library(db, library_uuid, books_uuids):
@@ -100,7 +105,7 @@ def add_to_library(db, library_uuid, tunnel, books):
         book['library_uuid'] = library_uuid
         book['tunnel'] = tunnel
         try:
-            db.books.insert(book)
+            #db.books.insert(book)
             db.books.update({'uuid': book['uuid']},
                             book,
                             upsert=True, multi=False)
@@ -109,7 +114,9 @@ def add_to_library(db, library_uuid, tunnel, books):
         except Exception, e:
             # some books have dots in keys - not good for mongo
             utils.remove_dots_from_dict(book)
-            db.books.insert(book)
+            db.books.update({'uuid': book['uuid']},
+                            book,
+                            upsert=True, multi=False)
             books_uuid.append(book['uuid'])
     # update catalog metadata collection
     db.catalog.update({'library_uuid': library_uuid},

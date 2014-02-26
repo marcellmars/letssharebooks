@@ -12,6 +12,7 @@ import libraries
 #------------------------------------------------------------------------------
             
 def setUpModule():
+    settings.ENV = settings.SERVER['test']
     cherrypy.tree.mount(Root(), '/')
     cherrypy.engine.subscribe('start_thread', thread_connect)
     cherrypy.engine.start()
@@ -26,11 +27,14 @@ teardown_module = tearDownModule
 class TestCherryPyApp(BaseCherryPyTestCase):
 
     def setUp(self):
+        
         def fake_get_active_tunnels():
             '''
             fake active tunnels for tests
             '''
             return [12345]
+
+        # fake get_active_tunnels call
         libraries.get_active_tunnels = fake_get_active_tunnels
 
     def test_index(self):
@@ -39,6 +43,7 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertGreater(response.body[0].find('memory of the world'), -1)
 
     def test_get_books(self):
+        # then try to get them
         params = {'page':1,
                   'query':{'authors':'','titles':'','search_all':''}}
         response = self.request('/get_books', method='POST',
@@ -49,6 +54,7 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(len(data['books']), 16)
         self.assertEqual(len(data['titles']), 81)
         self.assertEqual(len(data['authors']), 92)
+        
 
 #------------------------------------------------------------------------------
 

@@ -52,9 +52,8 @@ class Root(object):
         End-point for uploading user catalogs
         '''
         try:
-            res = libraries.handle_uploaded_catalog(
-                uploaded_file,
-                cherrypy.thread_data.db)
+            res = libraries.handle_uploaded_catalog(cherrypy.thread_data.db,
+                                                    uploaded_file)
             return res
         except KeyError, e:
             return 'oooops, error: %s' % e
@@ -93,21 +92,20 @@ class Root(object):
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------
-def thread_connect(thread_index, env='local'):
+def thread_connect(thread_index):
     '''
     Creates a db connection and stores it in the current thread
     http://tools.cherrypy.org/wiki/Databases
     '''
-    if env:
-        settings.ENV = settings.SERVER[env]
-        try:
-            Mongo_client = MongoClient(settings.ENV['mongo_addr'],
-                                       settings.ENV['mongo_port'])
-            cherrypy.thread_data.db = Mongo_client[settings.DBNAME]
-        except Exception as e:
-            print 'unable to connect to mongodb!'
-                
+    try:
+        Mongo_client = MongoClient(settings.ENV['mongo_addr'],
+                                   settings.ENV['mongo_port'])
+        cherrypy.thread_data.db = Mongo_client[settings.ENV['dbname']]
+    except Exception as e:
+        print 'unable to connect to mongodb!'
+
 def start_app(env):
+    settings.ENV = settings.SERVER[env]
     # tell cherrypy to call "connect" for each thread, when it starts up
     # result is one db connection per thread
     cherrypy.engine.subscribe('start_thread', thread_connect)

@@ -3,6 +3,7 @@
 #------------------------------------------------------------------------------
 
 import os
+import cherrypy
 import uuid
 import zipfile
 import simplejson
@@ -54,7 +55,6 @@ def import_catalog(db, catalog):
     # add books as requested (for new library and for sync)
     add_to_library(db, library_uuid, tunnel, catalog['books']['add'])
     update_catalog(db, library_uuid, last_modified, tunnel)
-
     return library_uuid
 
 #------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ def remove_from_library(db, library_uuid, books_uuids):
     '''
     Remove books from the library and update catalog
     '''
-    if not book_uuids:
+    if not books_uuids:
         return
     for uid in books_uuids:
         print 'removing %s' % uid
@@ -202,7 +202,7 @@ def paginate(cursor, page=1, per_page=settings.ITEMS_PER_PAGE):
 
 #------------------------------------------------------------------------------
 
-def handle_uploaded_catalog(uploaded_file, db):
+def handle_uploaded_catalog(db, uploaded_file):
     '''
     Opens, unzips and parses uploaded catalog and imports books to the db
     '''
@@ -220,3 +220,12 @@ def handle_uploaded_catalog(uploaded_file, db):
     catalog = simplejson.loads(content)
     res = import_catalog(db, catalog)
     return res
+
+#------------------------------------------------------------------------------
+
+def remove_all(db):
+    '''
+    Removes all data from the database
+    '''
+    db.books.remove()
+    db.catalog.remove()

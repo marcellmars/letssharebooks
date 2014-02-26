@@ -25,10 +25,21 @@ PUBLIC_BOOK_FIELDS = {
     '_id': 0
     }
 
+PUBLIC_SINGLE_BOOK_FIELDS = {
+    'application_id':1,
+    'title':1,
+    'formats':1,
+    'authors':1,
+    'tunnel':1,
+    'uuid':1,
+    'publisher':1,
+    '_id': 0
+    }
+
 #------------------------------------------------------------------------------
 
 def get_active_tunnels():
-    # return [12345]
+    #return [12345]
     try:
         return pickle.load(open("/tmp/active_tunnel_ports","rb"))
     except:
@@ -139,8 +150,8 @@ def get_book(db, uuid):
     '''
     Returns book with the param uuid
     '''
-    book = db.books.find_one({'uuid':uuid}, PUBLIC_BOOK_FIELDS)
-    return book
+    book = db.books.find_one({'uuid':uuid}, PUBLIC_SINGLE_BOOK_FIELDS)
+    return serialize2json(book)
 
 #------------------------------------------------------------------------------
 

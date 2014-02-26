@@ -33,10 +33,10 @@
 
 <script type="text/x-template" id="book-content-tmpl">
   <div class="cover">
-    <a href="/book?uuid=<%= book.uuid %>" class="more_about" title="about this book">
+    <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
       <img src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" /></a>
     <h2>
-      <a href="/book?uuid=<%= book.uuid %>" class="more_about" title="about this book"><%= book.title %></a>
+      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
       <br />
       <%= authors %></h2>
     <span class="download">Metadata: <a href="<%= base_url %>/get/opf/<%= book.application_id %> <%= book_title_stripped %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>

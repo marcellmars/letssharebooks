@@ -43,8 +43,7 @@ class Root(object):
         Single book page
         '''
         book = libraries.get_book(cherrypy.thread_data.db, uuid=uuid)
-        tmpl = ENVIRONMENT.get_template('book.html')
-        return tmpl.render(book=book)
+        return book
 
     @cherrypy.expose
     def upload_catalog(self, uploaded_file):

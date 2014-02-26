@@ -129,6 +129,30 @@ var parse_response = function (data) {
     };
     $('#content').empty();
     $.each(data['books'], render_book);
+    setup_modal();
+};
+
+/* --------------------------------------------------------------------------*/
+
+var setup_modal = function () {
+    // todo: change this to template
+    var modal = $('<div id="book_modal" title="Book details"><div id="book_modal_content"></div></div>');
+    modal.dialog({
+        autoOpen: false,
+        modal: true,
+        minHeight: 300,
+        minWidth: 500,
+        position: { my: "left top", at: "left top"},
+    });
+    $('.more_about').click(function(e) {
+        var uuid = $(this).attr('rel');
+        $.getJSON('book', {uuid: uuid,}).done(function( data ) {
+            var text = [data.title, data.authors, data.publisher].join(', ');
+            $('#book_modal_content').text(text);
+            modal.dialog("open");
+        });
+        e.preventDefault();
+    });
 };
 
 /* --------------------------------------------------------------------------*/
@@ -231,6 +255,7 @@ var modify_button = function (button, state) {
 
 var init_page = function () {
     init_toolbar();
+    $(document).tooltip({track:true});
     if (window.location.hash != '') {
       var state = window.location.hash.substr(1);
       handle_hash_state(state);
@@ -287,12 +312,6 @@ $(document).ajaxStart(function () {
 
 $(document).ajaxStop(function () { 
     $('body').removeClass("loading"); 
-});
-
-/* --------------------------------------------------------------------------*/
-
-$(function () {
-    $(document).tooltip({track:true});
 });
 
 /* --------------------------------------------------------------------------*/

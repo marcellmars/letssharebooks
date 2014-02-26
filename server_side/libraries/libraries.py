@@ -45,8 +45,9 @@ def import_catalog(db, catalog):
     tunnel = catalog['tunnel']
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid':library_uuid})
-    print("db_cat:{}".format(db_cat))
-    print("books_add: {}; books_remove: {}".format(catalog['books']['add'], catalog['books']['remove']))
+    # print("db_cat:{}".format(db_cat))
+    # print("books_add: {}; books_remove: {}".format(
+    #         catalog['books']['add'], catalog['books']['remove']))
     if db_cat:
         # remove books as requested
         remove_from_library(db, library_uuid, catalog['books']['remove'])
@@ -74,7 +75,7 @@ def remove_from_library(db, library_uuid, books_uuids):
     '''
     Remove books from the library and update catalog
     '''
-    if len(books_uuids) == 0:
+    if not book_uuids:
         return
     for uid in books_uuids:
         print 'removing %s' % uid
@@ -90,7 +91,7 @@ def add_to_library(db, library_uuid, tunnel, books):
     Adds books to the database and modifies catalog entry. Mostly used with
     import_catalog function.
     '''
-    if len(books) == 0:
+    if not books:
         return
     books_uuid = []
     # insert books in the global library and take uuids
@@ -144,9 +145,10 @@ def get_books(db, page, query={}):
     # query
     q = {}
     # get all libraries that have active ssh tunnel
-    lib_uuids = [i['library_uuid'] for i in db.catalog.find({'tunnel': {'$in': get_active_tunnels()}})]
-    print("GET_ACTIVE_TUNNELS: {}".format(get_active_tunnels()))
-    print("LIB_UUIDS:{}".format(lib_uuids))
+    lib_uuids = [i['library_uuid'] for i in db.catalog.find(
+            {'tunnel': {'$in': get_active_tunnels()}})]
+    # print("GET_ACTIVE_TUNNELS: {}".format(get_active_tunnels()))
+    # print("LIB_UUIDS:{}".format(lib_uuids))
     q['library_uuid'] = {'$in': lib_uuids}
     # extract search parameters
     for k,v in query.iteritems():
@@ -162,7 +164,7 @@ def get_books(db, page, query={}):
                     {"identifiers":{"$regex":".*{}.*".format(v), "$options": 'i'}}]}
 
     # get all books that belong to libraries with active tunnel
-    print("QUERY:{}".format(q))
+    #print("QUERY:{}".format(q))
     books = db.books.find(q, PUBLIC_BOOK_FIELDS)
     authors = books.distinct('authors')
     titles = books.distinct('title_sort')

@@ -23,7 +23,6 @@ CONF = {'/static': {'tools.staticdir.on': True,
                                                       'css': 'text/css',
                                                       'gif': 'image/gif'
                                                       }}}
-DB = None
 
 #------------------------------------------------------------------------------
 # Exposed resources
@@ -43,7 +42,7 @@ class Root(object):
         '''
         Single book page
         '''
-        book = libraries.get_book(DB, uuid=uuid)
+        book = libraries.get_book(cherrypy.thread_data.db, uuid=uuid)
         tmpl = ENVIRONMENT.get_template('book.html')
         return tmpl.render(book=book)
 
@@ -53,7 +52,9 @@ class Root(object):
         End-point for uploading user catalogs
         '''
         try:
-            res = libraries.handle_uploaded_catalog(uploaded_file, DB)
+            res = libraries.handle_uploaded_catalog(
+                uploaded_file,
+                cherrypy.thread_data.db)
             return res
         except KeyError, e:
             return 'oooops, error: %s' % e
@@ -70,40 +71,55 @@ class Root(object):
         '''
         Returns whole catalog
         '''
-        return libraries.get_catalog(DB, uuid)
+        return libraries.get_catalog(cherrypy.thread_data.db, uuid)
 
     @cherrypy.expose
-    @cherrypy.tools.json_in()
+    #@cherrypy.tools.json_in()
     def get_books(self):
         '''
         Ajax backend for fetching books
         '''
-        req = cherrypy.request.json
-        page = req.get('page')
-        query = req.get('query')
-        return libraries.get_books(DB, page, query)
+        # this could easily be handled by using json_in decorator. however,
+        # cherrypy testing is hard using the same decorator. hence...
+        cl = cherrypy.request.headers['Content-Length']
+        rawbody = cherrypy.request.body.read(int(cl))
+        # parse json from request body
+        params = simplejson.loads(rawbody)
+        page = params.get('page')
+        query = params.get('query')
+        books = libraries.get_books(cherrypy.thread_data.db, page, query)
+        return books
 
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------
-def start_app(env):
+def thread_connect(thread_index, env='local'):
+    '''
+    Creates a db connection and stores it in the current thread
+    http://tools.cherrypy.org/wiki/Databases
+    '''
     if env:
         settings.ENV = settings.SERVER[env]
-    try:
-        global DB
-        Mongo_client = MongoClient(settings.ENV['mongo_addr'],
-                                   settings.ENV['mongo_port'])
-        DB = Mongo_client[settings.DBNAME]
-    except Exception, e:
-        print 'unable to connect to mongodb!'
-        return
-    
+        try:
+            Mongo_client = MongoClient(settings.ENV['mongo_addr'],
+                                       settings.ENV['mongo_port'])
+            cherrypy.thread_data.db = Mongo_client[settings.DBNAME]
+        except Exception as e:
+            print 'unable to connect to mongodb!'
+                
+def start_app(env):
+    # tell cherrypy to call "connect" for each thread, when it starts up
+    # result is one db connection per thread
+    cherrypy.engine.subscribe('start_thread', thread_connect)
     cherrypy.server.socket_host = settings.ENV['host']
     cherrypy.server.socket_port = settings.ENV['port']
     cherrypy.quickstart(Root(), '/', config=CONF)
 
+#------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='lsb server')
-    parser.add_argument('--env', help="server environment (local|live|docker)")
+    parser.add_argument('--env', help="server environment (local|live|docker)",
+                        required=True)
     args = parser.parse_args()
     start_app(args.env)

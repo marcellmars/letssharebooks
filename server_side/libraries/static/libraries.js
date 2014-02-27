@@ -256,7 +256,7 @@ var modify_button = function (button, state) {
 
 var init_page = function () {
     init_toolbar();
-    $(document).tooltip({track:true});
+    $(document).tooltip({items: '*:not(.ui-dialog-titlebar-close)'});
     if (window.location.hash != '') {
       var state = window.location.hash.substr(1);
       handle_hash_state(state);

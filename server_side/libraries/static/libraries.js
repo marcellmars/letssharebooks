@@ -138,9 +138,22 @@ var parse_response = function (data) {
 var setup_modal = function () {
     $('.more_about').click(function(e) {
         var uuid = $(this).attr('rel');
-        $.getJSON('book', {uuid: uuid}).done(function( data ) {
+        $.getJSON('book', {uuid: uuid}).done(function( book ) {
+            var formats = '',
+                base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
+            book.formats.map(function (format) {
+                var string_parts = book_string_parts_tmpl({
+                    'base_url': base_url,
+                    'format': format,
+                    'book': book
+                });
+                formats = formats + " " + string_parts;
+            });
             modal_html = book_modal_tmpl({
-              'book': data,
+                'base_url': base_url,
+                'book': book,
+                'book_title_stripped': book.title.replace(/\?/g, ''),
+                'formats': formats,
             });
             var modal = $(modal_html);
             modal.dialog({

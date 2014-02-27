@@ -152,3 +152,8 @@ body.loading .modal {
     //font: bold 12px/16px Helvetica, Sans-Serif; 
     font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }
+
+#book-modal .attr {
+    color: #ffffff;
+    background-color: #000000;
+}

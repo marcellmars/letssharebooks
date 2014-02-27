@@ -44,10 +44,13 @@
 </script>
 
 <script type="text/x-template" id="book-modal-tmpl">
-  <div id="book_modal" title="<%= book.title %>">
+  <div id="book-modal" title="<%= book.title %>">
     <div>
-      <p>Authors: <%= book.authors %></p>
-      <p>Publisher: <%= book.publisher %></p>
+      <p><span class="attr">Authors:</span> <%= book.authors %></p>
+      <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
+      <p><span class="attr">Metadata:</span> <a href="<%= base_url %>/get/opf/<%= book.application_id %> <%= book_title_stripped %>.opf" title="import metadata directly to calibre">.opf</a></p>
+      <p><span class="attr">Download:</span> <%= formats %></p>
+      <p><span class="attr">Original library:</span> <a href="<%= base_url %>" title="visit librarian"><%= base_url %></a></p>
     </div>
   </div>
 </script>

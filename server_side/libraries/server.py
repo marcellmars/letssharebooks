@@ -117,6 +117,6 @@ def start_app(env):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='lsb server')
     parser.add_argument('--env', help="server environment (local|live|docker)",
-                        required=True)
+                        default='docker')
     args = parser.parse_args()
     start_app(args.env)

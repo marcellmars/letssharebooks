@@ -49,7 +49,8 @@ var push_to_history = function() {
 
 var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim()),
     book_string_parts_tmpl = _.template($('#book-parts-tmpl').text().trim()),
-    book_content_tmpl = _.template($('#book-content-tmpl').text().trim());
+    book_content_tmpl = _.template($('#book-content-tmpl').text().trim()),
+    book_modal_tmpl = _.template($('#book-modal-tmpl').text().trim());
 
 /* ----------------------------------------------------------------------------
  * Renders single book
@@ -135,20 +136,20 @@ var parse_response = function (data) {
 /* --------------------------------------------------------------------------*/
 
 var setup_modal = function () {
-    // todo: change this to template
-    var modal = $('<div id="book_modal" title="Book details"><div id="book_modal_content"></div></div>');
-    modal.dialog({
-        autoOpen: false,
-        modal: true,
-        minHeight: 300,
-        minWidth: 500,
-        position: { my: "left top", at: "left top"},
-    });
     $('.more_about').click(function(e) {
         var uuid = $(this).attr('rel');
-        $.getJSON('book', {uuid: uuid,}).done(function( data ) {
-            var text = [data.title, data.authors, data.publisher].join(', ');
-            $('#book_modal_content').text(text);
+        $.getJSON('book', {uuid: uuid}).done(function( data ) {
+            modal_html = book_modal_tmpl({
+              'book': data,
+            });
+            var modal = $(modal_html);
+            modal.dialog({
+                autoOpen: false,
+                modal: true,
+                minHeight: 300,
+                minWidth: 500,
+                position: { my: "center top", at: "center top"},
+            });
             modal.dialog("open");
         });
         e.preventDefault();

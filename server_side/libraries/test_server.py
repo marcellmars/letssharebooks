@@ -27,6 +27,17 @@ teardown_module = tearDownModule
 
 #------------------------------------------------------------------------------
 
+def upload_catalog(test, filename):
+    '''
+    Shortcut for common uploading functionality to test
+    '''
+    with open(filename, 'rt') as f:
+        r = test.request('/upload_catalog_json', method='POST',
+                         uploaded_file=f.read())
+        return r.body[0]
+
+#------------------------------------------------------------------------------
+
 class TestCherryPyApp(BaseCherryPyTestCase):
 
     def setUp(self):
@@ -51,25 +62,19 @@ class TestCherryPyApp(BaseCherryPyTestCase):
 
     def test_upload_catalog(self):
         # this library should be uploaded with no problems
-        with open('test/library.json', 'rt') as f:
-            r = self.request('/upload_catalog_json', method='POST',
-                             uploaded_file=f.read())
-            self.assertEqual(r.body, ['3b876484-0dbd-461f-935a-e58b08c06547'])
+        res = upload_catalog(self, 'test/library.json')
+        self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
 
         # bad json file
-        with open('test/bad_library.json', 'rt') as f:
-            r = self.request('/upload_catalog_json', method='POST',
-                             uploaded_file=f.read())
-            self.assertEqual(r.body,
-                             ['Error in JSONDecode :: Expecting object: line 5 column 14 (char 139)'])
+        res = upload_catalog(self, 'test/bad_library.json')
+        self.assertEqual(res,
+                         'Error in JSONDecode :: Expecting object: line 5 column 14 (char 139)')
 
 
     def test_get_books(self):
         # first upload some books
-        with open('test/library.json', 'rt') as f:
-            r = self.request('/upload_catalog_json', method='POST',
-                             uploaded_file=f.read())
-            self.assertEqual(r.body, ['3b876484-0dbd-461f-935a-e58b08c06547'])
+        res = upload_catalog(self, 'test/library.json')
+        self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
         # and now try to get them
         params = {'page':1,
                   'query':{'authors':'','titles':'','search_all':''}}
@@ -84,14 +89,10 @@ class TestCherryPyApp(BaseCherryPyTestCase):
 
     def test_for_duplicates(self):
         # try to upload same catalog twice
-        with open('test/library.json', 'rt') as f:
-            r = self.request('/upload_catalog_json', method='POST',
-                             uploaded_file=f.read())
-            self.assertEqual(r.body, ['3b876484-0dbd-461f-935a-e58b08c06547'])
-        with open('test/library.json', 'rt') as f:
-            r = self.request('/upload_catalog_json', method='POST',
-                             uploaded_file=f.read())
-            self.assertEqual(r.body, ['3b876484-0dbd-461f-935a-e58b08c06547'])
+        res = upload_catalog(self, 'test/library.json')
+        self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
+        res = upload_catalog(self, 'test/library.json')
+        self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
         # and now try to get them
         params = {'page':1,
                   'query':{'authors':'','titles':'','search_all':''}}

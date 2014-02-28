@@ -220,30 +220,26 @@ def paginate(cursor, page=1, per_page=settings.ITEMS_PER_PAGE):
 
 #------------------------------------------------------------------------------
 
-def handle_uploaded_catalog(db, uploaded_file):
+def handle_uploaded_catalog(db, uploaded_file, zipped=True):
     '''
     Opens, unzips and parses uploaded catalog and imports books to the db
     '''
-    if not os.path.exists('tmp'):
-        os.makedirs('tmp')
-    content = uploaded_file.file.read()
-    # generate unique filename
-    filename = 'tmp/%s-%s' % (uploaded_file.filename, uuid.uuid4())
-    with open(filename, "wb") as f:
-        f.write(content)
-    # unzip file
-    with zipfile.ZipFile(filename) as zfile:
-        content = zfile.read('library.json')
+    # if uploaded file is zipped json catalog
+    if zipped:
+        if not os.path.exists('tmp'):
+            os.makedirs('tmp')
+        content = uploaded_file.file.read()
+        # generate unique filename
+        filename = 'tmp/%s-%s' % (uploaded_file.filename, uuid.uuid4())
+        with open(filename, "wb") as f:
+            f.write(content)
+        # unzip file
+        with zipfile.ZipFile(filename) as zfile:
+            content = zfile.read('library.json')
+    # else if json is directly uploaded
+    else:
+        content = uploaded_file
     # decode from json and import to database
     catalog = simplejson.loads(content)
     res = import_catalog(db, catalog)
     return res
-
-#------------------------------------------------------------------------------
-
-def remove_all(db):
-    '''
-    Removes all data from the database
-    '''
-    db.books.remove()
-    db.catalog.remove()

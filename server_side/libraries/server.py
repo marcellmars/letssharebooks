@@ -9,6 +9,7 @@ import traceback
 import argparse
 import libraries
 import settings
+import utils
 import simplejson
 from jinja2 import Environment, FileSystemLoader
 from pymongo import MongoClient
@@ -54,13 +55,28 @@ class Root(object):
             res = libraries.handle_uploaded_catalog(cherrypy.thread_data.db,
                                                     uploaded_file)
             return res
-        except KeyError, e:
-            return 'oooops, error: %s' % e
-        except zipfile.BadZipfile, e:
-            return 'oooops, error: %s' % e
-        except simplejson.JSONDecodeError, e:
-            return 'oooops, error: JSONDecode -- %s' % e
-        except Exception, e:
+        except zipfile.BadZipfile as e:
+            return 'Error during file unzipping :: {}'.format(e)
+        except simplejson.JSONDecodeError as e:
+            return 'Error in JSONDecode :: {}'.format(e)
+        except Exception as e:
+            print traceback.print_exc()
+            return 'oooops, error!'
+
+    @cherrypy.expose
+    def upload_catalog_json(self, uploaded_file):
+        '''
+        End-point for uploading user catalogs in json format
+        Mostly for testing purposes
+        '''
+        try:
+            res = libraries.handle_uploaded_catalog(cherrypy.thread_data.db,
+                                                    uploaded_file,
+                                                    zipped=False)
+            return res
+        except simplejson.JSONDecodeError as e:
+            return 'Error in JSONDecode :: {}'.format(e)
+        except Exception as e:
             print traceback.print_exc()
             return 'oooops, error!'
 
@@ -91,18 +107,16 @@ class Root(object):
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------
+
 def thread_connect(thread_index):
     '''
     Creates a db connection and stores it in the current thread
     http://tools.cherrypy.org/wiki/Databases
     '''
-    try:
-        Mongo_client = MongoClient(settings.ENV['mongo_addr'],
-                                   settings.ENV['mongo_port'])
-        cherrypy.thread_data.db = Mongo_client[settings.ENV['dbname']]
-    except Exception as e:
-        print 'unable to connect to mongodb!'
+    cherrypy.thread_data.db = utils.connect_to_db(settings.ENV)
 
+#------------------------------------------------------------------------------
+    
 def start_app(env):
     settings.ENV = settings.SERVER[env]
     # tell cherrypy to call "connect" for each thread, when it starts up

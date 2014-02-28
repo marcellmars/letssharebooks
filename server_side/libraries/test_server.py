@@ -101,6 +101,15 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(r.output_status, '200 OK')
         data = simplejson.loads(r.body[0])
         self.assertEqual(data['total'], 81)
+
+    def test_book(self):
+        res = upload_catalog(self, 'test/library.json')
+        self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
+        uuid = '62a47470-406d-4a88-9bc2-abc01fdd2a69'
+        r = self.request('/book', method='POST', uuid=uuid)
+        self.assertEqual(r.output_status, '200 OK')
+        data = simplejson.loads(r.body[0])
+        self.assertEqual(data['uuid'], uuid)
             
         
 #------------------------------------------------------------------------------

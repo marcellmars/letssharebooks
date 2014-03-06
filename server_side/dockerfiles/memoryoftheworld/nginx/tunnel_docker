@@ -1,5 +1,5 @@
 server {
-                server_name   "~^www(?<port>\d{4,5}).web.dokr" "~^www(?<port>\d{4,5}).memories.the-nsa.org";
+                server_name   "~^www(?<port>\d{4,5}).web.dokr";
                 listen 80;
                 
                 location / {

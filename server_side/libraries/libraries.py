@@ -33,6 +33,8 @@ PUBLIC_SINGLE_BOOK_FIELDS = {
     'tunnel':1,
     'uuid':1,
     'publisher':1,
+    'comments':1,
+    'librarian':1,
     '_id': 0
     }
 
@@ -56,6 +58,7 @@ def import_catalog(db, catalog):
     library_uuid = catalog['library_uuid']
     last_modified = catalog['last_modified']
     tunnel = catalog['tunnel']
+    librarian = catalog['librarian']
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid':library_uuid})
     # print("db_cat:{}".format(db_cat))
@@ -66,24 +69,24 @@ def import_catalog(db, catalog):
         remove_from_library(db, library_uuid, catalog['books']['remove'])
     # add books as requested (for new library and for sync)
     add_to_library(db, library_uuid, tunnel, catalog['books']['add'])
-    update_catalog(db, library_uuid, last_modified, tunnel)
+    update_catalog(db, library_uuid, last_modified, tunnel, librarian)
     return library_uuid
 
 #------------------------------------------------------------------------------
 
-def update_catalog(db, library_uuid, last_modified, tunnel):
+def update_catalog(db, library_uuid, last_modified, tunnel, librarian):
     # set tunnel to 0 if there is a library with the same tunnel from before
     old_libraries = [b['library_uuid']
                      for b in db.catalog.find({'tunnel': tunnel})]
     db.catalog.update({'library_uuid': {'$in': old_libraries}},
-                      {'$set': {'tunnel': 0}}, upsert=True)
+                      {'$set': {'tunnel': 0}}, multi=True)
     db.catalog.update({'library_uuid': library_uuid},
                       {'$set': {'last_modified': last_modified,
-                                'tunnel':tunnel}},
+                                'tunnel':tunnel, 'librarian': librarian }},
                       upsert=True, multi=False)
     # update tunnel to the current one for all books in current library
     db.books.update({'library_uuid': library_uuid},
-                    {'$set': {'tunnel': tunnel}},
+                    {'$set': {'tunnel': tunnel, 'librarian': librarian}},
                     multi=True)
 #------------------------------------------------------------------------------
 
@@ -145,6 +148,16 @@ def get_catalog(db, uuid):
                             {'books':1, 'last_modified':1, '_id' : 0}))
 
 #------------------------------------------------------------------------------
+
+def get_catalogs(db):
+    '''
+    for testing purposes
+    '''
+    return serialize2json(
+        db.catalog.count())
+
+#------------------------------------------------------------------------------
+
 
 def get_book(db, uuid):
     '''

@@ -157,3 +157,11 @@ body.loading .modal {
     color: #ffffff;
     background-color: #000000;
 }
+
+.img_modal {
+    position: relative;
+    width:180px;
+    float: right;
+    margin: 0px 15px 15px 0px;
+
+}

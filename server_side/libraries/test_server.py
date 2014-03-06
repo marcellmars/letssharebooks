@@ -5,14 +5,12 @@ import cherrypy
 from server import Root, thread_connect
 from cptestcase import BaseCherryPyTestCase
 import simplejson
-import requests
-from pymongo import MongoClient
 import libraries
 import settings
 import utils
 
 #------------------------------------------------------------------------------
-            
+
 def setUpModule():
     # use test environment
     settings.ENV = settings.SERVER['test']
@@ -41,7 +39,7 @@ def upload_catalog(test, filename):
 class TestCherryPyApp(BaseCherryPyTestCase):
 
     def setUp(self):
-        
+
         def fake_get_active_tunnels():
             '''
             fake active tunnels for tests
@@ -53,7 +51,7 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         # clear db
         self.db = utils.connect_to_db(settings.ENV)
         utils.remove_all_data(self.db)
-        
+
 
     def test_index(self):
         response = self.request('/')
@@ -65,10 +63,13 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         res = upload_catalog(self, 'test/library.json')
         self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
 
+        # this library should be the only one
+        res = self.request('/get_catalogs', method='GET')
+        self.assertEqual(res.body, ['1'])
+
         # bad json file
         res = upload_catalog(self, 'test/bad_library.json')
-        self.assertEqual(res,
-                         'Error in JSONDecode :: Expecting object: line 5 column 14 (char 139)')
+        self.assertEqual(res[:20], 'Error in JSONDecode ')
 
 
     def test_get_books(self):
@@ -82,10 +83,10 @@ class TestCherryPyApp(BaseCherryPyTestCase):
                          data=simplejson.dumps(params))
         self.assertEqual(r.output_status, '200 OK')
         data = simplejson.loads(r.body[0])
-        self.assertEqual(data['total'], 81)
-        self.assertEqual(len(data['books']), 16)
-        self.assertEqual(len(data['titles']), 81)
-        self.assertEqual(len(data['authors']), 92)
+        self.assertEqual(data['total'], 2)
+        self.assertEqual(len(data['books']), 2)
+        self.assertEqual(len(data['titles']), 2)
+        self.assertEqual(len(data['authors']), 3)
 
     def test_for_duplicates(self):
         # try to upload same catalog twice
@@ -100,7 +101,7 @@ class TestCherryPyApp(BaseCherryPyTestCase):
                          data=simplejson.dumps(params))
         self.assertEqual(r.output_status, '200 OK')
         data = simplejson.loads(r.body[0])
-        self.assertEqual(data['total'], 81)
+        self.assertEqual(data['total'], 2)
 
     def test_book(self):
         res = upload_catalog(self, 'test/library.json')
@@ -110,8 +111,8 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(r.output_status, '200 OK')
         data = simplejson.loads(r.body[0])
         self.assertEqual(data['uuid'], uuid)
-            
-        
+
+
 #------------------------------------------------------------------------------
 
 if __name__ == '__main__':

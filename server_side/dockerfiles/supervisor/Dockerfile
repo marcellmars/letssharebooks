@@ -2,17 +2,21 @@ FROM ubuntu:latest
 
 MAINTAINER Marcell Mars "https://github.com/marcellmars"
 
-RUN mkdir -p /var/log/supervisor
-RUN mkdir -p /var/run/supervisor
-RUN locale-gen en_US en_US.UTF-8
+ADD supervisor/supervisord.conf /etc/
 
-RUN echo "deb http://archive.ubuntu.com/ubuntu quantal main universe restricted multiverse " > /etc/apt/sources.list
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 3B4FE6ACC0B21F32
-RUN apt-get update
+ADD ssh/sshd_config_tunnel /etc/ssh/
+ADD ssh/ssh_tunnel.conf /etc/supervisor/conf.d/
 
-RUN apt-get -y install python-pip
-RUN pip install supervisor
-ADD supervisord.conf /etc/supervisord.conf
+ADD dnsmasq/dnsmasq.conf /etc/supervisor/conf.d/
+ADD dnsmasq/current_ip.sh /usr/local/bin/
 
-# sudo docker build -t librarian/ssh_tunnel .
+ADD nginx/lsb /etc/nginx/sites-enabled/
+ADD nginx/nginx.conf /etc/supervisor/conf.d/
 
+ADD libraries/get_tunnel_ports.conf /etc/supervisor/conf.d/
+ADD libraries/get_tunnel_ports.py /usr/local/bin/
+ADD libraries/get_tunnel_ports.sh /usr/local/bin/
+ADD libraries/library /etc/nginx/sites-enabled/
+ADD libraries/library.conf /etc/supervisor/conf.d/
+
+ADD build_lsb_in_ubuntu.sh 

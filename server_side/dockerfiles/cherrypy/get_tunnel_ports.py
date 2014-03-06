@@ -10,14 +10,19 @@ def get_tunnel_ports(login="tunnel"):
 def main():
     tp = []
     for port in get_tunnel_ports():
-        if requests.get("{prefix}www{port}.{host}".format(prefix=PREFIX, port=str(port), host=HOST)):
-            tp.append(int(port))
+        try:
+            r = requests.get("{prefix}www{port}.{host}".format(prefix=PREFIX, port=str(port), host=HOST))
+            if r.ok:
+                tp.append(int(port))
+        except:
+            pass
     pickle.dump(tp, open("/tmp/active_tunnel_ports","wb"))
 
 PREFIX = "http://"
 #PREFIX = "https://"
 HOST = "web.dokr"
 #HOST = "memoryoftheworld.org"
+#HOST = "memories.the-nsa.org"
 
 while True:
     time.sleep(10)

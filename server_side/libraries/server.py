@@ -88,6 +88,13 @@ class Root(object):
         return libraries.get_catalog(cherrypy.thread_data.db, uuid)
 
     @cherrypy.expose
+    def get_catalogs(self):
+        '''
+        Returns whole catalog
+        '''
+        return libraries.get_catalogs(cherrypy.thread_data.db)
+
+    @cherrypy.expose
     #@cherrypy.tools.json_in()
     def get_books(self):
         '''
@@ -116,7 +123,7 @@ def thread_connect(thread_index):
     cherrypy.thread_data.db = utils.connect_to_db(settings.ENV)
 
 #------------------------------------------------------------------------------
-    
+
 def start_app(env):
     settings.ENV = settings.SERVER[env]
     # tell cherrypy to call "connect" for each thread, when it starts up

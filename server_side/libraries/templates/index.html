@@ -46,11 +46,13 @@
 <script type="text/x-template" id="book-modal-tmpl">
   <div id="book-modal" title="<%= book.title %>">
     <div>
+      <img class="img_modal" src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" width="120"/>
       <p><span class="attr">Authors:</span> <%= book.authors %></p>
       <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
-      <p><span class="attr">Metadata:</span> <a href="<%= base_url %>/get/opf/<%= book.application_id %> <%= book_title_stripped %>.opf" title="import metadata directly to calibre">.opf</a></p>
+      <p><span class="attr" title="import metadata directly to calibre">Metadata:</span> <a href="<%= base_url %>/get/opf/<%= book.application_id %> <%= book_title_stripped %>.opf">.opf</a></p>
       <p><span class="attr">Download:</span> <%= formats %></p>
-      <p><span class="attr">Original library:</span> <a href="<%= base_url %>" title="visit librarian"><%= base_url %></a></p>
+      <p><span class="attr"><%= book.librarian %>:</span> <a href="<%= base_url %>" title="visit librarian" target="_blank"><%= base_url %></a></p>
+      <p><span class="attr">About:</span> <%= book.comments %></p>
     </div>
   </div>
 </script>

@@ -8,7 +8,7 @@ from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre.library.server import server_config
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
 
-import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, datetime
+import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, datetime, functools
 
 #from calibre_plugins.letssharebooks import requests
 
@@ -42,9 +42,10 @@ if False:
 class MetadataLibThread(QThread):
     uploaded = QtCore.pyqtSignal()
     upload_error = QtCore.pyqtSignal()
-    def __init__(self, port, sql_db):
+    def __init__(self, port, sql_db, librarian):
         QThread.__init__(self)
         self.port = port
+        self.librarian = librarian
         self.sql_db = sql_db
 
     def get_book_metadata(self):
@@ -86,6 +87,7 @@ class MetadataLibThread(QThread):
                             format_fields[format_field[0]] = format_field[1]
                     formats_metadata[book_format[0]] = format_fields
             book_metadata['format_metadata'] = formats_metadata
+            book_metadata['librarian'] = self.librarian
 
             books_metadata.append(book_metadata)
         return books_metadata
@@ -124,6 +126,7 @@ class MetadataLibThread(QThread):
                 library['library_uuid'] = self.sql_db.library_id
                 library['last_modified'] = str(sorted([book['last_modified'] for book in books_metadata])[-1])
                 library['tunnel'] = int(self.port)
+                library['librarian'] = self.librarian
                 library['books'] = {}
                 library['books']['remove'] = list(removed_books)
                 library['books']['add'] = [book for book in books_metadata if book['uuid'] in added_books]
@@ -151,8 +154,9 @@ class ConnectionCheck(QThread):
     lost_connection = QtCore.pyqtSignal()
     connection_ok = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, gotcha=True):
         QThread.__init__(self)
+        self.gotcha = gotcha
 
     def increase_time(self, x,y):
         while True:
@@ -166,20 +170,30 @@ class ConnectionCheck(QThread):
     def run(self):
         time.sleep(5)
         inc_time = self.increase_time(1,2)
-        gotcha = True
+        in_time = inc_time.next()
+        count = 0
         try:
-            while gotcha:
-                for url in self.urls:
-                    if requests.get(url).ok:
-                        self.connection_ok.emit()
-                    else:
-                        self.lost_connection.emit()
-                        gotcha = False
-                        self.terminate()
-                time.sleep(inc_time.next())
+            while self.gotcha:
+                if count%in_time == 0:
+                    in_time = inc_time.next()
+                    for url in self.urls:
+                        if requests.get(url).ok:
+                            self.connection_ok.emit()
+                            print("connection_ok!")
+                        else:
+                            self.lost_connection.emit()
+                            self.gotcha = False
+                            print("lost_connection!")
+                            return
+                time.sleep(0.2)
+                count += 1
+            return
         except:
             self.lost_connection.emit()
-            self.terminate()
+            self.gotcha = False
+            print("BAAAM!")
+            return
+        return
 
 class LetsShareBooksDialog(QDialog):
     started_calibre_web_server = QtCore.pyqtSignal()
@@ -196,6 +210,10 @@ class LetsShareBooksDialog(QDialog):
         self.lsb_url_text = 'Be a librarian. Share your library.'
         self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
         self.lsb_url = 'nourl'
+        if prefs['librarian'] == 'LibrAn0n' or prefs['librarian'] == '':
+            self.librarian = get_libranon()
+        else:
+            self.librarian = prefs['librarian']
 
         self.check_connection = ConnectionCheck()
 
@@ -315,14 +333,17 @@ class LetsShareBooksDialog(QDialog):
         self.edit = QLineEdit()
         self.edit.setObjectName("edit")
         self.edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.edit.setText(get_libranon())
+        self.edit.setToolTip("Change your librarian name")
+        self.edit.setText(self.librarian)
         #self.edit.textChanged.connect(self.handle_text_changed)
 
-        self.save_libranon = QPushButton("librarian: ")
+        self.save_libranon = QPushButton("librarian:")
         self.save_libranon.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
         self.save_libranon.setObjectName("share")
+        self.save_libranon.setToolTip("Save your librarian name")
         self.libranon_layout.addWidget(self.save_libranon)
         self.libranon_layout.addWidget(self.edit)
+        self.save_libranon.clicked.connect(self.save_librarian)
 
         self.ll.addWidget(self.libranon_container)
         self.ll.addSpacing(10)
@@ -331,7 +352,7 @@ class LetsShareBooksDialog(QDialog):
         #self.chat_button.hovered.connect(self.setCursorToHand)
         self.chat_button.setObjectName("url2")
         self.chat_button.setToolTip('Meetings every thursday at 23:59 (central eruopean time)')
-        #self.chat_button.clicked.connect(functools.partial(self.open_url2, "https://chat.memoryoftheworld.org"))
+        self.chat_button.clicked.connect(functools.partial(self.open_url, "https://chat.memoryoftheworld.org/?nick={}".format(self.librarian.lower().replace(" ", "_"))))
         self.ll.addWidget(self.chat_button)
 
         self.about_project_button = QPushButton('Public Library: http://www.memoryoftheworld.org')
@@ -343,17 +364,18 @@ class LetsShareBooksDialog(QDialog):
         self.debug_log = QListWidget()
         self.ll.addWidget(self.debug_log)
         self.debug_log.addItem("Initiatied!")
-        self.debug_log.addItem(get_libranon())
-        self.debug_log.show()
+        self.debug_log.hide()
+
+        from PyQt4 import QtWebKit
+        self.webview = QtWebKit.QWebView()
+        self.webview.setMaximumWidth(680)
+        self.webview.setMaximumHeight(400)
+        self.webview.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.webview.setUrl(QtCore.QUrl( "https://chat.memoryoftheworld.org/?nick={}".format(self.librarian.lower().replace(" ", "_"))))
+        self.ll.addWidget(self.webview)
+        #self.webview.hide()
 
         #self.metadata_thread = MetadataLibThread(self.debug_log, self.sql_db, self.us)
-
-        self.metadata_button = QPushButton("Get library metadata!")
-        self.metadata_button.setObjectName("url2")
-        self.metadata_button.setToolTip('Get library metadata!')
-        self.metadata_button.clicked.connect(self.sync_metadata)
-        self.ll.addWidget(self.metadata_button)
-        self.metadata_button.show()
 
         #- check if there is a new version of plugin ----------------------------------------------
 
@@ -466,8 +488,6 @@ class LetsShareBooksDialog(QDialog):
         #------------------------------------------------------------------------------------------
     def sql_db_changed(self, event, ids):
         # this could be used for better update on added/removed books
-        print("{} db_changed event: {}".format(self.sql_db.library_id, event))
-        print("{} db_changed ids: {}".format(self.sql_db.library_id, ids))
         if not self.metadata_thread.isRunning():
             self.sync_metadata()
         else:
@@ -480,22 +500,25 @@ class LetsShareBooksDialog(QDialog):
         except:
             pass
         self.sql_db = get_gui().current_db
-        print("current db is now {}".format(self.sql_db.library_id))
         self.sql_db.add_listener(self.sql_db_changed)
-        self.metadata_thread = MetadataLibThread(self.port, self.sql_db)
+        self.metadata_thread = MetadataLibThread(self.port, self.sql_db, self.librarian)
         self.metadata_thread.uploaded.connect(lambda: self.debug_log.addItem("uploaded!"))
         self.metadata_thread.upload_error.connect(lambda: self.debug_log.addItem("upload_ERROR!"))
         self.metadata_thread.start()
 
     def check_connections(self):
+        #self.webview.show()
         self.qaction.setIcon(get_icon('images/icon_connected.png'))
         self.check_connection.add_urls(["http://localhost:{}".format(self.calibre_server_port), self.lsb_url])
+        self.check_connection.gotcha = True
         self.check_connection.start()
 
     def disconnect_all(self):
-        self.check_connection.terminate()
-        del self.check_connection
-        self.check_connection = ConnectionCheck()
+        #- send gotcha=False to check_connection to exit -------------------------------------------
+        self.check_connection.gotcha = False
+        connection_thread = self.check_connection.wait(2000)
+        if not connection_thread:
+            print("check_connection still running! it shouldn't!")
 
         if sys.platform == "win32":
             try:
@@ -561,8 +584,6 @@ class LetsShareBooksDialog(QDialog):
                             QTimer.singleShot(500, parse_log)
                 parse_log()
 
-
-
     def start_calibre_server(self):
         if self.main_gui.content_server is None:
             self.main_gui.start_content_server()
@@ -576,9 +597,17 @@ class LetsShareBooksDialog(QDialog):
         self.do_user_config(parent=self)
         self.label.setText(prefs['lsb_server'])
 
+    def save_librarian(self):
+        print('librarian {} saved!'.format(str(self.edit.text())))
+        prefs['librarian'] = str(self.edit.text())
+
     def open_url(self, url):
         self.clip.setText(url)
         webbrowser.open(url)
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            pass
 
     def closeEvent(self, e):
         print("close popup!")

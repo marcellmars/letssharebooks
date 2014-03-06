@@ -9,7 +9,7 @@ cp -a ../libraries/ library/libraries/
 docker stop lsb
 docker rm $(docker ps -a -q)
 docker build -no-cache -t librarian/library library/
-docker run -dns=127.0.0.1 -name="lsb" -p 127.0.0.1:4321:4321 --link=mongodb:mongodb -t librarian/library&
+docker run -dns=127.0.0.1 -name lsb -p 127.0.0.1:4321:4321 --link mongodb:mongodb -t librarian/library&
 sleep 4
 echo bind-interfaces > /etc/dnsmasq.d/local
 echo listen-address=127.0.0.1 >> /etc/dnsmasq.d/local

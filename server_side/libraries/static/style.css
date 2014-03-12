@@ -112,9 +112,12 @@ a {
 }
 
 
-#authors, .#titles, #search_all {
-    width: 278px;
-    font-size: 1em;
+#authors, #titles, #search_all, #librarian {
+    width: 210px;
+    font-size: 1.2em;
+    padding: 3px;
+    border: 1px solid #ff0000;
+    background-color: #ffffff;
 }
 
 .modal {

@@ -14,13 +14,15 @@ var STATE = {
         'authors': '',
         'titles': '',
         'search_all': '',
+        'librarian': '',
     }
 };
 
 var state_field_mapping = {
-  'author': '#authors',
-  'title': '#titles',
-  'metadata': '#search_all'
+    'author': '#authors',
+    'title': '#titles',
+    'metadata': '#search_all',
+    'librarian': '#librarian'
 };
 
 /* ----------------------------------------------------------------------------
@@ -29,17 +31,13 @@ var state_field_mapping = {
  */
 
 var push_to_history = function() {
-  var data = {};
-
-  _.each(state_field_mapping, function(field, property) {
-    data[property] = $(field).val();
-  });
-
-  data.page = STATE.page;
-
-  var serialized = $.param(data);
-
-  history.pushState(data, '', '#'+serialized);
+    var data = {};
+    _.each(state_field_mapping, function(field, property) {
+        data[property] = $(field).val();
+    });
+    data.page = STATE.page;
+    var serialized = $.param(data);
+    history.pushState(data, '', '#'+serialized);
 };
 
 /* ----------------------------------------------------------------------------
@@ -195,6 +193,11 @@ var update_autocomplete = function(data) {
                                 minLength:2});
     $('#titles').autocomplete({source: data['titles'],
                                minLength:2});
+    $('#librarian').empty()
+    $('#librarian').append('<option value="">All librarians</option>'); 
+    $.each(data['librarians'], function(index, item) {
+        $('#librarian').append('<option value="' + item + '">' + item + '</option>'); 
+    });
 };
 
 /* --------------------------------------------------------------------------*/
@@ -267,24 +270,12 @@ var modify_button = function (button, state) {
 
 /* --------------------------------------------------------------------------*/
 
-var init_page = function () {
-    init_toolbar();
-    $(document).tooltip({items: '*:not(.ui-dialog-titlebar-close)'});
-    if (window.location.hash != '') {
-      var state = window.location.hash.substr(1);
-      handle_hash_state(state);
-    } else {
-      render_page();
-    }
-};
-
-/* --------------------------------------------------------------------------*/
-
 var search_query = function () {
     q = {};
     q.authors = $('#authors').val();
     q.title = $('#titles').val();
     q.search_all = $('#search_all').val();
+    q.librarian = $('#librarian').val();
     STATE.query = q;
     STATE.page = 1;
     render_page();
@@ -295,18 +286,16 @@ var search_query = function () {
  * ----------------------------------------------------------------------------
  */
 
-var handle_hash_state = function(state) {
-  var deserialized = $.deparam(state);
-
-  _.each(state_field_mapping, function(field, property) {
-    $(field).val(deserialized[property]);
-  });
-
-  if (deserialized.hasOwnProperty('page')) {
-    STATE.page = parseInt(deserialized['page'], 10);
-  }
-
-  return search_query();
+var handle_hash_state = function(event) {
+    var deserialized = $.deparam(event.state);
+    if (deserialized == null) return;
+    _.each(state_field_mapping, function(field, property) {
+        $(field).val(deserialized[property]);
+    });
+    if (deserialized.hasOwnProperty('page')) {
+        STATE.page = parseInt(deserialized['page'], 10);
+    }
+    return search_query();
 };
 
 /* --------------------------------------------------------------------------*/
@@ -327,6 +316,22 @@ $(document).ajaxStart(function () {
 $(document).ajaxStop(function () { 
     $('body').removeClass("loading"); 
 });
+
+/* --------------------------------------------------------------------------*/
+
+var init_page = function () {
+    init_toolbar();
+    /* do not display tooltip for modal close button (it gets automatically
+     displayed */
+    $(document).tooltip({items: '*:not(.ui-dialog-titlebar-close)'});
+    if (window.location.hash != '') {
+      var state = window.location.hash.substr(1);
+      handle_hash_state(state);
+    } else {
+      render_page();
+    }
+    window.onpopstate = handle_hash_state;
+};
 
 /* --------------------------------------------------------------------------*/
 

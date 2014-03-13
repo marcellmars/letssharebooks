@@ -87,6 +87,7 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(len(data['books']), 2)
         self.assertEqual(len(data['titles']), 2)
         self.assertEqual(len(data['authors']), 3)
+        self.assertEqual(len(data['librarians']), 1)
 
     def test_for_duplicates(self):
         # try to upload same catalog twice

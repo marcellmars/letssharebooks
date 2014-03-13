@@ -209,8 +209,7 @@ def get_books(db, page, query={}):
     authors = books.distinct('authors')
     titles = books.distinct('title_sort')
     # just for testing...
-    librarians = ['charlie chaplin', 'woody allen']
-    #librarians = books.distinct('librarian')
+    librarians = books.distinct('librarian')
     # paginate books
     items, next_page, on_page, total = paginate(books, page)
     # return serialized books with availability of next page

@@ -15,6 +15,7 @@ import pickle
 
 #------------------------------------------------------------------------------
 
+# book fields for books in the grid
 PUBLIC_BOOK_FIELDS = {
     'application_id':1,
     'title':1,
@@ -25,6 +26,7 @@ PUBLIC_BOOK_FIELDS = {
     '_id': 0
     }
 
+# book fields for book in the modal window
 PUBLIC_SINGLE_BOOK_FIELDS = {
     'application_id':1,
     'title':1,
@@ -41,7 +43,12 @@ PUBLIC_SINGLE_BOOK_FIELDS = {
 #------------------------------------------------------------------------------
 
 def get_active_tunnels():
+    '''
+    Returns list of active tunnels used by the get_books function
+    '''
+    # start: for testing purposes
     #return [12345]
+    # end
     try:
         return pickle.load(open("/tmp/active_tunnel_ports","rb"))
     except:
@@ -185,6 +192,8 @@ def get_books(db, page, query={}):
     for k,v in query.iteritems():
         if v != '' and k in ['authors', 'titles']:
             q[k] = {"$regex": v, "$options": 'i'}
+        elif v != '' and k is 'librarian':
+            q['librarian'] = {"$regex": v, "$options": 'i'}
         elif v != '':
             q = {"$or": [
                     {"title": {"$regex": ".*{}.*".format(v), "$options": 'i'}},
@@ -199,6 +208,9 @@ def get_books(db, page, query={}):
     books = db.books.find(q, PUBLIC_BOOK_FIELDS)
     authors = books.distinct('authors')
     titles = books.distinct('title_sort')
+    # just for testing...
+    librarians = ['charlie chaplin', 'woody allen']
+    #librarians = books.distinct('librarian')
     # paginate books
     items, next_page, on_page, total = paginate(books, page)
     # return serialized books with availability of next page
@@ -207,7 +219,8 @@ def get_books(db, page, query={}):
                            'on_page': on_page,
                            'total': total,
                            'authors': authors,
-                           'titles': titles})
+                           'titles': titles,
+                           'librarians': librarians})
 
 #------------------------------------------------------------------------------
 

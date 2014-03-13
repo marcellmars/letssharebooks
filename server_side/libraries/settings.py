@@ -21,7 +21,7 @@ SERVER = {
         'dbname': 'letssharebooks_test',
         },
     'live': {
-        'mongo_addr': os.environ["MONGODB_PORT_27017_TCP_ADDR"],
+        'mongo_addr': os.environ.get("MONGODB_PORT_27017_TCP_ADDR"),
         'mongo_port': 27017,
         'prefix_url' : 'https://www',
         'host': '0.0.0.0',
@@ -29,7 +29,7 @@ SERVER = {
         'dbname': 'letssharebooks',
         },
     'docker': {
-        'mongo_addr': os.environ["MONGODB_PORT_27017_TCP_ADDR"],
+        'mongo_addr': os.environ.get("MONGODB_PORT_27017_TCP_ADDR"),
         'mongo_port': 27017,
         'prefix_url': 'http://www',
         'host': '0.0.0.0',

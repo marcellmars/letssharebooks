@@ -25,7 +25,7 @@ SERVER = {
         'mongo_port': 27017,
         'prefix_url' : 'https://www',
         'host': '0.0.0.0',
-        'port': 80,
+        'port': 4321,
         'dbname': 'letssharebooks',
         },
     'docker': {

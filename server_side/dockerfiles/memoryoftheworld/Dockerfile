@@ -22,7 +22,7 @@ ADD libraries/get_tunnel_ports.sh /usr/local/bin/
 ADD libraries/get_tunnel_ports.py /usr/local/bin/
 
 ADD libraries/get_tunnel_ports_docker.conf /etc/supervisor/conf.d/
-#ADD libraries/get_tunnel_ports_docker_memoryoftheworld.conf /etc/supervisor/conf.d/
+#ADD libraries/get_tunnel_ports_memoryoftheworld.conf /etc/supervisor/conf.d/
 
 ADD libraries/library_docker /etc/nginx/sites-enabled/
 #ADD libraries/library_memoryoftheworld /etc/nginx/sites-enabled/

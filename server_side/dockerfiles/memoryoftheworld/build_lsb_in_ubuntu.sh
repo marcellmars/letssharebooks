@@ -11,6 +11,7 @@ mkdir -p /etc/ssl/private/
 
 chmod +x /usr/local/bin/current_ip.sh
 chmod +x /usr/local/bin/get_tunnel_ports.sh
+chmod +x /usr/local/bin/get_tunnel_ports.py
 
 useradd librarian
 useradd tunnel

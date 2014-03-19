@@ -2,10 +2,13 @@
 
 locale-gen en_US en_US.UTF-8
 
-mkdir -p /var/log/supervisor
-mkdir -p /var/run/supervisor
-mkdir -p /var/run/sshd
+mkdir -p /var/log/supervisor/
+mkdir -p /var/run/supervisor/
+mkdir -p /var/run/sshd/
 mkdir -p /var/www/
+mkdir -p /etc/ssl/certs/
+mkdir -p /etc/ssl/private/
+
 chmod +x /usr/local/bin/current_ip.sh
 chmod +x /usr/local/bin/get_tunnel_ports.sh
 

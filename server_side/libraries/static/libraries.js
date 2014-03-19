@@ -6,7 +6,7 @@
 var DOMAIN = 'memoryoftheworld.org'
 //var DOMAIN = 'web.dokr'
 var PREFIX_URL = 'https://www';
-var PREFIX_URL = 'http://www';
+//var PREFIX_URL = 'http://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,

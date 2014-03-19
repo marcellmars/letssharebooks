@@ -16,8 +16,8 @@ __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
 __docformat__ = 'restructuredtext en'
 
-#SERVER_PREFIX = "https"
-SERVER_PREFIX = "http"
+SERVER_PREFIX = "https"
+#SERVER_PREFIX = "http"
 
 try:
     del os.environ['LD_LIBRARY_PATH']

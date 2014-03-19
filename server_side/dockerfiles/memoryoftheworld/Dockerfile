@@ -30,7 +30,10 @@ ADD libraries/library_memoryoftheworld /etc/nginx/sites-enabled/
 #ADD libraries/library_docker.conf /etc/supervisor/conf.d/
 ADD libraries/library_memoryoftheworld.conf /etc/supervisor/conf.d/
 
+##
 # certificates should be already in place on docker host
+##
+
 ADD /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt
 ADD /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key 
 

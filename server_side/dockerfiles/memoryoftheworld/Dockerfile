@@ -2,6 +2,10 @@ FROM ubuntu:latest
 
 MAINTAINER Marcell Mars "https://github.com/marcellmars"
 
+ADD build_lsb_in_ubuntu.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/build_lsb_in_ubuntu.sh
+RUN /usr/local/bin/build_lsb_in_ubuntu.sh
+
 ADD supervisor/supervisord.conf /etc/supervisord.conf
 ADD supervisor/supervisord.conf /etc/supervisord.conf
 
@@ -36,9 +40,5 @@ ADD libraries/library_memoryoftheworld.conf /etc/supervisor/conf.d/
 
 ADD /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt
 ADD /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key 
-
-ADD build_lsb_in_ubuntu.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/build_lsb_in_ubuntu.sh
-RUN /usr/local/bin/build_lsb_in_ubuntu.sh
 
 ENTRYPOINT ["/usr/local/bin/supervisord"]

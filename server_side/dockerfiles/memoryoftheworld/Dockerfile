@@ -42,3 +42,4 @@ ADD wildcard_memoryoftheworld.org_20130714_combined.crt /etc/ssl/certs/wildcard_
 ADD wildcard_memoryoftheworld.org_20130714.key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key 
 
 ENTRYPOINT ["/usr/local/bin/supervisord"]
+CMD []

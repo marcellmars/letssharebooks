@@ -7,7 +7,7 @@ import argparse
 
 def get_tunnel_ports(login="tunnel"):
     uid = subprocess.check_output(["grep", "{0}".format(login), "/etc/passwd"]).split()[0].split(":")[2]
-    return subprocess.check_output(["/usr/local/bin/get_tunnel_ports.sh", uid]).split()
+    return subprocess.check_output(["sh", "/usr/local/bin/get_tunnel_ports.sh", uid]).split()
 
 def main(prefix, host):
     tp = []

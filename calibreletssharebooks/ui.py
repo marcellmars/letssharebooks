@@ -58,8 +58,8 @@ class LetsShareBooksUI(InterfaceAction):
         m.addAction(a)
 
     def library_changed(self, db):
-        print("library_change: {}".format(db.library_id))
         self.us.library_changed_emit()
+        print("library_change: {}".format(db.library_id))
 
     def apply_settings(self):
         from calibre_plugins.letssharebooks.config import prefs

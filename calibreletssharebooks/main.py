@@ -209,7 +209,7 @@ class LetsShareBooksDialog(QDialog):
         self.lsb_url_text = 'Be a librarian. Share your library.'
         self.url_label_tooltip = '<<<< Be a librarian. Click on Start sharing button.<<<<'
         self.lsb_url = 'nourl'
-        if prefs['librarian'] == 'LibrAn0n' or prefs['librarian'] == '':
+        if prefs['librarian'] == 'l' or prefs['librarian'] == '':
             self.librarian = get_libranon()
         else:
             self.librarian = prefs['librarian']

@@ -30,7 +30,7 @@ except:
 try:
     prefs.defaults['librarian']
 except:
-    prefs.defaults['librarian'] = 'LibrAn0n'
+    prefs.defaults['librarian'] = 'l'
 
 class ConfigWidget(QWidget):
 

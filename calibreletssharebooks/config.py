@@ -20,6 +20,7 @@ prefs = JSONConfig('plugins/letssharebooks.conf')
 
 # Set defaults
 prefs.defaults['lsb_server'] = 'memoryoftheworld.org'
+prefs.defaults['server_prefix'] = 'https'
 
 try:
     prefs['library_uuid']
@@ -37,6 +38,16 @@ class ConfigWidget(QWidget):
         QWidget.__init__(self)
         self.l = QVBoxLayout()
         self.setLayout(self.l)
+
+        self.l5 = QHBoxLayout()
+        self.server_prefix_label = QLabel('Server prefix:')
+        self.l5.addWidget(self.server_prefix_label)
+
+        self.server_prefix = QLineEdit(self)
+        self.server_prefix.setText(prefs['server_prefix'])
+        self.l5.addWidget(self.server_prefix)
+        self.server_prefix_label.setBuddy(self.server_prefix)
+        self.l.addLayout(self.l5)
 
         self.ll = QHBoxLayout()
         self.server_label = QLabel('Server:')
@@ -70,6 +81,7 @@ class ConfigWidget(QWidget):
 
     def save_settings(self):
         prefs['lsb_server'] = unicode(self.lsb_server.text())
+        prefs['server_prefix'] = unicode(self.server_prefix.text())
         prefs['librarian'] = prefs['librarian']
         prefs['library_uuid'] = prefs['library_uuid']
 

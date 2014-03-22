@@ -623,7 +623,11 @@ class LetsShareBooksDialog(QDialog):
 
     def save_librarian(self):
         print('librarian {} saved!'.format(str(self.edit.text())))
-        prefs['librarian'] = str(self.edit.text())
+        if self.edit.text() != "" and self.edit.text() != "l":
+            prefs['librarian'] = str(self.edit.text())
+        else:
+            prefs['librarian'] = get_libranon()
+            self.edit.setText(prefs['librarian'])
 
     def open_url(self, url):
         self.clip.setText(url)

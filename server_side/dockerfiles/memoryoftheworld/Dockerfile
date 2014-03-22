@@ -20,6 +20,7 @@ ADD dnsmasq/current_ip.sh /usr/local/bin/
 #ADD nginx/tunnel_docker /etc/nginx/sites-enabled/
 ADD nginx/tunnel_memoryoftheworld /etc/nginx/sites-enabled/
 ADD nginx/candy /etc/nginx/sites-enabled/
+ADD nginx/bosh /etc/nginx/sites-enabled/
 
 ADD nginx/nginx.conf /etc/supervisor/conf.d/
 

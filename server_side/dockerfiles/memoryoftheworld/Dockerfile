@@ -23,6 +23,8 @@ ADD nginx/candy /etc/nginx/sites-enabled/
 ADD nginx/bosh /etc/nginx/sites-enabled/
 
 ADD nginx/nginx.conf /etc/supervisor/conf.d/
+ADD nginx/set_prosody_ip.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/set_prosody_ip.sh
 
 ADD libraries/get_tunnel_ports.sh /usr/local/bin/
 ADD libraries/get_tunnel_ports.py /usr/local/bin/

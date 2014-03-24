@@ -41,6 +41,9 @@ ADD libraries/library_memoryoftheworld.conf /etc/supervisor/conf.d/
 ADD wordpress/wordpress.conf /etc/supervisor/conf.d/
 ADD wordpress/wordpress     /etc/supervisor/conf.d/
 
+# only temporary for bringing back sql
+ADD wordpress/mu.memoryoftheworld.org.sql /tmp/
+
 ##
 # certificates should be already in place on docker host
 ##

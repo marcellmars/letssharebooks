@@ -39,7 +39,7 @@ ADD libraries/library_memoryoftheworld /etc/nginx/sites-enabled/
 ADD libraries/library_memoryoftheworld.conf /etc/supervisor/conf.d/
 
 ADD wordpress/wordpress.conf /etc/supervisor/conf.d/
-ADD wordpress/wordpress     /etc/supervisor/conf.d/
+ADD wordpress/wordpress     /etc/nginx/site-enabled/
 
 # only temporary for bringing back sql
 ADD wordpress/mu.memoryoftheworld.org.sql /tmp/

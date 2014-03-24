@@ -38,6 +38,8 @@ ADD libraries/library_memoryoftheworld /etc/nginx/sites-enabled/
 #ADD libraries/library_docker.conf /etc/supervisor/conf.d/
 ADD libraries/library_memoryoftheworld.conf /etc/supervisor/conf.d/
 
+ADD wordpress/wordpress.conf /etc/supervisor/conf.d/
+
 ##
 # certificates should be already in place on docker host
 ##

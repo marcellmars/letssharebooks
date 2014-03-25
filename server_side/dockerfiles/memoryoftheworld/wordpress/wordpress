@@ -3,13 +3,14 @@ server {
     server_name www.memoryoftheworld.org www.javnaknjiznica.org memoryoftheworld.org;
 
     root /var/www/mu.memoryoftheworld.org/;
+    index index.php;
     access_log /var/log/nginx/memoryoftheworld.org-access.log;
     error_log /var/log/nginx/memoryoftheworld.org-error.log;
 
     if (!-e $request_filename) {
-        rewrite /wp-admin$ $scheme://$host$uri/ permanent;	
-        rewrite ^(/[^/]+)?(/wp-.*) $2 last;                     
-        rewrite ^(/[^/]+)?(/.*\.php) $2 last;                   
+        rewrite /wp-admin$ $scheme://$host$uri/ permanent;
+        rewrite ^(/[^/]+)?(/wp-.*) $2 last;
+        rewrite ^(/[^/]+)?(/.*\.php) $2 last;
     }
 
     location / {
@@ -18,8 +19,10 @@ server {
 
     location ~ \.php$ {
         try_files $uri /index.php;
-        include fastcgi_params;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
         fastcgi_pass unix:/var/run/php5-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
     }
 
     location ~* ^.+\.(ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|rss|atom|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)$ {
@@ -29,3 +32,4 @@ server {
     location = /robots.txt { access_log off; log_not_found off; }
     location ~ /\. { deny  all; access_log off; log_not_found off; }
 }
+

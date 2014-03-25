@@ -24,7 +24,7 @@ echo "deb http://archive.ubuntu.com/ubuntu quantal main universe restricted mult
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 3B4FE6ACC0B21F32
 apt-get update
 
-apt-get -y install python-pip openssh-server dnsmasq nginx iproute openssl ssl-cert ca-certificates mysql-client mysql-server php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcache php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl php5-fpm
+apt-get -y install python-pip openssh-server dnsmasq nginx iproute openssl ssl-cert ca-certificates mysql-client mysql-server php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcache php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl php5-fpm php5-mysql
 
 pip install supervisor cherrypy requests pymongo simplejson jinja2
 

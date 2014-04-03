@@ -57,8 +57,8 @@ $(document).ready(function () {
         };
 
         var books = BOOKS;
-        if (params.query.authors !== '') {
-            books = search(params.query.authors, books);
+        if (params.query.authors !== '' || params.query.titles !== '') {
+            books = search(params.query, books);
         }
         var offset = (params.page-1)*ITEMS_PER_PAGE;
         ret.books = books.slice(offset,
@@ -81,9 +81,17 @@ $(document).ready(function () {
         return null;
     };
 
-    var search = function(author, books) {
-        return books.filter(function(elem, pos) {
-            return !$.inArray(author, elem.authors);
-        });
+    var search = function(q, books) {
+        if (q.authors !== '') {
+            books = books.filter(function(elem, pos) {
+                return !$.inArray(q.authors, elem.authors);
+            });
+        }
+        if (q.titles !== '') {
+            books = books.filter(function(elem, pos) {
+                return q.titles == elem.title_sort;
+            });
+        }
+        return books;
     };
 });

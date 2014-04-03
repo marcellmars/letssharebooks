@@ -57,7 +57,7 @@ $(document).ready(function () {
         };
 
         var books = BOOKS;
-        if (params.query.authors !== '' || params.query.titles !== '' || params.query.librarian !== '') {
+        if (params.query.authors !== '' || params.query.titles !== '' || params.query.librarian !== '' || params.query.search_all !== '') {
             books = search(params.query, books);
         }
         var offset = (params.page-1)*ITEMS_PER_PAGE;
@@ -84,18 +84,30 @@ $(document).ready(function () {
 
     var search = function(q, books) {
         if (q.authors !== '') {
-            books = books.filter(function(elem, pos) {
-                return $.inArray(q.authors, elem.authors) > -1;
+            books = books.filter(function(book, i) {
+                return $.inArray(q.authors, book.authors) > -1;
             });
         }
         if (q.titles !== '') {
-            books = books.filter(function(elem, pos) {
-                return q.titles == elem.title_sort;
+            books = books.filter(function(book, i) {
+                return q.titles == book.title_sort;
             });
         }
         if (q.librarian !== '') {
-            books = books.filter(function(elem, pos) {
-                return q.librarian == elem.librarian;
+            books = books.filter(function(book, i) {
+                return q.librarian == book.librarian;
+            });
+        }
+        if (q.search_all !== '') {
+            var regex = new RegExp(q.search_all, 'gim');
+            books = books.filter(function(book, i) {
+                var str = [book.title,
+                           book.authors.join(' '),
+                           book.comments,
+                           book.tags,
+                           book.publisher,
+                           book.identifiers].join(' ');
+                return regex.test(str);
             });
         }
         return books;

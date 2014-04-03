@@ -84,13 +84,15 @@ $(document).ready(function () {
 
     var search = function(q, books) {
         if (q.authors !== '') {
+            var regex = new RegExp(q.authors, 'gim');
             books = books.filter(function(book, i) {
-                return $.inArray(q.authors, book.authors) > -1;
+                return regex.test(book.authors.join(' '));
             });
         }
         if (q.titles !== '') {
+            var regex = new RegExp(q.titles, 'gim');
             books = books.filter(function(book, i) {
-                return q.titles == book.title_sort;
+                return regex.test(book.title_sort);
             });
         }
         if (q.librarian !== '') {

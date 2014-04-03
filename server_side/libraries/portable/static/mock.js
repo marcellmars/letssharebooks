@@ -73,12 +73,14 @@ $(document).ready(function () {
     };
 
     var mock_book = function(uuid) {
-        for(var i=0;i<BOOKS.length;i++) {
-            if (BOOKS[i].uuid = uuid) {
-                return BOOKS[i];
+        var ret = null;
+        $.each(BOOKS, function(i, book) {
+            console.log(book.uuid == uuid);
+            if (book.uuid == uuid) {
+                ret = book;
             }
-        };
-        return null;
+        });
+        return ret;
     };
 
     var search = function(q, books) {

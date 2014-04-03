@@ -75,7 +75,6 @@ $(document).ready(function () {
     var mock_book = function(uuid) {
         var ret = null;
         $.each(BOOKS, function(i, book) {
-            console.log(book.uuid == uuid);
             if (book.uuid == uuid) {
                 ret = book;
             }
@@ -86,7 +85,7 @@ $(document).ready(function () {
     var search = function(q, books) {
         if (q.authors !== '') {
             books = books.filter(function(elem, pos) {
-                return !$.inArray(q.authors, elem.authors);
+                return $.inArray(q.authors, elem.authors) > -1;
             });
         }
         if (q.titles !== '') {

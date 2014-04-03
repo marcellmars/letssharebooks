@@ -24,25 +24,24 @@ $(document).ready(function () {
     /* This file is using LIBRARY variable from data.js and ITEMS_PER_PAGE from library.js  */
 
     var BOOKS = LIBRARY.books.add;
-    var TOTAL = BOOKS.length;
     var AUTHORS = [];
     var TITLES = [];
     var LIBRARIANS = [];
 
     var generate_metadata = function() {
-        for(var i=0;i<BOOKS.length;i++) {
+        $.each(BOOKS, function(i, book){
             /* add authors */
-            var authors = BOOKS[i].authors;
-            for(var j=0;j<authors.length;j++) {
-                sadd(AUTHORS, authors[j]);
-            };
+            var authors = book.authors;
+            $.each(authors, function(j, author) {
+                sadd(AUTHORS, author);
+            });
             /* add titles */
-            var title = BOOKS[i].title_sort;
+            var title = book.title_sort;
             sadd(TITLES, title);
             /* add librarians */
-            var librarian = BOOKS[i].librarian;
+            var librarian = book.librarian;
             sadd(LIBRARIANS, librarian);
-        };
+        });
     }();
 
     var mock_get_books = function(params) {
@@ -54,16 +53,20 @@ $(document).ready(function () {
             'books': [],
             'next_page': params.page + 1, 
             'on_page': -1,
-            'total': TOTAL,
+            'total': 0,
         };
 
         var books = BOOKS;
+        if (params.query.authors !== '') {
+            books = search(params.query.authors, books);
+        }
         var offset = (params.page-1)*ITEMS_PER_PAGE;
         ret.books = books.slice(offset,
                                 offset + ITEMS_PER_PAGE);
 
         ret.on_page = ret.books.length;
-        if (offset + ITEMS_PER_PAGE >= TOTAL) {
+        ret.total = books.length;
+        if (offset + ITEMS_PER_PAGE >= ret.total) {
             ret.next_page = null;
         }
         return ret;
@@ -76,5 +79,11 @@ $(document).ready(function () {
             }
         };
         return null;
+    };
+
+    var search = function(author, books) {
+        return books.filter(function(elem, pos) {
+            return !$.inArray(author, elem.authors);
+        });
     };
 });

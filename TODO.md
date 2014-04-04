@@ -28,4 +28,5 @@
     - book_modal_tmpl
       - /get/cover + book.application_id
       - /get/opf + book.application_id + " " + book_title_stripped
-      - get rid of visit librarian
+      - get rid of visit librarian (maybe just adding portable.css with directive `display:none`)
+- sync libraries.js and other files with the version in libraries/ so we don't have to maintain more than one

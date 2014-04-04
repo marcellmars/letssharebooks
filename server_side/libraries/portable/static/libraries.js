@@ -89,7 +89,11 @@ var render_book = function(i, book) {
       'book': book,
       'book_title_stripped': " " + book.title.replace(/\?/g, ''),
       'authors': authors,
-      'formats': formats
+      'formats': formats,
+      'get_cover': "/get/cover",
+      'get_opf' : "/get/opf/",
+      'portable_cover': "",
+      'portable_opf': ""
     });
     $('#content').append(book_content);
 };
@@ -151,6 +155,10 @@ var setup_modal = function () {
                 'book': book,
                 'book_title_stripped': " " + book.title.replace(/\?/g, ''),
                 'formats': formats,
+                'get_cover': "/get/cover/",
+                'get_opf': "/get/opf/",
+                'portable_cover': "",
+                'portable_opf': "",
             });
             var modal = $(modal_html);
             modal.dialog({

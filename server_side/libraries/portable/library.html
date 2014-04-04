@@ -34,22 +34,22 @@
   <script type="text/x-template" id="book-content-tmpl">
     <div class="cover">
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-        <img src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" /></a>
+        <img src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>.jpg" /></a>
       <h2>
         <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
         <br />
         <%= authors %></h2>
-      <span class="download">Metadata: <a href="<%= base_url %>/get/opf/<%= book.application_id %><%= book_title_stripped %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
+      <span class="download">Metadata: <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
     </div>
   </script>
 
   <script type="text/x-template" id="book-modal-tmpl">
     <div id="book-modal" title="<%= book.title %>">
       <div>
-        <img class="img_modal" src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" width="120"/>
+        <img class="img_modal" src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>.jpg" width="120"/>
         <p><span class="attr">Authors:</span> <%= book.authors %></p>
         <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
-        <p><span class="attr" title="import metadata directly to calibre">Metadata:</span> <a href="<%= base_url %>/get/opf/<%= book.application_id %><%= book_title_stripped %>.opf">.opf</a></p>
+        <p><span class="attr" title="import metadata directly to calibre">Metadata:</span> <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf">.opf</a></p>
         <p><span class="attr">Download:</span> <%= formats %></p>
         <p><span class="attr"><%= book.librarian %>:</span> <a href="<%= base_url %>" title="visit librarian" target="_blank"><%= base_url %></a></p>
         <p><span class="attr">About:</span> <%= book.comments %></p>

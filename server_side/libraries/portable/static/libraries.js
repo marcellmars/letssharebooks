@@ -61,9 +61,10 @@ var render_book = function(i, book) {
     
     book.formats.map(function (format) {
         var string_parts = book_string_parts_tmpl({
-          'base_url': base_url,
-          'format': format,
-          'book': book
+          'base_url': base_url + "/get/",
+          'format': format + "/",
+          'book': book,
+          'portable_book': ""
         });
         formats = formats + " " + string_parts;
     });

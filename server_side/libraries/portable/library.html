@@ -28,7 +28,7 @@
   </script>
 
   <script type="text/x-template" id="book-parts-tmpl">
-    <a href="<%= base_url %>/get/<%= format %>/<%= book.application_id %>.<%= format %>"><%= format.toUpperCase() %></a>
+<a href="<%= base_url %><%= format %><%= book.application_id %><%= portable_book %>.<%= format %>"><%= format.toUpperCase() %></a>
   </script>
 
   <script type="text/x-template" id="book-content-tmpl">

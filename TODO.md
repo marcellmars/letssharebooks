@@ -20,13 +20,13 @@
 # portable library
 - replace all hardcoded paths in templates with variables so portable could ignore them by setting them to empty strings:
   - in index.html: 
-    - book_ parts_tmpl:
+    - DONE_book_ parts_tmpl:
       - /get/ + book.application_id
-    - book_content_tmpl:
+    - DONE_book_content_tmpl:
       - /get/cover + book.application_id
       - /get/opf + book.application_id + " " + book_title_stripped
-    - book_modal_tmpl
+    - DONE_book_modal_tmpl
       - /get/cover + book.application_id
       - /get/opf + book.application_id + " " + book_title_stripped
-      - get rid of visit librarian (maybe just adding portable.css with directive `display:none`)
+- get rid of visit librarian (maybe just adding portable.css with directive `display:none`)
 - sync libraries.js and other files with the version in libraries/ so we don't have to maintain more than one

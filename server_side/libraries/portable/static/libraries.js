@@ -87,7 +87,7 @@ var render_book = function(i, book) {
     var book_content = book_content_tmpl({
       'base_url': base_url,
       'book': book,
-      'book_title_stripped': book.title.replace(/\?/g, ''),
+      'book_title_stripped': " " + book.title.replace(/\?/g, ''),
       'authors': authors,
       'formats': formats
     });
@@ -149,7 +149,7 @@ var setup_modal = function () {
             modal_html = book_modal_tmpl({
                 'base_url': base_url,
                 'book': book,
-                'book_title_stripped': book.title.replace(/\?/g, ''),
+                'book_title_stripped': " " + book.title.replace(/\?/g, ''),
                 'formats': formats,
             });
             var modal = $(modal_html);

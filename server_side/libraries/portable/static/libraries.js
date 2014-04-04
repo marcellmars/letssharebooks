@@ -51,21 +51,60 @@ var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim())
     book_modal_tmpl = _.template($('#book-modal-tmpl').text().trim());
 
 /* ----------------------------------------------------------------------------
+ * Generate dictionaries for the html templates.
+ * These functions should be mocked when this file is used by portable library
+ * ----------------------------------------------------------------------------
+ */
+
+var gen_book_string_parts = function (base_url, format, book) {
+    return {
+        'base_url': base_url + '/get/',
+        'format': format + '/',
+        'book': book,
+        'portable_book': ''
+    }
+};
+
+var gen_book_content = function (base_url, book, authors, formats) {
+    return {
+        'base_url': base_url,
+        'book': book,
+        'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
+        'authors': authors,
+        'formats': formats,
+        'get_cover': '/get/cover',
+        'get_opf' : '/get/opf/',
+        'portable_cover': '',
+        'portable_opf': ''
+    }
+};
+
+var gen_book_modal = function (base_url, book, formats) {
+    return {
+        'base_url': base_url,
+        'book': book,
+        'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
+        'formats': formats,
+        'get_cover': '/get/cover/',
+        'get_opf': '/get/opf/',
+        'portable_cover': '',
+        'portable_opf': ''
+    }
+};
+
+/* ----------------------------------------------------------------------------
  * Renders single book
  * ----------------------------------------------------------------------------
  */
+
 var render_book = function(i, book) {
     var formats = '',
         base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join(''),
         authors = '<div id="authorz">';
     
     book.formats.map(function (format) {
-        var string_parts = book_string_parts_tmpl({
-          'base_url': base_url + "/get/",
-          'format': format + "/",
-          'book': book,
-          'portable_book': ""
-        });
+        var string_parts = book_string_parts_tmpl(
+            gen_book_string_parts(base_url, format, book));
         formats = formats + " " + string_parts;
     });
 
@@ -84,18 +123,10 @@ var render_book = function(i, book) {
     });
 
     var last_comma = authors.lastIndexOf(',');
-    authors = authors.substr(0, last_comma) + authors.substr(last_comma + 1) + '</div>';
-    var book_content = book_content_tmpl({
-      'base_url': base_url,
-      'book': book,
-      'book_title_stripped': " " + book.title.replace(/\?/g, ''),
-      'authors': authors,
-      'formats': formats,
-      'get_cover': "/get/cover",
-      'get_opf' : "/get/opf/",
-      'portable_cover': "",
-      'portable_opf': ""
-    });
+    authors = authors.substr(0, last_comma) +
+        authors.substr(last_comma + 1) + '</div>';
+    var book_content = book_content_tmpl(gen_book_content(
+        base_url, book, authors, formats));
     $('#content').append(book_content);
 };
 
@@ -142,25 +173,14 @@ var setup_modal = function () {
         var uuid = $(this).attr('rel');
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
             var formats = '',
-                base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
+            base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
             book.formats.map(function (format) {
-                var string_parts = book_string_parts_tmpl({
-                    'base_url': base_url,
-                    'format': format,
-                    'book': book
-                });
+                var string_parts = book_string_parts_tmpl(
+                    gen_book_string_parts(base_url, format, book));
                 formats = formats + " " + string_parts;
             });
-            modal_html = book_modal_tmpl({
-                'base_url': base_url,
-                'book': book,
-                'book_title_stripped': " " + book.title.replace(/\?/g, ''),
-                'formats': formats,
-                'get_cover': "/get/cover/",
-                'get_opf': "/get/opf/",
-                'portable_cover': "",
-                'portable_opf': "",
-            });
+            modal_html = book_modal_tmpl(
+                gen_book_modal(base_url, book, formats));
             var modal = $(modal_html);
             modal.dialog({
                 autoOpen: false,

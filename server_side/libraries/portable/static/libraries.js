@@ -56,41 +56,47 @@ var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim())
  * ----------------------------------------------------------------------------
  */
 
-var gen_book_string_parts = function (base_url, format, book) {
-    book.application_id = "/" + book.application_id;
-    return {
-        'base_url': base_url + '/get/',
-        'format': format,
-        'book': book,
-        'portable_book': '.',
-        'portable_format': ''
+if(!window.gen_book_string_parts) {
+    window.gen_book_string_parts = function (base_url, format, book) {
+        book.application_id = "/" + book.application_id;
+        return {
+            'base_url': base_url + '/get/',
+            'format': format,
+            'book': book,
+            'portable_book': '.',
+            'portable_format': ''
+        }
     }
 };
 
-var gen_book_content = function (base_url, book, authors, formats) {
-    return {
-        'base_url': base_url,
-        'book': book,
-        'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
-        'authors': authors,
-        'formats': formats,
-        'get_cover': '/get/cover',
-        'get_opf' : '/get/opf/',
-        'portable_cover': '',
-        'portable_opf': ''
+if(!window.gen_book_content) {
+    window.gen_book_content = function (base_url, book, authors, formats) {
+        return {
+            'base_url': base_url,
+            'book': book,
+            'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
+            'authors': authors,
+            'formats': formats,
+            'get_cover': '/get/cover',
+            'get_opf' : '/get/opf/',
+            'portable_cover': '',
+            'portable_opf': ''
+        }
     }
 };
 
-var gen_book_modal = function (base_url, book, formats) {
-    return {
-        'base_url': base_url,
-        'book': book,
-        'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
-        'formats': formats,
-        'get_cover': '/get/cover/',
-        'get_opf': '/get/opf/',
-        'portable_cover': '',
-        'portable_opf': ''
+if(!window.gen_book_modal) {
+    var gen_book_modal = function (base_url, book, formats) {
+        return {
+            'base_url': base_url,
+            'book': book,
+            'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
+            'formats': formats,
+            'get_cover': '/get/cover/',
+            'get_opf': '/get/opf/',
+            'portable_cover': '',
+            'portable_opf': ''
+        }
     }
 };
 

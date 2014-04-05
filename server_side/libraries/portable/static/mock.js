@@ -122,7 +122,8 @@ $(document).ready(function () {
             'base_url': '/get/',
             'format': '/',
             'book': book,
-            'portable_book': ''
+            'portable_book': '',
+            'portable_format': ''
         }
     };
 

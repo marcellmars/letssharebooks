@@ -57,11 +57,13 @@ var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim())
  */
 
 var gen_book_string_parts = function (base_url, format, book) {
+    book.application_id = "/" + book.application_id;
     return {
         'base_url': base_url + '/get/',
-        'format': format + '/',
+        'format': format,
         'book': book,
-        'portable_book': ''
+        'portable_book': '.',
+        'portable_format': ''
     }
 };
 

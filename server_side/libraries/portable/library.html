@@ -28,7 +28,7 @@
   </script>
 
   <script type="text/x-template" id="book-parts-tmpl">
-<a href="<%= base_url %><%= format %><%= book.application_id %><%= portable_book %>.<%= format %>"><%= format.toUpperCase() %></a>
+<a href="<%= base_url %><%= format %><%= book.application_id %><%= portable_book %><%= format.toLowerCase() %>"><%= format.toUpperCase() %><%= portable_format %></a>
   </script>
 
   <script type="text/x-template" id="book-content-tmpl">
@@ -46,7 +46,7 @@
   <script type="text/x-template" id="book-modal-tmpl">
     <div id="book-modal" title="<%= book.title %>">
       <div>
-        <img class="img_modal" src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>.jpg" width="120"/>
+        <img class="img_modal" src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" width="120"/>
         <p><span class="attr">Authors:</span> <%= book.authors %></p>
         <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
         <p><span class="attr" title="import metadata directly to calibre">Metadata:</span> <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf">.opf</a></p>

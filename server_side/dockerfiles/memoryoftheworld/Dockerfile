@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:12.10
 
 MAINTAINER Marcell Mars "https://github.com/marcellmars"
 

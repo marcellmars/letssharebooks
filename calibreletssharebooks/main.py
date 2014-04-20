@@ -299,9 +299,9 @@ class LetsShareBooksDialog(QDialog):
         self.setLayout(self.ll)
         self.setWindowIcon(icon)
 
-        self.debug_label = QLabel()
-        self.ll.addWidget(self.debug_label)
-        self.debug_label.show()
+        #self.debug_label = QLabel()
+        #self.ll.addWidget(self.debug_label)
+        #self.debug_label.show()
 
         self.lets_share_button = QPushButton()
         self.lets_share_button.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
@@ -404,8 +404,8 @@ class LetsShareBooksDialog(QDialog):
 
         #- parsing/tee log file -------------------------------------------------------------------
 
-        self.se = open("/tmp/lsb.log", "w+b")
-        #self.se = tempfile.NamedTemporaryFile()
+        #self.se = open("/tmp/lsb.log", "w+b")
+        self.se = tempfile.NamedTemporaryFile()
         self.so = self.se
 
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -424,29 +424,29 @@ class LetsShareBooksDialog(QDialog):
         self.calibre_web_server.setObjectName("calibre_web_server")
         self.calibre_web_server.entered.connect(self.start_calibre_server)
         self.calibre_web_server.entered.connect(lambda: self.render_lsb_button("Stop sharing", self.lsb_url_text))
-        self.calibre_web_server.assignProperty(self.debug_label, 'text', 'Starting Calibre web server...')
+        #self.calibre_web_server.assignProperty(self.debug_label, 'text', 'Starting Calibre web server...')
 
         self.ssh_server = QtCore.QState()
         self.ssh_server.setObjectName("ssh_server")
         self.ssh_server.entered.connect(lambda: self.render_lsb_button("Stop sharing", "Connecting..."))
         self.ssh_server.entered.connect(self.establish_ssh_server)
-        self.ssh_server.assignProperty(self.debug_label, 'text', 'Establishing SSH tunnel...')
+        #self.ssh_server.assignProperty(self.debug_label, 'text', 'Establishing SSH tunnel...')
 
         self.ssh_server_established = QtCore.QState()
         self.ssh_server_established.setObjectName("ssh_server_established")
         self.ssh_server_established.entered.connect(lambda: self.render_lsb_button("Stop sharing", self.lsb_url_text))
         self.ssh_server_established.entered.connect(self.check_connections)
-        self.ssh_server_established.assignProperty(self.debug_label, 'text', 'Established SSH tunnel...')
+        #self.ssh_server_established.assignProperty(self.debug_label, 'text', 'Established SSH tunnel...')
 
         self.url_label_clicked = QtCore.QState()
         self.url_label_clicked.setObjectName("url_label_clicked")
         self.url_label_clicked.entered.connect(lambda: self.open_url(self.lsb_url))
-        self.url_label_clicked.assignProperty(self.debug_label, 'text', 'URL label clicked!')
+        #self.url_label_clicked.assignProperty(self.debug_label, 'text', 'URL label clicked!')
 
         self.about_project_clicked = QtCore.QState()
         self.about_project_clicked.setObjectName("about_project_clicked")
         self.about_project_clicked.entered.connect(lambda: self.open_url("{}://library.{}".format(prefs['server_prefix'], prefs['lsb_server'])))
-        self.about_project_clicked.assignProperty(self.debug_label, 'text', 'about_project_button clicked!')
+        #self.about_project_clicked.assignProperty(self.debug_label, 'text', 'about_project_button clicked!')
 
         self.library_state_changed = QtCore.QState()
         self.library_state_changed.entered.connect(lambda: self.render_library_button("Uploading library metadata...", "Sharing with the others who share their libraries now..."))
@@ -456,7 +456,7 @@ class LetsShareBooksDialog(QDialog):
         self.off = QtCore.QState()
         self.off.setObjectName("off")
         self.off.entered.connect(lambda: self.disconnect_all())
-        self.off.assignProperty(self.debug_label, 'text', 'Start again...')
+        #self.off.assignProperty(self.debug_label, 'text', 'Start again...')
 
         self.on.addTransition(self.lets_share_button.clicked, self.calibre_web_server)
 
@@ -543,16 +543,19 @@ class LetsShareBooksDialog(QDialog):
             try:
                 subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
             except Exception as e:
-                self.debug_label.setText(str(e))
+                pass
+                #self.debug_label.setText(str(e))
         else:
             try:
                 self.ssh_proc.kill()
             except Exception as e:
-                self.debug_label.setText(str(e))
+                pass
+                #self.debug_label.setText(str(e))
         try:
             self.main_gui.content_server.exit()
         except Exception as e:
-            self.debug_label.setText(str(e))
+            pass
+            #self.debug_label.setText(str(e))
 
         self.main_gui.content_server = None
         self.qaction.setIcon(get_icon('images/icon.png'))

@@ -78,21 +78,21 @@ $(document).ready(function () {
     });
     /* remove just the last pair */
     $('.remove').click(function() {
-        if (confirm('?')) {
+        if (confirm('Remove selected pages?')) {
           $.getJSON('del', {left:SEL.left, right:SEL.right}).done(
             function(data) {
                 refresh(0);
             });
-        }
+        };
     });
     /* remove all pages */
     $('.trash').click(function() {
-        if (confirm('?')) {
+        if (confirm('Remove all pages?')) {
           $.getJSON('del', {left:'', right:''}).done(
             function(data) {
                 refresh(0);
             });
-        }
+        };
     });
     /* capture and insert at specific position */
     $('.insert').click(function() {
@@ -100,6 +100,15 @@ $(document).ready(function () {
             function(data) {
                 refresh(0);
         });
+    });
+    /* switch left and right page */
+    $('.switch').click(function() {
+        if (confirm('Switch pages?')) {
+          $.getJSON('conf', {}).done(
+            function(data) {
+                refresh(0);
+            });
+        };
     });
 });
 

@@ -38,6 +38,7 @@ class Application(tornado.web.Application):
             (r'/stat', StatHandler),
             (r'/del', DeleteHandler),
             (r'/ins', InsertHandler),
+            (r'/conf', ConfigHandler),
             ]
         env = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),
@@ -86,6 +87,13 @@ class InsertHandler(tornado.web.RequestHandler):
         left = self.get_argument('left')
         right = self.get_argument('right')
         ret = utils.insert(PICDIR, left, right)
+        self.write(json.dumps(ret))
+
+###############################################################################
+
+class ConfigHandler(tornado.web.RequestHandler):
+    def get(self):
+        ret = utils.switch_pages()
         self.write(json.dumps(ret))
 
 ###############################################################################

@@ -8,8 +8,10 @@ import itertools
 import subprocess
 import multiprocessing
 
+###############################################################################
 
-DEVICES = [x for x in subprocess.check_output(["gphoto2", "--auto-detect"]).split() if "usb" in x]
+DEVICES = [x for x in subprocess.check_output(
+        ["gphoto2", "--auto-detect"]).split() if "usb" in x]
 
 ###############################################################################
 
@@ -31,13 +33,8 @@ def inc(fname):
 
 ###############################################################################
 
-def touch(fname, times=None):
-    with file(fname, 'a'):
-        os.utime(fname, times)
-
 def capture_job(left, right, device, n):
     curdir = os.getcwd()
-    filename = left
     if n == 1:
         time.sleep(0.3)
         filename = right
@@ -54,14 +51,22 @@ def capture_job(left, right, device, n):
     os.rename("{}/capt0000.jpg".format(device), "{}".format(filename))
     print(n, device, "done~")
 
+###############################################################################
+
 def capture(left, right):
     jobs = []
     for n, device in enumerate(DEVICES):
-        capt_job = multiprocessing.Process(target=capture_job, args=(left, right, device, n))
+        capt_job = multiprocessing.Process(target=capture_job,
+                                           args=(left, right, device, n))
         jobs.append(capt_job)
         capt_job.start()
-    [x.join() for x in jobs]
+    [j.join() for j in jobs]
     return True
+
+###############################################################################
+
+def switch_pages():
+    DEVICES.reverse()
 
 ###############################################################################
 
@@ -112,6 +117,4 @@ def rotate(d):
             else:
                 img2 = img.rotate(-90)
             img2.save(d+f)
-
-if __name__=='__main__':
-    rotate('static/img/')
+    

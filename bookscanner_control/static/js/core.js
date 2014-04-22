@@ -17,6 +17,7 @@ var display_image = function(elem, src) {
 var display_pair = function(dirname, left, right) {
     display_image('.image-left', dirname + left);
     display_image('.image-right', dirname + right);
+    $('.page-img').anythingZoomer();
     $('.pages-pair').removeClass('selected');
     var pair_content = window.pages_pair_tmpl({
         'dirname': dirname,

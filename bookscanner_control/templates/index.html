@@ -5,6 +5,7 @@
     <title></title>
     <link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="static/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" type="text/css" href="static/css/anythingzoomer.css" />
     <link rel="stylesheet" type="text/css" href="static/css/core.css" />
   </head>
   <body>
@@ -37,6 +38,7 @@
     <script src="{{ static_url('js/underscore-min.js') }}"></script>
     <script src="{{ static_url('js/jquery-2.0.3.min.js') }}"></script>
     <script src="{{ static_url('js/bootstrap.min.js') }}"></script>
+    <script src="{{ static_url('js/jquery.anythingzoomer.min.js') }}"></script>
     <script src="{{ static_url('js/core.js') }}"></script>
 
     <script type="text/x-template" id="pages-pair-tmpl">
@@ -51,11 +53,15 @@
     </script>
 
     <script type="text/x-template" id="image-pair-tmpl">
-      <div>
-        <img class="page-img img-responsive" alt="" src="<%- src %>" />
+      <div class="page-img">
+        <div class="small">
+          <img src="<%- src %>" class="img-responsive"/>
+        </div>
+        <div class="large">
+          <img src="<%- src %>" />
+        </div>
       </div>
-      
+
     </script>
-    
   </body>
 </html>

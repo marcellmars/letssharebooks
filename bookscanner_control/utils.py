@@ -13,6 +13,9 @@ import multiprocessing
 DEVICES = [x for x in subprocess.check_output(
         ["gphoto2", "--auto-detect"]).split() if "usb" in x]
 
+for device in DEVICES:
+    subprocess.call(["gphoto2", "--port", device, "--set-config",
+                     "capturetarget=card"])
 ###############################################################################
 
 def get_files(d, num=0):
@@ -35,19 +38,23 @@ def inc(fname):
 
 def capture_job(left, right, device, n):
     curdir = os.getcwd()
+    filename = left
+    rotate = "-90"
     if n == 1:
         time.sleep(0.3)
         filename = right
+        rotate = "90"
     print(device, filename)
-    subprocess.call(["gphoto2", "--port", device, "--set-config", "capturetarget=card"])
     try:
         os.mkdir(device)
     except:
         pass
     os.chdir(device)
     #subprocess.call(["gphoto2", "--port", device, "--capture-tethered"])
-    subprocess.call(["gphoto2", "--port", device, "--capture-image-and-download"])
+    subprocess.call(["gphoto2", "--port", device,
+                     "--capture-image-and-download"])
     os.chdir(curdir)
+    subprocess.call(["mogrify", "-rotate", rotate, "{}/capt0000.jpg".format(device)])
     os.rename("{}/capt0000.jpg".format(device), "{}".format(filename))
     print(n, device, "done~")
 
@@ -117,4 +124,4 @@ def rotate(d):
             else:
                 img2 = img.rotate(-90)
             img2.save(d+f)
-    
+

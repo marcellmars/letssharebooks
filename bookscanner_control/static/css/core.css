@@ -1,0 +1,42 @@
+a {
+	  color: #666666;
+	  text-decoration: none;
+}
+
+a:hover, a:active {
+	  color: #666666;
+    text-decoration: none;
+}
+
+.pages-pair:hover {
+    cursor: pointer;
+}
+
+/* .page-img { */
+/*     max-width: 500px; */
+/* } */
+
+/* .image-left img:hover { */
+/*     -webkit-transform: rotate(90deg); */
+/*     -moz-transform: rotate(90deg); */
+/*     -o-transform: rotate(90deg); */
+/*     -ms-transform: rotate(90deg); */
+/*     max-width:900px; */
+/* } */
+
+/* .image-right img:hover { */
+/*     -webkit-transform: rotate(-90deg); */
+/*     -moz-transform: rotate(-90deg) translate(0px, -500px); */
+/*     -o-transform: rotate(-90deg); */
+/*     -ms-transform: rotate(-90deg); */
+/*     max-width:900px; */
+/* } */
+
+.selected a {
+    color: #000000;
+}
+
+.controls {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}

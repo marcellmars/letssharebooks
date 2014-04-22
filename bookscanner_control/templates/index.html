@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" type="text/css" href="static/css/core.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="row controls">
+        <div class="col-md-12">
+          <button type="button" class="insert btn btn-large btn-primary">
+            <span class="glyphicon glyphicon-arrow-down"></span>
+          </button>
+          <button type="button" class="refresh btn btn-large btn-primary">
+            <span class="glyphicon glyphicon-refresh"></span>
+          </button>
+          <button type="button" class="remove btn btn-large btn-warning">
+            <span class="glyphicon glyphicon-remove"></span>
+          </button>
+          <button type="button" class="trash btn btn-large btn-danger">
+            <span class="glyphicon glyphicon-trash"></span>
+          </button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-2 pages"></div>
+        <div class="col-md-5 image-left"></div>
+        <div class="col-md-5 image-right"></div>
+      </div>
+    </div>
+    <script src="{{ static_url('js/underscore-min.js') }}"></script>
+    <script src="{{ static_url('js/jquery-2.0.3.min.js') }}"></script>
+    <script src="{{ static_url('js/bootstrap.min.js') }}"></script>
+    <script src="{{ static_url('js/core.js') }}"></script>
+
+    <script type="text/x-template" id="pages-pair-tmpl">
+      <div class="pages-pair selected row">
+        <div class="col-md-6">
+          <a href="#" class="page-link left" alt="<%- dirname %><%- left %>"><%- left %></a>
+        </div>
+        <div class="col-md-6">
+          <a href="#" class="page-link right" alt="<%- dirname %><%- right %>"><%- right %></a>
+        </div>
+      </div>
+    </script>
+
+    <script type="text/x-template" id="image-pair-tmpl">
+      <div>
+        <img class="page-img img-responsive" alt="" src="<%- src %>" />
+      </div>
+      
+    </script>
+    
+  </body>
+</html>

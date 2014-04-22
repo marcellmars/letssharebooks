@@ -6,9 +6,10 @@ import os
 import time
 import itertools
 import subprocess
+import multiprocessing
 
 
-devices = [x for x in subprocess.check_output(["gphoto2", "--auto-detect"]).split() if "usb" in x]
+DEVICES = [x for x in subprocess.check_output(["gphoto2", "--auto-detect"]).split() if "usb" in x]
 
 ###############################################################################
 
@@ -34,16 +35,32 @@ def touch(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
 
+def capture_job(left, right, device, n):
+    curdir = os.getcwd()
+    filename = left
+    if n == 1:
+        time.sleep(0.3)
+        filename = right
+    print(device, filename)
+    subprocess.call(["gphoto2", "--port", device, "--set-config", "capturetarget=card"])
+    try:
+        os.mkdir(device)
+    except:
+        pass
+    os.chdir(device)
+    #subprocess.call(["gphoto2", "--port", device, "--capture-tethered"])
+    subprocess.call(["gphoto2", "--port", device, "--capture-image-and-download"])
+    os.chdir(curdir)
+    os.rename("{}/capt0000.jpg".format(device), "{}".format(filename))
+    print(n, device, "done~")
+
 def capture(left, right):
-    for n, device in enumerate(devices):
-        print n
-        filename = left
-        if n == 1:
-            filename = right
-        subprocess.call(["gphoto2", "--port", device, "--set-config", "capturetarget=card"])
-        #subprocess.call(["gphoto2", "--port", device, "--capture-image-and-download"])
-        subprocess.call(["gphoto2", "--port", device, "--capture-tethered"])
-        os.rename("capt0000.jpg", "{}".format(filename))
+    jobs = []
+    for n, device in enumerate(DEVICES):
+        capt_job = multiprocessing.Process(target=capture_job, args=(left, right, device, n))
+        jobs.append(capt_job)
+        capt_job.start()
+    [x.join() for x in jobs]
     return True
 
 ###############################################################################

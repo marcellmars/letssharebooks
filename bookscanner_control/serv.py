@@ -44,7 +44,8 @@ class Application(tornado.web.Application):
             static_path=os.path.join(os.path.dirname(__file__), 'static'),
             debug=options.debug,
             xsrf_cookies=True,
-            login_url='/login'
+            login_url='/login',
+            static_handler_class=MyStaticFileHandler,
             )
         tornado.web.Application.__init__(self, handlers, **env)
 
@@ -89,6 +90,13 @@ class InsertHandler(tornado.web.RequestHandler):
 
 ###############################################################################
 
+class MyStaticFileHandler(tornado.web.StaticFileHandler):
+    def set_extra_headers(self, path):
+        # Disable cache
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+
+###############################################################################
+
 def handle_read_callback(notifier):
     """
     Just stop receiving IO read events after the first
@@ -96,7 +104,6 @@ def handle_read_callback(notifier):
     """
     print('handle_read callback')
     notifier.io_loop.stop()
-
 
 ###############################################################################
 if __name__ == '__main__':

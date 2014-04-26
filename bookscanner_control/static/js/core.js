@@ -105,9 +105,26 @@ $(document).ready(function () {
     /* switch left and right page */
     $('.switch').click(function() {
         if (confirm('Switch pages?')) {
-          $.getJSON('conf', {}).done(
+            $.getJSON('conf', {action:'switch'}).done(
             function(data) {
                 refresh(0);
+            });
+        };
+    });
+    /* change book name */
+    $('#bookname').keydown(function(e) {
+        if ( e.which == 13 ) {
+            $.getJSON('conf', {action:'bookname', name:$(this).val()}).done(
+                function(data) {
+                    refresh(0);
+            });
+        };
+    });
+    /* upload to remote server */
+    $('.upload').click(function() {
+        if (confirm('Upload?')) {
+            $.getJSON('conf', {action:'upload', remote:$('#remote').val()}).done(
+            function(data) {
             });
         };
     });

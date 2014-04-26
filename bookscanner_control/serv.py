@@ -11,23 +11,17 @@ import tornado.auth
 import tornado.escape
 import tornado.websocket
 from tornado.options import define, options
-
 import pyinotify
 import os
-import utils
 import simplejson as json
 import subprocess
+import utils
+import settings
 
 ###############################################################################
-
-devices = [x for x in subprocess.check_output(["gphoto2", "--auto-detect"]).split() if "usb" in x]
 
 define('port', default=8000, help='set explicitly port', type=int)
 define('debug', default=True, help='debugging', type=bool)
-
-###############################################################################
-
-PICDIR = 'static/img/'
 
 ###############################################################################
 
@@ -54,15 +48,17 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('index.html')
-
+        self.render('index.html',
+                    book_name=settings.BOOK_NAME,
+                    remote=settings.REMOTE_SERVERS)
+            
 ###############################################################################
 
 class StatHandler(tornado.web.RequestHandler):
     def get(self):
         try:
             num = int(self.get_argument('num'))
-            files = utils.get_files(PICDIR, num)
+            files = utils.get_files(settings.PICDIR, num)
             self.write(json.dumps(files))
         except Exception as e:
             self.write(json.dumps(None))
@@ -77,7 +73,7 @@ class DeleteHandler(tornado.web.RequestHandler):
             os.remove(left)
             os.remove(right)
         except Exception as e:
-            utils.delete_all_files(PICDIR)
+            utils.delete_all_files(settings.PICDIR)
         self.write(json.dumps(True))
 
 ###############################################################################
@@ -86,14 +82,22 @@ class InsertHandler(tornado.web.RequestHandler):
     def get(self):
         left = self.get_argument('left')
         right = self.get_argument('right')
-        ret = utils.insert(PICDIR, left, right)
+        ret = utils.insert(settings.PICDIR, left, right)
         self.write(json.dumps(ret))
 
 ###############################################################################
 
 class ConfigHandler(tornado.web.RequestHandler):
     def get(self):
-        ret = utils.switch_pages()
+        action = self.get_argument('action')
+        if action == 'switch':
+            ret = utils.switch_pages()
+        elif action == 'bookname':
+            name = self.get_argument('name')
+            ret = utils.set_bookname(name)
+        elif action == 'upload':
+            remote = self.get_argument('remote')
+            ret = utils.upload(remote)
         self.write(json.dumps(ret))
 
 ###############################################################################

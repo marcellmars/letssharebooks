@@ -11,7 +11,7 @@
   <body>
     <div class="container">
       <div class="row controls">
-        <div class="col-md-12">
+        <div class="col-md-6">
           <button type="button" class="insert btn btn-large btn-primary">
             <span class="glyphicon glyphicon-arrow-down"></span>
           </button>
@@ -26,6 +26,21 @@
           </button>
           <button type="button" class="trash btn btn-large btn-danger">
             <span class="glyphicon glyphicon-trash"></span>
+          </button>
+        </div>
+        <div class="col-md-2">
+          <input type="text" class="form-control" id="bookname" value="{{book_name}}" />
+        </div>
+        <div class="col-md-3">
+          <select class="form-control" id="remote">
+            {% for i,r in enumerate(remote) %}
+            <option value="{{i}}">{{r}}</option>
+            {% end %}
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="upload btn btn-large btn-primary">
+            <span class="glyphicon glyphicon-upload"></span>
           </button>
         </div>
       </div>

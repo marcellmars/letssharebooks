@@ -7,6 +7,7 @@ import time
 import itertools
 import subprocess
 import multiprocessing
+import settings
 
 ###############################################################################
 
@@ -125,3 +126,13 @@ def rotate(d):
                 img2 = img.rotate(-90)
             img2.save(d+f)
 
+###############################################################################
+
+def set_bookname(name):
+    settings.BOOK_NAME = name
+    return settings.BOOK_NAME
+
+###############################################################################
+
+def upload(remote):
+    return(remote)

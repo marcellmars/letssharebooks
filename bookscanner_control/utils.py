@@ -22,7 +22,7 @@ for device in DEVICES:
 def get_files(d, num=0):
     files = sorted(os.listdir(d))
     ret = { 'dirname': d, 'files': []}
-    if files and len(files)%2 is 0:
+    if files:
         if num*2 > len(files) or num is 0:
             # take all files
             num = len(files)/2

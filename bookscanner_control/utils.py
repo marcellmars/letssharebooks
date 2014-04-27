@@ -110,24 +110,6 @@ def insert(d, left, right):
 
 ###############################################################################
 
-def rotate(d):
-    # mogrify -rotate 90 file.jpg
-    # convert -rotate 90 original_file.jpg new_file.jpg
-    import Image
-    data = get_files(d)
-    for pair in data['files']:
-        for f in pair:
-            img = Image.open(d+f)
-            name, ext = os.path.splitext(f)
-            print(name)
-            if int(name) % 2 == 1:
-                img2 = img.rotate(90)
-            else:
-                img2 = img.rotate(-90)
-            img2.save(d+f)
-
-###############################################################################
-
 def set_bookname(name):
     settings.BOOK_NAME = name
     return settings.BOOK_NAME

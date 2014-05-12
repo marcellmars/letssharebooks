@@ -207,7 +207,7 @@ def get_books(db, page, query={}):
     #print("QUERY:{}".format(q))
     books = db.books.find(q, PUBLIC_BOOK_FIELDS)
     authors = books.distinct('authors')
-    titles = books.distinct('title_sort')
+    titles = books.distinct('title')
     # just for testing...
     #librarians = ['charlie chaplin', 'woody allen']
     librarians = books.distinct('librarian')

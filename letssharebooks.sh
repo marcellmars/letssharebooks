@@ -1,7 +1,7 @@
 #! /bin/sh
 
 echo " Check if you started Calibre's content server:"
-echo " http://localhost:8080 (help: http://bit.ly111IWwt)"
+echo " http://localhost:8080 (help: http://bit.ly/111IWwt)"
 echo " Hang out at https://chat.memoryoftheworld.org"
 echo " Stop sharing books by pressing Ctrl+c"
 

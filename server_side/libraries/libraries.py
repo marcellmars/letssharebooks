@@ -192,7 +192,7 @@ def get_books(db, page, query={}):
     for k,v in query.iteritems():
         if v != '' and k in ['authors', 'titles']:
             q[k] = {"$regex": v, "$options": 'i'}
-        elif v != '' and k == 'librarian':
+        elif v != '' and k is 'librarian':
             q['librarian'] = {"$regex": v, "$options": 'i'}
         elif v != '':
             q = {"$or": [
@@ -205,9 +205,9 @@ def get_books(db, page, query={}):
 
     # get all books that belong to libraries with active tunnel
     #print("QUERY:{}".format(q))
-    books = db.books.find(q, PUBLIC_BOOK_FIELDS)
+    books = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('title_sort')
     authors = books.distinct('authors')
-    titles = books.distinct('title')
+    titles = books.distinct('title_sort')
     # just for testing...
     #librarians = ['charlie chaplin', 'woody allen']
     librarians = books.distinct('librarian')

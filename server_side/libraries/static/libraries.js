@@ -198,6 +198,7 @@ var update_autocomplete = function(data) {
     $.each(data['librarians'], function(index, item) {
         $('#librarian').append('<option value="' + item + '">' + item + '</option>'); 
     });
+    $('#librarian').val(STATE.query.librarian);
 };
 
 /* --------------------------------------------------------------------------*/

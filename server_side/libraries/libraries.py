@@ -192,7 +192,7 @@ def get_books(db, page, query={}):
     for k,v in query.iteritems():
         if v != '' and k in ['authors', 'titles']:
             q[k] = {"$regex": v, "$options": 'i'}
-        elif v != '' and k is 'librarian':
+        elif v != '' and k == 'librarian':
             q['librarian'] = {"$regex": v, "$options": 'i'}
         elif v != '':
             q = {"$or": [

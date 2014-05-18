@@ -1,0 +1,170 @@
+body {
+    background: rgb(255, 255, 255);
+    display: block;
+    width: 960px;
+    margin: 0px auto;
+}
+
+#content {}
+
+img {
+    position: absolute;
+    background: url('images/loading.gif') no repeat;
+    background-position: top center;
+    background-size: cover;
+}
+
+.cover {
+    position:relative;
+    display:inline-block;
+    width:238px;
+    height:360px;
+    overflow:hidden;
+    border-right: 2px solid rgb(224, 224, 224);
+    border-bottom: 4px solid rgb(224, 224, 224);
+    background: rgb(0, 0, 0); /* fallback color */
+    background: rgba(0, 0, 0, 0.9);
+}
+
+h2 {
+    font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
+    //font: bold 16px/22px Helvetica, Sans-Serif; 
+    color: white; 
+    position: absolute; 
+    top: -6px; 
+    left: 0; 
+    width: 100%; 
+    background: rgb(0, 0, 0); /* fallback color */
+    background: rgba(0, 0, 0, 0.9);
+    padding: 2px; 
+}
+
+h2 span {
+    //font: bold 12px/16px Helvetica, Sans-Serif; 
+    font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
+}
+
+.download {
+    position:absolute;
+    bottom:1px;
+    left: 0;
+    //font: bold 14px/20px Helvetica, Sans-Serif;
+    font: bold 16px/22px 'BitstreamVeraSansMono', Consolas, monospace;
+    color:white;
+    background: rgb(0, 0, 0); /* fallback color */
+    background: rgba(0, 0, 0, 0.9);
+    width: 100%;
+}
+
+a {
+    color:white;
+}
+
+#header {
+    margin-bottom: 7px;
+}
+
+#toolbar {
+    margin-bottom: 3px;
+    text-align: center;
+}
+
+#toolbar .pagination {
+    height: 30px;
+}
+
+.button {
+    cursor: pointer;
+    font-family: 'BitstreamVeraSansMono',Consolas,monospace;
+    font-size: 1em;
+    height: 30px;
+    width: 90px;
+}
+
+.active {
+    background-color: #ff0000;
+    color: #ffffff;
+    border: none;
+}
+
+.not-active {
+    background-color: #ffffff;
+    color: #ff0000;
+    border: 1px solid #ff0000;
+}
+
+#toolbar #prev_page {
+    float: left;
+}
+
+#toolbar #next_page {
+    float: right;
+}
+
+#toolbar #page-msg {
+    width: 400px;
+}
+
+#search {
+    height: 28px;
+    width: 90px;
+    float: right;
+}
+
+
+#authors, #titles, #search_all, #librarian {
+    width: 210px;
+    font-size: 1.2em;
+    padding: 3px;
+    border: 1px solid #ff0000;
+    background-color: #ffffff;
+}
+
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba(224, 224, 224, 0.4) 
+                url('images/loading.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+body.loading {
+    overflow: hidden;
+}
+
+body.loading .modal {
+    display: block;
+}
+
+#authorz {
+    //font: bold 12px/16px Helvetica, Sans-Serif; 
+    font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
+}
+
+.more_about {
+    text-decoration: none;
+}
+
+.tooltip {
+    //font: bold 12px/16px Helvetica, Sans-Serif; 
+    font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
+}
+
+#book-modal .attr {
+    color: #ffffff;
+    background-color: #000000;
+}
+
+.img_modal {
+    position: relative;
+    width:180px;
+    float: right;
+    margin: 0px 15px 15px 0px;
+
+}

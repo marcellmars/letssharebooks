@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <title>MEMORY OF THE WORLD</title>
+    <link rel="stylesheet" type="text/css" href="static/style.css" />
+    <link rel="stylesheet" type="text/css" href="static/jquery-ui-1.10.3.custom.min.css" />
+  </head>
+  <body>
+    <div id="header">
+      <div id="toolbar">
+        <input id="prev_page" type="button" value="&lt;&lt;&lt;" class="button not-active" />
+        <input id="next_page" type="button" value="&gt;&gt;&gt;" class="button active" />
+        <input id="page-msg" type="button" class="button active" value="" />
+      </div>
+      <div id="searchbar">
+        <input id="authors" placeholder="authors" />
+        <input id="titles" placeholder="titles" />
+        <input id="search_all" placeholder="search all metadata" />
+        <select id="librarian"></select>
+        <input id="search" type="button" value="SEARCH" class="button active" />
+      </div>
+    </div>
+    <div id="content"></div>
+    <div class="modal"></div>
+    <div class="modal"></div>
+  </body>
+  <script type="text/x-template" id="string-parts-tmpl">
+    <a class="author" data-authors="<%- author_s %>" href="#" title="show only books by <%- author_s %>"><%- author %></a>&nbsp;
+  </script>
+
+  <script type="text/x-template" id="book-parts-tmpl">
+<a href="<%= base_url %><%= format %><%= book.application_id %><%= portable_book %><%= format.toLowerCase() %>"><%= format.toUpperCase() %><%= portable_format %></a>
+  </script>
+
+  <script type="text/x-template" id="book-content-tmpl">
+    <div class="cover">
+      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
+        <img src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" /></a>
+      <h2>
+        <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
+        <br />
+        <%= authors %></h2>
+      <span class="download">Metadata: <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
+    </div>
+  </script>
+
+  <script type="text/x-template" id="book-modal-tmpl">
+    <div id="book-modal" title="<%= book.title %>">
+      <div>
+        <img class="img_modal" src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" width="120"/>
+        <p><span class="attr">Authors:</span> <%= book.authors %></p>
+        <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
+        <p><span class="attr" title="import metadata directly to calibre">Metadata:</span> <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf">.opf</a></p>
+        <p><span class="attr">Download:</span> <%= formats %></p>
+        <p><span class="attr"><%= book.librarian %>:</span> <a href="<%= base_url %>" title="visit librarian" target="_blank"><%= base_url %></a></p>
+        <p><span class="attr">About:</span> <%= book.comments %></p>
+      </div>
+    </div>
+  </script>
+  <script type="application/javascript" src="static/underscore-min.js"></script>
+  <script type="application/javascript" src="static/jquery-1.10.2.min.js"></script>
+  <script type="application/javascript" src="static/jquery-ui-1.10.3.custom.min.js"></script>
+  <script type="application/javascript" src="static/jquery.ba-bbq.min.js"></script>
+  <script type="application/javascript" src="static/json2.js"></script>
+  <script type="application/javascript" src="static/data.js"></script>
+  <script type="application/javascript" src="static/portable.js"></script>
+  <script type="application/javascript" src="static/libraries.js"></script>
+</html>

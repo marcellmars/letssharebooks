@@ -127,7 +127,6 @@ class MetadataLibThread(QThread):
                         if format_field[0] == 'path' and self.path_not_found:
                             file_path = format_field[1].split(os.path.sep)[:-3]
                             file_path.insert(0, '/')
-                            file_path.append('static')
                             self.path_not_found = False
                             self.directory_path = os.path.join(file_path)
                             logger.debug("PATH: {}".format(
@@ -188,18 +187,48 @@ class MetadataLibThread(QThread):
 #- prepare PORTABLE.html for portable library in the root --------------------
 #- directory of current library ----------------------------------------------
 
-            if not self.path_not_found:
-                logging.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
-                    self.us.portable_directory,
-                    'portable')))
-                with open(os.path.join(TEMPDIR, 'library.json'), 'r') as fin:
-                    with open(os.path.join(
-                                self.us.portable_directory,
-                                'portable/data.js'), 'w') as fout:
-                        fout.write('LIBRARY = {};'.format(fin.read()))
+        with open(os.path.join(TEMPDIR, 'portable_library.json'), 'wb') as file:
+            library['library_uuid'] = self.sql_db.library_id
+            library['last_modified'] = str(sorted([book['last_modified']
+                                                    for book in books_metadata])[-1])
+            library['tunnel'] = int(self.port)
+            library['librarian'] = self.librarian
+            library['books'] = {}
+            library['books']['remove'] = []
+            library['books']['add'] = [book for book in books_metadata]
+            json_string = json.dumps(library)
+            file.write(json_string)
+
+        if not self.path_not_found:
+            logging.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
+                self.us.portable_directory,
+                'portable')))
+            with open(os.path.join(TEMPDIR, 'portable_library.json'), 'r') as fin:
+                with open(os.path.join(
+                            self.us.portable_directory,
+                            'portable/data.js'), 'w') as fout:
+                    fout.write('LIBRARY = {};'.format(fin.read()))
+
             try:
-                shutil.copytree(os.path.join(self.us.portable_directory, 'portable'), os.path.join(*self.directory_path))
-                shutil.move(os.path.join(*(self.directory_path + ['static','PORTABLE.html'])), os.path.join(*self.directory_path))
+                shutil.rmtree(os.path.join(*self.directory_path + ['static']))
+                logger.debug("REMOVING PORTABLE DIRECTORY SUCCESS")
+            except Exception as e:
+                logger.debug("REMOVING PORTABLE DIRECTORY FAILS: {}".format(e))
+            try:
+                os.remove(os.path.join(*self.directory_path + ['PORTABLE.html']))
+                logger.debug("REMOVING PORTABLE.html SUCCESS")
+            except Exception as e:
+                logger.debug("REMOVING PORTABLE.html FAILS: {}".format(e))
+
+            try:
+                shutil.copytree(os.path.join(self.us.portable_directory, 'portable'), os.path.join(*self.directory_path + ['static']))
+                logger.debug("COPY/MOVE PORTABLE DIRECTORY SUCCESS")
+            except Exception as e:
+                logger.debug("COPY/MOVE ERROR: {}".format(e))
+
+            try:
+               shutil.move(os.path.join(*(self.directory_path + ['static','PORTABLE.html'])), os.path.join(*self.directory_path))
+               logger.debug("COPY/MOVE PORTABLE.html SUCCESS")
             except Exception as e:
                 logger.debug("COPY/MOVE ERROR: {}".format(e))
 

@@ -35,7 +35,7 @@ $(document).ready(function () {
                 sadd(AUTHORS, author);
             });
             /* add titles */
-            var title = book.title_sort;
+            var title = book.title;
             sadd(TITLES, title);
             /* add librarians */
             var librarian = book.librarian;
@@ -91,7 +91,7 @@ $(document).ready(function () {
         if (q.titles !== '') {
             var regex = new RegExp(q.titles, 'gim');
             books = books.filter(function(book, i) {
-                return regex.test(book.title_sort);
+                return regex.test(book.title);
             });
         }
         if (q.librarian !== '') {

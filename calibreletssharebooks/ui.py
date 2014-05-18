@@ -5,7 +5,7 @@ from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resource
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from PyQt4.Qt import QWidgetAction, QToolButton, QMenu, QObject
 from PyQt4 import QtCore
-import urllib2
+import urllib2, tempfile, os
 
 __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
@@ -16,12 +16,24 @@ if False:
     get_icons = get_resources = None
 
 PLUGIN_ICONS = ['images/icon.png', 'images/icon_connected.png']
-
+PORTABLE_RESOURCES = [
+'portable/jquery-1.10.2.min.js',
+'portable/jquery.ba-bbq.min.js',
+'portable/jquery.mockjax.js',
+'portable/jquery-ui-1.10.3.custom.min.css',
+'portable/jquery-ui-1.10.3.custom.min.js',
+'portable/json2.js',
+'portable/libraries.js',
+'portable/PORTABLE.html',
+'portable/portable.js',
+'portable/style.css',
+'portable/underscore-min.js']
 
 class UnitedStates(QObject):
     library_changed = QtCore.pyqtSignal()
     def __init__(self):
         QObject.__init__(self)
+        self.portable_directory = tempfile.mkdtemp()
         self.plugin_url = "https://github.com/marcellmars/letssharebooks/raw/master/calibreletssharebooks/letssharebooks_calibre.zip"
         self.running_version = ".".join(map(str, lsb.version))
         try:
@@ -45,6 +57,12 @@ class LetsShareBooksUI(InterfaceAction):
         self.qaction.setIcon(get_icon(PLUGIN_ICONS[0]))
         self.old_actions_unique_map = {}
         self.us = UnitedStates()
+
+        res = self.load_resources(PORTABLE_RESOURCES)
+        os.makedirs(os.path.join(self.us.portable_directory, 'portable'))
+        for resource in res.keys():
+            with open(os.path.join(self.us.portable_directory, resource), 'w') as portable:
+                portable.write(res[resource])
 
         self.popup_type = QToolButton.InstantPopup
         base_plugin_object = self.interface_action_base_plugin

@@ -1,5 +1,5 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
-from PyQt4.Qt import QDialog, QHBoxLayout, QPushButton, QTimer, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QListWidget, QLineEdit, QThread, QScrollArea, QGridLayout, QLayout, QString
+from PyQt4.Qt import QDialog, QHBoxLayout, QPushButton, QTimer, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QLineEdit, QThread
 from PyQt4 import QtCore
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
@@ -8,7 +8,7 @@ from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre.library.server import server_config
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
 
-import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, functools
+import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, functools, shutil, inspect
 
 
 __license__   = 'GPL v3'
@@ -46,6 +46,7 @@ logging_handler.setFormatter(formatter)
 logger.addHandler(logging_handler)
 
 logger.disabled = LOGGER_DISABLED
+logger.debug("LOGGING ON")
 
 #-----------------------------------------------------------------------------
 
@@ -64,21 +65,23 @@ if sys.platform == "win32":
             .write(urllib2.urlopen('https://chat.memoryoftheworld.org/plink.exe')\
             .read())
 
-## tempdir should solve problem on few cases where there was no permission to
-## write. only happened on OSX so far
+#------------------------------------------------------------------------------
+#- tempdir should solve problem on few cases where there was no permission ----
+#- to write. only happened on OSX so far --------------------------------------
 TEMPDIR = tempfile.mkdtemp()
 logger.info("TEMPDIR: {}".format(TEMPDIR))
 
-#-----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 #- in Metadatalibthread metadata gets into .json, upload to server and --------
 #- prepare if for portable calibre --------------------------------------------
 
 class MetadataLibThread(QThread):
     uploaded = QtCore.pyqtSignal()
     upload_error = QtCore.pyqtSignal()
-    def __init__(self, librarian):
+    def __init__(self, librarian, us):
         QThread.__init__(self)
         self.librarian = librarian
+        self.us = us
 
     def get_book_metadata(self):
         books_metadata = []
@@ -110,6 +113,7 @@ class MetadataLibThread(QThread):
                 book_metadata['last_modified'] = book_metadata['timestamp']
 
             format_metadata = getattr(book_meta, 'format_metadata')
+            self.path_not_found = True
             formats_metadata = {}
             if format_metadata:
                 for book_format in format_metadata.iteritems():
@@ -119,6 +123,15 @@ class MetadataLibThread(QThread):
                             format_fields[format_field[0]] = str(format_field[1])
                         else:
                             format_fields[format_field[0]] = format_field[1]
+
+                        if format_field[0] == 'path' and self.path_not_found:
+                            file_path = format_field[1].split(os.path.sep)[:-3]
+                            file_path.insert(0, '/')
+                            file_path.append('static')
+                            self.path_not_found = False
+                            self.directory_path = os.path.join(file_path)
+                            logger.debug("PATH: {}".format(
+                                os.path.join(file_path)))
                     formats_metadata[book_format[0]] = format_fields
             book_metadata['format_metadata'] = formats_metadata
             book_metadata['librarian'] = self.librarian
@@ -170,6 +183,28 @@ class MetadataLibThread(QThread):
             zif.write(os.path.join(TEMPDIR, 'library.json'),
                       arcname = 'library.json')
             zif.close()
+
+#-----------------------------------------------------------------------------
+#- prepare PORTABLE.html for portable library in the root --------------------
+#- directory of current library ----------------------------------------------
+
+            if not self.path_not_found:
+                logging.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
+                    self.us.portable_directory,
+                    'portable')))
+                with open(os.path.join(TEMPDIR, 'library.json'), 'r') as fin:
+                    with open(os.path.join(
+                                self.us.portable_directory,
+                                'portable/data.js'), 'w') as fout:
+                        fout.write('LIBRARY = {};'.format(fin.read()))
+            try:
+                shutil.copytree(os.path.join(self.us.portable_directory, 'portable'), os.path.join(*self.directory_path))
+                shutil.move(os.path.join(*(self.directory_path + ['static','PORTABLE.html'])), os.path.join(*self.directory_path))
+            except Exception as e:
+                logger.debug("COPY/MOVE ERROR: {}".format(e))
+
+#-----------------------------------------------------------------------------
+#- prepare library.json and upload it to memoryoftheworld.org app ------------
 
         with open(os.path.join(TEMPDIR, 'library.json.zip'), 'rb') as file:
             try:
@@ -249,6 +284,7 @@ class LetsShareBooksDialog(QDialog):
         self.do_user_config = do_user_config
         self.qaction = qaction
         self.us = us
+        logger.debug('PORTABLE_TEMP_DIRECTORY: {}'.format(self.us.portable_directory))
         self.initial = True
         self.initial_chat = True
         self.no_internet = False
@@ -262,7 +298,7 @@ class LetsShareBooksDialog(QDialog):
         else:
             self.librarian = prefs['librarian']
 
-        self.metadata_thread = MetadataLibThread(self.librarian)
+        self.metadata_thread = MetadataLibThread(self.librarian, self.us)
         self.check_connection = ConnectionCheck()
 
         self.clip = QApplication.clipboard()

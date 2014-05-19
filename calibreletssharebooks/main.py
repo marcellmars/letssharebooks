@@ -8,7 +8,7 @@ from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre.library.server import server_config
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
 
-import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, functools, shutil, inspect
+import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, functools, shutil
 
 
 __license__   = 'GPL v3'
@@ -126,11 +126,14 @@ class MetadataLibThread(QThread):
 
                         if format_field[0] == 'path' and self.path_not_found:
                             file_path = format_field[1].split(os.path.sep)[:-3]
-                            file_path.insert(0, '/')
+                            if sys.platform == "win32":
+                                file_path.insert(1, os.path.sep*2)
+                            else:
+                                file_path.insert(0, '/')
                             self.path_not_found = False
                             self.directory_path = os.path.join(file_path)
-                            logger.debug("PATH: {}".format(
-                                os.path.join(file_path)))
+                            #logger.debug("PATH: {}".format(
+                            #    os.path.join(file_path)))
                     formats_metadata[book_format[0]] = format_fields
             book_metadata['format_metadata'] = formats_metadata
             book_metadata['librarian'] = self.librarian

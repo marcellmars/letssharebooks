@@ -5,7 +5,7 @@ from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resource
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from PyQt4.Qt import QWidgetAction, QToolButton, QMenu, QObject
 from PyQt4 import QtCore
-import urllib2, tempfile, os
+import urllib2, tempfile, os, sys
 
 __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
@@ -14,6 +14,39 @@ __docformat__ = 'restructuredtext en'
 if False:
 
     get_icons = get_resources = None
+
+#- set up logging ------------------------------------------------------------
+#LOGGER_DISABLED = True
+LOGGER_DISABLED = False
+
+import logging
+from logging import handlers
+
+logger = logging.getLogger('letssharebooks.ui')
+#logger.setLevel(logging.CRITICAL)
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter(
+    '%(asctime)s: %(filename)s >> %(levelname)s - %(message)s')
+
+if sys.platform == "win32":
+    logging_handler = handlers.TimedRotatingFileHandler("debug_win.log",
+                                                        when='h',
+                                                        interval=1,
+                                                        backupCount=1)
+else:
+    logging_handler = handlers.TimedRotatingFileHandler("debug.log",
+                                                        when='h',
+                                                        interval=1,
+                                                        backupCount=1)
+
+logging_handler.setFormatter(formatter)
+logger.addHandler(logging_handler)
+
+logger.disabled = LOGGER_DISABLED
+logger.debug("LOGGING ON")
+
+#-----------------------------------------------------------------------------
+
 
 PLUGIN_ICONS = ['images/icon.png', 'images/icon_connected.png']
 PORTABLE_RESOURCES = [
@@ -26,6 +59,7 @@ PORTABLE_RESOURCES = [
 'portable/libraries.js',
 'portable/PORTABLE.html',
 'portable/portable.js',
+'portable/portable_win.js',
 'portable/style.css',
 'portable/underscore-min.js']
 
@@ -61,8 +95,16 @@ class LetsShareBooksUI(InterfaceAction):
         res = self.load_resources(PORTABLE_RESOURCES)
         os.makedirs(os.path.join(self.us.portable_directory, 'portable'))
         for resource in res.keys():
-            with open(os.path.join(self.us.portable_directory, resource), 'w') as portable:
-                portable.write(res[resource])
+            logger.debug("RESOURCE KEY: {}".format(resource))
+            if sys.platform == "win32" and resource == "portable/portable_win.js":
+                logger.debug("WIN_RESOURCE KEY: {}".format(resource))
+                with open(os.path.join(self.us.portable_directory, 'portable/portable.js'), 'w') as portable:
+                    portable.write(res[resource])
+            elif sys.platform == "win32" and resource == "portable/portable.js":
+                logger.debug("IGNORE PORTABLE.JS ON WINDOWS ({})".format(resource))
+            else:
+                with open(os.path.join(self.us.portable_directory, resource), 'w') as portable:
+                    portable.write(res[resource])
 
         self.popup_type = QToolButton.InstantPopup
         base_plugin_object = self.interface_action_base_plugin

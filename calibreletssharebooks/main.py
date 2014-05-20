@@ -522,7 +522,7 @@ class LetsShareBooksDialog(QDialog):
                 'https://raw.github.com/marcellmars/letssharebooks/master/'\
                 'calibreletssharebooks/_version',
                 timeout=3)
-            self.latest_version = r.text[-1]
+            self.latest_version = r.text[:-1]
         except:
             self.latest_version = "0.0.0"
 
@@ -531,7 +531,7 @@ class LetsShareBooksDialog(QDialog):
                 self.us.running_version,
                 self.latest_version))
         self.upgrade_button.setObjectName("url2")
-        self.upgrade_button.setToolTip('Running latest version you'
+        self.upgrade_button.setToolTip('When you run latest version you'
                                        'make developers happy')
         self.upgrade_button.clicked.connect(functools.partial(self.open_url,
                                                               self.plugin_url))

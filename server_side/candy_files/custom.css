@@ -1,0 +1,62 @@
+#candy {
+    background-color: white;
+}
+
+#chat-pane {
+    background-color: #ffffff;
+}
+
+#chat-toolbar, li.role.role-moderator.affiliation-owner, li.context {
+    /* border: 5px solid red; */
+    background-color: #ffffff;
+    display: none;
+}
+
+a.label {
+    background: white;
+}
+
+.label {
+    color: black;
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: none;
+    font-variant: small-caps;
+}
+
+.message-pane-wrapper, div.message-form-wrapper {
+    background-color: white;
+    width: 565px;
+}
+
+.roster-pane {
+    background-color: #ffffff;
+    border: 0px solid black;
+    height: 100%;
+    width: 100px;
+    text-shadow: none;
+}
+
+.user {
+    background-color: #ffffff;
+}
+
+input.submit {
+    display: none;
+}
+
+ul.message-pane li {
+    border: 0px solid red;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+ 
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 2px rgba(0,0,0,0.3); 
+}
+ 
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.3); 
+}

@@ -187,7 +187,7 @@ class MetadataLibThread(QThread):
             zif.close()
 
 #-----------------------------------------------------------------------------
-#- prepare PORTABLE.html for portable library in the root --------------------
+#- prepare BROWSE_LIBRARY.html for portable library in the root --------------------
 #- directory of current library ----------------------------------------------
 
         with open(os.path.join(TEMPDIR, 'portable_library.json'), 'wb') as file:
@@ -218,10 +218,10 @@ class MetadataLibThread(QThread):
             except Exception as e:
                 logger.debug("REMOVING PORTABLE DIRECTORY FAILS: {}".format(e))
             try:
-                os.remove(os.path.join(*self.directory_path + ['PORTABLE.html']))
-                logger.debug("REMOVING PORTABLE.html SUCCESS")
+                os.remove(os.path.join(*self.directory_path + ['BROWSE_LIBRARY.html']))
+                logger.debug("REMOVING BROWSE_LIBRARY.html SUCCESS")
             except Exception as e:
-                logger.debug("REMOVING PORTABLE.html FAILS: {}".format(e))
+                logger.debug("REMOVING BROWSE_LIBRARY.html FAILS: {}".format(e))
 
             try:
                 shutil.copytree(os.path.join(self.us.portable_directory, 'portable'), os.path.join(*self.directory_path + ['static']))
@@ -230,8 +230,8 @@ class MetadataLibThread(QThread):
                 logger.debug("COPY/MOVE ERROR: {}".format(e))
 
             try:
-               shutil.move(os.path.join(*(self.directory_path + ['static','PORTABLE.html'])), os.path.join(*self.directory_path))
-               logger.debug("COPY/MOVE PORTABLE.html SUCCESS")
+               shutil.move(os.path.join(*(self.directory_path + ['static','BROWSE_LIBRARY.html'])), os.path.join(*self.directory_path))
+               logger.debug("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
             except Exception as e:
                 logger.debug("COPY/MOVE ERROR: {}".format(e))
 
@@ -495,7 +495,7 @@ class LetsShareBooksDialog(QDialog):
         from PyQt4 import QtWebKit
         self.webview = QtWebKit.QWebView()
         self.webview.setMaximumWidth(680)
-        self.webview.setMaximumHeight(400)
+        self.webview.setMaximumHeight(320)
         self.webview.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.webview.setUrl(QtCore.QUrl("favicon.html"))
         self.ll.addWidget(self.webview)

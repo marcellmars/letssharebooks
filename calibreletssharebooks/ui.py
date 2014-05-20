@@ -16,8 +16,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-#LOGGER_DISABLED = True
-LOGGER_DISABLED = False
+LOGGER_DISABLED = True
+#LOGGER_DISABLED = False
 
 import logging
 from logging import handlers
@@ -57,7 +57,7 @@ PORTABLE_RESOURCES = [
 'portable/jquery-ui-1.10.3.custom.min.js',
 'portable/json2.js',
 'portable/libraries.js',
-'portable/PORTABLE.html',
+'portable/BROWSE_LIBRARY.html',
 'portable/portable.js',
 'portable/portable_win.js',
 'portable/style.css',

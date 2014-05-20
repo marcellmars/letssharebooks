@@ -19,8 +19,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-#LOGGER_DISABLED = True
-LOGGER_DISABLED = False
+LOGGER_DISABLED = True
+#LOGGER_DISABLED = False
 
 import logging
 from logging import handlers
@@ -466,31 +466,41 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.libranon_container)
         self.ll.addSpacing(10)
 
-        self.about_project_button = QPushButton('Public Library:'
-                                                'http://www.memoryoftheworld.org')
+        self.about_project_button = QPushButton(
+            'Public Library: http://www.memoryoftheworld.org')
         self.about_project_button.setObjectName("url2")
-        self.about_project_button.setToolTip('When everyone is librarian, '
-                                             'library is everywhere.')
+        self.about_project_button.setToolTip(
+            'When everyone is librarian, library is everywhere.')
         self.ll.addWidget(self.about_project_button)
 
-        self.chat_button = QPushButton('Chat room: '
-                                       'https://chat.memoryoftheworld.org')
-        #self.chat_button.hovered.connect(self.setCursorToHand)
+        self.chat_button = QPushButton(
+            'Chat room: https://chat.memoryoftheworld.org')
         self.chat_button.setObjectName("url2")
-        self.chat_button.setToolTip('Meetings every thursday'
-                                    'at 23:59 (central eruopean time)')
+        self.chat_button.setToolTip(
+            'Meetings every thursday at 23:59 (central eruopean time)')
         self.chat_button.clicked.connect(
             functools.partial(self.open_url,
-            "https://chat.memoryoftheworld.org"))
+                              "https://chat.memoryoftheworld.org"))
         self.ll.addWidget(self.chat_button)
+
+#- metadata_thread states should go to state machine --------------------------
+#- let's move it some other time :o) ------------------------------------------
 
         self.metadata_thread.uploaded.connect(
             lambda: self.render_library_button(
-                "{}://library.{}".format(prefs['server_prefix'],
+                "Sharing with the others at: {}://library.{}".format(prefs['server_prefix'],
                                          prefs['lsb_server']),
                 "Building together real-time p2p library infrastructure."))
         self.metadata_thread.uploaded.connect(
             lambda: self.log_message("UPLOADED"))
+        self.metadata_thread.upload_error.connect(
+            lambda: self.render_library_button(
+                'Public Library: http://www.memoryoftheworld.org',
+                'When everyone is librarian, library is everywhere.'))
+        self.metadata_thread.upload_error.connect(
+            lambda: self.log_message("UPLOAD ERROR!"))
+
+#- webkit with chat -----------------------------------------------------------
 
         from PyQt4 import QtWebKit
         self.webview = QtWebKit.QWebView()
@@ -709,8 +719,14 @@ class LetsShareBooksDialog(QDialog):
     def disconnect_all(self):
         #- send gotcha=False to check_connection to exit ----------------------
         self.check_connection.gotcha = False
-        self.check_connection.wait(2000)
-        self.webview.reload()
+        quit_check = self.check_connection.wait(1450)
+        if not quit_check:
+            self.check_connection.quit()
+
+        self.metadata_thread.upload_error.emit()
+        quit_metadata = self.metadata_thread.wait(500)
+        if not quit_metadata:
+            self.metadata_thread.quit()
 
         if sys.platform == "win32":
             try:

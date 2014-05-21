@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import (unicode_literals, division, absolute_import, print_function)
 from PyQt4.Qt import QDialog, QHBoxLayout, QPushButton, QTimer, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QLineEdit, QThread
 from PyQt4 import QtCore
@@ -19,8 +21,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-LOGGER_DISABLED = True
-#LOGGER_DISABLED = False
+#LOGGER_DISABLED = True
+LOGGER_DISABLED = False
 
 import logging
 from logging import handlers
@@ -68,8 +70,48 @@ if sys.platform == "win32":
 #------------------------------------------------------------------------------
 #- tempdir should solve problem on few cases where there was no permission ----
 #- to write. only happened on OSX so far --------------------------------------
+
 TEMPDIR = tempfile.mkdtemp()
 logger.info("TEMPDIR: {}".format(TEMPDIR))
+
+#------------------------------------------------------------------------------
+#- uploader using proxy iterable to file adapter ------------------------------
+#- this is to be able to make progress bar ------------------------------------
+#- should be researched more. seems that it doesn't wait on server ------------
+#- for all the chunks ---------------------------------------------------------
+
+class Uploader(object):
+    def __init__(self, filename, chunksize=4096*2):
+        self.filename = filename
+        self.chunksize = chunksize
+        self.totalsize = os.path.getsize(filename)
+        self.readsofar = 0
+
+    def __iter__(self):
+        with open(self.filename, 'rb') as file:
+            while True:
+                data = file.read(self.chunksize)
+                if not data:
+                    break
+                self.readsofar += len(data)
+                percent = self.readsofar * 100.0 / self.totalsize
+                sys.stderr.write("\r{percent:3.0f}%".format(percent=percent))
+                yield data
+
+    def __len__(self):
+        return self.totalsize
+
+class IterableToFileAdapter(object):
+    def __init__(self, iterable):
+        self.iterator = iter(iterable)
+        self.length = len(iterable)
+
+    def read(self, size=-1): # TBD: add buffer for `len(data) > size` case
+        return next(self.iterator, b'')
+
+    def __len__(self):
+        return self.length
+
 
 #------------------------------------------------------------------------------
 #- in Metadatalibthread metadata gets into .json, upload to server and --------
@@ -186,9 +228,9 @@ class MetadataLibThread(QThread):
                       arcname = 'library.json')
             zif.close()
 
-#-----------------------------------------------------------------------------
-#- prepare BROWSE_LIBRARY.html for portable library in the root --------------------
-#- directory of current library ----------------------------------------------
+        #-----------------------------------------------------------------------------
+        #- prepare BROWSE_LIBRARY.html for portable library in the root --------------------
+        #- directory of current library ----------------------------------------------
 
         with open(os.path.join(TEMPDIR, 'portable_library.json'), 'wb') as file:
             library['library_uuid'] = self.sql_db.library_id
@@ -235,16 +277,19 @@ class MetadataLibThread(QThread):
             except Exception as e:
                 logger.debug("COPY/MOVE ERROR: {}".format(e))
 
-#-----------------------------------------------------------------------------
-#- prepare library.json and upload it to memoryoftheworld.org app ------------
+        #-----------------------------------------------------------------------------
+        #- prepare library.json and upload it to memoryoftheworld.org app ------------
 
         with open(os.path.join(TEMPDIR, 'library.json.zip'), 'rb') as file:
+        #fil = os.path.join(TEMPDIR, 'library.json.zip')
             try:
                 r = requests.post(
                     "{}://library.{}/upload_catalog".format(
                         prefs['server_prefix'],
                         prefs['lsb_server']),
                     files={'uploaded_file': file}, verify=False)
+                    #files={'uploaded_file': IterableToFileAdapter(Uploader(fil, 8192))},
+                    #verify=False)
                 if r.ok:
                     self.uploaded.emit()
                 else:
@@ -296,6 +341,7 @@ class ConnectionCheck(QThread):
                 count += 1
             return
         except Exception as e:
+            logger.debug('LOST_CONNECTION: {}'.format(e))
             self.lost_connection.emit()
             self.gotcha = False
             return
@@ -325,7 +371,10 @@ class LetsShareBooksDialog(QDialog):
         self.url_label_tooltip = '<<<< Be a librarian.'\
                                  'Click on Start sharing button.<<<<'
         self.lsb_url = 'nourl'
-        if prefs['librarian'] == 'l' or prefs['librarian'] == '':
+
+        #- check if librarian wants to save her name --------------------------
+
+        if prefs['librarian'] == '':
             self.librarian = get_libranon()
         else:
             self.librarian = prefs['librarian']
@@ -338,7 +387,7 @@ class LetsShareBooksDialog(QDialog):
         self.pxmp.load('images/icon_connected.png')
         self.icon_connected = QIcon(self.pxmp)
 
-#- main StyleSheet ------------------------------------------------------------
+        #- main StyleSheet ----------------------------------------------------
 
         self.setStyleSheet("""
         QDialog {
@@ -404,7 +453,7 @@ class LetsShareBooksDialog(QDialog):
 
         """)
 
-#- main UI layout -------------------------------------------------------------
+        #- main UI layout -----------------------------------------------------
         self.ll = QVBoxLayout()
 
         self.l = QHBoxLayout()
@@ -483,8 +532,8 @@ class LetsShareBooksDialog(QDialog):
                               "https://chat.memoryoftheworld.org"))
         self.ll.addWidget(self.chat_button)
 
-#- metadata_thread states should go to state machine --------------------------
-#- let's move it some other time :o) ------------------------------------------
+        #- metadata_thread states should go to state machine ------------------
+        #- let's move it some other time :o) ----------------------------------
 
         self.metadata_thread.uploaded.connect(
             lambda: self.render_library_button(
@@ -500,7 +549,7 @@ class LetsShareBooksDialog(QDialog):
         self.metadata_thread.upload_error.connect(
             lambda: self.log_message("UPLOAD ERROR!"))
 
-#- webkit with chat -----------------------------------------------------------
+        #- webkit with chat ---------------------------------------------------
 
         from PyQt4 import QtWebKit
         self.webview = QtWebKit.QWebView()
@@ -510,8 +559,8 @@ class LetsShareBooksDialog(QDialog):
         self.webview.setUrl(QtCore.QUrl("favicon.html"))
         self.ll.addWidget(self.webview)
 
-#- check if there is a new version of plugin and if yes -----------------------
-#- bring upgrade_button -------------------------------------------------------
+        #- check if there is a new version of plugin and if yes ---------------
+        #- bring upgrade_button -----------------------------------------------
 
         self.plugin_url = 'https://github.com/marcellmars/letssharebooks/raw/'\
                           'master/calibreletssharebooks/' \
@@ -531,7 +580,8 @@ class LetsShareBooksDialog(QDialog):
                 self.us.running_version,
                 self.latest_version))
         self.upgrade_button.setObjectName("url2")
-        self.upgrade_button.setToolTip('When you run latest version you'
+        self.upgrade_button.setToolTip(
+            'When you run latest version you'
                                        'make developers happy')
         self.upgrade_button.clicked.connect(functools.partial(self.open_url,
                                                               self.plugin_url))
@@ -543,11 +593,11 @@ class LetsShareBooksDialog(QDialog):
                 self.ll.addSpacing(20)
                 self.ll.addWidget(self.upgrade_button)
 
-#------------------------------------------------------------------------------
+        #----------------------------------------------------------------------
 
         self.resize(self.sizeHint())
 
-#- parsing/tee log file -------------------------------------------------------
+        #- parsing/tee log file -----------------------------------------------
 
         self.se = open(os.path.join(TEMPDIR, "lsb.log"), "w+b")
         #self.se = tempfile.NamedTemporaryFile()
@@ -557,7 +607,7 @@ class LetsShareBooksDialog(QDialog):
         os.dup2(self.so.fileno(), sys.stdout.fileno())
         os.dup2(self.se.fileno(), sys.stderr.fileno())
 
-#- state machine --------------------------------------------------------------
+        #- state machine ------------------------------------------------------
 
         self.machine = QtCore.QStateMachine()
 
@@ -685,7 +735,7 @@ class LetsShareBooksDialog(QDialog):
         self.machine.setInitialState(self.on)
         self.machine.start()
 
-#------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------
 
     def sql_db_changed(self, event, ids):
         #- this could be used for better update on added/removed books --------
@@ -854,10 +904,13 @@ class LetsShareBooksDialog(QDialog):
         self.label.setText(prefs['lsb_server'])
 
     def save_librarian(self):
-        if self.edit.text() != "" and self.edit.text() != "l":
-            prefs['librarian'] = str(self.edit.text())
+        logger.debug('Save librarian: {}'.format(self.edit.text()))
+        if self.edit.text() == u"":
+            prefs['librarian'] = u""
+            self.librarian = get_libranon()
+            self.edit.setText(self.librarian)
         else:
-            prefs['librarian'] = get_libranon()
+            prefs['librarian'] = unicode(self.edit.text(), 'utf-8')
             self.edit.setText(prefs['librarian'])
 
     def open_url(self, url):
@@ -866,9 +919,13 @@ class LetsShareBooksDialog(QDialog):
 
     def chat(self):
         if self.initial_chat:
-            self.webview.load(QtCore.QUrl(
-                "https://chat.memoryoftheworld.org/calibre.html?nick={}".format(
-                    self.librarian.lower().replace(" ", "_"))))
+            url = QtCore.QUrl()
+            url.setUrl(
+                u"https://chat.memoryoftheworld.org/calibre.html")
+            url.addQueryItem(
+               u'nick', self.librarian.lower().replace(' ', '_').encode('utf-8'))
+            logger.debug("url: {}".format(url))
+            self.webview.load(url)
             self.initial_chat = False
 
     def stop_connection(self):

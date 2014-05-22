@@ -752,6 +752,7 @@ class LetsShareBooksDialog(QDialog):
         self.sql_db.add_listener(self.sql_db_changed)
         self.metadata_thread.sql_db = self.sql_db
         self.metadata_thread.port = self.port
+        self.metadata_thread.librarian = unicode(self.edit.text())
         self.metadata_thread.start()
 
     def check_connections(self):
@@ -919,12 +920,15 @@ class LetsShareBooksDialog(QDialog):
 
     def chat(self):
         if self.initial_chat:
+            nickname = QtCore.QString(self.librarian.lower())
+            logger.debug("Librarian xmpp nickname: {}, {}".format(nickname, type(nickname)))
             url = QtCore.QUrl()
-            url.setUrl(
+            url.setEncodedUrl(
                 u"https://chat.memoryoftheworld.org/calibre.html")
-            url.addQueryItem(
-               u'nick', self.librarian.lower().replace(' ', '_').encode('utf-8'))
-            logger.debug("url: {}".format(url))
+            url.addEncodedQueryItem(
+               u'nick', QtCore.QByteArray.toPercentEncoding(QtCore.QString.toUtf8(nickname)))
+            logger.debug("QUrl: {}".format(url))
+
             self.webview.load(url)
             self.initial_chat = False
 

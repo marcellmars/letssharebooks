@@ -25,7 +25,7 @@ CONF = {'/static': {'tools.staticdir.on': True,
                                                       'gif': 'image/gif'
                                                       }},
         '/favicon.ico': {'tools.staticfile.on': True,
-                         'tools.staticfile.filename': 'connected.ico',
+                         'tools.staticfile.filename': os.path.join(CURRENT_DIR, 'connected.ico'),
                          'toole.staticdir.dir': os.path.join(CURRENT_DIR, 'static')
                         }
         }

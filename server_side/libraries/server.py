@@ -23,7 +23,12 @@ CONF = {'/static': {'tools.staticdir.on': True,
                     'tools.staticdir.content_types': {'js': 'application/javascript',
                                                       'css': 'text/css',
                                                       'gif': 'image/gif'
-                                                      }}}
+                                                      }},
+        '/favicon.ico': {'tools.staticfile.on': True,
+                         'tools.staticfile.filename': 'connected.ico',
+                         'toole.staticdir.dir': os.path.join(CURRENT_DIR, 'static')
+                        }
+        }
 
 #------------------------------------------------------------------------------
 # Exposed resources

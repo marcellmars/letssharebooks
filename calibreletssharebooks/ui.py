@@ -61,7 +61,10 @@ PORTABLE_RESOURCES = [
 'portable/portable.js',
 'portable/portable_win.js',
 'portable/style.css',
-'portable/underscore-min.js']
+'portable/underscore-min.js',
+'portable/favicon.html',
+'portable/favicon.svg']
+
 
 class UnitedStates(QObject):
     library_changed = QtCore.pyqtSignal()

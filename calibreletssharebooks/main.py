@@ -21,8 +21,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-LOGGER_DISABLED = True
-#LOGGER_DISABLED = False
+#LOGGER_DISABLED = True
+LOGGER_DISABLED = False
 
 import logging
 from logging import handlers
@@ -556,7 +556,8 @@ class LetsShareBooksDialog(QDialog):
         self.webview.setMaximumWidth(680)
         self.webview.setMaximumHeight(320)
         self.webview.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.webview.setUrl(QtCore.QUrl("favicon.html"))
+        self.webview.load(QtCore.QUrl.fromLocalFile(os.path.join(self.us.portable_directory, "portable/favicon.html")))
+        logger.debug("FAVICON PATH: {}".format(os.path.join(self.us.portable_directory, "portable/favicon.html")))
         self.ll.addWidget(self.webview)
 
         #- check if there is a new version of plugin and if yes ---------------
@@ -809,7 +810,7 @@ class LetsShareBooksDialog(QDialog):
         self.ssh_proc = None
         self.initial = True
         self.initial_chat = True
-        self.webview.setUrl(QtCore.QUrl("favicon.html"))
+        self.webview.load(QtCore.QUrl.fromLocalFile(os.path.join(self.us.portable_directory, "portable/favicon.html")))
 
     def render_library_button(self, button_label, button_tooltip):
         self.about_project_button.setText(button_label)
@@ -844,6 +845,11 @@ class LetsShareBooksDialog(QDialog):
                 '-o', 'UserKnownHostsFile=/dev/null',
                 '-o', 'StrictHostKeyChecking=no',
                 '-o', 'ServerAliveINterval=60',
+                #- when there is a strict firewall here pede.rs will help -----
+                #- because it runs the same ssh tunneling infrastructure ------
+                #- like memoryoftheworld.org but on pede.rs it listens --------
+                #- on port 443 (usually open on firewall because of https) ----
+                #'-o', 'ProxyCommand ssh -W %h:%p tunnel@ssh.pede.rs -p 443',
                 prefs['lsb_server'],
                 '-l', 'tunnel', '-R', '0:localhost:{0}'.format(
                     self.calibre_server_port),

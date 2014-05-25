@@ -577,13 +577,13 @@ class LetsShareBooksDialog(QDialog):
             self.latest_version = "0.0.0"
 
         self.upgrade_button = QPushButton(
-            'Please download and upgrade from {0} to {1} version of plugin.'.format(
-                self.us.running_version,
-                self.latest_version))
+            'Please download and upgrade from {0} to {1} version of plugin.'\
+                .format(
+                    self.us.running_version,
+                    self.latest_version))
         self.upgrade_button.setObjectName("url2")
         self.upgrade_button.setToolTip(
-            'When you run latest version you'
-                                       'make developers happy')
+            'When you run latest version you make developers happy')
         self.upgrade_button.clicked.connect(functools.partial(self.open_url,
                                                               self.plugin_url))
 

@@ -1,7 +1,36 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import (unicode_literals, division, absolute_import, print_function)
-from PyQt4.Qt import QDialog, QHBoxLayout, QPushButton, QTimer, QIcon, QPixmap, QApplication, QSizePolicy, QVBoxLayout, QWidget, QLineEdit, QThread
+
+import os
+import sys
+import subprocess
+import re
+import random
+import urllib2
+import webbrowser
+import tempfile
+import time
+import zipfile
+import json
+import functools
+import shutil
+import SimpleHTTPServer
+import SocketServer
+
+from PyQt4.Qt import QDialog, \
+                     QHBoxLayout, \
+                     QPushButton, \
+                     QTimer, \
+                     QIcon, \
+                     QPixmap, \
+                     QApplication, \
+                     QSizePolicy, \
+                     QVBoxLayout, \
+                     QWidget, \
+                     QLineEdit, \
+                     QThread
+
 from PyQt4 import QtCore
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
@@ -9,8 +38,6 @@ from calibre_plugins.letssharebooks import requests
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre.library.server import server_config
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
-
-import os, sys, subprocess, re, random, urllib2, webbrowser, tempfile, time, zipfile, json, functools, shutil
 
 
 __license__   = 'GPL v3'
@@ -74,6 +101,37 @@ if sys.platform == "win32":
 
 TEMPDIR = tempfile.mkdtemp()
 logger.info("TEMPDIR: {}".format(TEMPDIR))
+
+
+#------------------------------------------------------------------------------
+#- local HTTP daemon waiting for urls from library.memoryoftheworld.org -------
+#- to import the book(s) ------------------------------------------------------
+
+class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def do_OPTIONS(self):
+        self.send_response(200, 'OK')
+        self.send_header('Allow', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Headers', 'X-Requested-With')
+        self.send_header('Content-Length', '0')
+        self.end_headers()
+
+    def do_GET(self):
+        self.send_response(200, 'OK')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.server.html.web_signal.emit(self.path)
+        self.wfile.write('You sent: {}'.format(self.path))
+
+class ThreadedServer(QtCore.QThread):
+    web_signal = QtCore.pyqtSignal(str, name="web_signal")
+    def __init__(self, port):
+        QtCore.QThread.__init__(self)
+        SocketServer.TCPServer.allow_reuse_address = True
+        self.httpd = SocketServer.TCPServer(("", port), HTTPHandler)
+        self.httpd.html = self
+    def run(self):
+        self.httpd.serve_forever()
 
 #------------------------------------------------------------------------------
 #- in Metadatalibthread metadata gets into .json, upload to server and --------
@@ -563,6 +621,11 @@ class LetsShareBooksDialog(QDialog):
             if self.us.running_version == version_list[0]:
                 self.ll.addSpacing(20)
                 self.ll.addWidget(self.upgrade_button)
+
+        #- run local http server for importing books  -------------------------
+        self.import_server = ThreadedServer(56665)
+        self.import_server.httpd.html.web_signal.connect(self.log_message)
+        self.import_server.start()
 
         #----------------------------------------------------------------------
 

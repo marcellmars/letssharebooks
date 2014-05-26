@@ -50,21 +50,22 @@ logger.addHandler(logging_handler)
 logger.disabled = LOGGER_DISABLED
 logger.debug("LOGGING ON")
 
-#-----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 try:
-    ## calibre brings some SSL stuff which conflicts with system OpenSSL
-    ## this gets rid off calibre's default
+    #- calibre brings some SSL stuff which conflicts with system OpenSSL ------
+    #- this gets rid off calibre's default ------------------------------------
     del os.environ['LD_LIBRARY_PATH']
 except:
     pass
 
-#-----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 if sys.platform == "win32":
     if not os.path.isfile("lsbtunnel.exe"):
         open("lsbtunnel.exe", "wb")\
-            .write(urllib2.urlopen('https://chat.memoryoftheworld.org/plink.exe')\
+            .write(urllib2.urlopen(
+                    'https://chat.memoryoftheworld.org/plink.exe')\
             .read())
 
 #------------------------------------------------------------------------------
@@ -73,45 +74,6 @@ if sys.platform == "win32":
 
 TEMPDIR = tempfile.mkdtemp()
 logger.info("TEMPDIR: {}".format(TEMPDIR))
-
-#------------------------------------------------------------------------------
-#- uploader using proxy iterable to file adapter ------------------------------
-#- this is to be able to make progress bar ------------------------------------
-#- should be researched more. seems that it doesn't wait on server ------------
-#- for all the chunks ---------------------------------------------------------
-
-class Uploader(object):
-    def __init__(self, filename, chunksize=4096*2):
-        self.filename = filename
-        self.chunksize = chunksize
-        self.totalsize = os.path.getsize(filename)
-        self.readsofar = 0
-
-    def __iter__(self):
-        with open(self.filename, 'rb') as file:
-            while True:
-                data = file.read(self.chunksize)
-                if not data:
-                    break
-                self.readsofar += len(data)
-                percent = self.readsofar * 100.0 / self.totalsize
-                sys.stderr.write("\r{percent:3.0f}%".format(percent=percent))
-                yield data
-
-    def __len__(self):
-        return self.totalsize
-
-class IterableToFileAdapter(object):
-    def __init__(self, iterable):
-        self.iterator = iter(iterable)
-        self.length = len(iterable)
-
-    def read(self, size=-1): # TBD: add buffer for `len(data) > size` case
-        return next(self.iterator, b'')
-
-    def __len__(self):
-        return self.length
-
 
 #------------------------------------------------------------------------------
 #- in Metadatalibthread metadata gets into .json, upload to server and --------
@@ -137,7 +99,8 @@ class MetadataLibThread(QThread):
                     formats = getattr(book_meta, field)
                     book_metadata[field] = []
                     if formats:
-                        book_metadata[field] = [book_format for book_format in formats]
+                        book_metadata[field] = [book_format
+                                                for book_format in formats]
                 else:
                     book_metadata[field] = getattr(book_meta, field)
 
@@ -174,8 +137,6 @@ class MetadataLibThread(QThread):
                                 file_path.insert(0, '/')
                             self.path_not_found = False
                             self.directory_path = os.path.join(file_path)
-                            #logger.debug("PATH: {}".format(
-                            #    os.path.join(file_path)))
                     formats_metadata[book_format[0]] = format_fields
             book_metadata['format_metadata'] = formats_metadata
             book_metadata['librarian'] = self.librarian
@@ -185,8 +146,9 @@ class MetadataLibThread(QThread):
 
     def get_server_list(self, uuid):
         try:
-            r = requests.get("{}://library.{}/get_catalog".format(prefs['server_prefix'],
-                                                                  prefs['lsb_server']),
+            r = requests.get("{}://library.{}/get_catalog"\
+                                .format(prefs['server_prefix'],
+                                        prefs['lsb_server']),
                              params={'uuid': uuid})
             catalog = r.json()
         except:
@@ -214,8 +176,9 @@ class MetadataLibThread(QThread):
                              'w', mode) as zif:
             with open(os.path.join(TEMPDIR, 'library.json'), 'wb') as file:
                 library['library_uuid'] = self.sql_db.library_id
-                library['last_modified'] = str(sorted([book['last_modified']
-                                                       for book in books_metadata])[-1])
+                library['last_modified'] = str(sorted(
+                                               [book['last_modified']
+                                                for book in books_metadata])[-1])
                 library['tunnel'] = int(self.port)
                 library['librarian'] = self.librarian
                 library['books'] = {}
@@ -228,14 +191,15 @@ class MetadataLibThread(QThread):
                       arcname = 'library.json')
             zif.close()
 
-        #-----------------------------------------------------------------------------
-        #- prepare BROWSE_LIBRARY.html for portable library in the root --------------------
-        #- directory of current library ----------------------------------------------
+        #----------------------------------------------------------------------
+        #- prepare BROWSE_LIBRARY.html for portable library in the root -------
+        #- directory of current library ---------------------------------------
 
         with open(os.path.join(TEMPDIR, 'portable_library.json'), 'wb') as file:
             library['library_uuid'] = self.sql_db.library_id
-            library['last_modified'] = str(sorted([book['last_modified']
-                                                    for book in books_metadata])[-1])
+            library['last_modified'] = str(sorted(
+                                            [book['last_modified']
+                                             for book in books_metadata])[-1])
             library['tunnel'] = int(self.port)
             library['librarian'] = self.librarian
             library['books'] = {}
@@ -260,36 +224,38 @@ class MetadataLibThread(QThread):
             except Exception as e:
                 logger.debug("REMOVING PORTABLE DIRECTORY FAILS: {}".format(e))
             try:
-                os.remove(os.path.join(*self.directory_path + ['BROWSE_LIBRARY.html']))
+                os.remove(os.path.join(*self.directory_path
+                                       + ['BROWSE_LIBRARY.html']))
                 logger.debug("REMOVING BROWSE_LIBRARY.html SUCCESS")
             except Exception as e:
-                logger.debug("REMOVING BROWSE_LIBRARY.html FAILS: {}".format(e))
+                logger.debug("REMOVING BROWSE_LIBRARY.html FAILS:{}".format(e))
 
             try:
-                shutil.copytree(os.path.join(self.us.portable_directory, 'portable'), os.path.join(*self.directory_path + ['static']))
+                shutil.copytree(os.path.join(self.us.portable_directory,
+                                             'portable'),
+                                os.path.join(*self.directory_path + ['static']))
                 logger.debug("COPY/MOVE PORTABLE DIRECTORY SUCCESS")
             except Exception as e:
                 logger.debug("COPY/MOVE ERROR: {}".format(e))
 
             try:
-               shutil.move(os.path.join(*(self.directory_path + ['static','BROWSE_LIBRARY.html'])), os.path.join(*self.directory_path))
+               shutil.move(os.path.join(*(self.directory_path
+                                          + ['static', 'BROWSE_LIBRARY.html'])),
+                           os.path.join(*self.directory_path))
                logger.debug("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
             except Exception as e:
                 logger.debug("COPY/MOVE ERROR: {}".format(e))
 
-        #-----------------------------------------------------------------------------
-        #- prepare library.json and upload it to memoryoftheworld.org app ------------
+        #----------------------------------------------------------------------
+        #- prepare library.json and upload it to memoryoftheworld.org app -----
 
         with open(os.path.join(TEMPDIR, 'library.json.zip'), 'rb') as file:
-        #fil = os.path.join(TEMPDIR, 'library.json.zip')
             try:
                 r = requests.post(
                     "{}://library.{}/upload_catalog".format(
                         prefs['server_prefix'],
                         prefs['lsb_server']),
                     files={'uploaded_file': file}, verify=False)
-                    #files={'uploaded_file': IterableToFileAdapter(Uploader(fil, 8192))},
-                    #verify=False)
                 if r.ok:
                     self.uploaded.emit()
                 else:
@@ -298,9 +264,9 @@ class MetadataLibThread(QThread):
                 self.upload_error.emit()
         return
 
-#-----------------------------------------------------------------------------
-#- in ConnectionCheck it checks both local calibre content server ------------
-#- and the same service at the other end of ssh tunnel -----------------------
+#------------------------------------------------------------------------------
+#- in ConnectionCheck it checks both local calibre content server -------------
+#- and the same service at the other end of ssh tunnel ------------------------
 
 class ConnectionCheck(QThread):
     lost_connection = QtCore.pyqtSignal()
@@ -362,7 +328,8 @@ class LetsShareBooksDialog(QDialog):
         self.do_user_config = do_user_config
         self.qaction = qaction
         self.us = us
-        logger.debug('PORTABLE_TEMP_DIRECTORY: {}'.format(self.us.portable_directory))
+        logger.debug('PORTABLE_TEMP_DIRECTORY: {}'\
+            .format(self.us.portable_directory))
         self.initial = True
         self.initial_chat = True
         self.no_internet = False
@@ -471,7 +438,6 @@ class LetsShareBooksDialog(QDialog):
         self.lets_share_button.setSizePolicy(QSizePolicy.MinimumExpanding,
                                              QSizePolicy.MinimumExpanding)
         self.lets_share_button.setObjectName("share")
-        #self.lets_share_button.clicked.connect(self.lets_share)
 
         self.l.addWidget(self.lets_share_button)
 
@@ -479,7 +445,6 @@ class LetsShareBooksDialog(QDialog):
         self.url_label.setSizePolicy(QSizePolicy.MinimumExpanding,
                                      QSizePolicy.MinimumExpanding)
         self.url_label.setObjectName("url")
-        #self.url_label.clicked.connect(self.open_url)
         self.l.addWidget(self.url_label)
 
         self.arrow_button = QPushButton("_____")
@@ -492,7 +457,6 @@ class LetsShareBooksDialog(QDialog):
         self.libranon_layout = QHBoxLayout()
         self.libranon_layout.setSpacing(0)
         self.libranon_layout.setMargin(0)
-        #self.l.setContentsMargins(0,0,0,0)
         self.libranon_container = QWidget()
         self.libranon_container.setLayout(self.libranon_layout)
 
@@ -501,7 +465,6 @@ class LetsShareBooksDialog(QDialog):
         self.edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.edit.setToolTip("Change your librarian name")
         self.edit.setText(self.librarian)
-        #self.edit.textChanged.connect(self.handle_text_changed)
 
         self.save_libranon = QPushButton("librarian:")
         self.save_libranon.setSizePolicy(QSizePolicy.Maximum,
@@ -537,8 +500,9 @@ class LetsShareBooksDialog(QDialog):
 
         self.metadata_thread.uploaded.connect(
             lambda: self.render_library_button(
-                "Sharing with the others at: {}://library.{}".format(prefs['server_prefix'],
-                                         prefs['lsb_server']),
+                "Sharing with the others at: {}://library.{}".format(
+                                                    prefs['server_prefix'],
+                                                    prefs['lsb_server']),
                 "Building together real-time p2p library infrastructure."))
         self.metadata_thread.uploaded.connect(
             lambda: self.log_message("UPLOADED"))
@@ -555,9 +519,15 @@ class LetsShareBooksDialog(QDialog):
         self.webview = QtWebKit.QWebView()
         self.webview.setMaximumWidth(680)
         self.webview.setMaximumHeight(320)
-        self.webview.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.webview.load(QtCore.QUrl.fromLocalFile(os.path.join(self.us.portable_directory, "portable/favicon.html")))
-        logger.debug("FAVICON PATH: {}".format(os.path.join(self.us.portable_directory, "portable/favicon.html")))
+        self.webview.setSizePolicy(QSizePolicy.Expanding,
+                                   QSizePolicy.Expanding)
+        self.webview.load(QtCore.QUrl.fromLocalFile(
+                            os.path.join(self.us.portable_directory,
+                                         "portable/favicon.html")))
+        logger.debug("FAVICON PATH: {}".format(
+                                            os.path.join(
+                                                self.us.portable_directory,
+                                                "portable/favicon.html")))
         self.ll.addWidget(self.webview)
 
         #- check if there is a new version of plugin and if yes ---------------
@@ -762,7 +732,8 @@ class LetsShareBooksDialog(QDialog):
             self.initial = False
         self.qaction.setIcon(get_icon('images/icon_connected.png'))
         self.check_connection.add_urls([
-            "http://localhost:{}".format(self.calibre_server_port), self.lsb_url])
+            "http://localhost:{}".format(self.calibre_server_port),
+                                         self.lsb_url])
         self.check_connection.gotcha = True
 
         if not self.check_connection.isRunning():
@@ -793,7 +764,8 @@ class LetsShareBooksDialog(QDialog):
         try:
             self.main_gui.content_server.exit()
         except Exception as e:
-            logger.warning("Couldn't kill Calibre web server. dead already?")
+            logger.warning("Couldn't kill Calibre web server. "\
+                           "dead already?: {}".format(e))
 
         self.main_gui.content_server = None
         self.qaction.setIcon(get_icon('images/icon.png'))
@@ -810,7 +782,9 @@ class LetsShareBooksDialog(QDialog):
         self.ssh_proc = None
         self.initial = True
         self.initial_chat = True
-        self.webview.load(QtCore.QUrl.fromLocalFile(os.path.join(self.us.portable_directory, "portable/favicon.html")))
+        self.webview.load(QtCore.QUrl.fromLocalFile(
+                            os.path.join(self.us.portable_directory,
+                                         "portable/favicon.html")))
 
     def render_library_button(self, button_label, button_tooltip):
         self.about_project_button.setText(button_label)
@@ -927,12 +901,16 @@ class LetsShareBooksDialog(QDialog):
     def chat(self):
         if self.initial_chat:
             nickname = QtCore.QString(self.librarian.lower())
-            logger.debug("Librarian xmpp nickname: {}, {}".format(nickname, type(nickname)))
+            logger.debug("Librarian xmpp nickname: {}, {}".format(
+                                                            nickname,
+                                                            type(nickname)))
             url = QtCore.QUrl()
             url.setEncodedUrl(
                 u"https://chat.memoryoftheworld.org/calibre.html")
             url.addEncodedQueryItem(
-               u'nick', QtCore.QByteArray.toPercentEncoding(QtCore.QString.toUtf8(nickname)))
+               u'nick',
+               QtCore.QByteArray.toPercentEncoding(
+                                    QtCore.QString.toUtf8(nickname)))
             logger.debug("QUrl: {}".format(url))
 
             self.webview.load(url)

@@ -550,9 +550,10 @@ class LetsShareBooksDialog(QDialog):
         self.chat_button.setObjectName("url2")
         self.chat_button.setToolTip(
             'Meetings every thursday at 23:59 (central eruopean time)')
-        self.chat_button.clicked.connect(
-            functools.partial(self.open_url,
-                              "https://chat.memoryoftheworld.org"))
+        #self.chat_button.clicked.connect(
+        #    functools.partial(self.open_url,
+        #                      "https://chat.memoryoftheworld.org"))
+        self.chat_button.clicked.connect(self.do_test)
         self.ll.addWidget(self.chat_button)
 
         #- metadata_thread states should go to state machine ------------------
@@ -626,7 +627,7 @@ class LetsShareBooksDialog(QDialog):
 
         #- run local http server for importing books  -------------------------
         self.import_server = ThreadedServer(56665)
-        self.import_server.httpd.html.web_signal.connect(self.log_message)
+        self.import_server.httpd.html.web_signal.connect(self.do_test)
         self.import_server.start()
 
         #----------------------------------------------------------------------
@@ -1007,3 +1008,16 @@ class LetsShareBooksDialog(QDialog):
 
     def closeEvent(self, e):
         self.hide()
+
+    def do_test(self, req):
+        logger.info("HTTP REQUEST: {}".format(req))
+        #import calibre.library.cli as cli
+        from calibre.gui2.ui import get_gui
+        try:
+            del self.sql_db
+        except:
+            pass
+        self.sql_db = get_gui().current_db
+        self.model = get_gui().library_view.model()
+        self.sql_db.import_book_directory("/tmp/book/")
+

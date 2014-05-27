@@ -24,7 +24,8 @@ CONF = {'/static': {'tools.staticdir.on': True,
                                                       'css': 'text/css',
                                                       'gif': 'image/gif'
                                                       }},
-        '/images': {'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'images'),
+        '/images': {'tools.staticdir.on': True,
+                    'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'images'),
                     'tools.staticdir.content_types': {'svg': 'image/svg+xml',
                                                       'png': 'image/png',
                                                       'gif': 'image/gif'

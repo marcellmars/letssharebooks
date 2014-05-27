@@ -981,16 +981,12 @@ class LetsShareBooksDialog(QDialog):
     def chat(self):
         if self.initial_chat:
             nickname = QtCore.QString(self.librarian.lower())
-            logger.debug("Librarian xmpp nickname: {}, {}".format(
-                                                            nickname,
-                                                            type(nickname)))
             url = QtCore.QUrl()
             url.setEncodedUrl(
                 u"https://chat.memoryoftheworld.org/calibre.html")
             url.addEncodedQueryItem(
                u'nick',
-               QtCore.QByteArray.toPercentEncoding(
-                                    QtCore.QString.toUtf8(nickname)))
+               QtCore.QByteArray.toPercentEncoding(nickname.toUtf8()))
             logger.debug("QUrl: {}".format(url))
 
             self.webview.load(url)
@@ -1010,7 +1006,8 @@ class LetsShareBooksDialog(QDialog):
         self.hide()
 
     def do_test(self, req):
-        logger.info("HTTP REQUEST: {}".format(req))
+        #req = QtCore.QByteArray(req)
+        logger.info("HTTP REQUEST: {}".format(QtCore.QByteArray.fromPercentEncoding(req.toUtf8()).data()))
         #import calibre.library.cli as cli
         from calibre.gui2.ui import get_gui
         try:

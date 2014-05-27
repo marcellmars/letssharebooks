@@ -188,6 +188,8 @@ class MetadataLibThread(QThread):
                             format_fields[format_field[0]] = format_field[1]
 
                         if format_field[0] == 'path' and self.path_not_found:
+                            #- this works but get_gui().library_path ----------
+                            #- should be the way to do this -------------------
                             file_path = format_field[1].split(os.path.sep)[:-3]
                             if sys.platform == "win32":
                                 file_path.insert(1, os.path.sep*2)
@@ -771,25 +773,27 @@ class LetsShareBooksDialog(QDialog):
 
     #--------------------------------------------------------------------------
 
-    def sql_db_changed(self, event, ids):
-        #- this could be used for better update on added/removed books --------
-        if not self.metadata_thread.isRunning():
-            self.sync_metadata()
-
     def sync_metadata(self):
-        from calibre.gui2.ui import get_gui
-        try:
-            del self.sql_db
-        except:
-            pass
-        self.sql_db = get_gui().current_db
-        self.sql_db.add_listener(self.sql_db_changed)
         self.metadata_thread.sql_db = self.sql_db
         self.metadata_thread.port = self.port
         self.metadata_thread.librarian = unicode(self.edit.text())
         self.metadata_thread.start()
 
     def check_connections(self):
+        from calibre.gui2.ui import get_gui
+        try:
+            del self.sql_db
+        except:
+            pass
+        self.sql_db = get_gui().current_db
+        self.model = get_gui().library_view.model()
+        #- new_bookdisplay_data signal every book selection in calibre --------
+        #self.model.new_bookdisplay_data.connect(self.edited_item) ------------
+        #----------------------------------------------------------------------
+
+        #- model signals dataChanged for every book being changed -------------
+        #- it passes index(row, 0) & index(row, total columns -1 --------------
+        self.model.dataChanged.connect(self.edited_item)
         if self.initial:
             self.us.library_changed_emit()
             self.initial = False
@@ -801,6 +805,18 @@ class LetsShareBooksDialog(QDialog):
 
         if not self.check_connection.isRunning():
             self.check_connection.start()
+
+    def edited_item(self, i, ii):
+        #- new_bookdisplay_data sends only one argument -----------------------
+        #- where id is id and path i path -------------------------------------
+        #logger.debug("UPDATE ITEM: {}, {}".format(id.id, id.path)) -----------
+        #----------------------------------------------------------------------
+
+        #- this line logs/prints out id of a edited book ----------------------
+        logger.debug("ITEM ID:{} EDITED".format(
+                                            self.model
+                                                .get_book_display_info(i.row())
+                                                .id))
 
     def disconnect_all(self):
         #- send gotcha=False to check_connection to exit ----------------------

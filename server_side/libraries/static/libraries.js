@@ -99,7 +99,7 @@ var render_book = function(i, book) {
         'book_title_stripped': book_title_stripped,
         'authors': authors,
         'formats': formats,
-        'metadata_urls': encodeURIComponent(metadata_urls.join(', '))
+        'metadata_urls': encodeURIComponent(metadata_urls.join(','))
     });
     $('#content').append(book_content);
 };

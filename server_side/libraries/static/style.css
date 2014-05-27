@@ -55,6 +55,13 @@ h2 span {
     background: rgba(0, 0, 0, 0.9);
     width: 100%;
 }
+.lodestone {
+    position:absolute;
+    bottom:1px;
+    right: 24;
+    //font: bold 14px/20px Helvetica, Sans-Serif;
+    font: bold 16px/22px 'BitstreamVeraSansMono', Consolas, monospace;
+}
 
 a {
     color:white;

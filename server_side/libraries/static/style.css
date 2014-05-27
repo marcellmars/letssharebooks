@@ -58,9 +58,7 @@ h2 span {
 .lodestone {
     position:absolute;
     bottom:1px;
-    right: 24;
-    //font: bold 14px/20px Helvetica, Sans-Serif;
-    font: bold 16px/22px 'BitstreamVeraSansMono', Consolas, monospace;
+    right: 0;
 }
 
 a {

@@ -555,6 +555,34 @@ class LetsShareBooksDialog(QDialog):
                     functools.partial(self.open_url,
                                       "https://chat.memoryoftheworld.org"))
         self.ll.addWidget(self.chat_button)
+        self.ll.addSpacing(5)
+
+        #- books line with information about importing books ------------------
+
+        self.books_layout = QHBoxLayout()
+        self.books_layout.setSpacing(0)
+        self.books_layout.setMargin(0)
+        self.books_container = QWidget()
+        self.books_container.setLayout(self.books_layout)
+
+        self.books = QLineEdit()
+        self.books.setObjectName("edit")
+        self.books.setDisabled(True)
+        self.books.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.books.setToolTip("Importing books...")
+        self.books.setText("Foo bar!")
+
+        self.books_label = QPushButton("Books:")
+        self.books_label.setSizePolicy(QSizePolicy.Maximum,
+                                         QSizePolicy.Maximum)
+        self.books_label.setObjectName("share")
+        self.books_label.setToolTip("Books imported from https://library.memoryoftheworld.org")
+        self.books_layout.addWidget(self.books_label)
+        self.books_layout.addWidget(self.books)
+        #self.books_label.clicked.connect(self.go_do_something)
+
+        self.ll.addWidget(self.books_container)
+        self.books_container.hide()
 
         #- metadata_thread states should go to state machine ------------------
         #- let's move it some other time :o) ----------------------------------
@@ -775,25 +803,29 @@ class LetsShareBooksDialog(QDialog):
     #--------------------------------------------------------------------------
 
     def sync_metadata(self):
-        self.metadata_thread.sql_db = self.sql_db
+        from calibre.gui2.ui import get_gui
+        if self.metadata_thread.isRunning():
+            logger.debug("METADATA THREAD IS STILL RUNNING!")
+            quit_metadata = self.metadata_thread.wait(500)
+            if not quit_metadata:
+                self.metadata_thread.quit()
+
+        logger.debug("STARTING METADATA THREAD...")
+        self.metadata_thread.sql_db = get_gui().current_db
         self.metadata_thread.port = self.port
         self.metadata_thread.librarian = unicode(self.edit.text())
         self.metadata_thread.start()
 
     def check_connections(self):
         from calibre.gui2.ui import get_gui
-        try:
-            del self.sql_db
-        except:
-            pass
-        self.sql_db = get_gui().current_db
-        self.model = get_gui().library_view.model()
         #- new_bookdisplay_data signal every book selection in calibre --------
-        #self.model.new_bookdisplay_data.connect(self.edited_item) ------------
+        #get_gui().library_view.model().new_bookdisplay_data\ -----------------
+        #.connect(self.edited_item) -------------------------------------------
         #----------------------------------------------------------------------
 
         #- model signals dataChanged for every book being changed -------------
         #- it passes index(row, 0) & index(row, total columns -1 --------------
+        self.model = get_gui().library_view.model()
         self.model.dataChanged.connect(self.edited_item)
         if self.initial:
             self.us.library_changed_emit()
@@ -1006,6 +1038,7 @@ class LetsShareBooksDialog(QDialog):
         self.hide()
 
     def http_import(self, req):
+        self.books_container.show()
         request_data = QtCore.QByteArray.fromPercentEncoding(req.toUtf8()).data()
         if request_data[:7] != "/?urls=":
             return
@@ -1022,13 +1055,6 @@ class LetsShareBooksDialog(QDialog):
                             metadata_cover,
                             book_formats))
 
-
+    def import_downloaded_book(self, download_dir):
         from calibre.gui2.ui import get_gui
-        try:
-            del self.sql_db
-        except:
-            pass
-        self.sql_db = get_gui().current_db
-        self.model = get_gui().library_view.model()
-        self.sql_db.import_book_directory("/tmp/book/")
-
+        get_gui().current_db.import_book_directory(download_dir)

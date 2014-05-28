@@ -121,7 +121,8 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
         self.server.html.web_signal.emit(self.path)
-        self.wfile.write('You sent: {}'.format(self.path))
+        #title = urllib2.unquote(self.path).decode('utf8').split(',')[0][7:]
+        self.wfile.write('<body onload="window.close();">')
 
 class ThreadedServer(QtCore.QThread):
     web_signal = QtCore.pyqtSignal(str, name="web_signal")

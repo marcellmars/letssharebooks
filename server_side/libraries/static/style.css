@@ -61,6 +61,11 @@ h2 span {
     right: 33px;
 }
 
+.lodestone_modal {
+    position: relative;
+    float: right;
+}
+
 a {
     color:white;
 }
@@ -174,7 +179,11 @@ body.loading .modal {
 
 }
 
-.only_lib {
+.only_lib a {
     color: #ffffff;
     background-color: #000000;
+}
+
+.lodestone_model {
+
 }

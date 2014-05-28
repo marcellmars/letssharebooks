@@ -550,10 +550,9 @@ class LetsShareBooksDialog(QDialog):
         self.chat_button.setObjectName("url2")
         self.chat_button.setToolTip(
             'Meetings every thursday at 23:59 (central eruopean time)')
-        #self.chat_button.clicked.connect(
-        #    functools.partial(self.open_url,
-        #                      "https://chat.memoryoftheworld.org"))
-        self.chat_button.clicked.connect(self.do_test)
+        self.chat_button.clicked.connect(
+                    functools.partial(self.open_url,
+                                      "https://chat.memoryoftheworld.org"))
         self.ll.addWidget(self.chat_button)
 
         #- metadata_thread states should go to state machine ------------------
@@ -627,7 +626,7 @@ class LetsShareBooksDialog(QDialog):
 
         #- run local http server for importing books  -------------------------
         self.import_server = ThreadedServer(56665)
-        self.import_server.httpd.html.web_signal.connect(self.do_test)
+        self.import_server.httpd.html.web_signal.connect(self.http_import)
         self.import_server.start()
 
         #----------------------------------------------------------------------
@@ -1005,7 +1004,7 @@ class LetsShareBooksDialog(QDialog):
     def closeEvent(self, e):
         self.hide()
 
-    def do_test(self, req):
+    def http_import(self, req):
         request_data = QtCore.QByteArray.fromPercentEncoding(req.toUtf8()).data()
         if request_data[:7] != "/?urls=":
             return

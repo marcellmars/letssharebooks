@@ -8,5 +8,5 @@
   <br />
   {{ book.authors }}
 </h2>
-<span class="download">Download: {{ book.formats }} <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" title="import book directly to calibre" target="import"></span><span class="lodestone"><img src="../images/lodestone.png" title="import book directly to calibre"/></a></span>
+<span class="download">Download: {{ book.formats }} <a href="http://127.0.0.1:56665/?urls={{ book.metadata_urls }}" title="import book directly to calibre" target="import"></span><span class="lodestone"><img src="../images/lodestone.png" title="import book directly to calibre"/></a></span>
 {% endblock %}

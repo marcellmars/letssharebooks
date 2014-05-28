@@ -163,6 +163,7 @@ var setup_modal = function () {
                 'book': book,
                 'book_title_stripped': book.title.replace(/\?/g, ''),
                 'formats': formats,
+                'metadata_urls': encodeURIComponent(metadata_urls.join(','))
             });
             var modal = $(modal_html);
             modal.dialog({

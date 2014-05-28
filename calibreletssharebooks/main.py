@@ -1006,9 +1006,23 @@ class LetsShareBooksDialog(QDialog):
         self.hide()
 
     def do_test(self, req):
-        #req = QtCore.QByteArray(req)
-        logger.info("HTTP REQUEST: {}".format(QtCore.QByteArray.fromPercentEncoding(req.toUtf8()).data()))
-        #import calibre.library.cli as cli
+        request_data = QtCore.QByteArray.fromPercentEncoding(req.toUtf8()).data()
+        if request_data[:7] != "/?urls=":
+            return
+        logger.info("HTTP REQUEST: {}".format(request_data))
+        req_seq =  request_data.split(',')
+        title = req_seq[0][7:]
+        metadata_opf = req_seq[1]
+        metadata_cover = req_seq[2]
+        book_formats = [format for format in req_seq[3:]]
+        logger.info("\nTITLE: {};\nMETADATA_OPF: {};" \
+                    "\nMETADATA_COVER: {};\nBOOK_FORMAT(S): {}"\
+                    .format(title,
+                            metadata_opf,
+                            metadata_cover,
+                            book_formats))
+
+
         from calibre.gui2.ui import get_gui
         try:
             del self.sql_db

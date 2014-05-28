@@ -103,10 +103,6 @@ var render_book = function(i, book) {
         'metadata_urls': encodeURIComponent(metadata_urls.join(','))
     });
     $('#content').append(book_content);
-    $('.lodestone').click(function() {
-            $.get('http://127.0.0.1:56665/?urls='+ encodeURIComponent(metadata_urls.join(','))),
-              function(r) { alert(r) };
-              });
 };
 
 /* ----------------------------------------------------------------------------

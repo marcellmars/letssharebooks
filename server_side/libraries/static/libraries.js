@@ -104,7 +104,7 @@ var render_book = function(i, book) {
     });
     $('#content').append(book_content);
     $('.lodestone').click(function() {
-            $.get('http://127.0.0.1:56665/'+ encodeURIComponent(metadata_urls.join(','))),
+            $.get('http://127.0.0.1:56665/?urls='+ encodeURIComponent(metadata_urls.join(','))),
               function(r) { alert(r) };
               });
 };

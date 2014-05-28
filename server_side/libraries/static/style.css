@@ -62,8 +62,9 @@ h2 span {
 }
 
 .lodestone_modal {
-    position: relative;
-    float: right;
+    position: fixed;
+    left: 0;
+    bottom: 0;
 }
 
 a {

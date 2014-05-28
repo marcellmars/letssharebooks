@@ -158,6 +158,16 @@ var setup_modal = function () {
                 });
                 formats = formats + " " + string_parts;
             });
+
+            var metadata_urls = [book_title_stripped, [base_url, '/get/opf/', book.application_id, ' ',
+                          book_title_stripped, '.opf'].join(''),
+                         [base_url, '/get/cover/', book.application_id,
+                          '.jpg'].join('')];
+            $.each(book.formats, function(i, format) {
+                    metadata_urls.push([base_url, '/get/', format,  '/',
+                                  book.application_id, '.', format].join(''));
+                  });
+
             modal_html = book_modal_tmpl({
                 'base_url': base_url,
                 'book': book,

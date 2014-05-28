@@ -62,7 +62,7 @@ h2 span {
 }
 
 .lodestone_modal {
-    position: fixed;
+    position: relative;
     left: 0;
     bottom: 0;
 }
@@ -185,6 +185,3 @@ body.loading .modal {
     background-color: #000000;
 }
 
-.lodestone_model {
-
-}

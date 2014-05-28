@@ -159,6 +159,7 @@ var setup_modal = function () {
                 formats = formats + " " + string_parts;
             });
 
+            var book_title_stripped =  book.title.replace(/\?/g, '');
             var metadata_urls = [book_title_stripped, [base_url, '/get/opf/', book.application_id, ' ',
                           book_title_stripped, '.opf'].join(''),
                          [base_url, '/get/cover/', book.application_id,

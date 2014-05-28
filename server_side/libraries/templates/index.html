@@ -50,8 +50,8 @@
       <img class="img_modal" src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" width="120"/>
       <p><span class="attr">Authors:</span> <%= book.authors %></p>
       <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
-      <p><span class="attr">Download:</span> <%= formats %><a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" title="import book directly to calibre" target="import"><span class="lodestone"><img src="../images/lodestone.png" title="import book directly to calibre"/></a></span></p>
-      <p><span class="attr"><%= book.librarian %>: <a href="<%= base_url %>" title="visit only this library" target="_blank"><%= base_url %></a></span></p>
+      <p><span class="attr">Download:</span> <%= formats %><a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" title="import book directly to calibre" target="import"><span class="lodestone_modal"><img src="../images/lodestone.png" title="import book directly to calibre"/></a></span></p>
+      <p><span class="attr">                                                                                                                      <%= book.librarian %>:</span><a href="<%= base_url %>" title="visit only this library" target="_blank"><%= base_url %></a></p>
       <p><span class="attr">About:</span> <%= book.comments %></p>
     </div>
   </div>

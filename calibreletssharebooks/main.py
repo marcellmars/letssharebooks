@@ -109,9 +109,9 @@ logger.info("TEMPDIR: {}".format(TEMPDIR))
 class Downloader(QThread):
     downloaded_data = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, int)
     finished_file = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
-    def __init__(self, uuid, url, dl_file):
+    def __init__(self, uuid4, url, dl_file):
         QThread.__init__(self)
-        self.uuid = uuid
+        self.uuid4 = uuid4
         self.url = url
         self.dl_file = dl_file
 
@@ -129,10 +129,10 @@ class Downloader(QThread):
                     dl += len(data)
                     f.write(data)
                     if dl%100000 == 0:
-                        self.downloaded_data.emit(self.uuid, self.dl_file, dl)
+                        self.downloaded_data.emit(self.uuid4, self.dl_file, dl)
                     #sys.stdout.write("\rtotal_length: {:>10}, downloaded: {:>10}, to go: {:>7.2f} MB      ".format(total_length, dl, round((total_length - dl)/1000000., 2)))
                     #sys.stdout.flush()
-        self.finished_file.emit(self.uuid, self.dl_file)
+        self.finished_file.emit(self.uuid4, self.dl_file)
         return
 
 
@@ -238,12 +238,12 @@ class MetadataLibThread(QThread):
             books_metadata.append(book_metadata)
         return books_metadata
 
-    def get_server_list(self, uuid):
+    def get_server_list(self, uuid4):
         try:
             r = requests.get("{}://library.{}/get_catalog"\
                                 .format(prefs['server_prefix'],
                                         prefs['lsb_server']),
-                             params={'uuid': uuid})
+                             params={'uuid': uuid4})
             catalog = r.json()
         except:
             catalog = None
@@ -1069,12 +1069,18 @@ class LetsShareBooksDialog(QDialog):
     def log_message(self, state):
         logger.info("STATE: {}".format(state))
 
-    def log_download(self, uuid, dl_file, dl):
+    def log_download(self, uuid4, dl_file, dl):
         logger.info("DOWNLOADING: {} bytes of a {}:{} file."\
-                    .format(dl, uuid, dl_file))
+                    .format(dl, uuid4, dl_file))
 
-    def finished_download(self, uuid, dl_file):
-        logger.info("{}:{} FINISHED".format(uuid, dl_file))
+    def finished_download(self, uuid4, dl_file):
+        logger.info("{}:{} FINISHED".format(str(uuid4), dl_file))
+        book = self.book_imports[uuid4]
+        logger.debug("dl_file: {}; book['files']: {};".format(dl_file, str(book['files'])))
+        book['files'].remove(dl_file)
+        logger.debug("{} has {} files to download".format(book['title'], len(book['files'])))
+        if len(book['files']) == 0:
+            self.import_downloaded_book(book['download_dir'])
 
     def closeEvent(self, e):
         self.hide()
@@ -1095,10 +1101,10 @@ class LetsShareBooksDialog(QDialog):
         book['formats'] = [format for format in req_seq[3:]]
         book['download_dir'] = os.path.join(self.us.portable_directory,
                                             book['uuid'])
+        book['files'] = [os.path.join(book['download_dir'], 'metadata.opf'),
+                         os.path.join(book['download_dir'], 'cover.jpg')]
 
         os.makedirs(os.path.join(self.us.portable_directory, book['uuid']))
-
-        self.book_imports[book['uuid']] = book
 
         self.thread_pool = []
         self.thread_pool.append(Downloader(book['uuid'],
@@ -1109,12 +1115,16 @@ class LetsShareBooksDialog(QDialog):
                                            book['metadata_cover'],
                                            os.path.join(book['download_dir'],
                                                         'cover.jpg')))
+
         for frmt in book['formats']:
+            frmt_dest = os.path.join(book['download_dir'], frmt.split('/')[-1])
+            book['files'].append(frmt_dest)
             self.thread_pool.append(Downloader(book['uuid'],
                                                frmt,
-                                               os.path.join(
-                                                    book['download_dir'],
-                                                    frmt.split('/')[-1])))
+                                               frmt_dest))
+
+        self.book_imports[book['uuid']] = book
+
         for thrd in self.thread_pool:
             thrd.downloaded_data.connect(self.log_download)
             thrd.finished_file.connect(self.finished_download)
@@ -1126,6 +1136,19 @@ class LetsShareBooksDialog(QDialog):
                     "\nMETADATA_COVER: {metadata_cover};\nBOOK_FORMAT(S): {formats}"\
                     .format(**book))
 
+    def fix_metadata_opf(self, download_dir):
+        #- calibre doesn't add reference to cover.jpg in metadata.opf ---------
+        #- when accessed through web content server ---------------------------
+        with open(os.path.join(download_dir, "metadata.opf")) as f:
+            old_text = f.read()
+        with open(os.path.join(download_dir, "metadata.opf"), "w") as f:
+            new_text = old_text.replace('<guide/>',
+                                        '<guide><reference href="cover.jpg"'\
+                                        'title="Cover" type="cover"/></guide>')
+            f.write(new_text)
+
     def import_downloaded_book(self, download_dir):
+        self.fix_metadata_opf(download_dir)
         from calibre.gui2.ui import get_gui
         get_gui().current_db.import_book_directory(download_dir)
+        shutil.rmtree(download_dir)

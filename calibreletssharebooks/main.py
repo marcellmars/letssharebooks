@@ -17,6 +17,7 @@ import functools
 import shutil
 import SimpleHTTPServer
 import SocketServer
+import uuid
 
 from PyQt4.Qt import QDialog, \
                      QHBoxLayout, \
@@ -102,6 +103,38 @@ if sys.platform == "win32":
 TEMPDIR = tempfile.mkdtemp()
 logger.info("TEMPDIR: {}".format(TEMPDIR))
 
+#------------------------------------------------------------------------------
+#- runnable downloader --------------------------------------------------------
+
+class Downloader(QThread):
+    downloaded_data = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, int)
+    finished_file = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    def __init__(self, uuid, url, dl_file):
+        QThread.__init__(self)
+        self.uuid = uuid
+        self.url = url
+        self.dl_file = dl_file
+
+    def run(self):
+        with open(self.dl_file, "wb") as f:
+            response = requests.get(self.url, stream=True)
+            total_length = response.headers.get('content-length')
+
+            if total_length is None: # no content length header
+                f.write(response.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in response.iter_content():
+                    dl += len(data)
+                    f.write(data)
+                    if dl%100000 == 0:
+                        self.downloaded_data.emit(self.uuid, self.dl_file, dl)
+                    #sys.stdout.write("\rtotal_length: {:>10}, downloaded: {:>10}, to go: {:>7.2f} MB      ".format(total_length, dl, round((total_length - dl)/1000000., 2)))
+                    #sys.stdout.flush()
+        self.finished_file.emit(self.uuid, self.dl_file)
+        return
+
 
 #------------------------------------------------------------------------------
 #- local HTTP daemon waiting for urls from library.memoryoftheworld.org -------
@@ -124,10 +157,10 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         #title = urllib2.unquote(self.path).decode('utf8').split(',')[0][7:]
         self.wfile.write('<body onload="window.close();">')
 
-class ThreadedServer(QtCore.QThread):
+class ThreadedServer(QThread):
     web_signal = QtCore.pyqtSignal(str, name="web_signal")
     def __init__(self, port):
-        QtCore.QThread.__init__(self)
+        QThread.__init__(self)
         SocketServer.TCPServer.allow_reuse_address = True
         self.httpd = SocketServer.TCPServer(("", port), HTTPHandler)
         self.httpd.html = self
@@ -391,6 +424,7 @@ class LetsShareBooksDialog(QDialog):
         self.us = us
         logger.debug('PORTABLE_TEMP_DIRECTORY: {}'\
             .format(self.us.portable_directory))
+        self.book_imports = {}
         self.initial = True
         self.initial_chat = True
         self.no_internet = False
@@ -572,7 +606,7 @@ class LetsShareBooksDialog(QDialog):
         self.books.setToolTip("Importing books...")
         self.books.setText("Foo bar!")
 
-        self.books_label = QPushButton("Books:")
+        self.books_label = QPushButton("Downloads:")
         self.books_label.setSizePolicy(QSizePolicy.Maximum,
                                          QSizePolicy.Maximum)
         self.books_label.setObjectName("share")
@@ -827,6 +861,7 @@ class LetsShareBooksDialog(QDialog):
         #- it passes index(row, 0) & index(row, total columns -1 --------------
         self.model = get_gui().library_view.model()
         self.model.dataChanged.connect(self.edited_item)
+
         if self.initial:
             self.us.library_changed_emit()
             self.initial = False
@@ -1034,6 +1069,13 @@ class LetsShareBooksDialog(QDialog):
     def log_message(self, state):
         logger.info("STATE: {}".format(state))
 
+    def log_download(self, uuid, dl_file, dl):
+        logger.info("DOWNLOADING: {} bytes of a {}:{} file."\
+                    .format(dl, uuid, dl_file))
+
+    def finished_download(self, uuid, dl_file):
+        logger.info("{}:{} FINISHED".format(uuid, dl_file))
+
     def closeEvent(self, e):
         self.hide()
 
@@ -1042,18 +1084,47 @@ class LetsShareBooksDialog(QDialog):
         request_data = QtCore.QByteArray.fromPercentEncoding(req.toUtf8()).data()
         if request_data[:7] != "/?urls=":
             return
-        logger.info("HTTP REQUEST: {}".format(request_data))
+
         req_seq =  request_data.split(',')
-        title = req_seq[0][7:]
-        metadata_opf = req_seq[1]
-        metadata_cover = req_seq[2]
-        book_formats = [format for format in req_seq[3:]]
-        logger.info("\nTITLE: {};\nMETADATA_OPF: {};" \
-                    "\nMETADATA_COVER: {};\nBOOK_FORMAT(S): {}"\
-                    .format(title,
-                            metadata_opf,
-                            metadata_cover,
-                            book_formats))
+
+        book = {}
+        book['uuid'] =  str(uuid.uuid4())
+        book['title'] = req_seq[0][7:]
+        book['metadata_opf'] = req_seq[1]
+        book['metadata_cover'] = req_seq[2]
+        book['formats'] = [format for format in req_seq[3:]]
+        book['download_dir'] = os.path.join(self.us.portable_directory,
+                                            book['uuid'])
+
+        os.makedirs(os.path.join(self.us.portable_directory, book['uuid']))
+
+        self.book_imports[book['uuid']] = book
+
+        self.thread_pool = []
+        self.thread_pool.append(Downloader(book['uuid'],
+                                           book['metadata_opf'],
+                                           os.path.join(book['download_dir'],
+                                                        'metadata.opf')))
+        self.thread_pool.append(Downloader(book['uuid'],
+                                           book['metadata_cover'],
+                                           os.path.join(book['download_dir'],
+                                                        'cover.jpg')))
+        for frmt in book['formats']:
+            self.thread_pool.append(Downloader(book['uuid'],
+                                               frmt,
+                                               os.path.join(
+                                                    book['download_dir'],
+                                                    frmt.split('/')[-1])))
+        for thrd in self.thread_pool:
+            thrd.downloaded_data.connect(self.log_download)
+            thrd.finished_file.connect(self.finished_download)
+            thrd.finished.connect(lambda: self.log_message("DOWNLOAD ENDED"))
+            thrd.start()
+
+        # Downloads: _tn_ books in _tn_ files. _tn_ bytes to be downloaded.
+        logger.info("\nTITLE: {title};\nMETADATA_OPF: {metadata_opf};" \
+                    "\nMETADATA_COVER: {metadata_cover};\nBOOK_FORMAT(S): {formats}"\
+                    .format(**book))
 
     def import_downloaded_book(self, download_dir):
         from calibre.gui2.ui import get_gui

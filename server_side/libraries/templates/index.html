@@ -40,21 +40,23 @@
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
       <br />
       <%= authors %></h2>
-    <span class="download">Import link: <a href="http://127.0.0.1:8001/?urls=<%= metadata_urls %>" title="import metadata directly to calibre">▼</a><br />
-      Download: <%= formats %></span>
+    <span class="download">Download: <%= formats %> </span><a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" title="import book directly to calibre" target="import"><span class="lodestone"><img src="../images/lodestone.png" title="import book directly to calibre"/></a></span>
   </div>
 </script>
 
 <script type="text/x-template" id="book-modal-tmpl">
   <div id="book-modal" title="<%= book.title %>">
     <div>
+      <div>
       <img class="img_modal" src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" width="120"/>
+      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" title="import book directly to calibre" target="import"><span class="lodestone_modal"><img src="../images/lodestone_modal.png" title="import book directly to calibre"/></a></span>
+      </div>
+      <p><span class="attr">Title:</span> <%= book.title %></p>
       <p><span class="attr">Authors:</span> <%= book.authors %></p>
       <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
-      <p><span class="attr" title="import metadata directly to calibre">Metadata:</span> <a href="<%= base_url %>/get/opf/<%= book.application_id %> <%= book_title_stripped %>.opf">.opf</a></p>
       <p><span class="attr">Download:</span> <%= formats %></p>
-      <p><span class="attr"><%= book.librarian %>:</span> <a href="<%= base_url %>" title="visit librarian" target="_blank"><%= base_url %></a></p>
-      <p><span class="attr">About:</span> <%= book.comments %></p>
+      <p><span class="attr">About:</span> <%= book.comments %></p></br>
+      <p><a href="<%= base_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
     </div>
   </div>
 </script>

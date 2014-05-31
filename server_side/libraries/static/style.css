@@ -55,6 +55,16 @@ h2 span {
     background: rgba(0, 0, 0, 0.9);
     width: 100%;
 }
+.lodestone {
+    position:absolute;
+    bottom:33px;
+    right: 33px;
+}
+
+.lodestone_modal {
+    position: relative;
+    float: right;
+}
 
 a {
     color:white;
@@ -168,3 +178,9 @@ body.loading .modal {
     margin: 0px 15px 15px 0px;
 
 }
+
+.only_lib a {
+    color: #ffffff;
+    background-color: #000000;
+}
+

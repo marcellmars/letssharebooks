@@ -25,6 +25,7 @@ var state_field_mapping = {
     'librarian': '#librarian'
 };
 
+
 /* ----------------------------------------------------------------------------
  * Browser history stuff
  * ----------------------------------------------------------------------------
@@ -85,7 +86,7 @@ var render_book = function(i, book) {
     var last_comma = authors.lastIndexOf(',');
     authors = authors.substr(0, last_comma) + authors.substr(last_comma + 1) + '</div>';
     var book_title_stripped =  book.title.replace(/\?/g, '');
-    var metadata_urls = [[base_url, '/get/opf/', book.application_id, ' ',
+    var metadata_urls = [book_title_stripped, [base_url, '/get/opf/', book.application_id, ' ',
                           book_title_stripped, '.opf'].join(''),
                          [base_url, '/get/cover/', book.application_id,
                           '.jpg'].join('')];
@@ -99,7 +100,7 @@ var render_book = function(i, book) {
         'book_title_stripped': book_title_stripped,
         'authors': authors,
         'formats': formats,
-        'metadata_urls': encodeURIComponent(metadata_urls.join(', '))
+        'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
     });
     $('#content').append(book_content);
 };
@@ -157,11 +158,23 @@ var setup_modal = function () {
                 });
                 formats = formats + " " + string_parts;
             });
+
+            var book_title_stripped =  book.title.replace(/\?/g, '');
+            var metadata_urls = [book_title_stripped, [base_url, '/get/opf/', book.application_id, ' ',
+                          book_title_stripped, '.opf'].join(''),
+                         [base_url, '/get/cover/', book.application_id,
+                          '.jpg'].join('')];
+            $.each(book.formats, function(i, format) {
+                    metadata_urls.push([base_url, '/get/', format,  '/',
+                                  book.application_id, '.', format].join(''));
+                  });
+
             modal_html = book_modal_tmpl({
                 'base_url': base_url,
                 'book': book,
                 'book_title_stripped': book.title.replace(/\?/g, ''),
                 'formats': formats,
+                'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
             });
             var modal = $(modal_html);
             modal.dialog({

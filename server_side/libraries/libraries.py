@@ -47,7 +47,7 @@ def get_active_tunnels():
     Returns list of active tunnels used by the get_books function
     '''
     # start: for testing purposes
-    return [12345]
+    #return [12345]
     # end
     try:
         return pickle.load(open("/tmp/active_tunnel_ports","rb"))

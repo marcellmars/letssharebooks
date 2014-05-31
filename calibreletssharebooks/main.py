@@ -1094,7 +1094,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.rst = t_length - td_length
 
-        info_text = "{} {} in {} files. {:>7.2f} MB to be downloaded"\
+        info_text = "{} {} in {} files. {:>3.2f} MB to be downloaded"\
                     .format(self.tn_books, book_s, self.tn_files, self.rst/1000000.)
         self.books.setText(info_text)
         logger.info(info_text)
@@ -1187,9 +1187,10 @@ class LetsShareBooksDialog(QDialog):
         uuid5 = str(uuid4)
         self.fix_metadata_opf(download_dir)
         from calibre.gui2.ui import get_gui
-        get_gui().current_db.import_book_directory(download_dir)
+        get_gui().current_db.import_book_directory(download_dir, self.log_message)
         shutil.rmtree(download_dir)
         del self.book_imports[uuid5]
+        self.update_download_state()
 
     def closeEvent(self, e):
         self.hide()

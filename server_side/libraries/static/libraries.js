@@ -298,7 +298,7 @@ var search_query = function () {
  */
 
 var handle_hash_state = function(event) {
-    var deserialized = $.deparam(event.state);
+    var deserialized = $.deparam(event);
     if (deserialized == null) return;
     _.each(state_field_mapping, function(field, property) {
         $(field).val(deserialized[property]);

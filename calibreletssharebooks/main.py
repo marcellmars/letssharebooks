@@ -1120,7 +1120,7 @@ class LetsShareBooksDialog(QDialog):
         if request_data[:7] != "/?urls=":
             return
 
-        req_seq =  request_data.split(',')
+        req_seq =  request_data.split('__,__')
 
         book = {}
         book['uuid'] =  str(uuid.uuid4())

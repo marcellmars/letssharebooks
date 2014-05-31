@@ -265,7 +265,6 @@ var init_toolbar = function () {
     $('#search').click(function() {
         search_query();
     });
-    modify_button('#prev_page', 'not-active');
     $('#authors, #titles, #search_all').bind('keydown',function(e) {
         /* if enter is pressed */
         if(e.which == 13) {
@@ -301,7 +300,9 @@ var search_query = function () {
     q.search_all = $('#search_all').val();
     q.librarian = $('#librarian').val();
     STATE.query = q;
-    STATE.page = 1;
+    if (_.isUndefined(STATE.page)) {
+      STATE.page = 1;
+    }
     render_page();
 };
 

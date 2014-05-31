@@ -355,7 +355,10 @@ var init_page = function () {
     } else {
       render_page();
     }
-    window.onpopstate = handle_hash_state;
+    window.onpopstate = function(e) {
+      var state = window.location.hash.substr(1);
+      handle_hash_state(state);
+    };
 };
 
 /* --------------------------------------------------------------------------*/

@@ -1094,8 +1094,10 @@ class LetsShareBooksDialog(QDialog):
 
         self.rst = t_length - td_length
 
-        logger.info("Downloads: {} {} in {} files. {:>7.2f} MB to be downloaded"\
-                    .format(self.tn_books, book_s, self.tn_files, self.rst/1000000.))
+        info_text = "{} {} in {} files. {:>7.2f} MB to be downloaded"\
+                    .format(self.tn_books, book_s, self.tn_files, self.rst/1000000.)
+        self.books.setText(info_text)
+        logger.info(info_text)
         # Downloads: _tn_ books in _tn_ files. _tn_ bytes to be downloaded.
         #logger.info("DOWNLOADING: {} bytes of a {}:{} file."\
         #            .format(dl, uuid4, dl_file))

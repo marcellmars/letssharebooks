@@ -190,6 +190,7 @@ def get_books(db, page, query={}):
     q['library_uuid'] = {'$in': lib_uuids}
     # extract search parameters
     for k,v in query.iteritems():
+        v = v.encode('utf-8')
         if v != '' and k in ['authors', 'titles']:
             q[k] = {"$regex": v, "$options": 'i'}
         elif v != '' and k == 'librarian':

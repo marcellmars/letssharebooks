@@ -1188,6 +1188,7 @@ class LetsShareBooksDialog(QDialog):
         self.fix_metadata_opf(download_dir)
         from calibre.gui2.ui import get_gui
         get_gui().current_db.import_book_directory(download_dir, self.log_message)
+        get_gui().library_view.model().books_added(1)
         shutil.rmtree(download_dir)
         del self.book_imports[uuid5]
         self.update_download_state()

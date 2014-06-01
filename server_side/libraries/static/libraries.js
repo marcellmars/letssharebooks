@@ -137,6 +137,9 @@ var parse_response = function (data) {
     } else {
         modify_button('#next_page', 'active');
     };
+    if (STATE.page > 1) {
+        modify_button('#prev_page', 'active');
+    };
     $('#content').empty();
     $.each(data['books'], render_book);
     setup_modal();
@@ -216,7 +219,7 @@ var update_autocomplete = function(data) {
                                 minLength:2});
     $('#titles').autocomplete({source: data['titles'],
                                minLength:2});
-    $('#librarian').empty()
+    $('#librarian').empty();
     $('#librarian').append('<option value="">All librarians</option>'); 
     $.each(data['librarians'], function(index, item) {
         $('#librarian').append('<option value="' + item + '">' + item + '</option>'); 
@@ -235,6 +238,9 @@ var next_page = function () {
 /* --------------------------------------------------------------------------*/
 
 var prev_page = function () {
+    if (STATE.page == 1) {
+        return;
+    };
     STATE.page -= 1;
     modify_button('#next_page', 'active');
     $('#next_page').show();
@@ -263,6 +269,7 @@ var init_toolbar = function () {
       location.reload();
     });
     $('#search').click(function() {
+        STATE.page = 1;
         search_query();
     });
     $('#authors, #titles, #search_all').bind('keydown',function(e) {

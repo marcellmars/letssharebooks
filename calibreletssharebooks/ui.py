@@ -84,8 +84,9 @@ class UnitedStates(QObject):
 class LetsShareBooksUI(InterfaceAction):
 
     name = "Let's share books"
-    action_spec = ("Let's share books", None, 'Share your library at http://www.memoryoftheworld.org', None)
+    action_spec = ("Let's share books", 'images/icon.png', 'Share your library at http://www.memoryoftheworld.org', None)
     action_add_menu = True
+    dont_remove_from = frozenset(['toolbar', 'toolbar-device'])
 
     def genesis(self):
         icon_resources = self.load_resources(PLUGIN_ICONS)

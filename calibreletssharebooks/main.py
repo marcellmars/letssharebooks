@@ -117,7 +117,7 @@ class Downloader(QThread):
 
     def run(self):
         with open(self.dl_file, "wb") as f:
-            response = requests.get(self.url, stream=True)
+            response = requests.get(self.url, stream=True, verify=False)
             total_length = response.headers.get('content-length')
 
             if total_length is None: # no content length header
@@ -243,7 +243,7 @@ class MetadataLibThread(QThread):
             r = requests.get("{}://library.{}/get_catalog"\
                                 .format(prefs['server_prefix'],
                                         prefs['lsb_server']),
-                             params={'uuid': uuid4})
+                             params={'uuid': uuid4}, verify=False)
             catalog = r.json()
         except:
             catalog = None

@@ -190,35 +190,31 @@ def get_books(db, page, query={}):
     '''
     # query
     q = {}
+    # extract search parameters
+    for k,v in query.iteritems():
+        if not v:
+            continue
+        v = v.encode('utf-8')
+        match_pattern = {'$regex':'.*{}.*'.format(v), '$options': 'i'}
+        if k in ['authors', 'title', 'librarian']:
+            q[k] = match_pattern
+        else:
+            q = {"$or": [
+                    {"title": match_pattern},
+                    {"authors": match_pattern},
+                    {"comments": match_pattern},
+                    {"tags": match_pattern},
+                    {"publisher": match_pattern},
+                    {"identifiers": match_pattern}]}
     # get all libraries that have active ssh tunnel
     lib_uuids = [i['library_uuid'] for i in db.catalog.find(
             {'tunnel': {'$in': get_active_tunnels()}})]
-    # print("GET_ACTIVE_TUNNELS: {}".format(get_active_tunnels()))
-    # print("LIB_UUIDS:{}".format(lib_uuids))
     q['library_uuid'] = {'$in': lib_uuids}
-    # extract search parameters
-    for k,v in query.iteritems():
-        v = v.encode('utf-8')
-        if v != '' and k in ['authors', 'titles']:
-            q[k] = {"$regex": v, "$options": 'i'}
-        elif v != '' and k == 'librarian':
-            q['librarian'] = {"$regex": v, "$options": 'i'}
-        elif v != '':
-            q = {"$or": [
-                    {"title": {"$regex": ".*{}.*".format(v), "$options": 'i'}},
-                    {"authors":{"$regex":".*{}.*".format(v), "$options": 'i'}},
-                    {"comments":{"$regex":".*{}.*".format(v), "$options": 'i'}},
-                    {"tags":{"$regex":".*{}.*".format(v), "$options": 'i'}},
-                    {"publisher":{"$regex":".*{}.*".format(v), "$options": 'i'}},
-                    {"identifiers":{"$regex":".*{}.*".format(v), "$options": 'i'}}]}
-
     # get all books that belong to libraries with active tunnel
-    #print("QUERY:{}".format(q))
+    #print(">>>>>> QUERY:{}".format(q))
     books = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('title_sort')
     authors = books.distinct('authors')
     titles = books.distinct('title_sort')
-    # just for testing...
-    #librarians = ['charlie chaplin', 'woody allen']
     librarians = books.distinct('librarian')
     # paginate books
     items, next_page, on_page, total = paginate(books, page)

@@ -121,7 +121,6 @@ var render_page = function () {
         data: JSON.stringify(STATE),
         dataType: 'json',
         success: function (data) {
-            console.log(data);
             parse_response(data);
         }
     });
@@ -269,8 +268,7 @@ var init_toolbar = function () {
       location.reload();
     });
     $('#search').click(function() {
-        STATE.page = 1;
-        search_query();
+        search_query(1);
     });
     $('#authors, #titles, #search_all').bind('keydown',function(e) {
         /* if enter is pressed */
@@ -300,13 +298,16 @@ var modify_button = function (button, state) {
 
 /* --------------------------------------------------------------------------*/
 
-var search_query = function () {
+var search_query = function (page) {
     q = {};
     q.authors = $('#authors').val();
     q.title = $('#titles').val();
     q.search_all = $('#search_all').val();
     q.librarian = $('#librarian').val();
     STATE.query = q;
+    if (!_.isUndefined(page)) {
+        STATE.page = page;
+    }
     if (_.isUndefined(STATE.page)) {
       STATE.page = 1;
     }
@@ -339,7 +340,7 @@ var handle_hash_state = function(event) {
 
 var search_author = function (author) {
     $('#authors').val(author);
-    search_query();
+    search_query(1);
 };
 
 /* --------------------------------------------------------------------------*/

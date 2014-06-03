@@ -2,6 +2,10 @@
 # server configuration
 #------------------------------------------------------------------------------
 import os
+import libraries
+
+ENV_NAME = None
+ENV = None
 
 SERVER = {
     'local': {
@@ -38,7 +42,12 @@ SERVER = {
         }
     }
 
-ENV = SERVER['docker']
+def set_env(env):
+    global ENV
+    global ENV_NAME
+    ENV_NAME = env
+    ENV = SERVER[ENV_NAME]
+    libraries.setup_active_tunnels_func()
 
 #------------------------------------------------------------------------------
 # search

@@ -46,13 +46,21 @@ def get_active_tunnels():
     '''
     Returns list of active tunnels used by the get_books function
     '''
-    # start: for testing purposes
-    #return [12345]
-    # end
     try:
         return pickle.load(open("/tmp/active_tunnel_ports","rb"))
     except:
         return []
+
+def get_active_tunnels_mock():
+    '''
+    Mock for local/test purposes
+    '''
+    return [12345]
+
+def setup_active_tunnels_func():
+    global get_active_tunnels
+    if settings.ENV_NAME in ['local', 'test']:
+        get_active_tunnels = get_active_tunnels_mock
 
 #------------------------------------------------------------------------------
 

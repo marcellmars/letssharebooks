@@ -134,7 +134,7 @@ def thread_connect(thread_index):
 #------------------------------------------------------------------------------
 
 def start_app(env):
-    settings.ENV = settings.SERVER[env]
+    settings.set_env(env)
     # tell cherrypy to call "connect" for each thread, when it starts up
     # result is one db connection per thread
     cherrypy.engine.subscribe('start_thread', thread_connect)

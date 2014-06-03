@@ -320,7 +320,7 @@ var search_query = function () {
 
 var handle_hash_state = function(event) {
     var deserialized = $.deparam(event);
-    if (deserialized == null) return;
+    if (_.isEmpty(deserialized)) return;
     if (!_.isUndefined(deserialized.librarian)) {
         $('#librarian').append(['<option value="', deserialized.librarian,
                                 '">', deserialized.librarian,

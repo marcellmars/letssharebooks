@@ -131,6 +131,7 @@ var render_page = function () {
 var parse_response = function (data) {
     update_autocomplete(data);
     update_pagination_info(data['on_page'], data['total']);
+    /* enable/disable pagination */
     if (data['next_page'] === null) {
         modify_button('#next_page', 'not-active');
     } else {
@@ -139,9 +140,14 @@ var parse_response = function (data) {
     if (STATE.page > 1) {
         modify_button('#prev_page', 'active');
     };
+    /* empty main container and render books */
     $('#content').empty();
     $.each(data['books'], render_book);
     setup_modal();
+    /* alert on import click */
+    $('.import').click(function(e) {
+        alert('!');
+    });
 };
 
 /* --------------------------------------------------------------------------*/
@@ -151,7 +157,7 @@ var setup_modal = function () {
         var uuid = $(this).attr('rel');
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
             var formats = '',
-                base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
+            base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
             book.formats.map(function (format) {
                 var string_parts = book_string_parts_tmpl({
                     'base_url': base_url,

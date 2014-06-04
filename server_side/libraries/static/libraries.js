@@ -192,6 +192,9 @@ var setup_modal = function () {
                 minWidth: 500,
                 position: { my: "center top", at: "center top"},
             });
+            $(modal).find('.import').click(function(e) {
+                alert('!');
+            });
             modal.dialog("open");
         });
         e.preventDefault();

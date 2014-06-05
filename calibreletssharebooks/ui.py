@@ -111,6 +111,8 @@ class LetsShareBooksUI(InterfaceAction):
                     portable.write(res[resource])
 
         self.popup_type = QToolButton.InstantPopup
+
+    def initialization_complete(self):
         base_plugin_object = self.interface_action_base_plugin
         do_user_config = base_plugin_object.do_user_config
 
@@ -120,6 +122,13 @@ class LetsShareBooksUI(InterfaceAction):
         a = QWidgetAction(m)
         a.setDefaultWidget(d)
         m.addAction(a)
+
+        self.qaction.setIcon(get_icon(PLUGIN_ICONS[0]))
+
+        for bar in self.gui.bars_manager.bars:
+            w = bar.widgetForAction(self.qaction)
+            if w is not None:
+                w.setPopupMode(QToolButton.InstantPopup)
 
     def library_changed(self, db):
         self.us.library_changed_emit()

@@ -18,6 +18,8 @@ import shutil
 import SimpleHTTPServer
 import SocketServer
 import uuid
+import ssl
+import BaseHTTPServer
 
 from PyQt4.Qt import QDialog, \
                      QHBoxLayout, \
@@ -120,7 +122,7 @@ class Downloader(QThread):
             response = requests.get(self.url, stream=True, verify=False)
             total_length = response.headers.get('content-length')
 
-            if total_length is None: # no content length header
+            if total_length is None:
                 f.write(response.content)
             else:
                 dl = 0
@@ -130,8 +132,6 @@ class Downloader(QThread):
                     f.write(data)
                     if dl%100000 == 0:
                         self.downloaded_data.emit(self.uuid4, self.dl_file, dl, total_length)
-                    #sys.stdout.write("\rtotal_length: {:>10}, downloaded: {:>10}, to go: {:>7.2f} MB      ".format(total_length, dl, round((total_length - dl)/1000000., 2)))
-                    #sys.stdout.flush()
         self.finished_file.emit(self.uuid4, self.dl_file)
         return
 
@@ -154,7 +154,6 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
         self.server.html.web_signal.emit(self.path)
-        #title = urllib2.unquote(self.path).decode('utf8').split(',')[0][7:]
         self.wfile.write('<body onload="window.close();">')
 
 class ThreadedServer(QThread):
@@ -162,8 +161,16 @@ class ThreadedServer(QThread):
     def __init__(self, port):
         QThread.__init__(self)
         SocketServer.TCPServer.allow_reuse_address = True
-        self.httpd = SocketServer.TCPServer(("", port), HTTPHandler)
+        self.httpd = BaseHTTPServer.HTTPServer(("", port), HTTPHandler)
         self.httpd.html = self
+
+        #- self.httpd.socket  will make this http server ----------------------
+        # running through https -----------------------------------------------
+        #self.httpd.socket = ssl.wrap_socket(self.httpd.socket,
+        #                                    keyfile='localmemory.key',
+        #                                    certfile='localmemory.crt',
+        #                                    server_side=True)
+
     def run(self):
         self.httpd.serve_forever()
 
@@ -1057,7 +1064,7 @@ class LetsShareBooksDialog(QDialog):
                QtCore.QByteArray.toPercentEncoding(nickname.toUtf8()))
             logger.debug("QUrl: {}".format(url))
 
-            self.webview.load(url)
+            self.webview.page().mainFrame().load(url)
             self.initial_chat = False
 
     def stop_connection(self):

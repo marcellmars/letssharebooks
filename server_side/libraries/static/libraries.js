@@ -146,7 +146,7 @@ var parse_response = function (data) {
     setup_modal();
     /* alert on import click */
     $('.import').click(function(e) {
-        alert("Check [let's share books] plugin in your Calibre for downloads...');
+        alert("Check [let's share books] plugin in your Calibre for downloads...");
     });
 };
 

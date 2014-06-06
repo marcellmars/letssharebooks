@@ -32,7 +32,10 @@ from PyQt4.Qt import QDialog, \
                      QVBoxLayout, \
                      QWidget, \
                      QLineEdit, \
-                     QThread
+                     QThread, \
+                     QSslConfiguration, \
+                     QSslCertificate, \
+                     QFile
 
 from PyQt4 import QtCore
 from calibre_plugins.letssharebooks.common_utils import get_icon
@@ -655,6 +658,17 @@ class LetsShareBooksDialog(QDialog):
         self.webview.load(QtCore.QUrl.fromLocalFile(
                             os.path.join(self.us.portable_directory,
                                          "portable/favicon.html")))
+        self.connect (self.webview.page().networkAccessManager(),
+              QtCore.SIGNAL("sslErrors (QNetworkReply *, \
+                                        const QList<QSslError> &)"),
+              self.sslErrorHandler)
+
+        config = QSslConfiguration.defaultConfiguration()
+        certs=config.caCertificates()
+
+        certs.append(QSslCertificate(QFile("portable/ca-bundle.crt")))
+        config.setCaCertificates(certs)
+
         logger.debug("FAVICON PATH: {}".format(
                                             os.path.join(
                                                 self.us.portable_directory,
@@ -1199,6 +1213,11 @@ class LetsShareBooksDialog(QDialog):
         shutil.rmtree(download_dir)
         del self.book_imports[uuid5]
         self.update_download_state()
+
+    def sslErrorHandler(self, reply, errorList):
+            reply.ignoreSslErrors()
+            logger.debug("SSL ERRORS: {}".format(errorList))
+            return
 
     def closeEvent(self, e):
         self.hide()

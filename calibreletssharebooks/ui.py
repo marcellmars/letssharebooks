@@ -63,6 +63,7 @@ PORTABLE_RESOURCES = [
 'portable/style.css',
 'portable/underscore-min.js',
 'portable/favicon.html',
+'portable/ca-bundle.crt',
 'portable/favicon.svg']
 
 

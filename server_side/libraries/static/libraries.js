@@ -49,7 +49,9 @@ var push_to_history = function() {
 var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim()),
     book_string_parts_tmpl = _.template($('#book-parts-tmpl').text().trim()),
     book_content_tmpl = _.template($('#book-content-tmpl').text().trim()),
-    book_modal_tmpl = _.template($('#book-modal-tmpl').text().trim());
+    book_modal_tmpl = _.template($('#book-modal-tmpl').text().trim()),
+    import_modal_tmpl = _.template($('#import-modal-tmpl').text().trim());
+
 
 /* ----------------------------------------------------------------------------
  * Renders single book
@@ -146,7 +148,15 @@ var parse_response = function (data) {
     setup_modal();
     /* alert on import click */
     $('.import').click(function(e) {
-        alert("Check [let's share books] plugin in your Calibre for downloads...");
+        var modal = $(import_modal_tmpl({}));
+        modal.dialog({
+            autoOpen: false,
+            modal: true,
+            minHeight: 300,
+            minWidth: 500,
+            position: { my: "center top", at: "center top"},
+        });
+        modal.dialog("open");
     });
 };
 

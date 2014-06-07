@@ -1196,6 +1196,10 @@ class LetsShareBooksDialog(QDialog):
     def fix_metadata_opf(self, download_dir):
         #- calibre doesn't add reference to cover.jpg in metadata.opf ---------
         #- when accessed through web content server ---------------------------
+        logger.debug("SIZE OF METADATA.OPF: {}".format(
+            os.stat(os.path.join(download_dir, "metadata.opf")).st_size))
+        if os.stat(os.path.join(download_dir, "metadata.opf")).st_size < 200:
+            return False
         with open(os.path.join(download_dir, "metadata.opf")) as f:
             old_text = f.read()
         with open(os.path.join(download_dir, "metadata.opf"), "w") as f:
@@ -1203,13 +1207,14 @@ class LetsShareBooksDialog(QDialog):
                                         '<guide><reference href="cover.jpg" '\
                                         'title="Cover" type="cover"/></guide>')
             f.write(new_text)
+        return True
 
     def import_downloaded_book(self, download_dir, uuid4):
         uuid5 = str(uuid4)
-        self.fix_metadata_opf(download_dir)
-        from calibre.gui2.ui import get_gui
-        get_gui().current_db.import_book_directory(download_dir, self.log_message)
-        get_gui().library_view.model().books_added(1)
+        if self.fix_metadata_opf(download_dir):
+            from calibre.gui2.ui import get_gui
+            get_gui().current_db.import_book_directory(download_dir, self.log_message)
+            get_gui().library_view.model().books_added(1)
         shutil.rmtree(download_dir)
         del self.book_imports[uuid5]
         self.update_download_state()

@@ -148,19 +148,24 @@ var parse_response = function (data) {
     setup_modal();
     /* alert on import click */
     $('.import').click(function(e) {
-        var modal = $(import_modal_tmpl({}));
-        modal.dialog({
-            autoOpen: false,
-            modal: true,
-            minHeight: 300,
-            minWidth: 500,
-            position: { my: "center top", at: "center top"},
-        });
-        modal.dialog("open");
+        open_import_modal();
     });
 };
 
 /* --------------------------------------------------------------------------*/
+
+var open_import_modal = function() {
+    var modal = $(import_modal_tmpl({}));
+    modal.dialog({
+        autoOpen: false,
+        modal: true,
+        minHeight: 300,
+        minWidth: 500,
+        position: { my: "center top", at: "center top"},
+        closeOnEscape: true
+    });
+    modal.dialog("open");
+};
 
 var setup_modal = function () {
     $('.more_about').click(function(e) {
@@ -201,9 +206,10 @@ var setup_modal = function () {
                 minHeight: 300,
                 minWidth: 500,
                 position: { my: "center top", at: "center top"},
+                closeOnEscape: true
             });
             $(modal).find('.import').click(function(e) {
-                alert('!');
+                open_import_modal();
             });
             modal.dialog("open");
         });

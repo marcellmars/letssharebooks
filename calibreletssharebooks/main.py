@@ -100,6 +100,7 @@ class Downloader(QThread):
         self.uuid4 = uuid4
         self.url = url
         self.dl_file = dl_file
+        self.download_pass = True
 
     def run(self):
         with open(self.dl_file, "wb") as f:
@@ -112,10 +113,11 @@ class Downloader(QThread):
                 dl = 0
                 total_length = int(total_length)
                 for data in response.iter_content():
-                    dl += len(data)
-                    f.write(data)
-                    if dl%100000 == 0:
-                        self.downloaded_data.emit(self.uuid4, self.dl_file, dl, total_length)
+                    if self.download_pass:
+                        dl += len(data)
+                        f.write(data)
+                        if dl%100000 == 0:
+                            self.downloaded_data.emit(self.uuid4, self.dl_file, dl, total_length)
         self.finished_file.emit(self.uuid4, self.dl_file)
         return
 
@@ -1098,6 +1100,21 @@ class LetsShareBooksDialog(QDialog):
         for uid in self.book_imports.keys():
             self.tn_files += len(self.book_imports[uid]['files'])
 
+            t_length = 0
+            td_length = 0
+            for f in self.book_imports[uid]['files']:
+               # logger.debug("{} total length: {}; downloaded: {}".format(
+               #                             f,
+               #                             self.files_size_log[f][1],
+               #                             self.files_size_log[f][0]))
+                t_length += self.files_size_log[f][1]
+                td_length += self.files_size_log[f][0]
+
+            rst = t_length - td_length
+            logger.debug('BOOK: "{}" has {:>3.2f} MB still to download'.format(
+                                            self.book_imports[uid]['title'],
+                                            rst/1000000.))
+
         t_length = 0
         td_length = 0
         for k in self.files_size_log.keys():
@@ -1109,7 +1126,7 @@ class LetsShareBooksDialog(QDialog):
         info_text = "{} {} in {} files. {:>3.2f} MB to be downloaded"\
                     .format(self.tn_books, book_s, self.tn_files, self.rst/1000000.)
         self.books.setText(info_text)
-        logger.info("DOWNLOADING: {}".format(info_text))
+        #logger.info("DOWNLOADING: {}".format(info_text))
 
     def finished_download(self, uuid4, dl_file):
         dl_file = str(dl_file)

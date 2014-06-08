@@ -27,8 +27,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-#LOGGER_DISABLED = True
-LOGGER_DISABLED = False
+LOGGER_DISABLED = True
+#LOGGER_DISABLED = False
 
 import logging
 from logging import handlers

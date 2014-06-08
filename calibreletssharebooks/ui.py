@@ -1,11 +1,22 @@
 from __future__ import (unicode_literals, division, absolute_import, print_function)
+
+import urllib2
+import tempfile
+import os
+import sys
+import shutil
+
+from PyQt4.Qt import QWidgetAction, \
+                     QToolButton, \
+                     QMenu, \
+                     QObject
+
+from PyQt4 import QtCore
+
 from calibre.gui2.actions import InterfaceAction
 from calibre_plugins.letssharebooks.main import LetsShareBooksDialog
 from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
-from PyQt4.Qt import QWidgetAction, QToolButton, QMenu, QObject
-from PyQt4 import QtCore
-import urllib2, tempfile, os, sys
 
 __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
@@ -16,8 +27,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-LOGGER_DISABLED = True
-#LOGGER_DISABLED = False
+#LOGGER_DISABLED = True
+LOGGER_DISABLED = False
 
 import logging
 from logging import handlers
@@ -64,6 +75,7 @@ PORTABLE_RESOURCES = [
 'portable/underscore-min.js',
 'portable/favicon.html',
 'portable/ca-bundle.crt',
+'portable/lsbtunnel.exe',
 'portable/favicon.svg']
 
 
@@ -108,7 +120,7 @@ class LetsShareBooksUI(InterfaceAction):
             elif sys.platform == "win32" and resource == "portable/portable.js":
                 logger.debug("IGNORE PORTABLE.JS ON WINDOWS ({})".format(resource))
             else:
-                with open(os.path.join(self.us.portable_directory, resource), 'w') as portable:
+                with open(os.path.join(self.us.portable_directory, resource), 'wb') as portable:
                     portable.write(res[resource])
 
         self.popup_type = QToolButton.InstantPopup
@@ -117,11 +129,11 @@ class LetsShareBooksUI(InterfaceAction):
         base_plugin_object = self.interface_action_base_plugin
         do_user_config = base_plugin_object.do_user_config
 
-        d = LetsShareBooksDialog(self.gui, self.qaction.icon(), do_user_config, self.qaction, self.us)
+        self.d = LetsShareBooksDialog(self.gui, self.qaction.icon(), do_user_config, self.qaction, self.us)
         m = QMenu(self.gui)
         self.qaction.setMenu(m)
         a = QWidgetAction(m)
-        a.setDefaultWidget(d)
+        a.setDefaultWidget(self.d)
         m.addAction(a)
 
         self.qaction.setIcon(get_icon(PLUGIN_ICONS[0]))
@@ -138,3 +150,14 @@ class LetsShareBooksUI(InterfaceAction):
     def apply_settings(self):
         from calibre_plugins.letssharebooks.config import prefs
         prefs
+
+    def shutting_down(self):
+        logger.info("SHUTTING_DOWN... REMOVE {}".format(self.us.portable_directory))
+        if self.d.disconnect_all():
+            shutil.rmtree(os.path.join(self.us.portable_directory))
+            logger.info("DISCONNECT_ALL SUCCEEDED!")
+            return True
+        else:
+            logger.info("DISCONNECT_ALL FAILED!")
+            return False
+

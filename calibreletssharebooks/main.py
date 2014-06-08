@@ -7,9 +7,7 @@ import sys
 import subprocess
 import re
 import random
-import urllib2
 import webbrowser
-import tempfile
 import time
 import zipfile
 import json
@@ -18,7 +16,6 @@ import shutil
 import SimpleHTTPServer
 import SocketServer
 import uuid
-import ssl
 import BaseHTTPServer
 
 from PyQt4.Qt import QDialog, \
@@ -81,7 +78,7 @@ logging_handler.setFormatter(formatter)
 logger.addHandler(logging_handler)
 
 logger.disabled = LOGGER_DISABLED
-logger.debug("LOGGING ON")
+logger.info("LOGGING ON")
 
 #------------------------------------------------------------------------------
 
@@ -91,22 +88,6 @@ try:
     del os.environ['LD_LIBRARY_PATH']
 except:
     pass
-
-#------------------------------------------------------------------------------
-
-if sys.platform == "win32":
-    if not os.path.isfile("lsbtunnel.exe"):
-        open("lsbtunnel.exe", "wb")\
-            .write(urllib2.urlopen(
-                    'https://chat.memoryoftheworld.org/plink.exe')\
-            .read())
-
-#------------------------------------------------------------------------------
-#- tempdir should solve problem on few cases where there was no permission ----
-#- to write. only happened on OSX so far --------------------------------------
-
-TEMPDIR = tempfile.mkdtemp()
-logger.info("TEMPDIR: {}".format(TEMPDIR))
 
 #------------------------------------------------------------------------------
 #- runnable downloader --------------------------------------------------------
@@ -275,10 +256,10 @@ class MetadataLibThread(QThread):
             mode = zipfile.ZIP_DEFLATED
         except:
             mode = zipfile.ZIP_STORED
-
-        with zipfile.ZipFile(os.path.join(TEMPDIR, 'library.json.zip'),
+        os.makedirs(os.path.join(self.us.portable_directory, 'json'))
+        with zipfile.ZipFile(os.path.join(self.us.portable_directory, 'json','library.json.zip'),
                              'w', mode) as zif:
-            with open(os.path.join(TEMPDIR, 'library.json'), 'wb') as file:
+            with open(os.path.join(self.us.portable_directory, 'json','library.json'), 'wb') as file:
                 library['library_uuid'] = self.sql_db.library_id
                 library['last_modified'] = str(sorted(
                                                [book['last_modified']
@@ -291,7 +272,7 @@ class MetadataLibThread(QThread):
                                            if book['uuid'] in added_books]
                 json_string = json.dumps(library)
                 file.write(json_string)
-            zif.write(os.path.join(TEMPDIR, 'library.json'),
+            zif.write(os.path.join(self.us.portable_directory, 'json', 'library.json'),
                       arcname = 'library.json')
             zif.close()
 
@@ -299,7 +280,7 @@ class MetadataLibThread(QThread):
         #- prepare BROWSE_LIBRARY.html for portable library in the root -------
         #- directory of current library ---------------------------------------
 
-        with open(os.path.join(TEMPDIR, 'portable_library.json'), 'wb') as file:
+        with open(os.path.join(self.us.portable_directory, 'json', 'portable_library.json'), 'wb') as file:
             library['library_uuid'] = self.sql_db.library_id
             library['last_modified'] = str(sorted(
                                             [book['last_modified']
@@ -316,7 +297,7 @@ class MetadataLibThread(QThread):
             logging.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
                 self.us.portable_directory,
                 'portable')))
-            with open(os.path.join(TEMPDIR, 'portable_library.json'), 'r') as fin:
+            with open(os.path.join(self.us.portable_directory, 'json', 'portable_library.json'), 'r') as fin:
                 with open(os.path.join(
                             self.us.portable_directory,
                             'portable/data.js'), 'w') as fout:
@@ -324,36 +305,37 @@ class MetadataLibThread(QThread):
 
             try:
                 shutil.rmtree(os.path.join(*self.directory_path + ['static']))
-                logger.debug("REMOVING PORTABLE DIRECTORY SUCCESS")
+                logger.info("REMOVING PORTABLE DIRECTORY SUCCESS")
             except Exception as e:
-                logger.debug("REMOVING PORTABLE DIRECTORY FAILS: {}".format(e))
+                logger.info("REMOVING PORTABLE DIRECTORY FAILS: {}".format(e))
             try:
                 os.remove(os.path.join(*self.directory_path
                                        + ['BROWSE_LIBRARY.html']))
-                logger.debug("REMOVING BROWSE_LIBRARY.html SUCCESS")
+                logger.info("REMOVING BROWSE_LIBRARY.html SUCCESS")
             except Exception as e:
-                logger.debug("REMOVING BROWSE_LIBRARY.html FAILS:{}".format(e))
+                logger.info("REMOVING BROWSE_LIBRARY.html FAILS:{}".format(e))
 
             try:
                 shutil.copytree(os.path.join(self.us.portable_directory,
                                              'portable'),
                                 os.path.join(*self.directory_path + ['static']))
-                logger.debug("COPY/MOVE PORTABLE DIRECTORY SUCCESS")
+                logger.info("COPY/MOVE PORTABLE DIRECTORY SUCCESS")
             except Exception as e:
-                logger.debug("COPY/MOVE ERROR: {}".format(e))
+                logger.info("COPY/MOVE ERROR: {}".format(e))
 
             try:
                shutil.move(os.path.join(*(self.directory_path
                                           + ['static', 'BROWSE_LIBRARY.html'])),
                            os.path.join(*self.directory_path))
-               logger.debug("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
+               logger.info("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
             except Exception as e:
-                logger.debug("COPY/MOVE ERROR: {}".format(e))
+                logger.info("COPY/MOVE ERROR: {}".format(e))
+
 
         #----------------------------------------------------------------------
         #- prepare library.json and upload it to memoryoftheworld.org app -----
 
-        with open(os.path.join(TEMPDIR, 'library.json.zip'), 'rb') as file:
+        with open(os.path.join(self.us.portable_directory, 'json', 'library.json.zip'), 'rb') as file:
             try:
                 r = requests.post(
                     "{}://library.{}/upload_catalog".format(
@@ -366,6 +348,8 @@ class MetadataLibThread(QThread):
                     self.upload_error.emit()
             except requests.exceptions.RequestException as e:
                 self.upload_error.emit()
+
+        shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
         return
 
 #------------------------------------------------------------------------------
@@ -411,7 +395,7 @@ class ConnectionCheck(QThread):
                 count += 1
             return
         except Exception as e:
-            logger.debug('LOST_CONNECTION: {}'.format(e))
+            logger.info('LOST_CONNECTION: {}'.format(e))
             self.lost_connection.emit()
             self.gotcha = False
             return
@@ -432,7 +416,7 @@ class LetsShareBooksDialog(QDialog):
         self.do_user_config = do_user_config
         self.qaction = qaction
         self.us = us
-        logger.debug('PORTABLE_TEMP_DIRECTORY: {}'\
+        logger.info('PORTABLE_TEMP_DIRECTORY: {}'\
             .format(self.us.portable_directory))
         self.files_size_log = {}
         self.book_imports = {}
@@ -669,7 +653,7 @@ class LetsShareBooksDialog(QDialog):
         certs.append(QSslCertificate(QFile("portable/ca-bundle.crt")))
         config.setCaCertificates(certs)
 
-        logger.debug("FAVICON PATH: {}".format(
+        logger.info("FAVICON PATH: {}".format(
                                             os.path.join(
                                                 self.us.portable_directory,
                                                 "portable/favicon.html")))
@@ -686,6 +670,7 @@ class LetsShareBooksDialog(QDialog):
             r = requests.get(
                 'https://raw.github.com/marcellmars/letssharebooks/master/'\
                 'calibreletssharebooks/_version',
+                verify=False,
                 timeout=3)
             self.latest_version = r.text[:-1]
         except:
@@ -720,7 +705,8 @@ class LetsShareBooksDialog(QDialog):
 
         #- parsing/tee log file -----------------------------------------------
 
-        self.se = open(os.path.join(TEMPDIR, "lsb.log"), "w+b")
+        os.makedirs(os.path.join(self.us.portable_directory, 'log'))
+        self.se = open(os.path.join(self.us.portable_directory, 'log', 'lsb.log'), 'w+b')
         #self.se = tempfile.NamedTemporaryFile()
         self.so = self.se
 
@@ -861,12 +847,12 @@ class LetsShareBooksDialog(QDialog):
     def sync_metadata(self):
         from calibre.gui2.ui import get_gui
         if self.metadata_thread.isRunning():
-            logger.debug("METADATA THREAD IS STILL RUNNING!")
+            logger.warning("METADATA THREAD IS STILL RUNNING!")
             quit_metadata = self.metadata_thread.wait(500)
             if not quit_metadata:
                 self.metadata_thread.quit()
 
-        logger.debug("STARTING METADATA THREAD...")
+        logger.info("STARTING METADATA THREAD...")
         self.metadata_thread.sql_db = get_gui().current_db
         self.metadata_thread.port = self.port
         self.metadata_thread.librarian = unicode(self.edit.text())
@@ -878,7 +864,6 @@ class LetsShareBooksDialog(QDialog):
         #get_gui().library_view.model().new_bookdisplay_data\ -----------------
         #.connect(self.edited_item) -------------------------------------------
         #----------------------------------------------------------------------
-
         #- model signals dataChanged for every book being changed -------------
         #- it passes index(row, 0) & index(row, total columns -1 --------------
         self.model = get_gui().library_view.model()
@@ -903,7 +888,9 @@ class LetsShareBooksDialog(QDialog):
         #----------------------------------------------------------------------
 
         #- this line logs/prints out id of a edited book ----------------------
-        logger.debug("ITEM ID:{} EDITED".format(
+        #- it gets triggered several times so one should ----------------------
+        #- maintain a set instead of list here --------------------------------
+        logger.info("ITEM ID:{} EDITED".format(
                                             self.model
                                                 .get_book_display_info(i.row())
                                                 .id))
@@ -915,6 +902,8 @@ class LetsShareBooksDialog(QDialog):
         if not quit_check:
             self.check_connection.quit()
 
+        #- emit upload_error. confusing in logs :( ----------------------------
+        #- let's add new signal some other time -------------------------------
         self.metadata_thread.upload_error.emit()
         quit_metadata = self.metadata_thread.wait(500)
         if not quit_metadata:
@@ -922,7 +911,8 @@ class LetsShareBooksDialog(QDialog):
 
         if sys.platform == "win32":
             try:
-                subprocess.Popen("taskkill /f /im lsbtunnel.exe", shell=True)
+                subprocess.Popen("taskkill /f /im lsbtunnel.exe",
+                                 shell=True)
             except Exception as e:
                 logger.warning("Couldn't kill lsbtunnel.exe. dead already?")
         else:
@@ -954,6 +944,7 @@ class LetsShareBooksDialog(QDialog):
         self.webview.load(QtCore.QUrl.fromLocalFile(
                             os.path.join(self.us.portable_directory,
                                          "portable/favicon.html")))
+        return True
 
     def render_library_button(self, button_label, button_tooltip):
         self.about_project_button.setText(button_label)
@@ -967,14 +958,16 @@ class LetsShareBooksDialog(QDialog):
 
     def establish_ssh_server(self):
         if sys.platform == "win32":
+            self.lsbtunnel = os.path.join(self.us.portable_directory, 'portable', 'lsbtunnel.exe')
             self.port = str(int(random.random()*40000+10000))
             #- `echo y` accept any host while connecting through plink.exe
             self.ssh_proc = subprocess.Popen(
-                'echo y|lsbtunnel.exe -N '\
-                '-T tunnel@{2} -R {0}:localhost:{1} -P 722'.format(
+                'echo y|{0} -N '\
+                '-T tunnel@{1} -R {2}:localhost:{3} -P 722'.format(
+                    self.lsbtunnel,
+                    prefs['lsb_server'],
                     self.port,
-                    self.calibre_server_port,
-                    prefs['lsb_server']),
+                    self.calibre_server_port),
                 shell=True)
             self.lsb_url = "{}://www{}.{}".format(prefs['server_prefix'],
                                                   self.port,
@@ -1054,7 +1047,6 @@ class LetsShareBooksDialog(QDialog):
         self.label.setText(prefs['lsb_server'])
 
     def save_librarian(self):
-        logger.debug('Save librarian: {}'.format(self.edit.text()))
         if self.edit.text() == u"":
             prefs['librarian'] = u""
             self.librarian = get_libranon()
@@ -1076,7 +1068,6 @@ class LetsShareBooksDialog(QDialog):
             url.addEncodedQueryItem(
                u'nick',
                QtCore.QByteArray.toPercentEncoding(nickname.toUtf8()))
-            logger.debug("QUrl: {}".format(url))
 
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False
@@ -1097,7 +1088,7 @@ class LetsShareBooksDialog(QDialog):
         self.update_download_state()
 
     def update_download_state(self):
-        logger.debug("FILES_SIZE_LOG: {}".format(self.files_size_log))
+        logger.info("FILES_SIZE_LOG: {}".format(self.files_size_log))
         book_s = "books"
         self.tn_books = len(self.book_imports)
         if self.tn_books == 1:
@@ -1118,24 +1109,19 @@ class LetsShareBooksDialog(QDialog):
         info_text = "{} {} in {} files. {:>3.2f} MB to be downloaded"\
                     .format(self.tn_books, book_s, self.tn_files, self.rst/1000000.)
         self.books.setText(info_text)
-        logger.info(info_text)
-        # Downloads: _tn_ books in _tn_ files. _tn_ bytes to be downloaded.
-        #logger.info("DOWNLOADING: {} bytes of a {}:{} file."\
-        #            .format(dl, uuid4, dl_file))
+        logger.info("DOWNLOADING: {}".format(info_text))
 
     def finished_download(self, uuid4, dl_file):
         dl_file = str(dl_file)
         uuid5 = str(uuid4)
         logger.info("{}:{} FINISHED".format(uuid5, dl_file))
         book = self.book_imports[uuid5]
-        logger.debug("dl_file: {}; book['files']: {};".format(dl_file, str(book['files'])))
         book['files'].remove(dl_file)
         del self.files_size_log[dl_file]
         logger.debug("{} has {} files to download".format(book['title'], len(book['files'])))
         self.update_download_state()
         if len(book['files']) == 0:
             self.import_downloaded_book(book['download_dir'], uuid4)
-
 
     def http_import(self, req):
         self.books_container.show()
@@ -1196,8 +1182,6 @@ class LetsShareBooksDialog(QDialog):
     def fix_metadata_opf(self, download_dir):
         #- calibre doesn't add reference to cover.jpg in metadata.opf ---------
         #- when accessed through web content server ---------------------------
-        logger.debug("SIZE OF METADATA.OPF: {}".format(
-            os.stat(os.path.join(download_dir, "metadata.opf")).st_size))
         if os.stat(os.path.join(download_dir, "metadata.opf")).st_size < 200:
             return False
         with open(os.path.join(download_dir, "metadata.opf")) as f:

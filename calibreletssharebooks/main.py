@@ -94,6 +94,7 @@ except:
 
 class Downloader(QThread):
     downloaded_data = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, int, int)
+    canceled_download = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, int, int)
     finished_file = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
     def __init__(self, uuid4, url, dl_file):
         QThread.__init__(self)
@@ -117,7 +118,17 @@ class Downloader(QThread):
                         dl += len(data)
                         f.write(data)
                         if dl%100000 == 0:
-                            self.downloaded_data.emit(self.uuid4, self.dl_file, dl, total_length)
+                            self.downloaded_data.emit(self.uuid4,
+                                                      self.dl_file,
+                                                      dl,
+                                                      total_length)
+                    else:
+                        self.canceled_download.emit(self.uuid4,
+                                                    self.dl_file,
+                                                    dl,
+                                                    total_length)
+                        return
+
         self.finished_file.emit(self.uuid4, self.dl_file)
         return
 
@@ -422,6 +433,7 @@ class LetsShareBooksDialog(QDialog):
             .format(self.us.portable_directory))
         self.files_size_log = {}
         self.book_imports = {}
+        self.threads_pool = []
         self.initial = True
         self.initial_chat = True
         self.no_internet = False
@@ -610,7 +622,7 @@ class LetsShareBooksDialog(QDialog):
         self.books_label.setToolTip("Books imported from https://library.memoryoftheworld.org")
         self.books_layout.addWidget(self.books_label)
         self.books_layout.addWidget(self.books)
-        #self.books_label.clicked.connect(self.go_do_something)
+        self.books_label.clicked.connect(self.go_do_something)
 
         self.ll.addWidget(self.books_container)
         self.books_container.hide()
@@ -1090,7 +1102,7 @@ class LetsShareBooksDialog(QDialog):
         self.update_download_state()
 
     def update_download_state(self):
-        logger.info("FILES_SIZE_LOG: {}".format(self.files_size_log))
+        #logger.info("FILES_SIZE_LOG: {}".format(self.files_size_log))
         book_s = "books"
         self.tn_books = len(self.book_imports)
         if self.tn_books == 1:
@@ -1129,6 +1141,8 @@ class LetsShareBooksDialog(QDialog):
         #logger.info("DOWNLOADING: {}".format(info_text))
 
     def finished_download(self, uuid4, dl_file):
+        t = [t for t in self.threads_pool if t.dl_file == dl_file][0]
+        self.threads_pool.remove(t)
         dl_file = str(dl_file)
         uuid5 = str(uuid4)
         logger.info("{}:{} FINISHED".format(uuid5, dl_file))
@@ -1165,11 +1179,11 @@ class LetsShareBooksDialog(QDialog):
 
         os.makedirs(os.path.join(self.us.portable_directory, book['uuid']))
 
-        self.thread_pool = []
-        self.thread_pool.append(Downloader(book['uuid'],
+        thread_pool = []
+        thread_pool.append(Downloader(book['uuid'],
                                            book['metadata_opf'],
                                            metadata_dl_file))
-        self.thread_pool.append(Downloader(book['uuid'],
+        thread_pool.append(Downloader(book['uuid'],
                                            book['metadata_cover'],
                                            cover_dl_file))
 
@@ -1177,16 +1191,18 @@ class LetsShareBooksDialog(QDialog):
             frmt_dest = os.path.join(book['download_dir'], frmt.split('/')[-1])
             self.files_size_log[frmt_dest] = [0,0]
             book['files'].append(frmt_dest)
-            self.thread_pool.append(Downloader(book['uuid'],
+            thread_pool.append(Downloader(book['uuid'],
                                                frmt,
                                                frmt_dest))
 
         self.book_imports[book['uuid']] = book
 
-        for thrd in self.thread_pool:
+        for thrd in thread_pool:
+            self.threads_pool.append(thrd)
             thrd.downloaded_data.connect(self.log_download)
+            thrd.canceled_download.connect(self.cancel_download)
             thrd.finished_file.connect(self.finished_download)
-            thrd.finished.connect(lambda: self.log_message("DOWNLOAD ENDED"))
+            #thrd.finished.connect(lambda: self.thrd_finished(thrd))
             thrd.start()
 
         # Downloads: _tn_ books in _tn_ files. _tn_ bytes to be downloaded.
@@ -1225,5 +1241,12 @@ class LetsShareBooksDialog(QDialog):
             logger.debug("SSL ERRORS: {}".format(errorList))
             return
 
+    def cancel_download(self):
+        pass
+
     def closeEvent(self, e):
         self.hide()
+
+    def go_do_something(self):
+        for t in self.threads_pool:
+            logger.debug("THREAD: uid({}); file={}".format(t.uuid4, t.dl_file))

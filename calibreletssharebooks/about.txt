@@ -1,7 +1,6 @@
-Let's share books
+[let's share books]
 ===========================
 
 Created by Marcell Mars
 
 Requires calibre >= 0.9.30
-

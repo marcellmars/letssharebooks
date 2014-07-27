@@ -10,11 +10,11 @@ from calibre.customize import InterfaceActionBase
 
 
 class LetsShareBooks(InterfaceActionBase):
-    name                = "LSB"
+    name                = "[let's share books]"
     description         = 'Share calibre library through tunnel at http://www.memoryoftheworld.org'
     supported_platforms = ['windows', 'osx', 'linux']
     author              = 'Marcell Mars'
-    version             = (1, 1, 4)
+    version             = (1, 1, 5)
     minimum_calibre_version = (0, 9, 30)
     actual_plugin       = 'calibre_plugins.letssharebooks.ui:LetsShareBooksUI'
 

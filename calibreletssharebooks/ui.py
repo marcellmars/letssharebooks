@@ -60,14 +60,14 @@ class UnitedStates(QObject):
     def __init__(self):
         QObject.__init__(self)
         self.portable_directory = tempfile.mkdtemp()
-        self.plugin_url = "https://github.com/marcellmars/\
-                           letssharebooks/raw/master/calibreletssharebooks/\
-                           letssharebooks_calibre.zip"
+        self.plugin_url = ('https://github.com/marcellmars/'
+                           'letssharebooks/raw/master/calibreletssharebooks/'
+                           'letssharebooks_calibre.zip')
         self.running_version = ".".join(map(str, lsb.version))
         try:
-            self.latest_version = urllib2.urlopen('https://raw.github.com/\
-                marcellmars/letssharebooks/master/\
-                calibreletssharebooks/_version').read()[:-1].encode("utf-8")
+            self.latest_version = urllib2.urlopen(
+                'https://raw.github.com/marcellmars/letssharebooks/master/'
+                'calibreletssharebooks/_version').read()[:-1].encode("utf-8")
         except:
             self.latest_version = "0.0.0"
 
@@ -77,13 +77,12 @@ class UnitedStates(QObject):
 
 class LetsShareBooksUI(InterfaceAction):
 
-    name = "Let's share books"
-    action_spec = ("Let's share books",
+    name = "[let's share books]"
+    action_spec = ("[let's share books]",
                    'images/icon.png',
                    'Share your library at http://www.memoryoftheworld.org',
                    None)
     action_add_menu = True
-    dont_remove_from = frozenset(['toolbar', 'toolbar-device'])
 
     def genesis(self):
         icon_resources = self.load_resources(PLUGIN_ICONS)

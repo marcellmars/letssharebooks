@@ -305,7 +305,7 @@ class MetadataLibThread(QThread):
             file.write(json_string)
 
         if not self.path_not_found:
-            logging.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
+            logger.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
                 self.us.portable_directory,
                 'portable')))
             with open(os.path.join(self.us.portable_directory,
@@ -699,6 +699,9 @@ class LetsShareBooksDialog(QDialog):
         self.upgrade_button.clicked.connect(functools.partial(self.open_url,
                                                               self.plugin_url))
 
+        logger.debug("RUNNING: {}, LATEST: {}"
+                     .format(str(self.us.running_version),
+                             str(self.us.latest_version)))
         version_list = [self.us.running_version, self.us.latest_version]
         version_list.sort(key=lambda s: map(int, s.split('.')))
         if self.us.running_version != self.us.latest_version:

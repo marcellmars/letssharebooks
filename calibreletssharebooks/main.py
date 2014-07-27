@@ -60,7 +60,7 @@ if False:
 
 #- set up logging -------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', 'main', status=False)
+logger = get_logger('letssharebooks', 'main', disabled=True)
 
 #------------------------------------------------------------------------------
 

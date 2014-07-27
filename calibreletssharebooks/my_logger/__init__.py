@@ -5,13 +5,14 @@ from logging import handlers
 FORMATTER = '%(asctime)s: %(filename)s >> %(levelname)s - %(message)s'
 
 
-def get_logger(name, path_name="", level=logging.DEBUG, status=False,
+def get_logger(name, path_name="", level=logging.DEBUG, disabled=True,
                file_prefix='debug', formatter=FORMATTER):
 
     logger = logging.getLogger(name)
-    if not status:
+    if disabled:
         handler = logging.StreamHandler(sys.stdout)
         logger.addHandler(handler)
+        logger.disabled = disabled
         return logger
 
     formatter = logging.Formatter(formatter)
@@ -31,7 +32,6 @@ def get_logger(name, path_name="", level=logging.DEBUG, status=False,
 
     logging_handler.setFormatter(formatter)
     logger.addHandler(logging_handler)
-    logger.disabled = not status
     logger.setLevel(level)
     logger.info("{} LOGGING ON...".format(name))
     return logger

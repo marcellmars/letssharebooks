@@ -29,7 +29,7 @@ if False:
 
 #- set up logging ------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', 'ui', status=False)
+logger = get_logger('letssharebooks', 'ui', disabled=True)
 
 #-----------------------------------------------------------------------------
 

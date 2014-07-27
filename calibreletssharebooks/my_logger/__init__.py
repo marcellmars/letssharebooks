@@ -9,10 +9,14 @@ def get_logger(name, path_name="", level=logging.DEBUG, disabled=True,
                file_prefix='debug', formatter=FORMATTER):
 
     logger = logging.getLogger(name)
+
     if disabled:
         handler = logging.StreamHandler(sys.stdout)
         logger.addHandler(handler)
         logger.disabled = disabled
+        return logger
+
+    if logger.handlers:
         return logger
 
     formatter = logging.Formatter(formatter)

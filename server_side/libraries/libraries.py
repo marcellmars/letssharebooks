@@ -214,7 +214,7 @@ def get_books(db, page, query={}):
     #print(">>>>>> QUERY:{}".format(q))
     books = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('title_sort')
     authors = books.distinct('authors')
-    titles = books.distinct('title_sort')
+    titles = books.distinct('title')
     librarians = books.distinct('librarian')
     # paginate books
     items, next_page, on_page, total = paginate(books, page)

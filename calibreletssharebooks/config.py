@@ -32,6 +32,7 @@ try:
 except:
     prefs.defaults['librarian'] = ''
 
+
 class ConfigWidget(QWidget):
 
     def __init__(self):
@@ -84,4 +85,3 @@ class ConfigWidget(QWidget):
         prefs['server_prefix'] = unicode(self.server_prefix.text())
         prefs['librarian'] = unicode(self.librarian.text())
         prefs['library_uuid'] = prefs['library_uuid']
-

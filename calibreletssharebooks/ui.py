@@ -1,4 +1,5 @@
-from __future__ import (unicode_literals, division, absolute_import, print_function)
+from __future__ import (unicode_literals, division, absolute_import,
+                        print_function)
 
 import urllib2
 import tempfile
@@ -6,10 +7,10 @@ import os
 import sys
 import shutil
 
-from PyQt4.Qt import QWidgetAction, \
-                     QToolButton, \
-                     QMenu, \
-                     QObject
+from PyQt4.Qt import (QWidgetAction,
+                      QToolButton,
+                      QMenu,
+                      QObject)
 
 from PyQt4 import QtCore
 
@@ -27,77 +28,60 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-LOGGER_DISABLED = True
-#LOGGER_DISABLED = False
-
-import logging
-from logging import handlers
-
-logger = logging.getLogger('letssharebooks.ui')
-#logger.setLevel(logging.CRITICAL)
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter(
-    '%(asctime)s: %(filename)s >> %(levelname)s - %(message)s')
-
-if sys.platform == "win32":
-    logging_handler = handlers.TimedRotatingFileHandler("debug_win.log",
-                                                        when='h',
-                                                        interval=1,
-                                                        backupCount=1)
-else:
-    logging_handler = handlers.TimedRotatingFileHandler("debug.log",
-                                                        when='h',
-                                                        interval=1,
-                                                        backupCount=1)
-
-logging_handler.setFormatter(formatter)
-logger.addHandler(logging_handler)
-
-logger.disabled = LOGGER_DISABLED
-logger.debug("LOGGING ON")
+from calibre_plugins.letssharebooks.my_logger import get_logger
+logger = get_logger('letssharebooks', 'ui', status=False)
 
 #-----------------------------------------------------------------------------
 
 
 PLUGIN_ICONS = ['images/icon.png', 'images/icon_connected.png']
 PORTABLE_RESOURCES = [
-'portable/jquery-1.10.2.min.js',
-'portable/jquery.ba-bbq.min.js',
-'portable/jquery.mockjax.js',
-'portable/jquery-ui-1.10.3.custom.min.css',
-'portable/jquery-ui-1.10.3.custom.min.js',
-'portable/json2.js',
-'portable/libraries.js',
-'portable/BROWSE_LIBRARY.html',
-'portable/portable.js',
-'portable/portable_win.js',
-'portable/style.css',
-'portable/underscore-min.js',
-'portable/favicon.html',
-'portable/ca-bundle.crt',
-'portable/lsbtunnel.exe',
-'portable/favicon.svg']
+    'portable/jquery-1.10.2.min.js',
+    'portable/jquery.ba-bbq.min.js',
+    'portable/jquery.mockjax.js',
+    'portable/jquery-ui-1.10.3.custom.min.css',
+    'portable/jquery-ui-1.10.3.custom.min.js',
+    'portable/json2.js',
+    'portable/libraries.js',
+    'portable/BROWSE_LIBRARY.html',
+    'portable/portable.js',
+    'portable/portable_win.js',
+    'portable/style.css',
+    'portable/underscore-min.js',
+    'portable/favicon.html',
+    'portable/ca-bundle.crt',
+    'portable/lsbtunnel.exe',
+    'portable/favicon.svg']
 
 
 class UnitedStates(QObject):
     library_changed = QtCore.pyqtSignal()
+
     def __init__(self):
         QObject.__init__(self)
         self.portable_directory = tempfile.mkdtemp()
-        self.plugin_url = "https://github.com/marcellmars/letssharebooks/raw/master/calibreletssharebooks/letssharebooks_calibre.zip"
+        self.plugin_url = "https://github.com/marcellmars/\
+                           letssharebooks/raw/master/calibreletssharebooks/\
+                           letssharebooks_calibre.zip"
         self.running_version = ".".join(map(str, lsb.version))
         try:
-            self.latest_version = urllib2.urlopen('https://raw.github.com/marcellmars/letssharebooks/master/calibreletssharebooks/_version').read()[:-1].encode("utf-8")
+            self.latest_version = urllib2.urlopen('https://raw.github.com/\
+                marcellmars/letssharebooks/master/\
+                calibreletssharebooks/_version').read()[:-1].encode("utf-8")
         except:
             self.latest_version = "0.0.0"
 
     def library_changed_emit(self):
         self.library_changed.emit()
 
+
 class LetsShareBooksUI(InterfaceAction):
 
     name = "Let's share books"
-    action_spec = ("Let's share books", 'images/icon.png', 'Share your library at http://www.memoryoftheworld.org', None)
+    action_spec = ("Let's share books",
+                   'images/icon.png',
+                   'Share your library at http://www.memoryoftheworld.org',
+                   None)
     action_add_menu = True
     dont_remove_from = frozenset(['toolbar', 'toolbar-device'])
 
@@ -115,33 +99,29 @@ class LetsShareBooksUI(InterfaceAction):
             logger.debug("RESOURCE KEY: {}".format(resource))
             if sys.platform == "win32" and resource == "portable/portable_win.js":
                 logger.debug("WIN_RESOURCE KEY: {}".format(resource))
-                with open(os.path.join(self.us.portable_directory, 'portable/portable.js'), 'w') as portable:
+                with open(os.path.join(self.us.portable_directory,
+                                       'portable/portable.js'), 'w') as portable:
                     portable.write(res[resource])
             elif sys.platform == "win32" and resource == "portable/portable.js":
-                logger.debug("IGNORE PORTABLE.JS ON WINDOWS ({})".format(resource))
+                logger.debug("IGNORE {} ON WINDOWS".format(resource))
             else:
-                with open(os.path.join(self.us.portable_directory, resource), 'wb') as portable:
+                with open(os.path.join(self.us.portable_directory,
+                                       resource), 'wb') as portable:
                     portable.write(res[resource])
 
         self.popup_type = QToolButton.InstantPopup
-
-    def initialization_complete(self):
         base_plugin_object = self.interface_action_base_plugin
         do_user_config = base_plugin_object.do_user_config
 
-        self.d = LetsShareBooksDialog(self.gui, self.qaction.icon(), do_user_config, self.qaction, self.us)
+        self.d = LetsShareBooksDialog(self.gui,
+                                      self.qaction.icon(),
+                                      do_user_config,
+                                      self.qaction, self.us)
         m = QMenu(self.gui)
         self.qaction.setMenu(m)
         a = QWidgetAction(m)
         a.setDefaultWidget(self.d)
         m.addAction(a)
-
-        self.qaction.setIcon(get_icon(PLUGIN_ICONS[0]))
-
-        for bar in self.gui.bars_manager.bars:
-            w = bar.widgetForAction(self.qaction)
-            if w is not None:
-                w.setPopupMode(QToolButton.InstantPopup)
 
     def library_changed(self, db):
         self.us.library_changed_emit()
@@ -152,7 +132,7 @@ class LetsShareBooksUI(InterfaceAction):
         prefs
 
     def shutting_down(self):
-        logger.info("SHUTTING_DOWN... REMOVE {}".format(self.us.portable_directory))
+        logger.info("SHUTTING_DOWN... {}".format(self.us.portable_directory))
         if self.d.disconnect_all():
             shutil.rmtree(os.path.join(self.us.portable_directory))
             logger.info("DISCONNECT_ALL SUCCEEDED!")
@@ -160,4 +140,3 @@ class LetsShareBooksUI(InterfaceAction):
         else:
             logger.info("DISCONNECT_ALL FAILED!")
             return False
-

@@ -10,7 +10,7 @@ from calibre.customize import InterfaceActionBase
 
 
 class LetsShareBooks(InterfaceActionBase):
-    name                = "Let's share books"
+    name                = "LSB"
     description         = 'Share calibre library through tunnel at http://www.memoryoftheworld.org'
     supported_platforms = ['windows', 'osx', 'linux']
     author              = 'Marcell Mars'

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import (unicode_literals, division, absolute_import, print_function)
+from __future__ import (unicode_literals, division, absolute_import,
+                        print_function)
 
 import os
 import sys
@@ -18,23 +19,30 @@ import SocketServer
 import uuid
 import BaseHTTPServer
 
-from PyQt4.Qt import QDialog, \
-                     QHBoxLayout, \
-                     QPushButton, \
-                     QTimer, \
-                     QIcon, \
-                     QPixmap, \
-                     QApplication, \
-                     QSizePolicy, \
-                     QVBoxLayout, \
-                     QWidget, \
-                     QLineEdit, \
-                     QThread, \
-                     QSslConfiguration, \
-                     QSslCertificate, \
-                     QFile
+from PyQt4.Qt import (Qt,
+                      QDialog,
+                      QHBoxLayout,
+                      QPushButton,
+                      QTimer,
+                      QIcon,
+                      QPixmap,
+                      QApplication,
+                      QSizePolicy,
+                      QVBoxLayout,
+                      QWidget,
+                      QLineEdit,
+                      QThread,
+                      QSslConfiguration,
+                      QSslCertificate,
+                      QFile,
+                      pyqtSignal,
+                      QString,
+                      QUrl,
+                      SIGNAL,
+                      QStateMachine,
+                      QState,
+                      QByteArray)
 
-from PyQt4 import QtCore
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
 from calibre_plugins.letssharebooks import requests
@@ -50,35 +58,9 @@ __docformat__ = 'restructuredtext en'
 if False:
     get_icons = get_resources = None
 
-#- set up logging ------------------------------------------------------------
-#LOGGER_DISABLED = True
-LOGGER_DISABLED = False
-
-import logging
-from logging import handlers
-
-logger = logging.getLogger('letssharebooks')
-#logger.setLevel(logging.CRITICAL)
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter(
-    '%(asctime)s: %(filename)s >> %(levelname)s - %(message)s')
-
-if sys.platform == "win32":
-    logging_handler = handlers.TimedRotatingFileHandler("debug_win.log",
-                                                        when='h',
-                                                        interval=1,
-                                                        backupCount=1)
-else:
-    logging_handler = handlers.TimedRotatingFileHandler("debug.log",
-                                                        when='h',
-                                                        interval=1,
-                                                        backupCount=1)
-
-logging_handler.setFormatter(formatter)
-logger.addHandler(logging_handler)
-
-logger.disabled = LOGGER_DISABLED
-logger.info("LOGGING ON")
+#- set up logging -------------------------------------------------------------
+from calibre_plugins.letssharebooks.my_logger import get_logger
+logger = get_logger('letssharebooks', 'main', status=False)
 
 #------------------------------------------------------------------------------
 
@@ -92,10 +74,12 @@ except:
 #------------------------------------------------------------------------------
 #- runnable downloader --------------------------------------------------------
 
+
 class Downloader(QThread):
-    downloaded_data = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, int, int)
-    canceled_download = QtCore.pyqtSignal(QtCore.QString, QtCore.QString, int, int)
-    finished_file = QtCore.pyqtSignal(QtCore.QString, QtCore.QString)
+    downloaded_data = pyqtSignal(QString, QString, int, int)
+    canceled_download = pyqtSignal(QString, QString, int, int)
+    finished_file = pyqtSignal(QString, QString)
+
     def __init__(self, uuid4, url, dl_file):
         QThread.__init__(self)
         self.uuid4 = uuid4
@@ -117,7 +101,7 @@ class Downloader(QThread):
                     if self.download_pass:
                         dl += len(data)
                         f.write(data)
-                        if dl%100000 == 0:
+                        if dl % 100000 == 0:
                             self.downloaded_data.emit(self.uuid4,
                                                       self.dl_file,
                                                       dl,
@@ -153,8 +137,10 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.server.html.web_signal.emit(self.path)
         self.wfile.write('<body onload="window.close();">')
 
+
 class ThreadedServer(QThread):
-    web_signal = QtCore.pyqtSignal(str, name="web_signal")
+    web_signal = pyqtSignal(str, name="web_signal")
+
     def __init__(self, port):
         QThread.__init__(self)
         SocketServer.TCPServer.allow_reuse_address = True
@@ -175,9 +161,11 @@ class ThreadedServer(QThread):
 #- in Metadatalibthread metadata gets into .json, upload to server and --------
 #- prepare if for portable calibre --------------------------------------------
 
+
 class MetadataLibThread(QThread):
-    uploaded = QtCore.pyqtSignal()
-    upload_error = QtCore.pyqtSignal()
+    uploaded = pyqtSignal()
+    upload_error = pyqtSignal()
+
     def __init__(self, librarian, us):
         QThread.__init__(self)
         self.librarian = librarian
@@ -244,10 +232,11 @@ class MetadataLibThread(QThread):
 
     def get_server_list(self, uuid4):
         try:
-            r = requests.get("{}://library.{}/get_catalog"\
-                                .format(prefs['server_prefix'],
-                                        prefs['lsb_server']),
-                             params={'uuid': uuid4}, verify=False)
+            r = requests.get("{}://library.{}/get_catalog"
+                             .format(prefs['server_prefix'],
+                                     prefs['lsb_server']),
+                             params={'uuid': uuid4},
+                             verify=False)
             catalog = r.json()
         except:
             catalog = None
@@ -270,13 +259,17 @@ class MetadataLibThread(QThread):
         except:
             mode = zipfile.ZIP_STORED
         os.makedirs(os.path.join(self.us.portable_directory, 'json'))
-        with zipfile.ZipFile(os.path.join(self.us.portable_directory, 'json','library.json.zip'),
+        with zipfile.ZipFile(os.path.join(self.us.portable_directory,
+                                          'json',
+                                          'library.json.zip'),
                              'w', mode) as zif:
-            with open(os.path.join(self.us.portable_directory, 'json','library.json'), 'wb') as file:
+            with open(os.path.join(self.us.portable_directory,
+                                   'json',
+                                   'library.json'),
+                      'wb') as file:
                 library['library_uuid'] = self.sql_db.library_id
                 library['last_modified'] = str(sorted(
-                                               [book['last_modified']
-                                                for book in books_metadata])[-1])
+                    [book['last_modified'] for book in books_metadata])[-1])
                 library['tunnel'] = int(self.port)
                 library['librarian'] = self.librarian
                 library['books'] = {}
@@ -285,20 +278,25 @@ class MetadataLibThread(QThread):
                                            if book['uuid'] in added_books]
                 json_string = json.dumps(library)
                 file.write(json_string)
-            zif.write(os.path.join(self.us.portable_directory, 'json', 'library.json'),
-                      arcname = 'library.json')
+            zif.write(os.path.join(self.us.portable_directory,
+                                   'json',
+                                   'library.json'),
+                      arcname='library.json')
             zif.close()
 
         #----------------------------------------------------------------------
         #- prepare BROWSE_LIBRARY.html for portable library in the root -------
         #- directory of current library ---------------------------------------
 
-        with open(os.path.join(self.us.portable_directory, 'json', 'portable_library.json'), 'wb') as file:
+        with open(os.path.join(self.us.portable_directory,
+                               'json',
+                               'portable_library.json'), 'wb') as file:
             library['library_uuid'] = self.sql_db.library_id
             library['last_modified'] = str(sorted(
-                                            [book['last_modified']
-                                             for book in books_metadata])[-1])
-            library['tunnel'] = int(self.port)
+                [book['last_modified'] for book in books_metadata])[-1])
+            #- make portable port distinctive -1337 so it can be registered ---
+            #- at https://library.memoryoftheworld.org ------------------------
+            library['tunnel'] = -1337
             library['librarian'] = self.librarian
             library['books'] = {}
             library['books']['remove'] = []
@@ -310,10 +308,11 @@ class MetadataLibThread(QThread):
             logging.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
                 self.us.portable_directory,
                 'portable')))
-            with open(os.path.join(self.us.portable_directory, 'json', 'portable_library.json'), 'r') as fin:
-                with open(os.path.join(
-                            self.us.portable_directory,
-                            'portable/data.js'), 'w') as fout:
+            with open(os.path.join(self.us.portable_directory,
+                                   'json',
+                                   'portable_library.json'), 'r') as fin:
+                with open(os.path.join(self.us.portable_directory,
+                                       'portable/data.js'), 'w') as fout:
                     fout.write('LIBRARY = {};'.format(fin.read()))
 
             try:
@@ -337,18 +336,18 @@ class MetadataLibThread(QThread):
                 logger.info("COPY/MOVE ERROR: {}".format(e))
 
             try:
-               shutil.move(os.path.join(*(self.directory_path
-                                          + ['static', 'BROWSE_LIBRARY.html'])),
-                           os.path.join(*self.directory_path))
-               logger.info("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
+                shutil.move(os.path.join(*(self.directory_path
+                                         + ['static', 'BROWSE_LIBRARY.html'])),
+                            os.path.join(*self.directory_path))
+                logger.info("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
             except Exception as e:
                 logger.info("COPY/MOVE ERROR: {}".format(e))
 
-
         #----------------------------------------------------------------------
         #- prepare library.json and upload it to memoryoftheworld.org app -----
-
-        with open(os.path.join(self.us.portable_directory, 'json', 'library.json.zip'), 'rb') as file:
+        with open(os.path.join(self.us.portable_directory,
+                               'json',
+                               'library.json.zip'), 'rb') as file:
             try:
                 r = requests.post(
                     "{}://library.{}/upload_catalog".format(
@@ -369,15 +368,16 @@ class MetadataLibThread(QThread):
 #- in ConnectionCheck it checks both local calibre content server -------------
 #- and the same service at the other end of ssh tunnel ------------------------
 
+
 class ConnectionCheck(QThread):
-    lost_connection = QtCore.pyqtSignal()
-    connection_ok = QtCore.pyqtSignal()
+    lost_connection = pyqtSignal()
+    connection_ok = pyqtSignal()
 
     def __init__(self, gotcha=True):
         QThread.__init__(self)
         self.gotcha = gotcha
 
-    def increase_time(self, x,y):
+    def increase_time(self, x, y):
         while True:
             yield x
             if x < 140:
@@ -391,12 +391,12 @@ class ConnectionCheck(QThread):
             self.connection_ok.emit()
             time.sleep(5)
         time.sleep(5)
-        inc_time = self.increase_time(1,2)
+        inc_time = self.increase_time(1, 2)
         in_time = inc_time.next()
         count = 0
         try:
             while self.gotcha:
-                if count%in_time == 0:
+                if count % in_time == 0:
                     in_time = inc_time.next()
                     for url in self.urls:
                         if not requests.get(url, verify=False).ok:
@@ -417,11 +417,12 @@ class ConnectionCheck(QThread):
 #-----------------------------------------------------------------------------
 #- LetsShareBooksDialog is the main class of Calibre plugin-------------------
 
+
 class LetsShareBooksDialog(QDialog):
-    started_calibre_web_server = QtCore.pyqtSignal()
-    calibre_didnt_start = QtCore.pyqtSignal()
-    established_ssh_tunnel = QtCore.pyqtSignal()
-    lost_connection = QtCore.pyqtSignal()
+    started_calibre_web_server = pyqtSignal()
+    calibre_didnt_start = pyqtSignal()
+    established_ssh_tunnel = pyqtSignal()
+    lost_connection = pyqtSignal()
 
     def __init__(self, gui, icon, do_user_config, qaction, us):
         QDialog.__init__(self, gui)
@@ -429,8 +430,8 @@ class LetsShareBooksDialog(QDialog):
         self.do_user_config = do_user_config
         self.qaction = qaction
         self.us = us
-        logger.info('PORTABLE_TEMP_DIRECTORY: {}'\
-            .format(self.us.portable_directory))
+        logger.info('PORTABLE_TEMP_DIRECTORY: {}'
+                    .format(self.us.portable_directory))
         self.files_size_log = {}
         self.book_imports = {}
         self.threads_pool = []
@@ -594,9 +595,8 @@ class LetsShareBooksDialog(QDialog):
         self.chat_button.setObjectName("url2")
         self.chat_button.setToolTip(
             'Meetings every thursday at 23:59 (central eruopean time)')
-        self.chat_button.clicked.connect(
-                    functools.partial(self.open_url,
-                                      "https://chat.memoryoftheworld.org"))
+        self.chat_button.clicked.connect(functools.partial(self.open_url,
+                                         "https://chat.memoryoftheworld.org"))
         self.ll.addWidget(self.chat_button)
         self.ll.addSpacing(5)
 
@@ -617,9 +617,10 @@ class LetsShareBooksDialog(QDialog):
 
         self.books_label = QPushButton("Downloads:")
         self.books_label.setSizePolicy(QSizePolicy.Maximum,
-                                         QSizePolicy.Maximum)
+                                       QSizePolicy.Maximum)
         self.books_label.setObjectName("share")
-        self.books_label.setToolTip("Books imported from https://library.memoryoftheworld.org")
+        self.books_label.setToolTip(
+            "Books imported from https://library.memoryoftheworld.org")
         self.books_layout.addWidget(self.books_label)
         self.books_layout.addWidget(self.books)
         self.books_label.clicked.connect(self.go_do_something)
@@ -632,9 +633,8 @@ class LetsShareBooksDialog(QDialog):
 
         self.metadata_thread.uploaded.connect(
             lambda: self.render_library_button(
-                "Sharing with the others at: {}://library.{}".format(
-                                                    prefs['server_prefix'],
-                                                    prefs['lsb_server']),
+                "Sharing with the others at: {}://library.{}"
+                .format(prefs['server_prefix'], prefs['lsb_server']),
                 "Building together real-time p2p library infrastructure."))
         self.metadata_thread.uploaded.connect(
             lambda: self.log_message("UPLOADED"))
@@ -653,24 +653,23 @@ class LetsShareBooksDialog(QDialog):
         self.webview.setMaximumHeight(320)
         self.webview.setSizePolicy(QSizePolicy.Expanding,
                                    QSizePolicy.Expanding)
-        self.webview.load(QtCore.QUrl.fromLocalFile(
-                            os.path.join(self.us.portable_directory,
-                                         "portable/favicon.html")))
-        self.connect (self.webview.page().networkAccessManager(),
-              QtCore.SIGNAL("sslErrors (QNetworkReply *, \
+        self.webview.load(QUrl.fromLocalFile(
+                          os.path.join(self.us.portable_directory,
+                                       "portable/favicon.html")))
+        self.connect(self.webview.page().networkAccessManager(),
+                     SIGNAL("sslErrors (QNetworkReply *, \
                                         const QList<QSslError> &)"),
-              self.sslErrorHandler)
+                     self.sslErrorHandler)
 
         config = QSslConfiguration.defaultConfiguration()
-        certs=config.caCertificates()
+        certs = config.caCertificates()
 
         certs.append(QSslCertificate(QFile("portable/ca-bundle.crt")))
         config.setCaCertificates(certs)
 
-        logger.info("FAVICON PATH: {}".format(
-                                            os.path.join(
-                                                self.us.portable_directory,
-                                                "portable/favicon.html")))
+        logger.info("FAVICON PATH: {}".format(os.path.join(
+                    self.us.portable_directory,
+                    "portable/favicon.html")))
         self.ll.addWidget(self.webview)
 
         #- check if there is a new version of plugin and if yes ---------------
@@ -682,7 +681,7 @@ class LetsShareBooksDialog(QDialog):
         self.running_version = ".".join(map(str, lsb.version))
         try:
             r = requests.get(
-                'https://raw.github.com/marcellmars/letssharebooks/master/'\
+                'https://raw.github.com/marcellmars/letssharebooks/master/'
                 'calibreletssharebooks/_version',
                 verify=False,
                 timeout=3)
@@ -691,9 +690,8 @@ class LetsShareBooksDialog(QDialog):
             self.latest_version = "0.0.0"
 
         self.upgrade_button = QPushButton(
-            'Please download and upgrade from {0} to {1} version of plugin.'\
-                .format(
-                    self.us.running_version,
+            'Please download and upgrade from {0} to {1} version of plugin.'
+            .format(self.us.running_version,
                     self.latest_version))
         self.upgrade_button.setObjectName("url2")
         self.upgrade_button.setToolTip(
@@ -720,7 +718,9 @@ class LetsShareBooksDialog(QDialog):
         #- parsing/tee log file -----------------------------------------------
 
         os.makedirs(os.path.join(self.us.portable_directory, 'log'))
-        self.se = open(os.path.join(self.us.portable_directory, 'log', 'lsb.log'), 'w+b')
+        self.se = open(os.path.join(self.us.portable_directory,
+                                    'log',
+                                    'lsb.log'), 'w+b')
         #self.se = tempfile.NamedTemporaryFile()
         self.so = self.se
 
@@ -730,16 +730,16 @@ class LetsShareBooksDialog(QDialog):
 
         #- state machine ------------------------------------------------------
 
-        self.machine = QtCore.QStateMachine()
+        self.machine = QStateMachine()
 
-        self.on = QtCore.QState()
+        self.on = QState()
         self.on.setObjectName("on")
         self.on.entered.connect(
             lambda: self.render_lsb_button("Start sharing",
                                            self.lsb_url_text))
         self.on.entered.connect(lambda: self.log_message("ON"))
 
-        self.calibre_web_server = QtCore.QState()
+        self.calibre_web_server = QState()
         self.calibre_web_server.setObjectName("calibre_web_server")
         self.calibre_web_server.entered.connect(self.start_calibre_server)
         self.calibre_web_server.entered.connect(
@@ -747,7 +747,7 @@ class LetsShareBooksDialog(QDialog):
         self.calibre_web_server.entered.connect(
             lambda: self.render_lsb_button("Stop sharing", self.lsb_url_text))
 
-        self.ssh_server = QtCore.QState()
+        self.ssh_server = QState()
         self.ssh_server.setObjectName("ssh_server")
         self.ssh_server.entered.connect(
             lambda: self.render_lsb_button("Stop sharing", "Connecting..."))
@@ -755,7 +755,7 @@ class LetsShareBooksDialog(QDialog):
             lambda: self.log_message("SSH_SERVER"))
         self.ssh_server.entered.connect(self.establish_ssh_server)
 
-        self.ssh_server_established = QtCore.QState()
+        self.ssh_server_established = QState()
         self.ssh_server_established.setObjectName("ssh_server_established")
         self.ssh_server_established.entered.connect(
             lambda: self.render_lsb_button("Stop sharing", self.lsb_url_text))
@@ -764,14 +764,14 @@ class LetsShareBooksDialog(QDialog):
         self.ssh_server_established.entered.connect(self.check_connections)
         self.ssh_server_established.entered.connect(self.chat)
 
-        self.url_label_clicked = QtCore.QState()
+        self.url_label_clicked = QState()
         self.url_label_clicked.setObjectName("url_label_clicked")
         self.url_label_clicked.entered.connect(
             lambda: self.open_url(self.lsb_url))
         self.url_label_clicked.entered.connect(
             lambda: self.log_message("URL_LABEL_CLICKED"))
 
-        self.about_project_clicked = QtCore.QState()
+        self.about_project_clicked = QState()
         self.about_project_clicked.setObjectName("about_project_clicked")
         self.about_project_clicked.entered.connect(
             lambda: self.open_url("{}://library.{}".format(
@@ -780,7 +780,7 @@ class LetsShareBooksDialog(QDialog):
         self.about_project_clicked.entered.connect(
             lambda: self.log_message("ABOUT_PROJECT_CLICKED"))
 
-        self.library_state_changed = QtCore.QState()
+        self.library_state_changed = QState()
         self.library_state_changed.entered.connect(
             lambda: self.render_library_button('Uploading library metadata...',
                                                'Sharing with the others who '
@@ -790,14 +790,15 @@ class LetsShareBooksDialog(QDialog):
         self.library_state_changed.entered.connect(
             lambda: self.log_message("LIBRARY_STATE_CHANGED"))
 
-        self.lets_share_button_stopped = QtCore.QState()
+        self.lets_share_button_stopped = QState()
         self.lets_share_button_stopped.entered.connect(
             lambda: self.stop_connection)
         self.lets_share_button_stopped.entered.connect(
             lambda: self.log_message("LETS_SHARE_BUTTON_STOPPED"))
-        self.lets_share_button_stopped.setObjectName("lets_share_button_stopped")
+        self.lets_share_button_stopped.setObjectName(
+            "lets_share_button_stopped")
 
-        self.off = QtCore.QState()
+        self.off = QState()
         self.off.setObjectName("off")
         self.off.entered.connect(lambda: self.disconnect_all())
         self.off.entered.connect(lambda: self.log_message("OFF"))
@@ -887,9 +888,9 @@ class LetsShareBooksDialog(QDialog):
             self.us.library_changed_emit()
             self.initial = False
         self.qaction.setIcon(get_icon('images/icon_connected.png'))
-        self.check_connection.add_urls([
-            "http://localhost:{}".format(self.calibre_server_port),
-                                         self.lsb_url])
+        self.check_connection.add_urls(
+            ["http://localhost:{}".format(self.calibre_server_port),
+             self.lsb_url])
         self.check_connection.gotcha = True
 
         if not self.check_connection.isRunning():
@@ -904,10 +905,9 @@ class LetsShareBooksDialog(QDialog):
         #- this line logs/prints out id of a edited book ----------------------
         #- it gets triggered several times so one should ----------------------
         #- maintain a set instead of list here --------------------------------
-        logger.info("ITEM ID:{} EDITED".format(
-                                            self.model
-                                                .get_book_display_info(i.row())
-                                                .id))
+        logger.info("ITEM ID:{} EDITED".format(self.model
+                                               .get_book_display_info(i.row())
+                                               .id))
 
     def disconnect_all(self):
         #- send gotcha=False to check_connection to exit ----------------------
@@ -937,7 +937,7 @@ class LetsShareBooksDialog(QDialog):
         try:
             self.main_gui.content_server.exit()
         except Exception as e:
-            logger.warning("Couldn't kill Calibre web server. "\
+            logger.warning("Couldn't kill Calibre web server. "
                            "dead already?: {}".format(e))
 
         self.main_gui.content_server = None
@@ -955,9 +955,9 @@ class LetsShareBooksDialog(QDialog):
         self.ssh_proc = None
         self.initial = True
         self.initial_chat = True
-        self.webview.load(QtCore.QUrl.fromLocalFile(
-                            os.path.join(self.us.portable_directory,
-                                         "portable/favicon.html")))
+        self.webview.load(QUrl.fromLocalFile(os.path.join(
+            self.us.portable_directory,
+            "portable/favicon.html")))
         return True
 
     def render_library_button(self, button_label, button_tooltip):
@@ -972,16 +972,17 @@ class LetsShareBooksDialog(QDialog):
 
     def establish_ssh_server(self):
         if sys.platform == "win32":
-            self.lsbtunnel = os.path.join(self.us.portable_directory, 'portable', 'lsbtunnel.exe')
+            self.lsbtunnel = os.path.join(self.us.portable_directory,
+                                          'portable',
+                                          'lsbtunnel.exe')
             self.port = str(int(random.random()*40000+10000))
             #- `echo y` accept any host while connecting through plink.exe
             self.ssh_proc = subprocess.Popen(
-                'echo y|{0} -N '\
-                '-T tunnel@{1} -R {2}:localhost:{3} -P 722'.format(
-                    self.lsbtunnel,
-                    prefs['lsb_server'],
-                    self.port,
-                    self.calibre_server_port),
+                'echo y|{0} -N -T tunnel@{1} -R {2}:localhost:{3} -P 722'
+                .format(self.lsbtunnel,
+                        prefs['lsb_server'],
+                        self.port,
+                        self.calibre_server_port),
                 shell=True)
             self.lsb_url = "{}://www{}.{}".format(prefs['server_prefix'],
                                                   self.port,
@@ -1006,6 +1007,7 @@ class LetsShareBooksDialog(QDialog):
                 '-p', '722'])
             if self.ssh_proc:
                 self.parse_log_counter = 0
+
                 def parse_log():
                     #- after the lsb.log got redirected (and tee-ed) ----------
                     #- here it waits for string which signals that ------------
@@ -1028,9 +1030,8 @@ class LetsShareBooksDialog(QDialog):
                                     prefs['lsb_server'])
                                 self.lsb_url_text = "Go to: {0}".format(
                                     self.lsb_url)
-                                self.url_label_tooltip = \
-                                'Copy URL to clipboard and' \
-                                'check it out in a browser!'
+                                self.url_label_tooltip = 'Copy URL to '
+                                'clipboard and check it out in a browser!'
                                 self.established_ssh_tunnel.emit()
                                 gotcha = True
                                 return
@@ -1075,13 +1076,13 @@ class LetsShareBooksDialog(QDialog):
 
     def chat(self):
         if self.initial_chat:
-            nickname = QtCore.QString(self.librarian.lower())
-            url = QtCore.QUrl()
+            nickname = QString(self.librarian.lower())
+            url = QUrl()
             url.setEncodedUrl(
                 u"https://chat.memoryoftheworld.org/calibre.html")
-            url.addEncodedQueryItem(
-               u'nick',
-               QtCore.QByteArray.toPercentEncoding(nickname.toUtf8()))
+            url.addEncodedQueryItem(u'nick',
+                                    QByteArray.toPercentEncoding(
+                                        nickname.toUtf8()))
 
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False
@@ -1090,7 +1091,7 @@ class LetsShareBooksDialog(QDialog):
         self.no_internet = False
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Escape:
+        if event.key() == Qt.Key_Escape:
             pass
 
     def log_message(self, state):
@@ -1123,9 +1124,9 @@ class LetsShareBooksDialog(QDialog):
                 td_length += self.files_size_log[f][0]
 
             rst = t_length - td_length
-            logger.debug('BOOK: "{}" has {:>3.2f} MB still to download'.format(
-                                            self.book_imports[uid]['title'],
-                                            rst/1000000.))
+            logger.debug('BOOK: "{}" has {:>3.2f} MB still to download'
+                         .format(self.book_imports[uid]['title'],
+                                 rst/1000000.))
 
         t_length = 0
         td_length = 0
@@ -1136,7 +1137,10 @@ class LetsShareBooksDialog(QDialog):
         self.rst = t_length - td_length
 
         info_text = "{} {} in {} files. {:>3.2f} MB to be downloaded"\
-                    .format(self.tn_books, book_s, self.tn_files, self.rst/1000000.)
+                    .format(self.tn_books,
+                            book_s,
+                            self.tn_files,
+                            self.rst/1000000.)
         self.books.setText(info_text)
         #logger.info("DOWNLOADING: {}".format(info_text))
 
@@ -1149,21 +1153,22 @@ class LetsShareBooksDialog(QDialog):
         book = self.book_imports[uuid5]
         book['files'].remove(dl_file)
         del self.files_size_log[dl_file]
-        logger.debug("{} has {} files to download".format(book['title'], len(book['files'])))
+        logger.debug("{} has {} files to download".format(book['title'],
+                                                          len(book['files'])))
         self.update_download_state()
         if len(book['files']) == 0:
             self.import_downloaded_book(book['download_dir'], uuid4)
 
-    def http_import(self, req):
+    def http_import(self, r):
         self.books_container.show()
-        request_data = QtCore.QByteArray.fromPercentEncoding(req.toUtf8()).data()
+        request_data = QByteArray.fromPercentEncoding(r.toUtf8()).data()
         if request_data[:7] != "/?urls=":
             return
 
-        req_seq =  request_data.split('__,__')
+        req_seq = request_data.split('__,__')
 
         book = {}
-        book['uuid'] =  str(uuid.uuid4())
+        book['uuid'] = str(uuid.uuid4())
         book['title'] = req_seq[0][7:]
         book['metadata_opf'] = req_seq[1]
         book['metadata_cover'] = req_seq[2]
@@ -1172,28 +1177,28 @@ class LetsShareBooksDialog(QDialog):
                                             book['uuid'])
         metadata_dl_file = os.path.join(book['download_dir'], 'metadata.opf')
         cover_dl_file = os.path.join(book['download_dir'], 'cover.jpg')
-        book['files'] = [metadata_dl_file, cover_dl_file ]
+        book['files'] = [metadata_dl_file, cover_dl_file]
 
-        self.files_size_log[metadata_dl_file] = [0,0]
-        self.files_size_log[cover_dl_file] = [0,0]
+        self.files_size_log[metadata_dl_file] = [0, 0]
+        self.files_size_log[cover_dl_file] = [0, 0]
 
         os.makedirs(os.path.join(self.us.portable_directory, book['uuid']))
 
         thread_pool = []
         thread_pool.append(Downloader(book['uuid'],
-                                           book['metadata_opf'],
-                                           metadata_dl_file))
+                                      book['metadata_opf'],
+                                      metadata_dl_file))
         thread_pool.append(Downloader(book['uuid'],
-                                           book['metadata_cover'],
-                                           cover_dl_file))
+                                      book['metadata_cover'],
+                                      cover_dl_file))
 
         for frmt in book['formats']:
             frmt_dest = os.path.join(book['download_dir'], frmt.split('/')[-1])
-            self.files_size_log[frmt_dest] = [0,0]
+            self.files_size_log[frmt_dest] = [0, 0]
             book['files'].append(frmt_dest)
             thread_pool.append(Downloader(book['uuid'],
-                                               frmt,
-                                               frmt_dest))
+                                          frmt,
+                                          frmt_dest))
 
         self.book_imports[book['uuid']] = book
 
@@ -1206,10 +1211,10 @@ class LetsShareBooksDialog(QDialog):
             thrd.start()
 
         # Downloads: _tn_ books in _tn_ files. _tn_ bytes to be downloaded.
-        logger.info("\nTITLE: {title} "\
-                    "\nMETADATA_OPF: {metadata_opf}"\
-                    "\nMETADATA_COVER: {metadata_cover}"\
-                    "\nBOOK_FORMAT(S): {formats}"\
+        logger.info("\nTITLE: {title} "
+                    "\nMETADATA_OPF: {metadata_opf}"
+                    "\nMETADATA_COVER: {metadata_cover}"
+                    "\nBOOK_FORMAT(S): {formats}"
                     .format(**book))
 
     def fix_metadata_opf(self, download_dir):
@@ -1221,7 +1226,7 @@ class LetsShareBooksDialog(QDialog):
             old_text = f.read()
         with open(os.path.join(download_dir, "metadata.opf"), "w") as f:
             new_text = old_text.replace('<guide/>',
-                                        '<guide><reference href="cover.jpg" '\
+                                        '<guide><reference href="cover.jpg" '
                                         'title="Cover" type="cover"/></guide>')
             f.write(new_text)
         return True
@@ -1230,7 +1235,8 @@ class LetsShareBooksDialog(QDialog):
         uuid5 = str(uuid4)
         if self.fix_metadata_opf(download_dir):
             from calibre.gui2.ui import get_gui
-            get_gui().current_db.import_book_directory(download_dir, self.log_message)
+            get_gui().current_db.import_book_directory(download_dir,
+                                                       self.log_message)
             get_gui().library_view.model().books_added(1)
         shutil.rmtree(download_dir)
         del self.book_imports[uuid5]

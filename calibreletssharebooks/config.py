@@ -6,7 +6,10 @@ __license__   = 'GPL v3'
 __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
 __docformat__ = 'restructuredtext en'
 
-from PyQt4.Qt import QWidget, QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
+try:
+    from PyQt4.Qt import QWidget, QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
+except ImportError:
+    from PyQt5.Qt import QWidget, QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
 
 from calibre.utils.config import JSONConfig
 

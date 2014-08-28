@@ -5,6 +5,7 @@ from __future__ import (unicode_literals, division, absolute_import,
 
 import os
 import sys
+import string
 import subprocess
 import re
 import random
@@ -19,29 +20,61 @@ import SocketServer
 import uuid
 import BaseHTTPServer
 
-from PyQt4.Qt import (Qt,
-                      QDialog,
-                      QHBoxLayout,
-                      QPushButton,
-                      QTimer,
-                      QIcon,
-                      QPixmap,
-                      QApplication,
-                      QSizePolicy,
-                      QVBoxLayout,
-                      QWidget,
-                      QLineEdit,
-                      QThread,
-                      QSslConfiguration,
-                      QSslCertificate,
-                      QFile,
-                      pyqtSignal,
-                      QString,
-                      QUrl,
-                      SIGNAL,
-                      QStateMachine,
-                      QState,
-                      QByteArray)
+try:
+    from PyQt4 import QtWebKit
+except ImportError:
+    from PyQt5 import QtWebKitWidgets as QtWebKit
+
+try:
+    from PyQt4.Qt import (Qt,
+                          QDialog,
+                          QHBoxLayout,
+                          QPushButton,
+                          QTimer,
+                          QIcon,
+                          QPixmap,
+                          QApplication,
+                          QSizePolicy,
+                          QVBoxLayout,
+                          QWidget,
+                          QLineEdit,
+                          QThread,
+                          QSslConfiguration,
+                          QSslCertificate,
+                          QFile,
+                          pyqtSignal,
+                          #QString,
+                          QUrl,
+                          #SIGNAL,
+                          QStateMachine,
+                          QState,
+                          QByteArray)
+except ImportError:
+    from PyQt5.Qt import (Qt,
+                          QDialog,
+                          QHBoxLayout,
+                          QPushButton,
+                          QTimer,
+                          QIcon,
+                          QPixmap,
+                          QApplication,
+                          QSizePolicy,
+                          QVBoxLayout,
+                          QWidget,
+                          QLineEdit,
+                          QThread,
+                          QSslConfiguration,
+                          QSslCertificate,
+                          QFile,
+                          pyqtSignal,
+                          #QString,
+                          QUrl,
+                          #SIGNAL,
+                          QStateMachine,
+                          QState,
+                          QByteArray)
+
+
 
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
@@ -60,7 +93,7 @@ if False:
 
 #- set up logging -------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', 'main', disabled=True)
+logger = get_logger('letssharebooks', disabled=True)
 
 #------------------------------------------------------------------------------
 
@@ -76,9 +109,13 @@ except:
 
 
 class Downloader(QThread):
-    downloaded_data = pyqtSignal(QString, QString, int, int)
-    canceled_download = pyqtSignal(QString, QString, int, int)
-    finished_file = pyqtSignal(QString, QString)
+    #downloaded_data = pyqtSignal(QString, QString, int, int)
+    #canceled_download = pyqtSignal(QString, QString, int, int)
+    #finished_file = pyqtSignal(QString, QString)
+    downloaded_data = pyqtSignal()
+    canceled_download = pyqtSignal()
+    finished_file = pyqtSignal()
+
 
     def __init__(self, uuid4, url, dl_file):
         QThread.__init__(self)
@@ -530,7 +567,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.l = QHBoxLayout()
         self.l.setSpacing(0)
-        self.l.setMargin(0)
+        #self.l.setMargin(0) # Qt5 doesn't have it
         #self.l.setContentsMargins(0,0,0,0)
         self.w = QWidget()
         self.w.setLayout(self.l)
@@ -561,7 +598,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.libranon_layout = QHBoxLayout()
         self.libranon_layout.setSpacing(0)
-        self.libranon_layout.setMargin(0)
+        #self.libranon_layout.setMargin(0) # Qt5 doesn't have it
         self.libranon_container = QWidget()
         self.libranon_container.setLayout(self.libranon_layout)
 
@@ -604,7 +641,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.books_layout = QHBoxLayout()
         self.books_layout.setSpacing(0)
-        self.books_layout.setMargin(0)
+        #self.books_layout.setMargin(0) # Qt5 doesn't have it
         self.books_container = QWidget()
         self.books_container.setLayout(self.books_layout)
 
@@ -647,7 +684,6 @@ class LetsShareBooksDialog(QDialog):
 
         #- webkit with chat ---------------------------------------------------
 
-        from PyQt4 import QtWebKit
         self.webview = QtWebKit.QWebView()
         self.webview.setMaximumWidth(680)
         self.webview.setMaximumHeight(320)
@@ -656,10 +692,13 @@ class LetsShareBooksDialog(QDialog):
         self.webview.load(QUrl.fromLocalFile(
                           os.path.join(self.us.portable_directory,
                                        "portable/favicon.html")))
-        self.connect(self.webview.page().networkAccessManager(),
-                     SIGNAL("sslErrors (QNetworkReply *, \
-                                        const QList<QSslError> &)"),
-                     self.sslErrorHandler)
+
+        netaccman = self.webview.page().networkAccessManager()
+        netaccman.sslErrors.connect(self.sslErrorHandler)
+        #self.connect(self.webview.page().networkAccessManager(),
+        #             SIGNAL("sslErrors (QNetworkReply *, \
+        #                                const QList<QSslError> &)"),
+        #             self.sslErrorHandler)
 
         config = QSslConfiguration.defaultConfiguration()
         certs = config.caCertificates()
@@ -1079,13 +1118,13 @@ class LetsShareBooksDialog(QDialog):
 
     def chat(self):
         if self.initial_chat:
-            nickname = QString(self.librarian.lower())
-            url = QUrl()
-            url.setEncodedUrl(
-                u"https://chat.memoryoftheworld.org/calibre.html")
-            url.addEncodedQueryItem(u'nick',
-                                    QByteArray.toPercentEncoding(
-                                        nickname.toUtf8()))
+            nickname = self.librarian.lower()
+            url = QUrl(u"https://chat.memoryoftheworld.org/calibre.html?nick={}".format(nickname))
+            #url.setEncodedUrl(
+            #    u"https://chat.memoryoftheworld.org/calibre.html")
+            #url.addEncodedQueryItem(u'nick',
+            #                        QByteArray.toPercentEncoding(
+            #                            nickname.toUtf8()))
 
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False

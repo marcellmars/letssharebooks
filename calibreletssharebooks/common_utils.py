@@ -8,10 +8,23 @@ __copyright__ = '2011, Grant Drake <grant.drake@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
 import os
-from PyQt4 import QtGui
-from PyQt4.Qt import (Qt, QIcon, QPixmap, QLabel, QDialog, QHBoxLayout,
-                      QTableWidgetItem, QFont, QLineEdit, QComboBox,
-                      QVBoxLayout, QDialogButtonBox)
+
+try:
+    from PyQt4 import QtGui
+except ImportError:
+    from PyQt5 import Qt as QtGui
+
+
+try:
+    from PyQt4.Qt import (Qt, QIcon, QPixmap, QLabel, QDialog, QHBoxLayout,
+                        QTableWidgetItem, QFont, QLineEdit, QComboBox,
+                        QVBoxLayout, QDialogButtonBox)
+except ImportError:
+    from PyQt5.Qt import (Qt, QIcon, QPixmap, QLabel, QDialog, QHBoxLayout,
+                        QTableWidgetItem, QFont, QLineEdit, QComboBox,
+                        QVBoxLayout, QDialogButtonBox)
+
+
 from calibre.constants import iswindows
 from calibre.gui2 import gprefs, error_dialog
 from calibre.gui2.actions import menu_action_unique_name

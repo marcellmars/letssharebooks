@@ -7,12 +7,19 @@ import os
 import sys
 import shutil
 
-from PyQt4.Qt import (QWidgetAction,
-                      QToolButton,
-                      QMenu,
-                      QObject)
+try:
+    from PyQt4.Qt import (QWidgetAction,
+                          QToolButton,
+                          QMenu,
+                          QObject,
+                          pyqtSignal)
+except ImportError:
+    from PyQt5.Qt import (QWidgetAction,
+                          QToolButton,
+                          QMenu,
+                          QObject,
+                          pyqtSignal)
 
-from PyQt4 import QtCore
 
 from calibre.gui2.actions import InterfaceAction
 from calibre_plugins.letssharebooks.main import LetsShareBooksDialog
@@ -29,7 +36,7 @@ if False:
 
 #- set up logging ------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', 'ui', disabled=True)
+logger = get_logger('letssharebooks', disabled=True)
 
 #-----------------------------------------------------------------------------
 
@@ -55,7 +62,7 @@ PORTABLE_RESOURCES = [
 
 
 class UnitedStates(QObject):
-    library_changed = QtCore.pyqtSignal()
+    library_changed = pyqtSignal()
 
     def __init__(self):
         QObject.__init__(self)

@@ -5,7 +5,6 @@ from __future__ import (unicode_literals, division, absolute_import,
 
 import os
 import sys
-import string
 import subprocess
 import re
 import random
@@ -43,12 +42,11 @@ try:
                           QSslCertificate,
                           QFile,
                           pyqtSignal,
-                          #QString,
                           QUrl,
-                          #SIGNAL,
                           QStateMachine,
                           QState,
-                          QByteArray)
+                          QByteArray,
+                          QCursor)
 except ImportError:
     from PyQt5.Qt import (Qt,
                           QDialog,
@@ -67,12 +65,11 @@ except ImportError:
                           QSslCertificate,
                           QFile,
                           pyqtSignal,
-                          #QString,
                           QUrl,
-                          #SIGNAL,
                           QStateMachine,
                           QState,
-                          QByteArray)
+                          QByteArray,
+                          QCursor)
 
 
 
@@ -451,6 +448,13 @@ class ConnectionCheck(QThread):
             return
         return
 
+class HoverHand(QPushButton):
+    def __init__(self):
+        QPushButton.__init__(self)
+        self.setMouseTracking(True)
+    def mouseMoveEvent(self, event):
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+
 #-----------------------------------------------------------------------------
 #- LetsShareBooksDialog is the main class of Calibre plugin-------------------
 
@@ -533,7 +537,7 @@ class LetsShareBooksDialog(QDialog):
         QPushButton#share {
                 background-color: red;
                 color: white;
-                margin-right: 10px;
+                margin-right: 5px;
                 }
 
         QPushButton#share:hover {
@@ -567,8 +571,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.l = QHBoxLayout()
         self.l.setSpacing(0)
-        #self.l.setMargin(0) # Qt5 doesn't have it
-        #self.l.setContentsMargins(0,0,0,0)
+        self.l.setContentsMargins(0,0,0,0)
         self.w = QWidget()
         self.w.setLayout(self.l)
 
@@ -576,7 +579,7 @@ class LetsShareBooksDialog(QDialog):
         self.setWindowIcon(icon)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
-        self.lets_share_button = QPushButton()
+        self.lets_share_button = HoverHand()
         self.lets_share_button.setSizePolicy(QSizePolicy.MinimumExpanding,
                                              QSizePolicy.MinimumExpanding)
         self.lets_share_button.setObjectName("share")
@@ -598,7 +601,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.libranon_layout = QHBoxLayout()
         self.libranon_layout.setSpacing(0)
-        #self.libranon_layout.setMargin(0) # Qt5 doesn't have it
+        self.libranon_layout.setContentsMargins(0, 0, 0, 0)
         self.libranon_container = QWidget()
         self.libranon_container.setLayout(self.libranon_layout)
 
@@ -620,14 +623,16 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.libranon_container)
         self.ll.addSpacing(10)
 
-        self.about_project_button = QPushButton(
+        self.about_project_button = HoverHand()
+        self.about_project_button.setText(
             'Public Library: http://www.memoryoftheworld.org')
         self.about_project_button.setObjectName("url2")
         self.about_project_button.setToolTip(
             'When everyone is librarian, library is everywhere.')
         self.ll.addWidget(self.about_project_button)
 
-        self.chat_button = QPushButton(
+        self.chat_button = HoverHand()
+        self.chat_button.setText(
             'Chat room: https://chat.memoryoftheworld.org')
         self.chat_button.setObjectName("url2")
         self.chat_button.setToolTip(
@@ -641,7 +646,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.books_layout = QHBoxLayout()
         self.books_layout.setSpacing(0)
-        #self.books_layout.setMargin(0) # Qt5 doesn't have it
+        self.books_layout.setContentsMargins(0, 0, 0, 0)
         self.books_container = QWidget()
         self.books_container.setLayout(self.books_layout)
 
@@ -670,7 +675,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.metadata_thread.uploaded.connect(
             lambda: self.render_library_button(
-                "Sharing with the others at: {}://library.{}"
+                "Library is now accessible at: {}://library.{}"
                 .format(prefs['server_prefix'], prefs['lsb_server']),
                 "Building together real-time p2p library infrastructure."))
         self.metadata_thread.uploaded.connect(
@@ -720,7 +725,7 @@ class LetsShareBooksDialog(QDialog):
         self.running_version = ".".join(map(str, lsb.version))
         try:
             r = requests.get(
-                'https://raw.github.com/marcellmars/letssharebooks/master/'
+                'https://raw.github.com/marcellmars/letssharebooks/master/'\
                 'calibreletssharebooks/_version',
                 verify=False,
                 timeout=3)
@@ -825,8 +830,8 @@ class LetsShareBooksDialog(QDialog):
         self.library_state_changed = QState()
         self.library_state_changed.entered.connect(
             lambda: self.render_library_button('Uploading library metadata...',
-                                               'Sharing with the others who '
-                                               'share their libraries now...'))
+                                               'Library is now accessible at '\
+                                               'https://library.memoryoftheworld.org'))
         self.library_state_changed.setObjectName("library_state_changed")
         self.library_state_changed.entered.connect(self.sync_metadata)
         self.library_state_changed.entered.connect(
@@ -1072,7 +1077,7 @@ class LetsShareBooksDialog(QDialog):
                                     prefs['lsb_server'])
                                 self.lsb_url_text = "Go to: {0}".format(
                                     self.lsb_url)
-                                self.url_label_tooltip = 'Copy URL to '
+                                self.url_label_tooltip = 'Copy URL to '\
                                 'clipboard and check it out in a browser!'
                                 self.established_ssh_tunnel.emit()
                                 gotcha = True
@@ -1118,14 +1123,7 @@ class LetsShareBooksDialog(QDialog):
 
     def chat(self):
         if self.initial_chat:
-            nickname = self.librarian.lower()
-            url = QUrl(u"https://chat.memoryoftheworld.org/calibre.html?nick={}".format(nickname))
-            #url.setEncodedUrl(
-            #    u"https://chat.memoryoftheworld.org/calibre.html")
-            #url.addEncodedQueryItem(u'nick',
-            #                        QByteArray.toPercentEncoding(
-            #                            nickname.toUtf8()))
-
+            url = QUrl(u"https://chat.memoryoftheworld.org/calibre.html?nick={}".format(self.librarian.lower()))
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False
 

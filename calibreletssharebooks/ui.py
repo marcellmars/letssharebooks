@@ -87,7 +87,7 @@ class LetsShareBooksUI(InterfaceAction):
     name = "[let's share books]"
     action_spec = ("[let's share books]",
                    'images/icon.png',
-                   'Share your library at http://www.memoryoftheworld.org',
+                   'Share your library at https://library.memoryoftheworld.org',
                    None)
     action_add_menu = True
 

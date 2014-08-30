@@ -1114,7 +1114,7 @@ class LetsShareBooksDialog(QDialog):
             self.librarian = get_libranon()
             self.edit.setText(self.librarian)
         else:
-            prefs['librarian'] = unicode(self.edit.text(), 'utf-8')
+            prefs['librarian'] = self.edit.text()
             self.edit.setText(prefs['librarian'])
 
     def open_url(self, url):

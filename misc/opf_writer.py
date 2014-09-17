@@ -32,6 +32,3 @@ class OpfWriter(object):
         else:
             print(opf_string)
 
-
-
-

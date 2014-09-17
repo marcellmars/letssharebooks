@@ -33,7 +33,7 @@ except:
 try:
     prefs.defaults['librarian']
 except:
-    prefs.defaults['librarian'] = ''
+    prefs.defaults['librarian'] = u''
 
 
 class ConfigWidget(QWidget):

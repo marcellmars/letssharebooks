@@ -13,7 +13,7 @@ u'Johann', u'Makoto', u'Gabriel', u'Paul', u'Vincentius', u'Shiyali', u'Franz',
 u'Johann', u'Angela', u'Abbe', u'Carol', u'John', u'Gerard', u'Davidson',
 u'Martin', u'Luis', u'Charles', u'Green', u'C.', u'La', u'William', u'Philipp',
 u'Coffin', u'Michel', u'Wilhelm', u'Ephraim', u'Jakob', u'Ramamrita',
-u'Stephan', u'Wilhelm', u'Ruiz', u'Langdon', u'Van', u'G.', u'Nadežda']
+u'Stephan', u'Wilhelm', u'Ruiz', u'Langdon', u'Van', u'G.', u'Nadežda', u'Georges']
 
 last_names = [
 u'Abbot', u'Andrews', u'Avram', u'Barok', u'Bartsch', u'Belpré', u'Benjamin',
@@ -23,7 +23,7 @@ u'Goldsmith', u'Harris', u'Harsdorffer', u'Jewett', u'Jungius', u'Goyal',
 u'Krajewski', u'Lafontaine', u'Leblond', u'Leibniz', u'Lessing', u'Lorde',
 u'Luetgert', u'Moser', u'Nagao', u'Naudé', u'Otlet', u'Placcius',
 u'Ranganathan', u'Rautenstrauch', u'Ridler', u'Robles', u'Rozier', u'Seajay',
-u'Sibley', u'Swieten', u'Wells', u'Krupskaja']
+u'Sibley', u'Swieten', u'Wells', u'Krupskaja', u'Bataille']
 
 
 def get_libranon(middle=False):

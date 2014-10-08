@@ -245,21 +245,23 @@ var update_autocomplete = function(data) {
                                minLength:2});
     $('#librarian').empty();
     if (data['librarians'].length > 1) {
-        $('#librarian').append('<option value="">All librarians</option>');
+        $('#librarian').append(['<option value="" selected>',
+                                String(data['librarians'].length),
+                                ' librarians online</option>'].join(''));
     } 
     $.each(data['librarians'], function(index, item) {
-        var selected = index == 0 ? 'selected' : '';
         $('#librarian').append(['<option value="',
                                 item,
                                 '"',
-                                selected,
                                 '>',
                                 item,
                                 '</option>'].join('')); 
     });
     if (STATE.query.librarian) {
         $('#librarian').val(STATE.query.librarian);
-    }
+    } else if (data['librarians'].length == 1 ){
+        $('#librarian').val(data['librarians'][0]);
+    };
 };
 
 /* --------------------------------------------------------------------------*/

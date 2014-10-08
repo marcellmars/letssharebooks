@@ -244,11 +244,22 @@ var update_autocomplete = function(data) {
     $('#titles').autocomplete({source: data['titles'],
                                minLength:2});
     $('#librarian').empty();
-    $('#librarian').append('<option value="">All librarians</option>'); 
+    if (data['librarians'].length > 1) {
+        $('#librarian').append('<option value="">All librarians</option>');
+    } 
     $.each(data['librarians'], function(index, item) {
-        $('#librarian').append('<option value="' + item + '">' + item + '</option>'); 
+        var selected = index == 0 ? 'selected' : '';
+        $('#librarian').append(['<option value="',
+                                item,
+                                '"',
+                                selected,
+                                '>',
+                                item,
+                                '</option>'].join('')); 
     });
-    $('#librarian').val(STATE.query.librarian);
+    if (STATE.query.librarian) {
+        $('#librarian').val(STATE.query.librarian);
+    }
 };
 
 /* --------------------------------------------------------------------------*/

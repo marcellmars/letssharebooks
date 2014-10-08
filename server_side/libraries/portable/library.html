@@ -6,9 +6,9 @@
   </head>
   <body>
     <div id="header">
-      <div id="toolbar">
-        <input id="prev_page" type="button" value="&lt;&lt;&lt;" class="button not-active" />
-        <input id="next_page" type="button" value="&gt;&gt;&gt;" class="button active" />
+      <div id="top-toolbar" class="toolbar">
+        <input type="button" value="&lt;&lt;&lt;" class="button not-active prev_page" />
+        <input type="button" value="&gt;&gt;&gt;" class="button active next_page" />
         <input id="page-msg" type="button" class="button active" value="" />
       </div>
       <div id="searchbar">
@@ -20,9 +20,14 @@
       </div>
     </div>
     <div id="content"></div>
+    <div id="bottom-toolbar" class="toolbar">
+      <input type="button" value="&lt;&lt;&lt;" class="button not-active prev_page" />
+      <input type="button" value="&gt;&gt;&gt;" class="button active next_page" />
+    </div>
     <div class="modal"></div>
     <div class="modal"></div>
   </body>
+  
   <script type="text/x-template" id="string-parts-tmpl">
     <a class="author" data-authors="<%- author_s %>" href="#" title="show only books by <%- author_s %>"><%- author %></a>&nbsp;
   </script>

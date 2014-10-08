@@ -210,12 +210,13 @@ def get_books(db, page, query={}):
     lib_uuids = [i['library_uuid'] for i in db.catalog.find(
             {'tunnel': {'$in': get_active_tunnels()}})]
     q['library_uuid'] = {'$in': lib_uuids}
-    # get all books that belong to libraries with active tunnel
-    #print(">>>>>> QUERY:{}".format(q))
+    # get books that match search criteria
     books = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('title_sort')
     authors = books.distinct('authors')
     titles = books.distinct('title')
-    librarians = db.books.distinct('librarian')
+    # get all books that belong to libraries with active tunnel
+    active_books = db.books.find({'library_uuid':{'$in': lib_uuids}})
+    librarians = active_books.distinct('librarian')
     # paginate books
     items, next_page, on_page, total = paginate(books, page)
     # return serialized books with availability of next page

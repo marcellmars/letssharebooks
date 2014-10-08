@@ -88,7 +88,8 @@ var render_book = function(i, book) {
     var last_comma = authors.lastIndexOf(',');
     authors = authors.substr(0, last_comma) + authors.substr(last_comma + 1) + '</div>';
     var book_title_stripped =  book.title.replace(/\?/g, '');
-    var metadata_urls = [book_title_stripped, [base_url, '/get/opf/', book.application_id, ' ',
+    var metadata_urls = [book_title_stripped,
+                         [base_url, '/get/opf/', book.application_id, ' ',
                           book_title_stripped, '.opf'].join(''),
                          [base_url, '/get/cover/', book.application_id,
                           '.jpg'].join('')];
@@ -166,6 +167,8 @@ var open_import_modal = function() {
     });
     modal.dialog("open");
 };
+
+/* --------------------------------------------------------------------------*/
 
 var setup_modal = function () {
     $('.more_about').click(function(e) {

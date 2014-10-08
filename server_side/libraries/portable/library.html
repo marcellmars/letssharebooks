@@ -33,7 +33,7 @@
   </script>
 
   <script type="text/x-template" id="book-parts-tmpl">
-<a href="<%= base_url %><%= format %><%= book.application_id %><%= portable_book %><%= format.toLowerCase() %>"><%= format.toUpperCase() %><%= portable_format %></a>
+    <a href="<%= base_url %><%= format %><%= book.application_id %><%= portable_book %><%= format.toLowerCase() %>"><%= format.toUpperCase() %><%= portable_format %></a>
   </script>
 
   <script type="text/x-template" id="book-content-tmpl">
@@ -61,8 +61,18 @@
       </div>
     </div>
   </script>
+  
+  <script type="text/x-template" id="import-modal-tmpl">
+    <div id="import-modal" title="Importing to calibre">
+      <div>
+        <p>Check [let's share books] plugin in your Calibre for downloads...</p>
+      </div>
+    </div>
+  </script>
+  
   <script type="application/javascript" src="static/underscore-min.js"></script>
   <script type="application/javascript" src="static/jquery-1.10.2.min.js"></script>
+  <script type="application/javascript" src="static/jquery-migrate-1.2.1.js"></script>
   <script type="application/javascript" src="static/jquery-ui-1.10.3.custom.min.js"></script>
   <script type="application/javascript" src="static/jquery.ba-bbq.min.js"></script>
   <script type="application/javascript" src="static/json2.js"></script>

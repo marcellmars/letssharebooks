@@ -74,12 +74,24 @@ a {
     margin-bottom: 7px;
 }
 
-#toolbar {
+.toolbar {
     margin-bottom: 3px;
     text-align: center;
 }
 
-#toolbar .pagination {
+.toolbar .prev_page {
+    float: left;
+}
+
+.toolbar .next_page {
+    float: right;
+}
+
+.toolbar #page-msg {
+    width: 400px;
+}
+
+.toolbar .pagination {
     height: 30px;
 }
 
@@ -101,18 +113,6 @@ a {
     background-color: #ffffff;
     color: #ff0000;
     border: 1px solid #ff0000;
-}
-
-#toolbar #prev_page {
-    float: left;
-}
-
-#toolbar #next_page {
-    float: right;
-}
-
-#toolbar #page-msg {
-    width: 400px;
 }
 
 #search {

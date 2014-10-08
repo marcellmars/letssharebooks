@@ -135,12 +135,12 @@ var parse_response = function (data) {
     update_pagination_info(data['on_page'], data['total']);
     /* enable/disable pagination */
     if (data['next_page'] === null) {
-        modify_button('#next_page', 'not-active');
+        modify_button('.next_page', 'not-active');
     } else {
-        modify_button('#next_page', 'active');
+        modify_button('.next_page', 'active');
     };
     if (STATE.page > 1) {
-        modify_button('#prev_page', 'active');
+        modify_button('.prev_page', 'active');
     };
     /* empty main container and render books */
     $('#content').empty();
@@ -268,7 +268,7 @@ var update_autocomplete = function(data) {
 
 var next_page = function () {
     STATE.page += 1;
-    modify_button('#prev_page', 'active');
+    modify_button('.prev_page', 'active');
     render_page();
 };
 
@@ -279,10 +279,10 @@ var prev_page = function () {
         return;
     };
     STATE.page -= 1;
-    modify_button('#next_page', 'active');
-    $('#next_page').show();
+    modify_button('.next_page', 'active');
+    $('.next_page').show();
     if (STATE.page <= 1) {
-        modify_button('#prev_page', 'not-active');
+        modify_button('.prev_page', 'not-active');
     }
     render_page();
 };
@@ -293,8 +293,8 @@ var prev_page = function () {
  */
 
 var init_toolbar = function () {
-    $('#prev_page').click(function () {prev_page(); });
-    $('#next_page').click(function () {next_page(); });
+    $('.prev_page').click(function () {prev_page(); });
+    $('.next_page').click(function () {next_page(); });
     $('#page-msg').click(function () {
       // going back to the homepage lists ALL books in the DB
       // (i.e. resets the search)

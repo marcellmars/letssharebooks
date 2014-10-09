@@ -52,6 +52,56 @@ var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim())
     import_modal_tmpl = _.template($('#import-modal-tmpl').text().trim());
 
 /* ----------------------------------------------------------------------------
+ * Generate dictionaries for the html templates.
+ * These functions should be mocked when this file is used by portable library
+ * ----------------------------------------------------------------------------
+ */
+
+if(!window.gen_book_string_parts) {
+    window.gen_book_string_parts = function (base_url, format, book) {
+        book.application_id = "/" + book.application_id;
+        return {
+            'base_url': base_url + '/get/',
+            'format': format,
+            'book': book,
+            'portable_book': '.',
+            'portable_format': ''
+        }
+    }
+};
+
+if(!window.gen_book_content) {
+    window.gen_book_content = function (base_url, book, authors, formats) {
+        return {
+            'base_url': base_url,
+            'book': book,
+            'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
+            'authors': authors,
+            'formats': formats,
+            'get_cover': '/get/cover',
+            'get_opf' : '/get/opf/',
+            'portable_cover': '',
+            'portable_opf': ''
+        }
+    }
+};
+
+if(!window.gen_book_modal) {
+    var gen_book_modal = function (base_url, book, formats) {
+        return {
+            'base_url': base_url,
+            'book': book,
+            'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
+            'formats': formats,
+            'get_cover': '/get/cover/',
+            'get_opf': '/get/opf/',
+            'portable_cover': '',
+            'portable_opf': ''
+        }
+    }
+};
+
+/* ----------------------------------------------------------------------------
  * Renders single book
  * ----------------------------------------------------------------------------
  */
@@ -62,13 +112,8 @@ var render_book = function(i, book) {
         authors = '<div id="authorz">';
     
     book.formats.map(function (format) {
-        var string_parts = book_string_parts_tmpl({
-            'base_url': base_url + '/get/',
-            'format': format,
-            'book': book,
-            'portable_book': '.',
-            'portable_format': ''
-        });
+        var string_parts = book_string_parts_tmpl(
+            gen_book_string_parts(base_url, format, book));
         formats = formats + ' ' + string_parts;
     });
 
@@ -85,31 +130,12 @@ var render_book = function(i, book) {
     $(document).on('click', '.author', function(e) {
       search_author($(this).data('authors'));
     });
-
+    
     var last_comma = authors.lastIndexOf(',');
-    authors = authors.substr(0, last_comma) + authors.substr(last_comma + 1) + '</div>';
-    var book_title_stripped =  book.title.replace(/\?/g, '');
-    var metadata_urls = [book_title_stripped,
-                         [base_url, '/get/opf/', book.application_id, ' ',
-                          book_title_stripped, '.opf'].join(''),
-                         [base_url, '/get/cover/', book.application_id,
-                          '.jpg'].join('')];
-    $.each(book.formats, function(i, format) {
-        metadata_urls.push([base_url, '/get/', format,  '/',
-                            book.application_id, '.', format].join(''));
-    });
-    var book_content = book_content_tmpl({
-        'base_url': base_url,
-        'book': book,
-        'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
-        'authors': authors,
-        'formats': formats,
-        'get_cover': '/get/cover',
-        'get_opf' : '/get/opf/',
-        'portable_cover': '',
-        'portable_opf': '',
-        'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
-    });
+    authors = authors.substr(0, last_comma) +
+        authors.substr(last_comma + 1) + '</div>';
+    var book_content = book_content_tmpl(gen_book_content(
+        base_url, book, authors, formats));
     $('#content').append(book_content);
 };
 
@@ -182,37 +208,12 @@ var setup_modal = function () {
             var formats = '',
             base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
             book.formats.map(function (format) {
-                var string_parts = book_string_parts_tmpl({
-                    'base_url': base_url + '/get/',
-                    'format': format,
-                    'book': book,
-                    'portable_book': '.',
-                    'portable_format': ''
-                });
+                var string_parts = book_string_parts_tmpl(
+                    gen_book_string_parts(base_url, format, book));
                 formats = formats + " " + string_parts;
             });
-
-            var book_title_stripped =  book.title.replace(/\?/g, '');
-            var metadata_urls = [book_title_stripped, [base_url, '/get/opf/', book.application_id, ' ',
-                          book_title_stripped, '.opf'].join(''),
-                         [base_url, '/get/cover/', book.application_id,
-                          '.jpg'].join('')];
-            $.each(book.formats, function(i, format) {
-                    metadata_urls.push([base_url, '/get/', format,  '/',
-                                  book.application_id, '.', format].join(''));
-                  });
-
-            modal_html = book_modal_tmpl({
-                'base_url': base_url,
-                'book': book,
-                'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
-                'formats': formats,
-                'get_cover': '/get/cover/',
-                'get_opf': '/get/opf/',
-                'portable_cover': '',
-                'portable_opf': '',
-                'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
-            });
+            modal_html = book_modal_tmpl(
+                gen_book_modal(base_url, book, formats));
             var modal = $(modal_html);
             modal.dialog({
                 autoOpen: false,

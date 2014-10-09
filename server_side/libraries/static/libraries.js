@@ -195,7 +195,7 @@ var setup_modal = function () {
                                   book.application_id, '.', format].join(''));
                   });
 
-            modal_html = book_modal_tmpl({
+            var modal_html = book_modal_tmpl({
                 'base_url': base_url,
                 'book': book,
                 'book_title_stripped': book.title.replace(/\?/g, ''),
@@ -209,7 +209,12 @@ var setup_modal = function () {
                 minHeight: 300,
                 minWidth: 500,
                 position: { my: "center top", at: "center top"},
-                closeOnEscape: true
+                closeOnEscape: true,
+                open: function() {
+                    $('.ui-widget-overlay').bind('click', function() {
+                        modal.dialog('close');
+                    })
+                }
             });
             $(modal).find('.import').click(function(e) {
                 open_import_modal();

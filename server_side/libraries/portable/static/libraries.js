@@ -213,7 +213,7 @@ var setup_modal = function () {
                     gen_book_string_parts(base_url, format, book));
                 formats = formats + " " + string_parts;
             });
-            modal_html = book_modal_tmpl(
+            var modal_html = book_modal_tmpl(
                 gen_book_modal(base_url, book, formats));
             var modal = $(modal_html);
             modal.dialog({
@@ -222,7 +222,12 @@ var setup_modal = function () {
                 minHeight: 300,
                 minWidth: 500,
                 position: { my: "center top", at: "center top"},
-                closeOnEscape: true
+                closeOnEscape: true,
+                open: function() {
+                    $('.ui-widget-overlay').bind('click', function() {
+                        modal.dialog('close');
+                    })
+                }
             });
             $(modal).find('.import').click(function(e) {
                 open_import_modal();

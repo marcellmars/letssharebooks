@@ -1,41 +1,39 @@
-$(document).ready(function () {
-    /* helper functions */
+/******************************************************************************
+ * portable.js: pure javascript mock of server side library.motw
+ *****************************************************************************/
 
-    /* add value v to set s */
+$(document).ready(function () {
+
+    /* This file is using LIBRARY variable from data.js and ITEMS_PER_PAGE
+     *  from library.js
+     */
+
+    var BOOKS = LIBRARY.books.add;
+    var AUTHORS = [];
+    var TITLES = [];
+    var LIBRARIANS = [];
+    
+    /**************************************************************************
+    * helper function; add value v to set s
+    **************************************************************************/
     var sadd = function(s, v) {
         if ($.inArray(v, s) == -1) {
             s.push(v);
         };
     };
 
-    /* mock ajax calls */
-    $.ajax = function(params) {
-        if (params.url == 'get_books') {
-            params.success(mock_get_books(JSON.parse(params.data)));
-        };
-    };
-
-    $.getJSON = function(url, params) {
-        var book = mock_book(params.uuid);
-        return {done: function(f){f(book);}};
-    };
-
-    /* This file is using LIBRARY variable from data.js and ITEMS_PER_PAGE from library.js  */
-
-    var BOOKS = LIBRARY.books.add;
-    var AUTHORS = [];
-    var TITLES = [];
-    var LIBRARIANS = [];
-
+    /**************************************************************************
+    * generate distinct list of authors, titles and librarians
+    **************************************************************************/
     var generate_metadata = function() {
-        $.each(BOOKS, function(i, book){
+        $.each(BOOKS, function(i, book) {
             /* add authors */
             var authors = book.authors;
             $.each(authors, function(j, author) {
                 sadd(AUTHORS, author);
             });
             /* add titles */
-            var title = book.title_sort;
+            var title = book.title;
             sadd(TITLES, title);
             /* add librarians */
             var librarian = book.librarian;
@@ -43,6 +41,26 @@ $(document).ready(function () {
         });
     }();
 
+    /**************************************************************************
+    * mock ajax call for get_books
+    **************************************************************************/
+    $.ajax = function(params) {
+        if (params.url == 'get_books') {
+            params.success(mock_get_books(JSON.parse(params.data)));
+        };
+    };
+
+    /**************************************************************************
+    * mock getJSON
+    **************************************************************************/
+    $.getJSON = function(url, params) {
+        var book = mock_book(params.uuid);
+        return {done: function(f){f(book);}};
+    };
+
+    /**************************************************************************
+    * this is mock for main get_books api call
+    **************************************************************************/
     var mock_get_books = function(params) {
         ret = {
             'books': [],
@@ -56,13 +74,12 @@ $(document).ready(function () {
         };
 
         var books = BOOKS;
-        if (params.query.authors !== '' || params.query.title !== '' || params.query.librarian !== '' || params.query.search_all !== '') {
+        if (params.query.authors !== '' || params.query.title !== '' ||
+            params.query.librarian !== '' || params.query.search_all !== '') {
             books = search(params.query, books);
         }
         var offset = (params.page-1)*ITEMS_PER_PAGE;
-        ret.books = books.slice(offset,
-                                offset + ITEMS_PER_PAGE);
-
+        ret.books = books.slice(offset, offset + ITEMS_PER_PAGE);
         ret.on_page = ret.books.length;
         ret.total = books.length;
         if (offset + ITEMS_PER_PAGE >= ret.total) {
@@ -71,6 +88,9 @@ $(document).ready(function () {
         return ret;
     };
 
+    /**************************************************************************
+    * this mocks single book info api call
+    **************************************************************************/
     var mock_book = function(uuid) {
         var ret = null;
         $.each(BOOKS, function(i, book) {
@@ -81,6 +101,9 @@ $(document).ready(function () {
         return ret;
     };
 
+    /**************************************************************************
+    * this mocks search functionality
+    **************************************************************************/
     var search = function(q, books) {
         if (q.authors !== '') {
             var regex = new RegExp(q.authors, 'gim');
@@ -114,21 +137,23 @@ $(document).ready(function () {
         return books;
     };
 
-    /* these are portable-specific overrides */
+    /**************************************************************************
+    * these are portable-specific overrides
+    **************************************************************************/
 
     var get_directory_path = function (book) {
-        format = book.formats[0]
-        file_path = book.format_metadata[format].path
-        directory_path = ""
-        directory = file_path.split("/").slice(-3,-1)
+        var format = book.formats[0]
+        var file_path = book.format_metadata[format].path
+        var directory_path = ""
+        var directory = file_path.split("/").slice(-3,-1)
         directory.forEach(function(el){directory_path += el + "/"});
         return [directory_path, file_path];
     };
 
     window.gen_book_string_parts = function (base_url, format, book) {
         book.application_id = '';
-        df_path = get_directory_path(book);
-        file_name = df_path[1].split("/").slice(-1);
+        var df_path = get_directory_path(book);
+        var file_name = df_path[1].split("/").slice(-1);
         return {
             'base_url': '',
             'format': '',
@@ -140,7 +165,7 @@ $(document).ready(function () {
 
     window.gen_book_content = function (base_url, book, authors, formats) {
         book.application_id = '';
-        df_path = get_directory_path(book);
+        var df_path = get_directory_path(book);
         return {
             'base_url': '',
             'book': book,
@@ -156,7 +181,7 @@ $(document).ready(function () {
 
     window.gen_book_modal = function (base_url, book, formats) {
         book.application_id = '';
-        df_path = get_directory_path(book);
+        var df_path = get_directory_path(book);
         return { 
             'base_url': '',
             'book': book,

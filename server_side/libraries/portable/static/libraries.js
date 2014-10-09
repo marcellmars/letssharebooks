@@ -274,8 +274,15 @@ var update_autocomplete = function(data) {
     });
     if (STATE.query.librarian) {
         $('#librarian').val(STATE.query.librarian);
-    } else if (data['librarians'].length == 1 ){
-        $('#librarian').val(data['librarians'][0]);
+    } else if (data['librarians'].length == 1 ) {
+        /* if single librarian then update dropdown and title page */
+        var librarian = data['librarians'][0];
+        var sufix = "'s Library";
+        $('#librarian').val(librarian);
+        if ($.inArray(librarian.slice(-1), ['s', 'z']) >= 0) {
+            sufix = "' Library";
+        };
+        document.title = librarian + sufix;
     };
 };
 

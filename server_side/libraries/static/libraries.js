@@ -239,11 +239,11 @@ var setup_hover = function() {
                 var cover = $(this);
                 var librarian = cover.attr('rel');
                 if (selected_librarian == librarian) {
-                    cover.css('background', 'rgba(0, 0, 0, 0.7');
+                    cover.find('.cover-highlight').show();
                 }
             });
         }, function() {
-            $('.cover').css('background', 'rgba(0, 0, 0, 0.9')
+            $('.cover-highlight').hide();
         }
     );
 };

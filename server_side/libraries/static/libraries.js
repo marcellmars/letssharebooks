@@ -232,23 +232,15 @@ var setup_hover = function() {
      selected book */
     $( ".cover" ).hover(
         function() {
-            /* get current authors */
-            var selected_authors = $.map($(this).find('.author'), function(i) {
-                return i.text;
-            });
+            /* get current librarian */
+            var selected_librarian = $(this).attr('rel');
             /* iterate over all other books */
             $.each($('.cover').not($(this)), function(i) {
                 var cover = $(this);
-                /* get authors */
-                var authors = $.map($(this).find('.author'), function(i) {
-                    return i.text;
-                });
-                /* check if there are any matches */
-                $.each(authors, function (i, a) {
-                    if ($.inArray(a, selected_authors) >= 0) {
-                        cover.css('background', 'rgba(0, 0, 0, 0.7');
-                    }
-                });
+                var librarian = cover.attr('rel');
+                if (selected_librarian == librarian) {
+                    cover.css('background', 'rgba(0, 0, 0, 0.7');
+                }
             });
         }, function() {
             $('.cover').css('background', 'rgba(0, 0, 0, 0.9')

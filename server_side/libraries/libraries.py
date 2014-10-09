@@ -23,6 +23,7 @@ PUBLIC_BOOK_FIELDS = {
     'authors':1,
     'tunnel':1,
     'uuid':1,
+    'librarian':1,
     '_id': 0
     }
 

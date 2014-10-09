@@ -178,6 +178,7 @@ var parse_response = function (data) {
     $('#content').empty();
     $.each(data['books'], render_book);
     setup_modal();
+    setup_hover();
     /* alert on import click */
     $('.import').click(function(e) {
         open_import_modal();
@@ -230,6 +231,37 @@ var setup_modal = function () {
         });
         e.preventDefault();
     });
+};
+
+/* --------------------------------------------------------------------------*/
+
+var setup_hover = function() {
+    /* mark books that were authord by the one of the authors of the currently
+     selected book */
+    $( ".cover" ).hover(
+        function() {
+            /* get current authors */
+            var selected_authors = $.map($(this).find('.author'), function(i) {
+                return i.text;
+            });
+            /* iterate over all other books */
+            $.each($('.cover').not($(this)), function(i) {
+                var cover = $(this);
+                /* get authors */
+                var authors = $.map($(this).find('.author'), function(i) {
+                    return i.text;
+                });
+                /* check if there are any matches */
+                $.each(authors, function (i, a) {
+                    if ($.inArray(a, selected_authors) >= 0) {
+                        cover.css('background', 'rgba(0, 0, 0, 0.7');
+                    }
+                });
+            });
+        }, function() {
+            $('.cover').css('background', 'rgba(0, 0, 0, 0.9')
+        }
+    );
 };
 
 /* --------------------------------------------------------------------------*/

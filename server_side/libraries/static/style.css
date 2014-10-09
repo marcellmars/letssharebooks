@@ -26,6 +26,18 @@ img {
     background: rgba(0, 0, 0, 0.9);
 }
 
+.cover-highlight {
+  content: " ";
+  z-index: 10;
+  display: none;
+  position: absolute;
+  width: 238px;
+  height: 360px;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
 h2 {
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
     //font: bold 16px/22px Helvetica, Sans-Serif; 

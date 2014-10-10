@@ -48,14 +48,6 @@ class Root(object):
         return tmpl.render(app_name=settings.APP_NAME)
 
     @cherrypy.expose
-    def book(self, uuid):
-        '''
-        Single book page
-        '''
-        book = libraries.get_book(cherrypy.thread_data.db, uuid=uuid)
-        return book
-
-    @cherrypy.expose
     def upload_catalog(self, uploaded_file):
         '''
         End-point for uploading user catalogs
@@ -104,6 +96,14 @@ class Root(object):
         return libraries.get_catalogs(cherrypy.thread_data.db)
 
     @cherrypy.expose
+    def book(self, uuid):
+        '''
+        Single book page
+        '''
+        book = libraries.get_book(cherrypy.thread_data.db, uuid=uuid)
+        return book
+
+    @cherrypy.expose
     #@cherrypy.tools.json_in()
     def get_books(self):
         '''
@@ -119,6 +119,13 @@ class Root(object):
         query = params.get('query')
         books = libraries.get_books(cherrypy.thread_data.db, page, query)
         return books
+
+    @cherrypy.expose
+    def portables(self):
+        '''
+        Returns all registered portable libraries
+        '''
+        return libraries.get_portables(cherrypy.thread_data.db)
 
 #------------------------------------------------------------------------------
 # app entry point

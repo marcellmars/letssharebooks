@@ -52,6 +52,10 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.db = utils.connect_to_db(settings.ENV)
         utils.remove_all_data(self.db)
 
+    def tearDown(self):
+        # clear db
+        self.db = utils.connect_to_db(settings.ENV)
+        utils.remove_all_data(self.db)
 
     def test_index(self):
         response = self.request('/')
@@ -70,7 +74,6 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         # bad json file
         res = upload_catalog(self, 'test/bad_library.json')
         self.assertEqual(res[:20], 'Error in JSONDecode ')
-
 
     def test_get_books(self):
         # first upload some books

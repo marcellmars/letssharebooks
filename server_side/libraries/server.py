@@ -120,6 +120,13 @@ class Root(object):
         books = libraries.get_books(cherrypy.thread_data.db, page, query)
         return books
 
+    @cherrypy.expose
+    def portables(self):
+        '''
+        Returns all registered portable libraries
+        '''
+        return libraries.get_portables(cherrypy.thread_data.db)
+
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------

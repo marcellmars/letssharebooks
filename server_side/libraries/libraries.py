@@ -263,6 +263,16 @@ def get_books(db, page, query={}):
 
 #------------------------------------------------------------------------------
 
+def get_portables(db):
+    '''
+    Returns all registered portable libraries
+    '''
+    return serialize2json(list(db.catalog.find(
+                {'portable': False},
+                {'library_uuid':1, 'librarian':1, '_id': 0})))
+
+#------------------------------------------------------------------------------
+
 def serialize2json(data):
     '''
     Pretty print for json

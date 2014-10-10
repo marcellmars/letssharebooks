@@ -5,6 +5,10 @@ body {
     margin: 0px auto;
 }
 
+a {
+    color:white;
+}
+
 #content {}
 
 img {
@@ -55,6 +59,7 @@ h2 span {
     background: rgba(0, 0, 0, 0.9);
     width: 100%;
 }
+
 .lodestone {
     position:absolute;
     bottom:33px;
@@ -64,10 +69,6 @@ h2 span {
 .lodestone_modal {
     position: relative;
     float: right;
-}
-
-a {
-    color:white;
 }
 
 #header {
@@ -120,7 +121,6 @@ a {
     width: 90px;
     float: right;
 }
-
 
 #authors, #titles, #search_all, #librarian {
     width: 210px;
@@ -183,4 +183,3 @@ body.loading .modal {
     color: #ffffff;
     background-color: #000000;
 }
-

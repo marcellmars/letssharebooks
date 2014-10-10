@@ -36,7 +36,7 @@ if False:
 
 #- set up logging ------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=True)
+logger = get_logger('letssharebooks', disabled=False)
 
 #-----------------------------------------------------------------------------
 
@@ -46,6 +46,7 @@ PORTABLE_RESOURCES = [
     'portable/jquery-1.10.2.min.js',
     'portable/jquery.ba-bbq.min.js',
     'portable/jquery.mockjax.js',
+    'portable/jquery-migrate-1.2.1.js',
     'portable/jquery-ui-1.10.3.custom.min.css',
     'portable/jquery-ui-1.10.3.custom.min.js',
     'portable/json2.js',

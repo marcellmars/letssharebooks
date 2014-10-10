@@ -2,11 +2,16 @@
 - - -
 [TOC]
 
+get rid of this file and add all bullets to issues at github
+
 # [let's share books] Calibre plugin
 
 - add md5 checksums for every book in library
-- finish all the dance with librarian name (if name changed update librarian on library.memoryoftheworld.org etc.)
+- check if there is already someone on server with the same librarian name
 - check if editing a book gets noticed and propagated to server
+- check on OSX if handling sslErros works on both calibre 1.x and 2.x
+    - >> `netaccman.sslErrors.connect(self.sslErrorHandler)` (main.py:702)
+ 
 
 # library.memoryoftheworld.org
 
@@ -18,15 +23,6 @@
 - get librarian name together with related link below the cover
 
 # portable library
-- replace all hardcoded paths in templates with variables so portable could ignore them by setting them to empty strings:
-  - in index.html: 
-    - DONE_book_ parts_tmpl:
-      - /get/ + book.application_id
-    - DONE_book_content_tmpl:
-      - /get/cover + book.application_id
-      - /get/opf + book.application_id + " " + book_title_stripped
-    - DONE_book_modal_tmpl
-      - /get/cover + book.application_id
-      - /get/opf + book.application_id + " " + book_title_stripped
+- get rid of "All librarians" and put librarian name without drop down manu
 - get rid of visit librarian (maybe just adding portable.css with directive `display:none`)
 - sync libraries.js and other files with the version in libraries/ so we don't have to maintain more than one

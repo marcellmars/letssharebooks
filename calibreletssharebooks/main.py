@@ -90,7 +90,8 @@ if False:
 
 #- set up logging -------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=True)
+logger = get_logger('letssharebooks', disabled=False)
+logger.debug("WTF!")
 
 #------------------------------------------------------------------------------
 
@@ -251,12 +252,14 @@ class MetadataLibThread(QThread):
                             #- this works but get_gui().library_path ----------
                             #- should be the way to do this -------------------
                             file_path = format_field[1].split(os.path.sep)[:-3]
+                            logger.debug("FILE_PATH: {}".format(file_path))
                             if sys.platform == "win32":
                                 file_path.insert(1, os.path.sep*2)
                             else:
                                 file_path.insert(0, '/')
                             self.path_not_found = False
                             self.directory_path = os.path.join(file_path)
+                            logger.debug("DIRECTORY_PATH: {}".format(self.directory_path))
                     formats_metadata[book_format[0]] = format_fields
             book_metadata['format_metadata'] = formats_metadata
             book_metadata['librarian'] = self.librarian
@@ -321,7 +324,6 @@ class MetadataLibThread(QThread):
         #----------------------------------------------------------------------
         #- prepare BROWSE_LIBRARY.html for portable library in the root -------
         #- directory of current library ---------------------------------------
-
         with open(os.path.join(self.us.portable_directory,
                                'json',
                                'portable_library.json'), 'wb') as file:
@@ -335,8 +337,20 @@ class MetadataLibThread(QThread):
             library['books'] = {}
             library['books']['remove'] = []
             library['books']['add'] = [book for book in books_metadata]
+            logger.debug("BOOKS_METADATA: {}".format(books_metadata))
             json_string = json.dumps(library)
             file.write(json_string)
+
+        from calibre.gui2.ui import get_gui
+        file_path = get_gui().library_path.split(os.path.sep)
+        logger.debug("FILE_PATH/GET_GUI: {}".format(file_path))
+        if sys.platform == "win32":
+            file_path.insert(1, os.path.sep*2)
+        else:
+            file_path.insert(0, '/')
+        self.path_not_found = False
+        self.directory_path = os.path.join(file_path)
+        logger.debug("DIRECTORY_PATH/GET_GUI: {}".format(self.directory_path))
 
         if not self.path_not_found:
             logger.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
@@ -1266,7 +1280,7 @@ class LetsShareBooksDialog(QDialog):
             old_text = f.read()
         with open(os.path.join(download_dir, "metadata.opf"), "w") as f:
             new_text = old_text.replace('<guide/>',
-                                        '<guide><reference href="cover.jpg" '
+                                        '<guide><reference href="cover.jpg" '\
                                         'title="Cover" type="cover"/></guide>')
             f.write(new_text)
         return True

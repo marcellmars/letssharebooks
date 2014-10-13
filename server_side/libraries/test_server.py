@@ -92,6 +92,38 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(len(data['authors']), 3)
         self.assertEqual(len(data['librarians']), 1)
 
+    def test_search(self):
+        # first upload some books
+        res = upload_catalog(self, 'test/library.json')
+        self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
+        # search author
+        params = {'page':1, 'query':{'authors':'Heidegger'}}
+        r = self.request('/get_books', method='POST',
+                         data=simplejson.dumps(params))
+        self.assertEqual(r.output_status, '200 OK')
+        data = simplejson.loads(r.body[0])
+        self.assertEqual(data['total'], 1)
+        self.assertEqual(len(data['books']), 1)
+        self.assertEqual(data['books'][0]['authors'][0], 'Martin Heidegger')
+        # search title
+        params = {'page':1, 'query':{'titles':'music'}}
+        r = self.request('/get_books', method='POST',
+                         data=simplejson.dumps(params))
+        self.assertEqual(r.output_status, '200 OK')
+        data = simplejson.loads(r.body[0])
+        self.assertEqual(data['total'], 1)
+        self.assertEqual(len(data['books']), 1)
+        self.assertEqual(
+            data['books'][0]['title'],
+            'Archipelagos Of Sound : music and its history within the imperial world order')
+        # search librarian
+        params = {'page':1, 'query':{'librarian':'LibrAn0n'}}
+        r = self.request('/get_books', method='POST',
+                         data=simplejson.dumps(params))
+        self.assertEqual(r.output_status, '200 OK')
+        data = simplejson.loads(r.body[0])
+        self.assertEqual(data['total'], 2)
+
     def test_for_duplicates(self):
         # try to upload same catalog twice
         res = upload_catalog(self, 'test/library.json')
@@ -133,7 +165,6 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         r = self.request('/remove_portable', method='POST', lib_uuid=lib_uuid)
         self.assertEqual(r.output_status, '200 OK')
         
-
 #------------------------------------------------------------------------------
 
 if __name__ == '__main__':

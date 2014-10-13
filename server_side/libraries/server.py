@@ -17,7 +17,9 @@ from pymongo import MongoClient
 #------------------------------------------------------------------------------
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-ENVIRONMENT = Environment(loader=FileSystemLoader('{}/templates'.format(CURRENT_DIR)))
+ENVIRONMENT = Environment(loader=FileSystemLoader(
+        '{}/templates'.format(CURRENT_DIR)))
+
 CONF = {'/static': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'static'),
                     'tools.staticdir.content_types': {'js': 'application/javascript',
@@ -31,8 +33,8 @@ CONF = {'/static': {'tools.staticdir.on': True,
                                                       'gif': 'image/gif'
                                                       }},
         '/favicon.ico': {'tools.staticfile.on': True,
-                         'tools.staticfile.filename': os.path.join(CURRENT_DIR, 'static/connected.ico')}
-        }
+                         'tools.staticfile.filename': os.path.join(
+            CURRENT_DIR, 'static/connected.ico')}}
 
 #------------------------------------------------------------------------------
 # Exposed resources
@@ -126,6 +128,14 @@ class Root(object):
         Returns all registered portable libraries
         '''
         return libraries.get_portables(cherrypy.thread_data.db)
+
+    @cherrypy.expose
+    def remove_portable(self, lib_uuid):
+        '''
+        Removes registered portable library with given lib_uuid
+        Just for testing...
+        '''
+        return libraries.remove_portable(cherrypy.thread_data.db, lib_uuid)
 
 #------------------------------------------------------------------------------
 # app entry point

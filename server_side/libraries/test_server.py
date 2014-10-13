@@ -116,6 +116,23 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         data = simplejson.loads(r.body[0])
         self.assertEqual(data['uuid'], uuid)
 
+    def test_portable(self):
+        lib_uuid = '3b876484-0dbd-461f-935a-e58b08c06567'
+        # first upload some books
+        res = upload_catalog(self, 'test/portable.json')
+        self.assertEqual(res, lib_uuid)
+        # and now try to get them
+        params = {'page':1,
+                  'query':{'authors':'','titles':'','search_all':''}}
+        r = self.request('/get_books', method='POST',
+                         data=simplejson.dumps(params))
+        self.assertEqual(r.output_status, '200 OK')
+        data = simplejson.loads(r.body[0])
+        self.assertEqual(data['total'], 1)
+        # try to remove this portable
+        r = self.request('/remove_portable', method='POST', lib_uuid=lib_uuid)
+        self.assertEqual(r.output_status, '200 OK')
+        
 
 #------------------------------------------------------------------------------
 

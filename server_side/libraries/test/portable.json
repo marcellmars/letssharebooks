@@ -1,0 +1,102 @@
+{
+    "library_uuid": "3b876484-0dbd-461f-935a-e58b08c06567",
+    "last_modified": "1383473174.624734",
+    "librarian": "portable_lib",
+    "portable": true,
+    "books": {
+        "remove": [],
+        "add" : [
+            {
+                "librarian": "portable_lib",
+                "rating": 0.0, 
+                "author_sort": "Heidegger, Martin", 
+                "application_id": 2, 
+                "pubdate": "2011-02-19T23:00:00+00:00", 
+                "series": null, 
+                "author_sort_map": {
+                    "Martin Heidegger": "Heidegger, Martin"
+                }, 
+                "category_urls": {
+                    "publisher": {
+                        "Naprijed": "/ajax/books_in/7075626c6973686572/32"
+                    }, 
+                    "#issue": {}, 
+                    "tags": {}, 
+                    "series": {}, 
+                    "languages": {}, 
+                    "authors": {
+                        "Martin Heidegger": "/ajax/books_in/617574686f7273/33"
+                    }
+                }, 
+                "author_link_map": {
+                    "Martin Heidegger": ""
+                }, 
+                "uuid": "25003c67-a82f-4aea-bb04-430c03012263", 
+                "title": "Bitak i vrijeme", 
+                "user_categories": {}, 
+                "comments": null, 
+                "languages": [
+                    "hrv"
+                ], 
+                "user_metadata": {
+                    "#issue": {
+                        "is_category": true, 
+                        "#extra#": null, 
+                        "kind": "field", 
+                        "is_custom": true, 
+                        "is_csp": false, 
+                        "colnum": 1, 
+                        "column": "value", 
+                        "rec_index": 22, 
+                        "search_terms": [
+                            "#issue"
+                        ], 
+                        "link_column": "value", 
+                        "label": "issue", 
+                        "is_multiple": "|", 
+                        "datatype": "text", 
+                        "#value#": [], 
+                        "category_sort": "value", 
+                        "table": "custom_column_1", 
+                        "is_editable": true, 
+                        "is_multiple2": {
+                            "cache_to_list": "|", 
+                            "ui_to_list": ",", 
+                            "list_to_ui": ", "
+                        }, 
+                        "display": {
+                            "is_names": false
+                        }, 
+                        "name": "Issues"
+                    }
+                }, 
+                "thumbnail": "/get/thumb/2", 
+                "other_formats": {}, 
+                "tags": [], 
+                "timestamp": "2011-02-20T02:17:56+00:00", 
+                "last_modified": "2012-12-13T11:44:10+00:00", 
+                "main_format": {
+                    "pdf": "/get/pdf/2"
+                }, 
+                "authors": [
+                    "Martin Heidegger"
+                ], 
+                "publisher": "Naprijed", 
+                "series_index": null, 
+                "format_metadata": {
+                    "pdf": {
+                        "path": "/home/m/Ubuntu One/MaternjeKnjige/Martin Heidegger/Bitak i vrijeme (2)/Bitak i vrijeme - Martin Heidegger.pdf", 
+                        "size": 9952369, 
+                        "mtime": "2012-12-13T11:44:10.671569+00:00"
+                    }
+                }, 
+                "title_sort": "Bitak i vrijeme", 
+                "cover": "/get/cover/2", 
+                "formats": [
+                    "pdf"
+                ], 
+                "identifiers": {}
+            }
+        ]
+    }
+}

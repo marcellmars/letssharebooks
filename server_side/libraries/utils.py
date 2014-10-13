@@ -2,6 +2,7 @@
 # misc utility functions
 #------------------------------------------------------------------------------
 
+from bson import json_util as json
 from pymongo import MongoClient
 
 #------------------------------------------------------------------------------
@@ -30,6 +31,15 @@ def remove_dots_from_dict(d):
                 del d[k]
                 new_key = k.replace('.', '')
                 d[new_key] = v
+
+#------------------------------------------------------------------------------
+
+def ser2json(data):
+    '''
+    Pretty print for json
+    '''
+    return json.dumps(data, sort_keys=True,
+                      indent=4, default=json.default)
 
 #------------------------------------------------------------------------------
 

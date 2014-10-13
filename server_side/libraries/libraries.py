@@ -5,11 +5,10 @@
 import os
 import uuid
 import zipfile
-import simplejson
-from bson import json_util as json
 import settings
 import utils
 import pickle
+import simplejson
 
 #------------------------------------------------------------------------------
 
@@ -142,11 +141,7 @@ def remove_from_library(db, library_uuid, books_uuids):
     '''
     Remove books from the library and update catalog
     '''
-    if not books_uuids:
-        return
-    for uid in books_uuids:
-        #print 'removing %s' % uid
-        db.books.remove({'uuid':uid})
+    [db.books.remove({'uuid':uid}) for uid in books_uuids]
     db.catalog.update({'library_uuid': library_uuid},
                       {'$pull': {'books': {'$in': books_uuids}}},
                       upsert=True, multi=False)
@@ -191,9 +186,9 @@ def get_catalog(db, uuid):
     '''
     Read catalog entry from the database and return json representation
     '''
-    return serialize2json(
-        db.catalog.find_one({'library_uuid':uuid},
-                            {'books':1, 'last_modified':1, '_id' : 0}))
+    return utils.ser2json(db.catalog.find_one({'library_uuid':uuid},
+                                              {'books':1,
+                                               'last_modified':1, '_id' : 0}))
 
 #------------------------------------------------------------------------------
 
@@ -201,8 +196,7 @@ def get_catalogs(db):
     '''
     for testing purposes
     '''
-    return serialize2json(
-        db.catalog.count())
+    return utils.ser2json(db.catalog.count())
 
 #------------------------------------------------------------------------------
 
@@ -211,7 +205,7 @@ def get_book(db, uuid):
     Returns book with the param uuid
     '''
     book = db.books.find_one({'uuid':uuid}, PUBLIC_SINGLE_BOOK_FIELDS)
-    return serialize2json(book)
+    return utils.ser2json(book)
 
 #------------------------------------------------------------------------------
 
@@ -253,7 +247,7 @@ def get_books(db, page, query={}):
     # paginate books
     items, next_page, on_page, total = paginate(books, page)
     # return serialized books with availability of next page
-    return serialize2json({'books': list(items),
+    return utils.ser2json({'books': list(items),
                            'next_page': next_page,
                            'on_page': on_page,
                            'total': total,
@@ -267,18 +261,23 @@ def get_portables(db):
     '''
     Returns all registered portable libraries
     '''
-    return serialize2json(list(db.catalog.find(
-                {'portable': False},
-                {'library_uuid':1, 'librarian':1, '_id': 0})))
+    return utils.ser2json(list(db.catalog.find(
+                {'portable': True},
+                {'librarian':1, 'library_uuid':1, '_id': 0})))
 
 #------------------------------------------------------------------------------
 
-def serialize2json(data):
+def remove_portable(db, lib_uuid):
     '''
-    Pretty print for json
+    Removes registered portable library with given lib_uuid
     '''
-    return json.dumps(data, sort_keys=True,
-                      indent=4, default=json.default)
+    q = {'portable': True, 'library_uuid': lib_uuid}
+    portable_cat = db.catalog.find_one(q)
+    if portable_cat:
+        remove_from_library(db, lib_uuid, portable_cat['books'])
+        db.catalog.remove(q)
+        return utils.ser2json(True)
+    return utils.ser2json(False)
 
 #------------------------------------------------------------------------------
 

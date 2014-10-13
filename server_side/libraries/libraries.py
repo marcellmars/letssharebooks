@@ -216,33 +216,31 @@ def get_books(db, page, query={}):
     '''
     # query
     q = {}
-    # extract search parameters
+    # extract search parameters and build query
     for k, v in query.iteritems():
-        if not v:
-            continue
-        v = v.encode('utf-8')
-        match_pattern = {'$regex':'.*{}.*'.format(v), '$options': 'i'}
-        if k in ['authors', 'title', 'librarian']:
-            q[k] = match_pattern
-        else:
-            q = {"$or": [{"title": match_pattern},
-                         {"authors": match_pattern},
-                         {"comments": match_pattern},
-                         {"tags": match_pattern},
-                         {"publisher": match_pattern},
-                         {"identifiers": match_pattern}]}
+        if v:
+            match_pattern = {'$regex':'.*{}.*'.format(v.encode('utf-8')),
+                             '$options': 'i'}
+            if k in ['authors', 'title', 'librarian']:
+                q[k] = match_pattern
+            # search all metadata
+            else:
+                q = {"$or": [{"title": match_pattern},
+                             {"authors": match_pattern},
+                             {"comments": match_pattern},
+                             {"tags": match_pattern},
+                             {"publisher": match_pattern},
+                             {"identifiers": match_pattern}]}
     # get all libraries that have active ssh tunnel or reference portables
-    active_lib_uuids = [
-        i['library_uuid'] for i in db.catalog.find(
-            {'$or': [{'tunnel': {'$in': get_active_tunnels()}},
-                     {'portable': True}]})]
-    q['library_uuid'] = {'$in': active_lib_uuids}
+    active_catalogs = db.catalog.find({'$or': [
+                {'tunnel': {'$in': get_active_tunnels()}},
+                {'portable': True}]})
+    q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
     # get books that match search criteria
     books = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('title_sort')
     authors = books.distinct('authors')
     titles = books.distinct('title')
     # get distinct list of all (active or portable) librarians from db.catalog
-    active_catalogs = db.catalog.find({'library_uuid':{'$in': active_lib_uuids}})
     librarians = active_catalogs.distinct('librarian')
     # paginate books
     items, next_page, on_page, total = paginate(books, page)

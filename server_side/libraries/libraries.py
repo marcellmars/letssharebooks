@@ -111,19 +111,14 @@ def import_catalog(db, catalog):
         # remove books as requested
         remove_from_library(db, library_uuid, catalog['books']['remove'])
     # add books as requested (for new library and for sync)
-    add_to_library(db, library_uuid, tunnel, catalog['books']['add'], portable)
-    update_catalog(db, library_uuid, last_modified, tunnel, librarian,
-                   portable)
-    return library_uuid
-
-#------------------------------------------------------------------------------
-
-def update_catalog(db, library_uuid, last_modified, tunnel, librarian, portable):
+    add_to_library(db, library_uuid, librarian, tunnel,
+                   catalog['books']['add'], portable)
     # set tunnel to 0 if there is a library with the same tunnel from before
-    old_libraries = [b['library_uuid']
-                     for b in db.catalog.find({'tunnel': tunnel})]
+    old_libraries = [i['library_uuid']
+                     for i in db.catalog.find({'tunnel': tunnel})]
     db.catalog.update({'library_uuid': {'$in': old_libraries}},
                       {'$set': {'tunnel': 0}}, multi=True)
+    # update catalog metadata
     db.catalog.update({'library_uuid': library_uuid},
                       {'$set': {'last_modified': last_modified,
                                 'tunnel': tunnel,
@@ -132,9 +127,10 @@ def update_catalog(db, library_uuid, last_modified, tunnel, librarian, portable)
                       upsert=True, multi=False)
     # update tunnel for all books in current library
     db.books.update({'library_uuid': library_uuid},
-                    {'$set': {'tunnel': tunnel,
-                              'librarian': librarian}},
+                    {'$set': {'tunnel': tunnel}},
                     multi=True)
+    return library_uuid
+    
 #------------------------------------------------------------------------------
 
 def remove_from_library(db, library_uuid, books_uuids):
@@ -148,33 +144,26 @@ def remove_from_library(db, library_uuid, books_uuids):
 
 #------------------------------------------------------------------------------
 
-def add_to_library(db, library_uuid, tunnel, books, portable):
+def add_to_library(db, library_uuid, librarian, tunnel, books, portable):
     '''
     Adds books to the database and modifies catalog entry. Mostly used with
     import_catalog function.
     '''
-    if not books:
-        return
     books_uuid = []
-    # insert books in the global library and take uuids
     for book in books:
-        # add id of the library to the each book
+        # add some catalog metadata
         book['library_uuid'] = library_uuid
         book['tunnel'] = tunnel
         book['portable'] = portable
+        book['librarian'] = librarian
         try:
             db.books.update({'uuid': book['uuid']},
-                            book,
+                            utils.remove_dots_from_dict(book),
                             upsert=True, multi=False)
             # collect book uuids for catalog entry
             books_uuid.append(book['uuid'])
         except Exception as e:
-            # some books have dots in keys - not good for mongo
-            utils.remove_dots_from_dict(book)
-            db.books.update({'uuid': book['uuid']},
-                            book,
-                            upsert=True, multi=False)
-            books_uuid.append(book['uuid'])
+            print(e)
     # update catalog metadata collection
     db.catalog.update({'library_uuid': library_uuid},
                       {'$pushAll': {'books': books_uuid}},
@@ -186,9 +175,9 @@ def get_catalog(db, uuid):
     '''
     Read catalog entry from the database and return json representation
     '''
-    return utils.ser2json(db.catalog.find_one({'library_uuid':uuid},
-                                              {'books':1,
-                                               'last_modified':1, '_id' : 0}))
+    return utils.ser2json(db.catalog.find_one(
+            {'library_uuid': uuid},
+            {'books': 1, 'last_modified': 1, '_id' : 0}))
 
 #------------------------------------------------------------------------------
 

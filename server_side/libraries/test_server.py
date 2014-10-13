@@ -1,7 +1,9 @@
 #------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
-import cherrypy
+# some lsb tests
+#------------------------------------------------------------------------------
 
+import cherrypy
 from server import Root, thread_connect
 from cptestcase import BaseCherryPyTestCase
 import simplejson
@@ -17,10 +19,11 @@ def setUpModule():
     cherrypy.tree.mount(Root(), '/')
     cherrypy.engine.subscribe('start_thread', thread_connect)
     cherrypy.engine.start()
-setup_module = setUpModule
 
 def tearDownModule():
     cherrypy.engine.exit()
+
+setup_module = setUpModule
 teardown_module = tearDownModule
 
 #------------------------------------------------------------------------------

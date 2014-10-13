@@ -164,6 +164,12 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         # try to remove this portable
         r = self.request('/remove_portable', method='POST', lib_uuid=lib_uuid)
         self.assertEqual(r.output_status, '200 OK')
+        # assert that all books are removed from db
+        params = {'page':1,
+                  'query':{'authors':'','titles':'','search_all':''}}
+        r = self.request('/get_books', method='POST',
+                         data=simplejson.dumps(params))
+        self.assertEqual(simplejson.loads(r.body[0])['total'], 0)
         
 #------------------------------------------------------------------------------
 

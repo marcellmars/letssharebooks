@@ -4,6 +4,7 @@
 
 from bson import json_util as json
 from pymongo import MongoClient
+import settings
 
 #------------------------------------------------------------------------------
 
@@ -38,8 +39,11 @@ def ser2json(data):
     '''
     Pretty print for json
     '''
-    return json.dumps(data, sort_keys=True,
-                      indent=4, default=json.default)
+    indent=None
+    if settings.ENV_NAME in ['local', 'test']:
+        indent=4
+    return json.dumps(data, sort_keys=True, indent=indent,
+                      default=json.default)
 
 #------------------------------------------------------------------------------
 

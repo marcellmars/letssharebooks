@@ -1,8 +1,7 @@
 {
-    "library_uuid": "3b876484-0dbd-461f-935a-e58b08c06567",
+    "library_uuid": "4c876484-0dbd-461f-935a-e58b08c06567",
     "last_modified": "1383473174.624734",
     "librarian": "portable_lib",
-    "portable": true,
     "tunnel": -1337,
     "books": {
         "remove": [],

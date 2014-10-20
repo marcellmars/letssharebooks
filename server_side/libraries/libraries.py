@@ -108,6 +108,8 @@ def import_catalog(db, catalog):
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid': library_uuid})
     if db_cat:
+        if portable:
+            raise ValueError('already registered')
         # remove books as requested
         remove_from_library(db, library_uuid, catalog['books']['remove'])
     # add books as requested (for new library and for sync)

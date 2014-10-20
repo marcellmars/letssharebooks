@@ -127,7 +127,8 @@ def import_catalog(db, catalog):
                       upsert=True, multi=False)
     # update tunnel for all books in current library
     db.books.update({'library_uuid': library_uuid},
-                    {'$set': {'tunnel': tunnel}},
+                    {'$set': {'tunnel': tunnel,
+                              'librarian': librarian}},
                     multi=True)
     return library_uuid
     

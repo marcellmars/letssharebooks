@@ -53,6 +53,52 @@ var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim())
     import_modal_tmpl = _.template($('#import-modal-tmpl').text().trim());
 
 /* ----------------------------------------------------------------------------
+ * Main ajax entry point
+ * ----------------------------------------------------------------------------
+ */
+
+var render_page = function () {
+    push_to_history();
+    $.ajax({
+        type: 'POST',
+        url: 'get_books',
+        contentType: 'application/json',
+        processData: false,
+        data: JSON.stringify(STATE),
+        dataType: 'json',
+        success: function (data) {
+            parse_response(data);
+        }
+    });
+};
+
+/* --------------------------------------------------------------------------*/
+
+var parse_response = function (data) {
+    /* empty main container and render books */
+    $('#content').empty();
+    $.each(data['books'], render_book);
+    /* update ui */
+    update_autocomplete(data);
+    update_pagination_info(data['on_page'], data['total']);
+    /* enable/disable pagination */
+    if (data['next_page'] === null) {
+        modify_button('.next_page', 'not-active');
+    } else {
+        modify_button('.next_page', 'active');
+    };
+    if (STATE.page > 1) {
+        modify_button('.prev_page', 'active');
+    };
+    setup_modal();
+    setup_hover();
+    /* alert on import click */
+    $('.import').click(function(e) {
+        open_import_modal();
+    });
+};
+
+/* ----------------------------------------------------------------------------
  * Renders single book
  * ----------------------------------------------------------------------------
  */
@@ -105,52 +151,6 @@ var render_book = function(i, book) {
         'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
     });
     $('#content').append(book_content);
-};
-
-/* ----------------------------------------------------------------------------
- * Main ajax entry point
- * ----------------------------------------------------------------------------
- */
-
-var render_page = function () {
-    push_to_history();
-
-    $.ajax({
-        type: 'POST',
-        url: 'get_books',
-        contentType: 'application/json',
-        processData: false,
-        data: JSON.stringify(STATE),
-        dataType: 'json',
-        success: function (data) {
-            parse_response(data);
-        }
-    });
-};
-
-/* --------------------------------------------------------------------------*/
-
-var parse_response = function (data) {
-    update_autocomplete(data);
-    update_pagination_info(data['on_page'], data['total']);
-    /* enable/disable pagination */
-    if (data['next_page'] === null) {
-        modify_button('.next_page', 'not-active');
-    } else {
-        modify_button('.next_page', 'active');
-    };
-    if (STATE.page > 1) {
-        modify_button('.prev_page', 'active');
-    };
-    /* empty main container and render books */
-    $('#content').empty();
-    $.each(data['books'], render_book);
-    setup_modal();
-    setup_hover();
-    /* alert on import click */
-    $('.import').click(function(e) {
-        open_import_modal();
-    });
 };
 
 /* --------------------------------------------------------------------------*/
@@ -270,17 +270,18 @@ var update_pagination_info = function (items_on_page, total_num_of_items) {
 /* --------------------------------------------------------------------------*/
 
 var update_autocomplete = function(data) {
-    $('#authors').autocomplete({source: data['authors'],
+    var metadata = generate_metadata(data['books']);
+    $('#authors').autocomplete({source: metadata['authors'],
                                 minLength:2});
-    $('#titles').autocomplete({source: data['titles'],
+    $('#titles').autocomplete({source: metadata['titles'],
                                minLength:2});
     $('#librarian').empty();
-    if (data['librarians'].length > 1) {
+    if (metadata['librarians'].length > 1) {
         $('#librarian').append(['<option value="" selected>',
-                                String(data['librarians'].length),
+                                String(metadata['librarians'].length),
                                 ' librarians online</option>'].join(''));
     } 
-    $.each(data['librarians'], function(index, item) {
+    $.each(metadata['librarians'], function(index, item) {
         $('#librarian').append(['<option value="',
                                 item,
                                 '"',
@@ -290,9 +291,34 @@ var update_autocomplete = function(data) {
     });
     if (STATE.query.librarian) {
         $('#librarian').val(STATE.query.librarian);
-    } else if (data['librarians'].length == 1 ){
-        $('#librarian').val(data['librarians'][0]);
+    } else if (metadata['librarians'].length == 1 ){
+        $('#librarian').val(metadata['librarians'][0]);
     };
+};
+
+/**************************************************************************
+ * generate distinct list of authors, titles and librarians
+ **************************************************************************/
+var generate_metadata = function(books) {
+    var sadd = function(s, v) {
+        if ($.inArray(v, s) == -1) {
+            s.push(v);
+        };
+    };
+    var metadata = {
+        'authors': [],
+        'titles': [],
+        'librarians': []
+    };
+    $.each(books, function(i, book) {
+        var authors = book.authors;
+        $.each(authors, function(j, author) {
+            sadd(metadata['authors'], author);
+        });
+        sadd(metadata['titles'], book.title);
+        sadd(metadata['librarians'], book.librarian);
+    });
+    return metadata;
 };
 
 /* --------------------------------------------------------------------------*/

@@ -91,9 +91,6 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         data = simplejson.loads(r.body[0])
         self.assertEqual(data['total'], 2)
         self.assertEqual(len(data['books']), 2)
-        self.assertEqual(len(data['titles']), 2)
-        self.assertEqual(len(data['authors']), 3)
-        self.assertEqual(len(data['librarians']), 1)
 
     def test_search(self):
         # first upload some books

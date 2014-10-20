@@ -227,10 +227,10 @@ def get_books(db, page, query={}):
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
     # get books that match search criteria
     books = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('title_sort')
-    authors = books.distinct('authors')
-    titles = books.distinct('title')
+    #authors = books.distinct('authors')
+    #titles = books.distinct('title')
     # get distinct list of all (active or portable) librarians from db.catalog
-    librarians = active_catalogs.distinct('librarian')
+    #librarians = active_catalogs.distinct('librarian')
     # paginate books
     items, next_page, on_page, total = paginate(books, page)
     # return serialized books with availability of next page
@@ -238,9 +238,10 @@ def get_books(db, page, query={}):
                            'next_page': next_page,
                            'on_page': on_page,
                            'total': total,
-                           'authors': authors,
-                           'titles': titles,
-                           'librarians': librarians})
+                           #'authors': authors,
+                           #'titles': titles,
+                           #'librarians': librarians,
+                           })
 
 #------------------------------------------------------------------------------
 

@@ -231,7 +231,7 @@ def get_books(db, page, query={}):
     #authors = books.distinct('authors')
     #titles = books.distinct('title')
     # get distinct list of all (active or portable) librarians from db.catalog
-    #librarians = active_catalogs.distinct('librarian')
+    librarians = active_catalogs.distinct('librarian')
     # paginate books
     items, next_page, on_page, total = paginate(books, page)
     # return serialized books with availability of next page
@@ -241,7 +241,7 @@ def get_books(db, page, query={}):
                            'total': total,
                            #'authors': authors,
                            #'titles': titles,
-                           #'librarians': librarians,
+                           'librarians': librarians,
                            })
 
 #------------------------------------------------------------------------------

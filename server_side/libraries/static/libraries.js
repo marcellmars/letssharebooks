@@ -276,12 +276,12 @@ var update_autocomplete = function(data) {
     $('#titles').autocomplete({source: metadata['titles'],
                                minLength:2});
     $('#librarian').empty();
-    if (metadata['librarians'].length > 1) {
+    if (data['librarians'].length > 1) {
         $('#librarian').append(['<option value="" selected>',
-                                String(metadata['librarians'].length),
+                                String(data['librarians'].length),
                                 ' librarians online</option>'].join(''));
     } 
-    $.each(metadata['librarians'], function(index, item) {
+    $.each(data['librarians'], function(index, item) {
         $('#librarian').append(['<option value="',
                                 item,
                                 '"',
@@ -291,8 +291,8 @@ var update_autocomplete = function(data) {
     });
     if (STATE.query.librarian) {
         $('#librarian').val(STATE.query.librarian);
-    } else if (metadata['librarians'].length == 1 ){
-        $('#librarian').val(metadata['librarians'][0]);
+    } else if (data['librarians'].length == 1 ){
+        $('#librarian').val(data['librarians'][0]);
     };
 };
 
@@ -308,7 +308,6 @@ var generate_metadata = function(books) {
     var metadata = {
         'authors': [],
         'titles': [],
-        'librarians': []
     };
     $.each(books, function(i, book) {
         var authors = book.authors;
@@ -316,7 +315,6 @@ var generate_metadata = function(books) {
             sadd(metadata['authors'], author);
         });
         sadd(metadata['titles'], book.title);
-        sadd(metadata['librarians'], book.librarian);
     });
     return metadata;
 };

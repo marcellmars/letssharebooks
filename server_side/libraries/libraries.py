@@ -101,9 +101,9 @@ def import_catalog(db, catalog):
     library_uuid = catalog['library_uuid']
     last_modified = catalog['last_modified']
     librarian = catalog['librarian']
-    tunnel = catalog.get('tunnel')
+    tunnel = catalog['tunnel']
     portable = False
-    if catalog.get('portable'):
+    if tunnel == -1337:
         portable = True
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid': library_uuid})

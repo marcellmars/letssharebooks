@@ -3,6 +3,7 @@
     "last_modified": "1383473174.624734",
     "librarian": "portable_lib",
     "portable": true,
+    "tunnel": -1337,
     "books": {
         "remove": [],
         "add" : [

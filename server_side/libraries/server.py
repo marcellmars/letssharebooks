@@ -123,6 +123,13 @@ class Root(object):
         return books
 
     @cherrypy.expose
+    def register_portable(self, url):
+        '''
+        Register portable library from remote url and insert its books
+        '''
+        return libraries.register_portable(cherrypy.thread_data.db, url)
+    
+    @cherrypy.expose
     def portables(self):
         '''
         Returns all registered portable libraries

@@ -9,6 +9,7 @@ import settings
 import utils
 import pickle
 import simplejson
+import requests
 
 #------------------------------------------------------------------------------
 
@@ -246,6 +247,14 @@ def get_books(db, page, query={}):
                            'librarians': librarians,
                            })
 
+#------------------------------------------------------------------------------
+
+def register_portable(db, url):
+    lib_json = requests.get(url + '/static/library.json')
+    catalog = simplejson.loads(lib_json.text)
+    res = import_catalog(db, catalog)
+    return res
+    
 #------------------------------------------------------------------------------
 
 def get_portables(db):

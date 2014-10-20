@@ -149,7 +149,7 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(data['uuid'], uuid)
 
     def test_portable(self):
-        lib_uuid = '3b876484-0dbd-461f-935a-e58b08c06567'
+        lib_uuid = '4c876484-0dbd-461f-935a-e58b08c06567'
         # first upload some books
         res = upload_catalog(self, 'test/portable.json')
         self.assertEqual(res, lib_uuid)

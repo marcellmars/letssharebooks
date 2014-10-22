@@ -45,99 +45,17 @@ var push_to_history = function() {
  * ----------------------------------------------------------------------------
  */
 
+/* dynamic templates */
 var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim()),
-    book_string_parts_tmpl = _.template($('#book-parts-tmpl').text().trim()),
+    book_parts_tmpl = _.template($('#book-parts-tmpl').text().trim()),
     book_content_tmpl = _.template($('#book-content-tmpl').text().trim()),
     book_modal_tmpl = _.template($('#book-modal-tmpl').text().trim()),
     import_modal_tmpl = _.template($('#import-modal-tmpl').text().trim());
 
-/* ----------------------------------------------------------------------------
- * Generate dictionaries for the html templates.
- * These functions should be mocked when this file is used by portable library
- * ----------------------------------------------------------------------------
- */
-
-if(!window.gen_book_string_parts) {
-    window.gen_book_string_parts = function (base_url, format, book) {
-        book.application_id = "/" + book.application_id;
-        return {
-            'base_url': base_url + '/get/',
-            'format': format,
-            'book': book,
-            'portable_book': '.',
-            'portable_format': ''
-        }
-    }
-};
-
-if(!window.gen_book_content) {
-    window.gen_book_content = function (base_url, book, authors, formats) {
-        return {
-            'base_url': base_url,
-            'book': book,
-            'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
-            'authors': authors,
-            'formats': formats,
-            'get_cover': '/get/cover',
-            'get_opf' : '/get/opf/',
-            'portable_cover': '',
-            'portable_opf': ''
-        }
-    }
-};
-
-if(!window.gen_book_modal) {
-    var gen_book_modal = function (base_url, book, formats) {
-        return {
-            'base_url': base_url,
-            'book': book,
-            'book_title_stripped': ' ' + book.title.replace(/\?/g, ''),
-            'formats': formats,
-            'get_cover': '/get/cover/',
-            'get_opf': '/get/opf/',
-            'portable_cover': '',
-            'portable_opf': ''
-        }
-    }
-};
-
-/* ----------------------------------------------------------------------------
- * Renders single book
- * ----------------------------------------------------------------------------
- */
-
-var render_book = function(i, book) {
-    var formats = '',
-        base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join(''),
-        authors = '<div id="authorz">';
-    
-    book.formats.map(function (format) {
-        var string_parts = book_string_parts_tmpl(
-            gen_book_string_parts(base_url, format, book));
-        formats = formats + ' ' + string_parts;
-    });
-
-    book.authors.map(function (author) {
-        var author_s = author.replace("'", " "),
-            author_param = 'search_author("' + author_s + '")',
-            author_html = author_string_parts_tmpl({
-              'author_s': author_s,
-              'author': author
-            });
-        authors = authors + author_html;
-    });
-
-    $(document).on('click', '.author', function(e) {
-      search_author($(this).data('authors'));
-    });
-    
-    var last_comma = authors.lastIndexOf(',');
-    authors = authors.substr(0, last_comma) +
-        authors.substr(last_comma + 1) + '</div>';
-    var book_content = book_content_tmpl(gen_book_content(
-        base_url, book, authors, formats));
-    $('#content').append(book_content);
-};
+/* portable templates */
+var book_parts_portable_tmpl = _.template($('#book-parts-portable-tmpl').text().trim()),
+    book_content_portable_tmpl = _.template($('#book-content-portable-tmpl').text().trim()),
+    book_modal_portable_tmpl = _.template($('#book-modal-portable-tmpl').text().trim());
 
 /* ----------------------------------------------------------------------------
  * Main ajax entry point
@@ -146,7 +64,6 @@ var render_book = function(i, book) {
 
 var render_page = function () {
     push_to_history();
-
     $.ajax({
         type: 'POST',
         url: 'get_books',
@@ -163,6 +80,10 @@ var render_page = function () {
 /* --------------------------------------------------------------------------*/
 
 var parse_response = function (data) {
+    /* empty main container and render books */
+    $('#content').empty();
+    $.each(data['books'], render_book);
+    /* update ui */
     update_autocomplete(data);
     update_pagination_info(data['on_page'], data['total']);
     /* enable/disable pagination */
@@ -174,14 +95,44 @@ var parse_response = function (data) {
     if (STATE.page > 1) {
         modify_button('.prev_page', 'active');
     };
-    /* empty main container and render books */
-    $('#content').empty();
-    $.each(data['books'], render_book);
     setup_modal();
+    /* setup_hover(); don't mark other books on hover in portable */
     /* alert on import click */
     $('.import').click(function(e) {
         open_import_modal();
     });
+};
+
+/* ----------------------------------------------------------------------------
+ * Renders single book
+ * ----------------------------------------------------------------------------
+ */
+
+var render_book = function(i, book) {
+    var formats = '',
+        base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join(''),
+        authors = '<div id="authorz">';
+    book.formats.map(function (format) {
+        var string_parts = gen_book_string_parts(base_url, format, book);
+        formats = formats + ' ' + string_parts;
+    });
+    book.authors.map(function (author) {
+        var author_s = author.replace("'", " "),
+            author_param = 'search_author("' + author_s + '")',
+            author_html = author_string_parts_tmpl({
+              'author_s': author_s,
+              'author': author
+            });
+        authors = authors + author_html;
+    });
+    $(document).on('click', '.author', function(e) {
+        search_author($(this).data('authors'));
+    });
+    var last_comma = authors.lastIndexOf(',');
+    authors = authors.substr(0, last_comma) +
+        authors.substr(last_comma + 1) + '</div>';
+    var book_content = gen_book_content(base_url, book, formats, authors);
+    $('#content').append(book_content);
 };
 
 /* --------------------------------------------------------------------------*/
@@ -208,12 +159,10 @@ var setup_modal = function () {
             var formats = '',
             base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
             book.formats.map(function (format) {
-                var string_parts = book_string_parts_tmpl(
-                    gen_book_string_parts(base_url, format, book));
-                formats = formats + " " + string_parts;
+                var string_parts = gen_book_string_parts(base_url, format, book);
+                formats = formats + ' ' + string_parts;
             });
-            var modal_html = book_modal_tmpl(
-                gen_book_modal(base_url, book, formats));
+            var modal_html = gen_book_modal(base_url, book, formats);
             var modal = $(modal_html);
             modal.dialog({
                 autoOpen: false,
@@ -259,9 +208,10 @@ var update_pagination_info = function (items_on_page, total_num_of_items) {
 /* --------------------------------------------------------------------------*/
 
 var update_autocomplete = function(data) {
-    $('#authors').autocomplete({source: data['authors'],
+    var metadata = generate_metadata(data['books']);
+    $('#authors').autocomplete({source: metadata['authors'],
                                 minLength:2});
-    $('#titles').autocomplete({source: data['titles'],
+    $('#titles').autocomplete({source: metadata['titles'],
                                minLength:2});
     $('#librarian').empty();
     if (data['librarians'].length > 1) {
@@ -289,6 +239,29 @@ var update_autocomplete = function(data) {
         };
         document.title = librarian + sufix;
     };
+};
+
+/**************************************************************************
+ * generate distinct list of authors, titles and librarians
+ **************************************************************************/
+var generate_metadata = function(books) {
+    var sadd = function(s, v) {
+        if ($.inArray(v, s) == -1) {
+            s.push(v);
+        };
+    };
+    var metadata = {
+        'authors': [],
+        'titles': [],
+    };
+    $.each(books, function(i, book) {
+        var authors = book.authors;
+        $.each(authors, function(j, author) {
+            sadd(metadata['authors'], author);
+        });
+        sadd(metadata['titles'], book.title);
+    });
+    return metadata;
 };
 
 /* --------------------------------------------------------------------------*/
@@ -442,5 +415,98 @@ var init_page = function () {
 /* --------------------------------------------------------------------------*/
 
 $(document).ready(function () {
+    init_template_data();
     init_page();
 });
+
+/* --------------------------------------------------------------------------*/
+
+var init_template_data = function() {
+
+    var get_directory_path = function (book) {
+        var format = book.formats[0];
+        var file_path = book.format_metadata[format].path;
+        var directory_path = '';
+        var directory = file_path.split('/').slice(-3,-1);
+        directory.forEach(function(el){directory_path += el + '/'});
+        return [directory_path, file_path];
+    };
+    
+    window.gen_book_string_parts = function (base_url, format, book) {
+        if (book.portable) {
+            book.application_id = '';
+            var df_path = get_directory_path(book);
+            var file_name = df_path[1].split("/").slice(-1);
+            return book_parts_portable_tmpl({
+                'base_url': '',
+                'format': '',
+                'book': book,
+                'portable_book': df_path[0] + file_name,
+                'portable_format': format
+            });
+        } else {
+            return book_parts_tmpl({
+                'base_url': base_url,
+                'format': format,
+                'book': book
+            });
+        };
+    };
+
+    var portable_book_data = function(base_url, book, formats, authors) {
+        book.application_id = '';
+        var df_path = get_directory_path(book);
+        return {
+            'base_url': '',
+            'book': book,
+            'book_title_stripped': '',
+            'authors': authors,
+            'formats': formats,
+            'get_cover': '',
+            'get_opf' : '',
+            'portable_cover': df_path[0] + 'cover.jpg',
+            'portable_opf': df_path[0] + 'metadata'
+        };
+    };
+
+    var book_data = function(base_url, book, formats, authors) {
+        var book_title_stripped =  book.title.replace(/\?/g, '');
+        var metadata_urls = [book_title_stripped,
+                             [base_url, '/get/opf/', book.application_id, ' ',
+                              book_title_stripped, '.opf'].join(''),
+                             [base_url, '/get/cover/', book.application_id,
+                              '.jpg'].join('')];
+        $.each(book.formats, function(i, format) {
+            metadata_urls.push([base_url, '/get/', format,  '/',
+                                book.application_id, '.', format].join(''));
+        });
+        return {
+            'base_url': base_url,
+            'book': book,
+            'book_title_stripped': book_title_stripped,
+            'authors': authors,
+            'formats': formats,
+            'metadata_urls': encodeURIComponent(metadata_urls.join('__,__')),
+        };
+    };
+    
+    window.gen_book_content = function (base_url, book, formats, authors) {
+        if (book.portable) {
+            return book_content_portable_tmpl(
+                portable_book_data(base_url, book, formats, authors));
+        } else {
+            return book_content_tmpl(
+                book_data(base_url, book, formats, authors));
+        };
+    };
+
+    window.gen_book_modal = function (base_url, book, formats, authors) {
+        if (book.portable) {
+            return book_modal_portable_tmpl(
+                portable_book_data(base_url, book, formats, authors));
+        } else {
+            return book_modal_tmpl(
+                book_data(base_url, book, formats, authors));
+        };
+    };
+};

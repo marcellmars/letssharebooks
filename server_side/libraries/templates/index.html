@@ -36,6 +36,10 @@
   <a href="<%= base_url %>/get/<%= format %>/<%= book.application_id %>.<%= format %>"><%= format.toUpperCase() %></a>
 </script>
 
+<script type="text/x-template" id="book-parts-portable-tmpl">
+  <a href="<%= base_url %><%= format %><%= book.application_id %><%= portable_book %><%= format.toLowerCase() %>"><%= format.toUpperCase() %><%= portable_format %></a>
+</script>
+
 <script type="text/x-template" id="book-content-tmpl">
   <div class="cover" rel='<%= book.librarian %>'>
     <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
@@ -58,17 +62,29 @@
   </div>
 </script>
 
+<script type="text/x-template" id="book-content-portable-tmpl">
+  <div class="cover">
+    <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
+      <img src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" /></a>
+    <h2>
+      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
+      <br />
+      <%= authors %></h2>
+    <span class="download">Metadata: <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
+  </div>
+</script>
+
 <script type="text/x-template" id="book-modal-tmpl">
   <div id="book-modal" title="<%= book.title %>">
     <div>
       <div>
-      <img class="img_modal" src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" width="120"/>
-      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
-         title="import book directly to calibre" target="import">
-        <span class="lodestone_modal">
-          <img src="../images/lodestone_modal.png" title="import book directly to calibre" />
-      </a>
-      </span>
+        <img class="img_modal" src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" width="120"/>
+        <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+           title="import book directly to calibre" target="import">
+          <span class="lodestone_modal">
+            <img src="../images/lodestone_modal.png" title="import book directly to calibre" />
+        </a>
+        </span>
       </div>
       <p><span class="attr">Title:</span> <%= book.title %></p>
       <p><span class="attr">Authors:</span> <%= book.authors %></p>
@@ -76,6 +92,20 @@
       <p><span class="attr">Download:</span> <%= formats %></p>
       <p><span class="attr">About:</span> <%= book.comments %></p></br>
       <p><a href="<%= base_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
+    </div>
+  </div>
+</script>
+
+<script type="text/x-template" id="book-modal-portable-tmpl">
+  <div id="book-modal" title="<%= book.title %>">
+    <div>
+      <img class="img_modal" src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" width="120"/>
+      <p><span class="attr">Authors:</span> <%= book.authors %></p>
+      <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
+      <p><span class="attr" title="import metadata directly to calibre">Metadata:</span> <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf">.opf</a></p>
+      <p><span class="attr">Download:</span> <%= formats %></p>
+      <p><span class="attr"><%= book.librarian %>:</span> <a href="<%= base_url %>" title="visit librarian" target="_blank"><%= base_url %></a></p>
+      <p><span class="attr">About:</span> <%= book.comments %></p>
     </div>
   </div>
 </script>

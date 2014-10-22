@@ -38,6 +38,9 @@ $(document).ready(function () {
             /* add librarians */
             var librarian = book.librarian;
             sadd(LIBRARIANS, librarian);
+            /* setup portable */
+            book.portable = true;
+            book.portable_url = '';
         });
     }();
 

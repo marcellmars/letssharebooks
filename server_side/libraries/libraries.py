@@ -22,6 +22,9 @@ PUBLIC_BOOK_FIELDS = {
     'tunnel':1,
     'uuid':1,
     'librarian':1,
+    'portable':1,
+    'portable_url':1,
+    'format_metadata':1,
     '_id': 0
     }
 
@@ -36,6 +39,9 @@ PUBLIC_SINGLE_BOOK_FIELDS = {
     'publisher':1,
     'comments':1,
     'librarian':1,
+    'portable':1,
+    'portable_url':1,
+    'format_metadata':1,
     '_id': 0
     }
 
@@ -92,7 +98,7 @@ def handle_uploaded_catalog(db, uploaded_file, zipped=True):
 
 #------------------------------------------------------------------------------
 
-def import_catalog(db, catalog):
+def import_catalog(db, catalog, portable_url=None):
     '''
     Imports user calibre catalog to the database.
     :db mongo database
@@ -104,7 +110,7 @@ def import_catalog(db, catalog):
     librarian = catalog['librarian']
     tunnel = catalog['tunnel']
     portable = False
-    if tunnel == -1337:
+    if tunnel == -1337 or portable_url:
         portable = True
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid': library_uuid})
@@ -115,7 +121,7 @@ def import_catalog(db, catalog):
         remove_from_library(db, library_uuid, catalog['books']['remove'])
     # add books as requested (for new library and for sync)
     add_to_library(db, library_uuid, librarian, tunnel,
-                   catalog['books']['add'], portable)
+                   catalog['books']['add'], portable, portable_url)
     # set tunnel to 0 if there is a library with the same tunnel from before
     old_libraries = [i['library_uuid']
                      for i in db.catalog.find({'tunnel': tunnel})]
@@ -126,7 +132,8 @@ def import_catalog(db, catalog):
                       {'$set': {'last_modified': last_modified,
                                 'tunnel': tunnel,
                                 'librarian': librarian,
-                                'portable': portable}},
+                                'portable': portable,
+                                'portable_url': portable_url}},
                       upsert=True, multi=False)
     # update tunnel for all books in current library
     db.books.update({'library_uuid': library_uuid},
@@ -148,7 +155,7 @@ def remove_from_library(db, library_uuid, books_uuids):
 
 #------------------------------------------------------------------------------
 
-def add_to_library(db, library_uuid, librarian, tunnel, books, portable):
+def add_to_library(db, library_uuid, librarian, tunnel, books, portable, portable_url=None):
     '''
     Adds books to the database and modifies catalog entry. Mostly used with
     import_catalog function.
@@ -160,6 +167,7 @@ def add_to_library(db, library_uuid, librarian, tunnel, books, portable):
         book['tunnel'] = tunnel
         book['portable'] = portable
         book['librarian'] = librarian
+        book['portable_url'] = portable_url
         try:
             db.books.update({'uuid': book['uuid']},
                             utils.remove_dots_from_dict(book),
@@ -252,7 +260,7 @@ def get_books(db, page, query={}):
 def register_portable(db, url):
     lib_json = requests.get(url + '/static/library.json')
     catalog = simplejson.loads(lib_json.text)
-    res = import_catalog(db, catalog)
+    res = import_catalog(db, catalog, url)
     return res
     
 #------------------------------------------------------------------------------

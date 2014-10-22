@@ -63,9 +63,13 @@
 </script>
 
 <script type="text/x-template" id="book-content-portable-tmpl">
-  <div class="cover">
+  <div class="cover" rel='<%= book.librarian %>'>
     <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-      <img src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" /></a>
+      <img src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" />
+      <div class="cover-highlight">
+        <span class="hmsg">Shared by <%= book.librarian %></span>
+      </div>
+    </a>
     <h2>
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
       <br />

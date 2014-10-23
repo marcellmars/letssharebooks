@@ -101,6 +101,9 @@ var parse_response = function (data) {
     $('.import').click(function(e) {
         open_import_modal();
     });
+    /* set tooltip position for covers */
+    $('.cover-img').tooltip(
+        {position: {my: 'center', at: 'center'}});
 };
 
 /* ----------------------------------------------------------------------------
@@ -195,7 +198,6 @@ var setup_hover = function() {
         function() {
             /* get current librarian */
             var selected_librarian = $(this).attr('rel');
-            $(this).find('.cover-highlight-this').show();
             /* iterate over all other books */
             $.each($('.cover').not($(this)), function(i) {
                 var cover = $(this);
@@ -205,7 +207,6 @@ var setup_hover = function() {
                 }
             });
         }, function() {
-            $('.cover-highlight-this').hide();
             $('.cover-highlight').hide();
         }
     );

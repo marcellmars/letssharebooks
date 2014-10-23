@@ -30,6 +30,11 @@ img {
     background: rgba(0, 0, 0, 0.9);
 }
 
+.cover .more_about img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
 h2 {
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
     //font: bold 16px/22px Helvetica, Sans-Serif; 

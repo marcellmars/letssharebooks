@@ -101,9 +101,6 @@ var parse_response = function (data) {
     $('.import').click(function(e) {
         open_import_modal();
     });
-    /* set tooltip position for covers */
-    $('.cover-img').tooltip(
-        {position: {my: 'center', at: 'center'}});
 };
 
 /* ----------------------------------------------------------------------------

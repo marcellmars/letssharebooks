@@ -4,6 +4,7 @@
 
 from bson import json_util as json
 from pymongo import MongoClient
+import simplejson
 import settings
 
 #------------------------------------------------------------------------------
@@ -54,3 +55,17 @@ def remove_all_data(db):
     '''
     db.books.remove()
     db.catalog.remove()
+
+#------------------------------------------------------------------------------
+
+def jsonp(func):
+    def foo(self, *args, **kwargs):
+        callback, _ = None, None
+        if 'callback' in kwargs and '_' in kwargs:
+            callback, _ = kwargs['callback'], kwargs['_']
+            del kwargs['callback'], kwargs['_']
+        ret = func(self, *args, **kwargs)
+        if callback is not None:
+            ret = '%s(%s)' % (callback, simplejson.dumps(ret))
+        return ret
+    return foo

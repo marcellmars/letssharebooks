@@ -289,6 +289,20 @@ def remove_portable(db, lib_uuid):
 
 #------------------------------------------------------------------------------
 
+def get_status(db):
+    '''
+    Return some status info
+    '''
+    active_catalogs = db.catalog.find({'$or': [
+                {'tunnel': {'$in': get_active_tunnels()}},
+                {'portable': True}]})
+    books = db.books.find({'library_uuid': {
+                '$in': [i['library_uuid'] for i in active_catalogs]}})
+    return {'num_of_books': books.count(),
+            'num_of_librarians': len(active_catalogs.distinct('librarian'))}
+
+#------------------------------------------------------------------------------
+
 def paginate(cursor, page=1, per_page=settings.ITEMS_PER_PAGE):
     '''
     Use this in request with pagination

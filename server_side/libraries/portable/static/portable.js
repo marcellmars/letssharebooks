@@ -95,13 +95,7 @@ $(document).ready(function () {
     * this mocks single book info api call
     **************************************************************************/
     var mock_book = function(uuid) {
-        var ret = null;
-        $.each(BOOKS, function(i, book) {
-            if (book.uuid == uuid) {
-                ret = book;
-            }
-        });
-        return ret;
+        return _.findWhere(BOOKS, {uuid: uuid});
     };
 
     /**************************************************************************

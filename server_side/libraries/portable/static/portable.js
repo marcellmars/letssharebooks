@@ -4,11 +4,14 @@
 
 $(document).ready(function () {
 
-    /* This file is using LIBRARY variable from data.js and ITEMS_PER_PAGE
-     *  from library.js */
-
-    var BOOKS = LIBRARY.books.add;
+    var BOOKS = [];
     var LIBRARIANS = [];
+
+    $.getJSON("static/library.json", function(data){
+        BOOKS = data.books.add;
+        generate_metadata();
+        render_page(); /* from library.js */
+    });
 
     /**************************************************************************
     * generate distinct list of authors, titles and librarians
@@ -29,7 +32,7 @@ $(document).ready(function () {
             book.portable = true;
             book.portable_url = '';
         });
-    }();
+    };
 
     /**************************************************************************
     * mock ajax call for get_books

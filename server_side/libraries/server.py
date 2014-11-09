@@ -144,6 +144,14 @@ class Root(object):
         '''
         return libraries.remove_portable(cherrypy.thread_data.db, lib_uuid)
 
+    @cherrypy.expose
+    @utils.jsonp
+    def status(self):
+        '''
+        Return some status info
+        '''
+        return libraries.get_status(cherrypy.thread_data.db)
+
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------

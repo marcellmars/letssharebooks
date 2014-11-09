@@ -4,45 +4,35 @@
 
 $(document).ready(function () {
 
-    /* This file is using LIBRARY variable from data.js and ITEMS_PER_PAGE
-     *  from library.js
-     */
-
-    var BOOKS = LIBRARY.books.add;
-    var AUTHORS = [];
-    var TITLES = [];
+    var BOOKS = [];
     var LIBRARIANS = [];
-    
-    /**************************************************************************
-    * helper function; add value v to set s
-    **************************************************************************/
-    var sadd = function(s, v) {
-        if ($.inArray(v, s) == -1) {
-            s.push(v);
-        };
-    };
+
+    $.getJSON("static/library.json", function(data){
+        BOOKS = data.books.add;
+        generate_metadata();
+        render_page(); /* from library.js */
+    });
 
     /**************************************************************************
     * generate distinct list of authors, titles and librarians
     **************************************************************************/
     var generate_metadata = function() {
+        
+        /* helper function; add value v to set s */
+        var sadd = function(s, v) {
+            if ($.inArray(v, s) == -1) {
+                s.push(v);
+            };
+        };
+        
         $.each(BOOKS, function(i, book) {
-            /* add authors */
-            var authors = book.authors;
-            $.each(authors, function(j, author) {
-                sadd(AUTHORS, author);
-            });
-            /* add titles */
-            var title = book.title;
-            sadd(TITLES, title);
             /* add librarians */
-            var librarian = book.librarian;
-            sadd(LIBRARIANS, librarian);
+            sadd(LIBRARIANS, book.librarian);
             /* setup portable */
             book.portable = true;
             book.portable_url = '';
         });
-    }();
+    };
 
     /**************************************************************************
     * mock ajax call for get_books
@@ -54,7 +44,7 @@ $(document).ready(function () {
     };
 
     /**************************************************************************
-    * mock getJSON
+    * mock getJSON for get_book
     **************************************************************************/
     $.getJSON = function(url, params) {
         var book = mock_book(params.uuid);
@@ -67,10 +57,7 @@ $(document).ready(function () {
     var mock_get_books = function(params) {
         ret = {
             'books': [],
-            'authors': AUTHORS,
-            'titles': TITLES,
             'librarians': LIBRARIANS,
-            'books': [],
             'next_page': params.page + 1, 
             'on_page': -1,
             'total': 0,
@@ -95,13 +82,7 @@ $(document).ready(function () {
     * this mocks single book info api call
     **************************************************************************/
     var mock_book = function(uuid) {
-        var ret = null;
-        $.each(BOOKS, function(i, book) {
-            if (book.uuid == uuid) {
-                ret = book;
-            }
-        });
-        return ret;
+        return _.findWhere(BOOKS, {uuid: uuid});
     };
 
     /**************************************************************************
@@ -109,13 +90,13 @@ $(document).ready(function () {
     **************************************************************************/
     var search = function(q, books) {
         if (q.authors !== '') {
-            var regex = new RegExp(q.authors, 'gim');
+            var regex = new RegExp(q.authors, 'im');
             books = books.filter(function(book, i) {
                 return regex.test(book.authors.join(' '));
             });
         }
         if (q.title !== '') {
-            var regex = new RegExp(q.title, 'gim');
+            var regex = new RegExp(q.title, 'im');
             books = books.filter(function(book, i) {
                 return regex.test(book.title);
             });
@@ -126,7 +107,7 @@ $(document).ready(function () {
             });
         }
         if (q.search_all !== '') {
-            var regex = new RegExp(q.search_all, 'gim');
+            var regex = new RegExp(q.search_all, 'im');
             books = books.filter(function(book, i) {
                 var str = [book.title,
                            book.authors.join(' '),

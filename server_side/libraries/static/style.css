@@ -30,6 +30,11 @@ img {
     background: rgba(0, 0, 0, 0.9);
 }
 
+.cover .more_about img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
 h2 {
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
     //font: bold 16px/22px Helvetica, Sans-Serif; 
@@ -139,9 +144,9 @@ h2 span {
     height:     100%;
     width:      100%;
     background: rgba(224, 224, 224, 0.4) 
-                url('images/loading.gif') 
-                50% 50% 
-                no-repeat;
+    url('images/loading.gif') 
+    50% 50% 
+    no-repeat;
 }
 
 body.loading {
@@ -187,24 +192,51 @@ body.loading .modal {
 /* web app specific; e.g. not in portable */
 
 .cover-highlight {
-  content: " ";
-  z-index: 10;
-  display: none;
-  position: absolute;
-  width: 238px;
-  height: 360px;
-  top: 0;
-  left: 0;
-  background: rgba(0, 0, 0, 0.5);
+    content: " ";
+    z-index: 10;
+    display: none;
+    position: absolute;
+    width: 238px;
+    height: 360px;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.5);
 }
 
 .cover-highlight .hmsg {
-  font-family: 'BitstreamVeraSansMono',Consolas,monospace;
-  font-size: 1em;
-  width: 50%;
-  height: 50%;
-  overflow: auto;
-  margin: auto;
-  position: absolute;
-  top: 120px; left: 0; bottom: 0; right: 0;
+    font-family: 'BitstreamVeraSansMono',Consolas,monospace;
+    font-size: 1em;
+    width: 50%;
+    height: 50%;
+    overflow: auto;
+    margin: auto;
+    position: absolute;
+    top: 120px; left: 0; bottom: 0; right: 0;
+}
+
+.cover-highlight-this {
+    content: " ";
+    z-index: 10;
+    display: none;
+    position: absolute;
+    width: 238px;
+    height: 360px;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.0);
+}
+
+.cover-highlight-this .hmsg {
+    font-family: 'BitstreamVeraSansMono',Consolas,monospace;
+    font-size: 1em;
+    width: 50%;
+    height: 50%;
+    overflow: auto;
+    margin: auto;
+    position: absolute;
+    top: 120px; left: 0; bottom: 0; right: 0;
+}
+
+.cover-highlight-this .hmsg span {
+    background-color: #000000;
 }

@@ -49,29 +49,27 @@ try:
                           QCursor)
 except ImportError:
     from PyQt5.Qt import (Qt,
-                          QDialog,
-                          QHBoxLayout,
-                          QPushButton,
-                          QTimer,
-                          QIcon,
-                          QPixmap,
-                          QApplication,
-                          QSizePolicy,
-                          QVBoxLayout,
-                          QWidget,
-                          QLineEdit,
-                          QThread,
-                          QSslConfiguration,
-                          QSslCertificate,
-                          QFile,
-                          pyqtSignal,
-                          QUrl,
-                          QStateMachine,
-                          QState,
-                          QByteArray,
-                          QCursor)
-
-
+                        QDialog,
+                        QHBoxLayout,
+                        QPushButton,
+                        QTimer,
+                        QIcon,
+                        QPixmap,
+                        QApplication,
+                        QSizePolicy,
+                        QVBoxLayout,
+                        QWidget,
+                        QLineEdit,
+                        QThread,
+                        QSslConfiguration,
+                        QSslCertificate,
+                        QFile,
+                        pyqtSignal,
+                        QUrl,
+                        QStateMachine,
+                        QState,
+                        QByteArray,
+                        QCursor)
 
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
@@ -207,13 +205,14 @@ class MetadataLibThread(QThread):
         self.us = us
 
     def get_book_metadata(self):
+        logger.debug("RUN GET_BOOK_METADATA!")
         books_metadata = []
         for book_id in self.sql_db.all_ids():
             book_metadata = {}
             book_meta = self.sql_db.get_metadata(book_id, index_is_id=True)
             for field in book_meta.standard_field_keys():
-                if field in ['last_modified', 'timestamp', 'pubdate']:
-                    book_metadata[field] = str(getattr(book_meta, field))
+                if field in ['last_modified', 'timestamp', 'pubdate', 'mtime']:
+                    book_metadata[field] = getattr(book_meta, field).now().strftime('%Y-%m-%dT%H:%M:%S')
                 elif field == 'formats':
                     formats = getattr(book_meta, field)
                     book_metadata[field] = []
@@ -222,45 +221,34 @@ class MetadataLibThread(QThread):
                                                 for book_format in formats]
                 else:
                     book_metadata[field] = getattr(book_meta, field)
-
-            for field in book_meta.custom_field_keys():
-                if (field == 'last_modified' or
-                    field == 'timestamp' or
-                    field == 'pubdate'):
-                    book_metadata[field] = str(getattr(book_meta, field))
-                else:
-                    book_metadata[field] = getattr(book_meta, field)
             try:
                 book_metadata['last_modified']
 
             except:
                 book_metadata['last_modified'] = book_metadata['timestamp']
 
-            format_metadata = getattr(book_meta, 'format_metadata')
-            self.path_not_found = True
+            try:
+                format_metadata = getattr(book_meta, 'format_metadata')
+            except:
+                format_metadata = None
+
             formats_metadata = {}
             if format_metadata:
                 for book_format in format_metadata.iteritems():
                     format_fields = {}
                     for format_field in book_format[1].iteritems():
+                        logger.debug("FORMAT_FIELD: {}".format(format_field))
                         if format_field[0] == 'mtime':
-                            format_fields[format_field[0]] = str(format_field[1])
+                            format_fields['mtime'] = format_field[1].now().strftime('%Y-%m-%dT%H:%M:%S')
+                        elif format_field[0] == 'path':
+                            format_fields['path'] = format_field[1]
                         else:
                             format_fields[format_field[0]] = format_field[1]
-
-                        if format_field[0] == 'path' and self.path_not_found:
-                            #- this works but get_gui().library_path ----------
-                            #- should be the way to do this -------------------
-                            file_path = format_field[1].split(os.path.sep)[:-3]
-                            logger.debug("FILE_PATH: {}".format(file_path))
-                            if sys.platform == "win32":
-                                file_path.insert(1, os.path.sep*2)
-                            else:
-                                file_path.insert(0, '/')
-                            self.path_not_found = False
-                            self.directory_path = os.path.join(file_path)
-                            logger.debug("DIRECTORY_PATH: {}".format(self.directory_path))
+                    logger.debug("FORMAT_FIELDS: {}".format(format_fields))
                     formats_metadata[book_format[0]] = format_fields
+            else:
+                formats_metadata['EMPTY'] = {'path': self.directory_path}
+
             book_metadata['format_metadata'] = formats_metadata
             book_metadata['librarian'] = self.librarian
 
@@ -283,7 +271,18 @@ class MetadataLibThread(QThread):
         else:
             return catalog['books']
 
+    def get_directory_path(self):
+        from calibre.gui2.ui import get_gui
+        file_path = get_gui().library_path.split(os.path.sep)
+        logger.debug("FILE_PATH/GET_GUI: {}".format(file_path))
+        if sys.platform == "win32":
+            file_path.insert(1, os.path.sep*2)
+        else:
+            file_path.insert(0, '/')
+        return os.path.join(*file_path)
+
     def run(self):
+        self.directory_path = self.get_directory_path()
         books_metadata = self.get_book_metadata()
         server_list = set(self.get_server_list(self.sql_db.library_id))
         local_list = set([book['uuid'] for book in books_metadata])
@@ -296,6 +295,7 @@ class MetadataLibThread(QThread):
         except:
             mode = zipfile.ZIP_STORED
         os.makedirs(os.path.join(self.us.portable_directory, 'json'))
+
         with zipfile.ZipFile(os.path.join(self.us.portable_directory,
                                           'json',
                                           'library.json.zip'),
@@ -339,57 +339,49 @@ class MetadataLibThread(QThread):
             library['books']['add'] = [book for book in books_metadata]
             logger.debug("BOOKS_METADATA: {}".format(books_metadata))
             json_string = json.dumps(library)
+            logger.debug("JSON!!!")
             file.write(json_string)
 
-        from calibre.gui2.ui import get_gui
-        file_path = get_gui().library_path.split(os.path.sep)
-        logger.debug("FILE_PATH/GET_GUI: {}".format(file_path))
-        if sys.platform == "win32":
-            file_path.insert(1, os.path.sep*2)
-        else:
-            file_path.insert(0, '/')
-        self.path_not_found = False
-        self.directory_path = os.path.join(file_path)
-        logger.debug("DIRECTORY_PATH/GET_GUI: {}".format(self.directory_path))
-
-        if not self.path_not_found:
-            logger.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
-                self.us.portable_directory,
-                'portable')))
+        logger.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
+            self.us.portable_directory,
+            'portable')))
+        with open(os.path.join(self.us.portable_directory,
+                               'json',
+                               'portable_library.json'), 'r') as fin:
             with open(os.path.join(self.us.portable_directory,
-                                   'json',
-                                   'portable_library.json'), 'r') as fin:
-                with open(os.path.join(self.us.portable_directory,
-                                       'portable/data.js'), 'w') as fout:
-                    fout.write('LIBRARY = {};'.format(fin.read()))
+                                   'portable/data.js'), 'w') as fout:
+                fout.write('LIBRARY = {};'.format(fin.read()))
+                logger.debug("BEFORE REMOVING: {}".format(self.directory_path))
 
-            try:
-                shutil.rmtree(os.path.join(*self.directory_path + ['static']))
-                logger.info("REMOVING PORTABLE DIRECTORY SUCCESS")
-            except Exception as e:
-                logger.info("REMOVING PORTABLE DIRECTORY FAILS: {}".format(e))
-            try:
-                os.remove(os.path.join(*self.directory_path
-                                       + ['BROWSE_LIBRARY.html']))
-                logger.info("REMOVING BROWSE_LIBRARY.html SUCCESS")
-            except Exception as e:
-                logger.info("REMOVING BROWSE_LIBRARY.html FAILS:{}".format(e))
+        try:
+            shutil.rmtree(os.path.join(self.directory_path, 'static'))
+            logger.info("REMOVING PORTABLE DIRECTORY SUCCESS")
+        except Exception as e:
+            logger.info("REMOVING PORTABLE DIRECTORY FAILS: {}".format(e))
+        try:
+            os.remove(os.path.join(self.directory_path,
+                                   'BROWSE_LIBRARY.html'))
+            logger.info("REMOVING BROWSE_LIBRARY.html SUCCESS")
+        except Exception as e:
+            logger.info("REMOVING BROWSE_LIBRARY.html FAILS:{}".format(e))
 
-            try:
-                shutil.copytree(os.path.join(self.us.portable_directory,
-                                             'portable'),
-                                os.path.join(*self.directory_path + ['static']))
-                logger.info("COPY/MOVE PORTABLE DIRECTORY SUCCESS")
-            except Exception as e:
-                logger.info("COPY/MOVE ERROR: {}".format(e))
+        try:
+            shutil.copytree(os.path.join(self.us.portable_directory,
+                                         'portable'),
+                            os.path.join(self.directory_path,
+                                         'static'))
+            logger.info("COPY/MOVE PORTABLE DIRECTORY SUCCESS")
+        except Exception as e:
+            logger.info("COPY/MOVE ERROR: {}".format(e))
 
-            try:
-                shutil.move(os.path.join(*(self.directory_path
-                                         + ['static', 'BROWSE_LIBRARY.html'])),
-                            os.path.join(*self.directory_path))
-                logger.info("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
-            except Exception as e:
-                logger.info("COPY/MOVE ERROR: {}".format(e))
+        try:
+            shutil.move(os.path.join(self.directory_path,
+                                    'static',
+                                    'BROWSE_LIBRARY.html'),
+                        os.path.join(self.directory_path))
+            logger.info("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
+        except Exception as e:
+            logger.info("COPY/MOVE ERROR: {}".format(e))
 
         #----------------------------------------------------------------------
         #- prepare library.json and upload it to memoryoftheworld.org app -----

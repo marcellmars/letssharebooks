@@ -1,12 +1,15 @@
 server {
-                server_name   "~^www(?<port>\d{4,5}).web.dokr" "~^www(?<port>\d{4,5}).memories.the-nsa.org";
-                listen 80;
+        server_name   "~^www(?<port>\d{4,5}).memoryoftheworld.org";
+                        listen 443 default ssl;
 
-                location / {
-                        resolver          127.0.0.1;
-                        proxy_pass        http://sshd:$port;
-                        proxy_set_header  X-Real-IP  $remote_addr;
-                        proxy_set_header  Host $host;
-                        #proxy_redirect http:// https://;
-                }
+                        ssl_certificate /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt;
+                        ssl_certificate_key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key;
+
+                        location / {
+                                resolver          127.0.0.1;
+                                proxy_pass        http://sshd:$port;
+                                proxy_set_header  X-Real-IP  $remote_addr;
+                                proxy_set_header  Host $host;
+                                proxy_redirect http:// https://;
+                        }
 }

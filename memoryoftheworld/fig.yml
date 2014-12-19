@@ -1,0 +1,15 @@
+sshd:
+    build: ssh
+    entrypoint: /usr/local/bin/supervisord
+    ports:
+        - "722:722"
+
+nginx:
+    build: nginx
+    entrypoint: /usr/local/bin/supervisord
+    ports:
+        - "80:80"
+    links:
+        - sshd
+    dns: 127.0.0.1
+

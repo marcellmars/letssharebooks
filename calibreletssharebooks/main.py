@@ -77,6 +77,7 @@ from calibre_plugins.letssharebooks import requests
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre.library.server import server_config
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
+from calibre_plugins.letssharebooks.get_metadata import get_lsb_metadata
 
 
 __license__   = 'GPL v3'
@@ -283,7 +284,10 @@ class MetadataLibThread(QThread):
 
     def run(self):
         self.directory_path = self.get_directory_path()
-        books_metadata = self.get_book_metadata()
+        #bookz_metadata = self.get_book_metadata()
+        logger.debug("DB PATH: {}".format(os.path.join(self.directory_path, 'metadata.db')))
+        books_metadata = get_lsb_metadata(self.directory_path, self.librarian)
+        logger.debug("BOOKS_METADATA: {}".format(books_metadata))
         server_list = set(self.get_server_list(self.sql_db.library_id))
         local_list = set([book['uuid'] for book in books_metadata])
         removed_books = server_list - local_list
@@ -309,6 +313,8 @@ class MetadataLibThread(QThread):
                     [book['last_modified'] for book in books_metadata])[-1])
                 library['tunnel'] = int(self.port)
                 library['librarian'] = self.librarian
+                library['portable'] = False
+                library['portable_url'] = False
                 library['books'] = {}
                 library['books']['remove'] = list(removed_books)
                 library['books']['add'] = [book for book in books_metadata
@@ -333,13 +339,14 @@ class MetadataLibThread(QThread):
             #- make portable port distinctive -1337 so it can be registered ---
             #- at https://library.memoryoftheworld.org ------------------------
             library['tunnel'] = -1337
+            library['portable'] = False
+            library['portable_url'] = False
             library['librarian'] = self.librarian
             library['books'] = {}
             library['books']['remove'] = []
             library['books']['add'] = [book for book in books_metadata]
             logger.debug("BOOKS_METADATA: {}".format(books_metadata))
             json_string = json.dumps(library)
-            logger.debug("JSON!!!")
             file.write(json_string)
 
         logger.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(

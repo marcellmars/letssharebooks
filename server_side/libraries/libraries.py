@@ -69,7 +69,7 @@ def setup_active_tunnels_func():
     global get_active_tunnels
     if settings.ENV_NAME in ['local', 'test']:
         get_active_tunnels = get_active_tunnels_mock
-        
+
 #------------------------------------------------------------------------------
 
 def handle_uploaded_catalog(db, uploaded_file, zipped=True):
@@ -141,7 +141,7 @@ def import_catalog(db, catalog, portable_url=None):
                               'librarian': librarian}},
                     multi=True)
     return library_uuid
-    
+
 #------------------------------------------------------------------------------
 
 def remove_from_library(db, library_uuid, books_uuids):
@@ -262,7 +262,7 @@ def register_portable(db, url):
     catalog = simplejson.loads(lib_json.text)
     res = import_catalog(db, catalog, url)
     return res
-    
+
 #------------------------------------------------------------------------------
 
 def get_portables(db):

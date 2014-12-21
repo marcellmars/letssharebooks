@@ -15,10 +15,10 @@ try:
                           pyqtSignal)
 except ImportError:
     from PyQt5.Qt import (QWidgetAction,
-                            QToolButton,
-                            QMenu,
-                            QObject,
-                            pyqtSignal)
+                          QToolButton,
+                          QMenu,
+                          QObject,
+                          pyqtSignal)
 
 
 from calibre.gui2.actions import InterfaceAction

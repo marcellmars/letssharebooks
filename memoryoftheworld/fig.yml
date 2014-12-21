@@ -3,6 +3,8 @@ sshd:
     entrypoint: /usr/local/bin/supervisord
     ports:
         - "722:722"
+        - "3773:3773"
+    dns: 127.0.0.1
 
 nginx:
     build: nginx
@@ -12,4 +14,3 @@ nginx:
     links:
         - sshd
     dns: 127.0.0.1
-

@@ -6,6 +6,17 @@ sshd:
         - "3773:3773"
     dns: 127.0.0.1
 
+library:
+    build: library
+    entrypoint: /usr/local/bin/supervisord
+    volumes: /home/m/devel/letssharebooks/library:/var/www/library
+    ports:
+        - "4321:4321"
+    links:
+        - mongodb
+        - sshd
+    dns: 127.0.0.1
+
 nginx:
     build: nginx
     entrypoint: /usr/local/bin/supervisord
@@ -13,4 +24,5 @@ nginx:
         - "80:80"
     links:
         - sshd
+        - library
     dns: 127.0.0.1

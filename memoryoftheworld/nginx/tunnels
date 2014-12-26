@@ -1,6 +1,6 @@
 server {
         server_name   "~^www(?<port>\d{4,5}).memoryoftheworld.org";
-        listen 443;
+        listen 443 default ssl;
         listen 80;
 
         ssl_certificate /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt;

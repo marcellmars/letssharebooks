@@ -234,17 +234,16 @@ def get_books(db, page, query={}):
                              {"identifiers": match_pattern}]}
     # get all libraries that have active ssh tunnel or reference portables
     active_catalogs = db.catalog.find({'$or': [
-                {'tunnel': {'$in': get_active_tunnels()}},
+                {'tunnel': {'$in': get_active_tunnels()[0]}},
                 {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
     # get books that match search criteria
-    books = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('title_sort')
     #authors = books.distinct('authors')
     #titles = books.distinct('title')
     # get distinct list of all (active or portable) librarians from db.catalog
     librarians = active_catalogs.distinct('librarian')
     # paginate books
-    items, next_page, on_page, total = paginate(books, page)
+    items, next_page, on_page, total = paginate(db.books.find(q, PUBLIC_BOOK_FIELDS).sort('title_sort'), page)
     # return serialized books with availability of next page
     return utils.ser2json({'books': list(items),
                            'next_page': next_page,

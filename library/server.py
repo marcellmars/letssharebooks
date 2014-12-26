@@ -128,7 +128,7 @@ class Root(object):
         Register portable library from remote url and insert its books
         '''
         return libraries.register_portable(cherrypy.thread_data.db, url)
-    
+
     @cherrypy.expose
     def portables(self):
         '''
@@ -179,6 +179,6 @@ def start_app(env):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='lsb server')
     parser.add_argument('--env', help="server environment (local|live|docker)",
-                        default='docker')
+                        default='live')
     args = parser.parse_args()
     start_app(args.env)

@@ -16,6 +16,6 @@ RUN chown prosody.prosody /etc/prosody/certs/wildcard_memoryoftheworld.org_20130
 RUN chmod 600 /etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt
 RUN chmod 600 /etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key
 
-ADD marcell.dat /var/lib/prosody/chat%2ememoryoftheworld%2eorg/accounts/
-RUN chmod -R 640 /var/lib/prosody/chat%2ememoryoftheworld%2eorg/accounts/marcell.dat
-RUN chown prosody.prosody /var/lib/prosody/chat%2ememoryoftheworld%2eorg/accounts/marcell.dat
+ADD marcell.dat /var/lib/prosody/xmpp%2ememoryoftheworld%2eorg/accounts/
+RUN chmod -R 640 /var/lib/prosody/xmpp%2ememoryoftheworld%2eorg/accounts/marcell.dat
+RUN chown prosody.prosody /var/lib/prosody/xmpp%2ememoryoftheworld%2eorg/accounts/marcell.dat

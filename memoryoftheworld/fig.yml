@@ -24,17 +24,6 @@ library:
         - sshd
     dns: 127.0.0.1
 
-nginx:
-    build: nginx
-    entrypoint: /usr/local/bin/supervisord
-    ports:
-        - "80:80"
-        - "443:443"
-    links:
-        - sshd
-        - library
-    dns: 127.0.0.1
-
 prosody:
     build: prosody
     entrypoint: /usr/local/bin/supervisord
@@ -44,4 +33,18 @@ prosody:
         - "5280:5280"
         - "5347:5347"
         - "5281:5281"
+    dns: 127.0.0.1
+
+nginx:
+    build: nginx
+    entrypoint: /usr/local/bin/supervisord
+    volumes: 
+        - /home/m/devel/letssharebooks/candy:/var/www/candy
+    ports:
+        - "80:80"
+        - "443:443"
+    links:
+        - sshd
+        - library
+        - prosody
     dns: 127.0.0.1

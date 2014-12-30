@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import subprocess
 hosts = open("/etc/hosts", "r").readlines()
@@ -17,7 +17,7 @@ for n,d in enumerate(dmsq):
         dmsq[n]="address=/memoryoftheworld.org/{}\n".format(docker_ips['nginx'])
 
 for n,d in enumerate(hosts):
-    for i in ["chat", "anon", "conference"]:
+    for i in ["xmpp", "anon", "conference"]:
         if "{}.memoryoftheworld.org".format(i) in d:
             hosts[n] = "{} {}.memoryoftheworld.org\n".format(docker_ips['prosody'], i)
 

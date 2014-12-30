@@ -3,6 +3,7 @@
 locale-gen en_US en_US.UTF-8
 
 apt-get -y install openssl ssl-cert ca-certificates prosody
+pip install sleekxmpp
 
 mkdir -p /var/run/prosody
 chown -R prosody.prosody /var/run/prosody

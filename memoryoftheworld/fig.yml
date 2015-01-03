@@ -20,6 +20,7 @@ library:
     entrypoint: /usr/local/bin/supervisord
     volumes: 
         - /home/m/devel/letssharebooks/library:/var/www/library
+        #- /home/memories/letssharebooks/library:/var/www/library
     expose:
         - "4321"
     links:
@@ -42,6 +43,7 @@ php5:
     entrypoint: /usr/local/bin/supervisord
     volumes: 
         - /home/m/devel/letssharebooks/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
+        #- /var/www/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
     expose:
         - "9000"
     links:
@@ -64,6 +66,7 @@ nginx:
     entrypoint: /usr/local/bin/supervisord
     volumes: 
         - /home/m/devel/letssharebooks/candy:/var/www/candy
+        #- /var/www/candy:/var/www/candy
     volumes_from:
         - php5
     ports:

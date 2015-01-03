@@ -11,6 +11,7 @@ ADD tunnels /etc/nginx/sites-enabled/
 ADD library /etc/nginx/sites-enabled/
 ADD bosh /etc/nginx/sites-enabled/
 ADD candy /etc/nginx/sites-enabled/
+ADD wordpress /etc/nginx/sites-enabled/
 
 ADD wildcard_memoryoftheworld.org_20130714_combined.crt /etc/ssl/certs/
 ADD wildcard_memoryoftheworld.org_20130714.key /etc/ssl/private/

@@ -293,7 +293,7 @@ def get_status(db):
     Return some status info
     '''
     active_catalogs = db.catalog.find({'$or': [
-                {'tunnel': {'$in': get_active_tunnels()}},
+                {'tunnel': {'$in': get_active_tunnels()[0]}},
                 {'portable': True}]})
     books = db.books.find({'library_uuid': {
                 '$in': [i['library_uuid'] for i in active_catalogs]}})

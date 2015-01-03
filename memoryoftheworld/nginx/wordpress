@@ -1,7 +1,7 @@
 server {
     listen 80;
     listen 443;
-    server_name www.memoryoftheworld.org www.javnaknjiznica.org memoryoftheworld.org;
+    server_name www.memoryoftheworld.org memoryoftheworld.org;
 
     add_header Strict-Transport-Security max-age=31536000;
 
@@ -30,7 +30,7 @@ server {
     location ~ \.php$ {
         try_files $uri /index.php;
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass unix:/var/run/php5-fpm.sock;
+        fastcgi_pass php5:9000;
         fastcgi_index index.php;
         include fastcgi_params;
     }

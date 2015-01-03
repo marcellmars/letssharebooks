@@ -10,6 +10,8 @@ sshd:
 mongodb:
     build: mongodb
     entrypoint: /usr/bin/mongod
+    volumes:
+        - /home/mnt/docker-persistence/mongodb/:/data/db/
     expose:
         - "27017"
 

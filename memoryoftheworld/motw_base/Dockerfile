@@ -1,4 +1,4 @@
-FROM librarian/motw
+FROM ubuntu:latest
 
 MAINTAINER Marcell Mars "https://github.com/marcellmars"
 

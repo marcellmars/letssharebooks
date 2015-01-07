@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import subprocess
+
 hosts = open("/etc/hosts", "r").readlines()
 dmsq = open("/etc/dnsmasq.d/local", "r").readlines()
 docker_ips = {}
@@ -24,5 +25,6 @@ for n,d in enumerate(hosts):
 open("/etc/hosts", "w").writelines(hosts)
 open("/etc/dnsmasq.d/local", "w").writelines(dmsq)
 open("/etc/resolv.conf", "w").write("nameserver 127.0.0.1\n")
+subprocess.call(['iptables', '-A', 'INPUT', '-s', '82.221.106.120', '-j', 'DROP'])
 subprocess.call(['service', 'dnsmasq', 'restart'])
 

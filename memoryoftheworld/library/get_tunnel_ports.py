@@ -12,7 +12,7 @@ def check_tunnel_ports(ports):
             r = requests.get("http://{}:{}".format(socket.gethostbyname('sshd'), port))
             if r.ok:
                 tp.append(int(port))
-        except:
+        except Exception as e:
             print("exception: {}".format(e))
             print("except: {}".format(port))
             pass

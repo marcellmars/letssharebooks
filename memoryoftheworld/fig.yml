@@ -54,9 +54,9 @@ db:
     environment:
         MYSQL_PASS: "12345"
         MYSQL_USER: "wp_admin"
-#        STARTUP_SQL: "/tmp/db/startup.sql"
+        STARTUP_SQL: "/tmp/db/startup.sql"
     volumes:
-#        - /tmp/db/:/tmp/db/
+        - /tmp/db/:/tmp/db/
         - /home/mnt/docker-persistence/mysql/:/var/lib/mysql/
     expose:
         - "3306"

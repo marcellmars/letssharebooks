@@ -26,3 +26,5 @@ ADD .password /usr/local/bin/
 ADD create_room.conf /etc/supervisor/conf.d/
 
 RUN echo "127.0.0.1 xmpp.memoryoftheworld.org conference.memoryoftheworld.org" >> /etc/hosts
+
+ADD dnsmasq.local /etc/dnsmasq.d/local

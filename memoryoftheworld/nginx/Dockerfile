@@ -15,3 +15,5 @@ ADD wordpress /etc/nginx/sites-enabled/
 
 ADD wildcard_memoryoftheworld.org_20130714_combined.crt /etc/ssl/certs/
 ADD wildcard_memoryoftheworld.org_20130714.key /etc/ssl/private/
+
+ADD dnsmasq.local /etc/dnsmasq.d/local

@@ -231,10 +231,9 @@ var update_pagination_info = function (items_on_page, total_num_of_items) {
 /* --------------------------------------------------------------------------*/
 
 var update_autocomplete = function(data) {
-    var metadata = generate_metadata(data['books']);
-    $('#authors').autocomplete({source: metadata['authors'],
+    $('#authors').autocomplete({source: data['authors'],
                                 minLength:2});
-    $('#titles').autocomplete({source: metadata['titles'],
+    $('#titles').autocomplete({source: data['titles'],
                                minLength:2});
     $('#librarian').empty();
     if (data['librarians'].length > 1) {
@@ -255,29 +254,6 @@ var update_autocomplete = function(data) {
     } else if (data['librarians'].length == 1 ){
         $('#librarian').val(data['librarians'][0]);
     };
-};
-
-/**************************************************************************
- * generate distinct list of authors, titles and librarians
- **************************************************************************/
-var generate_metadata = function(books) {
-    var sadd = function(s, v) {
-        if ($.inArray(v, s) == -1) {
-            s.push(v);
-        };
-    };
-    var metadata = {
-        'authors': [],
-        'titles': [],
-    };
-    $.each(books, function(i, book) {
-        var authors = book.authors;
-        $.each(authors, function(j, author) {
-            sadd(metadata['authors'], author);
-        });
-        sadd(metadata['titles'], book.title);
-    });
-    return metadata;
 };
 
 /* --------------------------------------------------------------------------*/

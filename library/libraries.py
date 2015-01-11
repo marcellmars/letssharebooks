@@ -237,21 +237,20 @@ def get_books(db, page, query={}):
                 {'tunnel': {'$in': get_active_tunnels()[0]}},
                 {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
-    # get books that match search criteria
+    librarians = active_catalogs.distinct('librarian')
     authors = db.books.find(q, PUBLIC_BOOK_FIELDS).distinct('authors')
     titles = db.books.find(q, PUBLIC_BOOK_FIELDS).distinct('title')
-    # get distinct list of all (active or portable) librarians from db.catalog
-    librarians = active_catalogs.distinct('librarian')
     # paginate books
-    items, next_page, on_page, total = paginate(db.books.find(q, PUBLIC_BOOK_FIELDS).sort('title_sort'), page)
+    items, next_page, on_page, total = paginate(db.books.find(
+            q, PUBLIC_BOOK_FIELDS).sort('title_sort'), page)
     # return serialized books with availability of next page
     return utils.ser2json({'books': list(items),
                            'next_page': next_page,
                            'on_page': on_page,
                            'total': total,
-                           'authors': authors,
-                           'titles': titles,
                            'librarians': librarians,
+                           'authors': authors,
+                           'titles': titles
                            })
 
 #------------------------------------------------------------------------------

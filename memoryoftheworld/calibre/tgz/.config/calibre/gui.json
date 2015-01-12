@@ -1,0 +1,43 @@
+{
+  "library_usage_stats": {
+    "/home/developer/mock_calibre_library": 1
+  }, 
+  "book_details_splitter_horizontal_state": [
+    true, 
+    200
+  ], 
+  "cover_browser_splitter_vertical_state": [
+    false, 
+    300
+  ], 
+  "tag_browser_splitter_horizontal_state": [
+    true, 
+    200
+  ], 
+  "quick_start_guide_added": true, 
+  "preferences_window_geometry": {
+    "__value__": "AdnQywABAAAAAAAgAAAAEwAAA9UAAAMIAAAAKgAAAEIAAAPLAAAC/gAAAAAAAA==", 
+    "__class__": "bytearray"
+  }, 
+  "action-layout-toolbar": [
+    "Add Books", 
+    "Edit Metadata", 
+    null, 
+    "Convert Books", 
+    "View", 
+    null, 
+    "Store", 
+    "Donate", 
+    "Fetch News", 
+    "Help", 
+    null, 
+    "Remove Books", 
+    "Choose Library", 
+    "Save To Disk", 
+    "Connect Share", 
+    "Tweak ePub", 
+    "Preferences", 
+    "[let's share books]"
+  ], 
+  "grid view visible": false
+}

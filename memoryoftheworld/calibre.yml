@@ -1,0 +1,9 @@
+calibre:
+    build: calibre
+    entrypoint: /usr/local/bin/supervisord
+    environment:
+        DISPLAY: ":0"
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix
+        - /home/m/devel/letssharebooks/mock_calibre_library/:/home/developer/mock_calibre_library/
+        - /home/m/devel/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/

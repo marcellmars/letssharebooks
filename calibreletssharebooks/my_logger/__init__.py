@@ -29,7 +29,7 @@ def get_logger(name, level=logging.DEBUG, disabled=True,
             backupCount=1)
     else:
         logging_handler = handlers.TimedRotatingFileHandler(
-            "{}_{}.log".format(name, file_prefix),
+            "/tmp/{}_{}.log".format(name, file_prefix),
             when='h',
             interval=1,
             backupCount=1)

@@ -220,7 +220,8 @@ def get_books(db, page, query={}):
     # extract search parameters and build query
     for k, v in query.iteritems():
         if v:
-            match_pattern = {'$regex':'.*{}.*'.format(v.encode('utf-8')),
+            words = v.encode('utf-8').split(' ')
+            match_pattern = {'$regex': '.*'.join(words),
                              '$options': 'i'}
             if k in ['authors', 'title', 'librarian']:
                 q[k] = match_pattern

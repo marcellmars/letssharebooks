@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">6</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">241caac8-6e1f-458b-a5b8-25cb9229a60f</dc:identifier>
+        <dc:title>The Art of Poetry: an Epistle to the Pisos / Q. Horatii Flacci Epistola Ad Pisones, De Arte Poetica.</dc:title>
+        <dc:creator opf:file-as="Horace" opf:role="aut">Horace</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.15.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2005-09-30T22:00:00+00:00</dc:date>
+        <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/9175</dc:identifier>
+        <dc:language>eng</dc:language>
+        <dc:language>lat</dc:language>
+        <dc:subject>Epistolary poetry</dc:subject>
+        <dc:subject>Latin -- Translations into English</dc:subject>
+        <dc:subject>Didactic poetry</dc:subject>
+        <dc:subject>Aesthetics -- Early works to 1800</dc:subject>
+        <dc:subject>Criticism -- Early works to 1800</dc:subject>
+        <dc:subject>Poetics -- Early works to 1800</dc:subject>
+        <meta content="{&quot;Horace&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-01-13T17:22:07.045385+00:00" name="calibre:timestamp"/>
+        <meta content="Art of Poetry: an Epistle to the Pisos / Q. Horatii Flacci Epistola Ad Pisones, De Arte Poetica., The" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

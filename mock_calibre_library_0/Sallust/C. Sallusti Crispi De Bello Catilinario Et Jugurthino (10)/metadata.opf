@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">10</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">e3b3fbdb-c18a-41c9-a555-b5cefc352d23</dc:identifier>
+        <dc:title>C. Sallusti Crispi De Bello Catilinario Et Jugurthino</dc:title>
+        <dc:creator opf:file-as="Sallust" opf:role="aut">Sallust</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.15.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2005-01-31T23:00:00+00:00</dc:date>
+        <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/7402</dc:identifier>
+        <dc:language>eng</dc:language>
+        <dc:language>lat</dc:language>
+        <dc:subject>Jugurthine War</dc:subject>
+        <dc:subject>111-105 B.C.</dc:subject>
+        <dc:subject>Rome -- History -- Conspiracy of Catiline</dc:subject>
+        <dc:subject>65-62 B.C.</dc:subject>
+        <meta content="{&quot;Sallust&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-01-13T17:22:16.341558+00:00" name="calibre:timestamp"/>
+        <meta content="C. Sallusti Crispi De Bello Catilinario Et Jugurthino" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

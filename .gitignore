@@ -1,2 +1,6 @@
 *~
 *.pyc
+mock_calibre_library_0/static*
+mock_calibre_library_0/metadata*
+mock_calibre_library_1/static*
+mock_calibre_library_1/metadata*

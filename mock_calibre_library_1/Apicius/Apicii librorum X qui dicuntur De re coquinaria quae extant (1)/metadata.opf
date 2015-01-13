@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">1</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">a2694601-52dc-47df-be70-83b201f8f5f7</dc:identifier>
+        <dc:title>Apicii librorum X qui dicuntur De re coquinaria quae extant</dc:title>
+        <dc:creator opf:file-as="Apicius" opf:role="aut">Apicius</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.15.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2005-08-03T22:00:00+00:00</dc:date>
+        <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/16439</dc:identifier>
+        <dc:language>lat</dc:language>
+        <dc:subject>Cookery</dc:subject>
+        <dc:subject>Roman -- Early works to 1800</dc:subject>
+        <meta content="{&quot;Apicius&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-01-13T16:46:32.370664+00:00" name="calibre:timestamp"/>
+        <meta content="Apicii librorum X qui dicuntur De re coquinaria quae extant" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

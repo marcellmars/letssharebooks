@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">5</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">43d4790a-214a-451d-b026-29f442187aaa</dc:identifier>
+        <dc:title>Octavia Praetexta</dc:title>
+        <dc:creator opf:file-as="Seneca, Lucius Annaeus" opf:role="aut">Lucius Annaeus Seneca</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.15.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2009-10-27T23:00:00+00:00</dc:date>
+        <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/30345</dc:identifier>
+        <dc:language>lat</dc:language>
+        <dc:subject>Octavia</dc:subject>
+        <dc:subject>consort of Nero</dc:subject>
+        <dc:subject>Emperor of Rome</dc:subject>
+        <dc:subject>ca. 42-62 -- Drama</dc:subject>
+        <dc:subject>Rome -- History -- Nero</dc:subject>
+        <dc:subject>54-68 -- Drama</dc:subject>
+        <meta content="{&quot;Lucius Annaeus Seneca&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-01-13T16:46:42.523491+00:00" name="calibre:timestamp"/>
+        <meta content="Octavia Praetexta" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

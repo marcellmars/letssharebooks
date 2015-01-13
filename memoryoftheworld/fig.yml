@@ -11,7 +11,7 @@ mongodb:
     build: mongodb
     entrypoint: /usr/bin/mongod
     volumes:
-        - /home/mnt/docker-persistence/mongodb/:/data/db/
+        - ${MOTW_PERSISTENCE}/mongodb/:/data/db/
     expose:
         - "27017"
 
@@ -19,8 +19,7 @@ library:
     build: library
     entrypoint: /usr/local/bin/supervisord
     volumes: 
-        - /home/m/devel/letssharebooks/library:/var/www/library
-        #- /home/memories/letssharebooks/library:/var/www/library
+        - ${MOTW_HOME}/letssharebooks/library:/var/www/library
     expose:
         - "4321"
     links:
@@ -42,8 +41,7 @@ php5:
     build: php5
     entrypoint: /usr/local/bin/supervisord
     volumes: 
-        - /home/m/devel/letssharebooks/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
-        #- /var/www/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
+        - ${MOTW_HOME}/letssharebooks/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
     expose:
         - "9000"
     links:
@@ -54,10 +52,10 @@ db:
     environment:
         MYSQL_PASS: "12345"
         MYSQL_USER: "wp_admin"
-        STARTUP_SQL: "/tmp/db/startup.sql"
+        #STARTUP_SQL: "/tmp/db/startup.sql"
     volumes:
         - /tmp/db/:/tmp/db/
-        - /home/mnt/docker-persistence/mysql/:/var/lib/mysql/
+        - ${MOTW_PERSISTENCE}/mysql/:/var/lib/mysql/
     expose:
         - "3306"
 
@@ -65,8 +63,7 @@ nginx:
     build: nginx
     entrypoint: /usr/local/bin/supervisord
     volumes: 
-        - /home/m/devel/letssharebooks/candy:/var/www/candy
-        #- /var/www/candy:/var/www/candy
+        - ${MOTW_HOME}/letssharebooks/candy:/var/www/candy
     volumes_from:
         - php5
     ports:

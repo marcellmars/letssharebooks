@@ -19,3 +19,4 @@ calibre1:
         - ${MOTW_HOME}/letssharebooks/mock_calibre_library_1/:/home/developer/mock_calibre_library/
         - ${MOTW_HOME}/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/
     net: "host"
+

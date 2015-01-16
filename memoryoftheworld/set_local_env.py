@@ -18,14 +18,16 @@ for dckr in ["library", "mongodb", "nginx", "prosody", "sshd"]:
 #- add motw nginx ip address to  dnsmasq  -------------------------------------
 
 dmsq = open("/etc/dnsmasq.d/local", "r").readlines()
-init_pass = True
+
+init_address = True
+
 for n,d in enumerate(dmsq):
     if d.startswith("address=/memoryoftheworld.org/"):
         dmsq[n]="address=/memoryoftheworld.org/{}\n".format(docker_ips['nginx'])
-        init_pass = False
+        init_address = False
 
-if init_pass:
-        dmsq.append("address=/memoryoftheworld.org/{}\n".format(docker_ips['nginx']))
+if init_address:
+    dmsq.append("address=/memoryoftheworld.org/{}\n".format(docker_ips['nginx']))
 
 open("/etc/dnsmasq.d/local", "w").writelines(dmsq)
 
@@ -40,7 +42,7 @@ for n,d in enumerate(hosts):
 for i in ["xmpp", "anon", "conference"]:
     hosts.append("{} {}.memoryoftheworld.org\n".format(docker_ips['prosody'], i))
 
-hosts.append("127.0.0.1 memoryoftheworld.org\n")
+hosts.append("{} memoryoftheworld.org\n".format(docker_ips['sshd']))
 
 open("/etc/hosts", "w").writelines(hosts)
 

@@ -1,0 +1,3 @@
+bind-interfaces
+listen-address=127.0.0.1
+server=172.17.42.1

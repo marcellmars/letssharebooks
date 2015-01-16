@@ -7,7 +7,7 @@ calibre0:
         - /tmp/.X11-unix:/tmp/.X11-unix
         - ${MOTW_HOME}/letssharebooks/mock_calibre_library_0/:/home/developer/mock_calibre_library/
         - ${MOTW_HOME}/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/
-    net: "host"
+    dns: 127.0.0.1
 
 calibre1:
     build: calibre
@@ -18,5 +18,5 @@ calibre1:
         - /tmp/.X11-unix:/tmp/.X11-unix
         - ${MOTW_HOME}/letssharebooks/mock_calibre_library_1/:/home/developer/mock_calibre_library/
         - ${MOTW_HOME}/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/
-    net: "host"
+    dns: 127.0.0.1
 

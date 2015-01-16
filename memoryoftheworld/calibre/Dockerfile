@@ -9,5 +9,6 @@ RUN chmod +x /usr/local/bin/build_calibre.sh
 RUN /usr/local/bin/build_calibre.sh
 
 ADD calibre.conf /etc/supervisor/conf.d/
+ADD dnsmasq.local /etc/dnsmasq.d/local
 
 ENV HOME /home/developer

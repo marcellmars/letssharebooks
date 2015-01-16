@@ -2,17 +2,17 @@
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
         <dc:identifier opf:scheme="calibre" id="calibre_id">3</dc:identifier>
-        <dc:identifier opf:scheme="uuid" id="uuid_id">f222f493-ca60-49f6-90d4-941c41103669</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">16744e29-87c0-4f2d-859b-20560daab156</dc:identifier>
         <dc:title>C. Iuli Caesaris De Bello Gallico</dc:title>
         <dc:creator opf:file-as="Caesar, Julius" opf:role="aut">Julius Caesar</dc:creator>
-        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.15.0) [http://calibre-ebook.com]</dc:contributor>
-        <dc:date>2008-07-02T22:00:00+00:00</dc:date>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.16.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2008-07-03T00:00:00+00:00</dc:date>
         <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/218</dc:identifier>
         <dc:language>lat</dc:language>
         <dc:subject>Gaul -- History -- Gallic Wars</dc:subject>
         <dc:subject>58-51 B.C.</dc:subject>
         <meta content="{&quot;Julius Caesar&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
-        <meta content="2015-01-13T17:22:00.074488+00:00" name="calibre:timestamp"/>
+        <meta content="2015-01-15T01:16:11.021536+00:00" name="calibre:timestamp"/>
         <meta content="C. Iuli Caesaris De Bello Gallico" name="calibre:title_sort"/>
     </metadata>
     <guide>

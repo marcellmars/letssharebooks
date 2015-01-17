@@ -256,11 +256,21 @@ def get_books(db, page, query={}):
 
 #------------------------------------------------------------------------------
 
-def register_portable(db, url):
-    lib_json = requests.get(url + '/static/library.json')
-    catalog = simplejson.loads(lib_json.text)
-    res = import_catalog(db, catalog, url)
-    return res
+def add_portable(db, url):
+    print('Registering portable: with url {}'.format(url))
+    try:
+        libjs = requests.get(url + '/static/data.js').text
+        libjson = libjs[libjs.find('{'):-1]
+        catalog = simplejson.loads(libjson)
+        res = import_catalog(db, catalog, url)
+        return res
+    except ValueError as e:
+        return utils.ser2json('Already registered...')
+    except requests.ConnectionError as e:
+        print('Registering portable: ConnectionError {}'.format(e))
+    except Exception as e:
+        print('Registering portable: Exception {}'.format(e))
+    return utils.ser2json('Error while registering portable...')
 
 #------------------------------------------------------------------------------
 
@@ -274,17 +284,19 @@ def get_portables(db):
 
 #------------------------------------------------------------------------------
 
-def remove_portable(db, lib_uuid):
+def remove_portable(db, url):
     '''
     Removes registered portable library with given lib_uuid
     '''
-    q = {'portable': True, 'library_uuid': lib_uuid}
+    q = {'portable': True, 'portable_url': url}
     portable_cat = db.catalog.find_one(q)
     if portable_cat:
-        remove_from_library(db, lib_uuid, portable_cat['books'])
+        remove_from_library(db,
+                            portable_cat['library_uuid'],
+                            portable_cat['books'])
         db.catalog.remove(q)
-        return utils.ser2json(True)
-    return utils.ser2json(False)
+        return utils.ser2json('Library removed.')
+    return utils.ser2json('Error while removing portable...')
 
 #------------------------------------------------------------------------------
 

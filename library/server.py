@@ -123,11 +123,11 @@ class Root(object):
         return books
 
     @cherrypy.expose
-    def register_portable(self, url):
+    def add_portable(self, url):
         '''
         Register portable library from remote url and insert its books
         '''
-        return libraries.register_portable(cherrypy.thread_data.db, url)
+        return libraries.add_portable(cherrypy.thread_data.db, url)
 
     @cherrypy.expose
     def portables(self):
@@ -137,12 +137,12 @@ class Root(object):
         return libraries.get_portables(cherrypy.thread_data.db)
 
     @cherrypy.expose
-    def remove_portable(self, lib_uuid):
+    def remove_portable(self, url):
         '''
         Removes registered portable library with given lib_uuid
         Just for testing...
         '''
-        return libraries.remove_portable(cherrypy.thread_data.db, lib_uuid)
+        return libraries.remove_portable(cherrypy.thread_data.db, url)
 
     @cherrypy.expose
     @utils.jsonp

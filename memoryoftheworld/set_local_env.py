@@ -20,14 +20,20 @@ for dckr in ["library", "mongodb", "nginx", "prosody", "sshd"]:
 dmsq = open("/etc/dnsmasq.d/local", "r").readlines()
 
 init_address = True
+init_docker = True
 
 for n,d in enumerate(dmsq):
     if d.startswith("address=/memoryoftheworld.org/"):
         dmsq[n]="address=/memoryoftheworld.org/{}\n".format(docker_ips['nginx'])
         init_address = False
+    if d.startswith("interface=docker0"):
+        init_docker = False
 
 if init_address:
     dmsq.append("address=/memoryoftheworld.org/{}\n".format(docker_ips['nginx']))
+
+if init_docker:
+    dmsq.append("interface=docker0\n")
 
 open("/etc/dnsmasq.d/local", "w").writelines(dmsq)
 

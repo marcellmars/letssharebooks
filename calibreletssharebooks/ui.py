@@ -35,8 +35,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=False)
+#from calibre_plugins.letssharebooks.my_#logger.import get_logger
+##logger.= get_#logger.'letssharebooks', disabled=True)
 
 #-----------------------------------------------------------------------------
 
@@ -103,14 +103,15 @@ class LetsShareBooksUI(InterfaceAction):
         res = self.load_resources(PORTABLE_RESOURCES)
         os.makedirs(os.path.join(self.us.portable_directory, 'portable'))
         for resource in res.keys():
-            logger.debug("RESOURCE KEY: {}".format(resource))
+            #logger.debug("RESOURCE KEY: {}".format(resource))
             if sys.platform == "win32" and resource == "portable/portable_win.js":
-                logger.debug("WIN_RESOURCE KEY: {}".format(resource))
+                #logger.debug("WIN_RESOURCE KEY: {}".format(resource))
                 with open(os.path.join(self.us.portable_directory,
                                        'portable/portable.js'), 'w') as portable:
                     portable.write(res[resource])
             elif sys.platform == "win32" and resource == "portable/portable.js":
-                logger.debug("IGNORE {} ON WINDOWS".format(resource))
+                #logger.debug("IGNORE {} ON WINDOWS".format(resource))
+                pass
             else:
                 with open(os.path.join(self.us.portable_directory,
                                        resource), 'wb') as portable:
@@ -139,11 +140,11 @@ class LetsShareBooksUI(InterfaceAction):
         prefs
 
     def shutting_down(self):
-        logger.info("SHUTTING_DOWN... {}".format(self.us.portable_directory))
+        #logger.info("SHUTTING_DOWN... {}".format(self.us.portable_directory))
         if self.d.disconnect_all():
             shutil.rmtree(os.path.join(self.us.portable_directory))
-            logger.info("DISCONNECT_ALL SUCCEEDED!")
+            #logger.info("DISCONNECT_ALL SUCCEEDED!")
             return True
         else:
-            logger.info("DISCONNECT_ALL FAILED!")
+            #logger.info("DISCONNECT_ALL FAILED!")
             return False

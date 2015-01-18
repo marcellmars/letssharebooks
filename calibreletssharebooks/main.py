@@ -106,12 +106,9 @@ except:
 
 
 class Downloader(QThread):
-    #downloaded_data = pyqtSignal(QString, QString, int, int)
-    #canceled_download = pyqtSignal(QString, QString, int, int)
-    #finished_file = pyqtSignal(QString, QString)
-    downloaded_data = pyqtSignal()
-    canceled_download = pyqtSignal()
-    finished_file = pyqtSignal()
+    downloaded_data = pyqtSignal(str, str, int, int)
+    canceled_download = pyqtSignal(str, str, int, int)
+    finished_file = pyqtSignal(str, str)
 
 
     def __init__(self, uuid4, url, dl_file):
@@ -205,57 +202,6 @@ class MetadataLibThread(QThread):
         self.librarian = librarian
         self.us = us
 
-    def get_book_metadata(self):
-        logger.debug("RUN GET_BOOK_METADATA!")
-        books_metadata = []
-        for book_id in self.sql_db.all_ids():
-            book_metadata = {}
-            book_meta = self.sql_db.get_metadata(book_id, index_is_id=True)
-            for field in book_meta.standard_field_keys():
-                if field in ['last_modified', 'timestamp', 'pubdate', 'mtime']:
-                    book_metadata[field] = getattr(book_meta, field).now().strftime('%Y-%m-%dT%H:%M:%S')
-                elif field == 'formats':
-                    formats = getattr(book_meta, field)
-                    book_metadata[field] = []
-                    if formats:
-                        book_metadata[field] = [book_format
-                                                for book_format in formats]
-                else:
-                    book_metadata[field] = getattr(book_meta, field)
-            try:
-                book_metadata['last_modified']
-
-            except:
-                book_metadata['last_modified'] = book_metadata['timestamp']
-
-            try:
-                format_metadata = getattr(book_meta, 'format_metadata')
-            except:
-                format_metadata = None
-
-            formats_metadata = {}
-            if format_metadata:
-                for book_format in format_metadata.iteritems():
-                    format_fields = {}
-                    for format_field in book_format[1].iteritems():
-                        logger.debug("FORMAT_FIELD: {}".format(format_field))
-                        if format_field[0] == 'mtime':
-                            format_fields['mtime'] = format_field[1].now().strftime('%Y-%m-%dT%H:%M:%S')
-                        elif format_field[0] == 'path':
-                            format_fields['path'] = format_field[1]
-                        else:
-                            format_fields[format_field[0]] = format_field[1]
-                    logger.debug("FORMAT_FIELDS: {}".format(format_fields))
-                    formats_metadata[book_format[0]] = format_fields
-            else:
-                formats_metadata['EMPTY'] = {'path': self.directory_path}
-
-            book_metadata['format_metadata'] = formats_metadata
-            book_metadata['librarian'] = self.librarian
-
-            books_metadata.append(book_metadata)
-        return books_metadata
-
     def get_server_list(self, uuid4):
         try:
             r = requests.get("{}://library.{}/get_catalog"
@@ -284,7 +230,6 @@ class MetadataLibThread(QThread):
 
     def run(self):
         self.directory_path = self.get_directory_path()
-        #bookz_metadata = self.get_book_metadata()
         logger.debug("DB PATH: {}".format(os.path.join(self.directory_path, 'metadata.db')))
         books_metadata = get_lsb_metadata(self.directory_path, self.librarian)
         logger.debug("BOOKS_METADATA: {}".format(books_metadata))
@@ -424,12 +369,6 @@ class ConnectionCheck(QThread):
         QThread.__init__(self)
         self.gotcha = gotcha
 
-    def increase_time(self, x, y):
-        while True:
-            yield x
-            if x < 140:
-                x, y = y, x + y
-
     def add_urls(self, urls):
         self.urls = urls
 
@@ -438,22 +377,15 @@ class ConnectionCheck(QThread):
             self.connection_ok.emit()
             time.sleep(5)
         time.sleep(5)
-        inc_time = self.increase_time(1, 2)
-        in_time = inc_time.next()
-        count = 0
         try:
             while self.gotcha:
-                if count % in_time == 0:
-                    in_time = inc_time.next()
-                    for url in self.urls:
-                        if not requests.get(url, verify=False).ok:
-                            self.lost_connection.emit()
-                            self.gotcha = False
-                            return
-                    self.connection_ok.emit()
-                time.sleep(0.2)
-                count += 1
-            return
+                for url in self.urls:
+                    if not requests.get(url, verify=False).ok:
+                        self.lost_connection.emit()
+                        self.gotcha = False
+                        return
+                self.connection_ok.emit()
+                time.sleep(30)
         except Exception as e:
             logger.info('LOST_CONNECTION: {}'.format(e))
             self.lost_connection.emit()
@@ -949,7 +881,7 @@ class LetsShareBooksDialog(QDialog):
             self.initial = False
         self.qaction.setIcon(get_icon('images/icon_connected.png'))
         self.check_connection.add_urls(
-            ["http://localhost:{}".format(self.calibre_server_port),
+            [#"http://localhost:{}".format(self.calibre_server_port),
              self.lsb_url])
         self.check_connection.gotcha = True
 
@@ -1214,7 +1146,7 @@ class LetsShareBooksDialog(QDialog):
 
     def http_import(self, r):
         self.books_container.show()
-        request_data = QByteArray.fromPercentEncoding(r.toUtf8()).data()
+        request_data = QByteArray.fromPercentEncoding(r).data()
         if request_data[:7] != "/?urls=":
             return
 
@@ -1279,8 +1211,7 @@ class LetsShareBooksDialog(QDialog):
             old_text = f.read()
         with open(os.path.join(download_dir, "metadata.opf"), "w") as f:
             new_text = old_text.replace('<guide/>',
-                                        '<guide><reference href="cover.jpg" '\
-                                        'title="Cover" type="cover"/></guide>')
+                                        '<guide><reference href="cover.jpg" title="Cover" type="cover"/></guide>')
             f.write(new_text)
         return True
 

@@ -2,11 +2,11 @@
 
 import sqlite3, os
 
-#- set up logging ------------------------------------------------------------
-from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=False)
+#- set up logging -------------------------------------------------------------
+#from calibre_plugins.letssharebooks.my_logger import get_logger
+#logger = get_logger('letssharebooks', disabled=False)
 
-#-----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 
 def get_lsb_metadata(directory_path, librarian):

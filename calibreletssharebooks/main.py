@@ -47,6 +47,7 @@ try:
                           QState,
                           QByteArray,
                           QCursor)
+    QT_RUNNING = 4
 except ImportError:
     from PyQt5.Qt import (Qt,
                         QDialog,
@@ -70,6 +71,7 @@ except ImportError:
                         QState,
                         QByteArray,
                         QCursor)
+    QT_RUNNING = 5
 
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
@@ -89,8 +91,8 @@ if False:
 
 #- set up logging -------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=False)
-logger.debug("WTF!")
+logger = get_logger('letssharebooks', disabled=True)
+logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------
 
@@ -109,7 +111,6 @@ class Downloader(QThread):
     downloaded_data = pyqtSignal(str, str, int, int)
     canceled_download = pyqtSignal(str, str, int, int)
     finished_file = pyqtSignal(str, str)
-
 
     def __init__(self, uuid4, url, dl_file):
         QThread.__init__(self)
@@ -223,14 +224,17 @@ class MetadataLibThread(QThread):
         file_path = get_gui().library_path.split(os.path.sep)
         logger.debug("FILE_PATH/GET_GUI: {}".format(file_path))
         if sys.platform == "win32":
-            file_path.insert(1, os.path.sep*2)
+            file_path.insert(1, os.path.sep)
+            logger.debug("FILE_PATH insert: {}".format(file_path))
         else:
             file_path.insert(0, '/')
+        logger.debug("FILE_PATH join: {}".format(file_path))
         return os.path.join(*file_path)
 
     def run(self):
         self.directory_path = self.get_directory_path()
-        logger.debug("DB PATH: {}".format(os.path.join(self.directory_path, 'metadata.db')))
+        logger.debug("DB PATH: {}".format(os.path.join(self.directory_path,
+                                                       'metadata.db')))
         books_metadata = get_lsb_metadata(self.directory_path, self.librarian)
         logger.debug("BOOKS_METADATA: {}".format(books_metadata))
         server_list = set(self.get_server_list(self.sql_db.library_id))
@@ -328,8 +332,8 @@ class MetadataLibThread(QThread):
 
         try:
             shutil.move(os.path.join(self.directory_path,
-                                    'static',
-                                    'BROWSE_LIBRARY.html'),
+                                     'static',
+                                     'BROWSE_LIBRARY.html'),
                         os.path.join(self.directory_path))
             logger.info("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
         except Exception as e:
@@ -380,7 +384,7 @@ class ConnectionCheck(QThread):
         try:
             while self.gotcha:
                 for url in self.urls:
-                    if not requests.get(url, verify=False).ok:
+                    if not requests.get(url, verify=False, timeout=(5)).ok:
                         self.lost_connection.emit()
                         self.gotcha = False
                         return
@@ -393,10 +397,12 @@ class ConnectionCheck(QThread):
             return
         return
 
+
 class HoverHand(QPushButton):
     def __init__(self):
         QPushButton.__init__(self)
         self.setMouseTracking(True)
+        
     def mouseMoveEvent(self, event):
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
@@ -516,7 +522,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.l = QHBoxLayout()
         self.l.setSpacing(0)
-        self.l.setContentsMargins(0,0,0,0)
+        self.l.setContentsMargins(0, 0, 0, 0)
         self.w = QWidget()
         self.w.setLayout(self.l)
 
@@ -670,7 +676,7 @@ class LetsShareBooksDialog(QDialog):
         self.running_version = ".".join(map(str, lsb.version))
         try:
             r = requests.get(
-                'https://raw.github.com/marcellmars/letssharebooks/master/'\
+                'https://raw.github.com/marcellmars/letssharebooks/master/'
                 'calibreletssharebooks/_version',
                 verify=False,
                 timeout=3)
@@ -775,7 +781,7 @@ class LetsShareBooksDialog(QDialog):
         self.library_state_changed = QState()
         self.library_state_changed.entered.connect(
             lambda: self.render_library_button('Uploading library metadata...',
-                                               'Library is now accessible at '\
+                                               'Library is now accessible at '
                                                'https://library.memoryoftheworld.org'))
         self.library_state_changed.setObjectName("library_state_changed")
         self.library_state_changed.entered.connect(self.sync_metadata)
@@ -881,8 +887,7 @@ class LetsShareBooksDialog(QDialog):
             self.initial = False
         self.qaction.setIcon(get_icon('images/icon_connected.png'))
         self.check_connection.add_urls(
-            [#"http://localhost:{}".format(self.calibre_server_port),
-             self.lsb_url])
+            [self.lsb_url])
         self.check_connection.gotcha = True
 
         if not self.check_connection.isRunning():
@@ -963,11 +968,11 @@ class LetsShareBooksDialog(QDialog):
         self.url_label.setToolTip(self.url_label_tooltip)
 
     def establish_ssh_server(self):
+        self.port = str(int(random.random()*48000+1024))
         if sys.platform == "win32":
             self.lsbtunnel = os.path.join(self.us.portable_directory,
                                           'portable',
                                           'lsbtunnel.exe')
-            self.port = str(int(random.random()*40000+10000))
             #- `echo y` accept any host while connecting through plink.exe
             self.ssh_proc = subprocess.Popen(
                 'echo y|{0} -N -T tunnel@{1} -R {2}:localhost:{3} -P 722'
@@ -988,13 +993,16 @@ class LetsShareBooksDialog(QDialog):
                 '-o', 'UserKnownHostsFile=/dev/null',
                 '-o', 'StrictHostKeyChecking=no',
                 '-o', 'ServerAliveINterval=60',
+                '-o', 'ExitOnForwardFailure=yes',
+                '-v',
                 #- when there is a strict firewall here pede.rs will help -----
                 #- because it runs the same ssh tunneling infrastructure ------
                 #- like memoryoftheworld.org but on pede.rs it listens --------
                 #- on port 443 (usually open on firewall because of https) ----
                 #'-o', 'ProxyCommand ssh -W %h:%p tunnel@ssh.pede.rs -p 443',
                 prefs['lsb_server'],
-                '-l', 'tunnel', '-R', '0:localhost:{0}'.format(
+                '-l', 'tunnel', '-R', '{}:localhost:{}'.format(
+                    self.port,
                     self.calibre_server_port),
                 '-p', '722'])
             if self.ssh_proc:
@@ -1013,22 +1021,26 @@ class LetsShareBooksDialog(QDialog):
                         self.se.truncate()
 
                         for line in result:
-                            m = re.match("^Allocated port (.*) for .*", line)
-                            try:
-                                self.port = m.groups()[0]
-                                self.lsb_url = '{}://www{}.{}'.format(
-                                    prefs['server_prefix'],
-                                    self.port,
-                                    prefs['lsb_server'])
-                                self.lsb_url_text = "Go to: {0}".format(
-                                    self.lsb_url)
-                                self.url_label_tooltip = 'Copy URL to '\
-                                'clipboard and check it out in a browser!'
-                                self.established_ssh_tunnel.emit()
-                                gotcha = True
-                                return
-                            except:
-                                pass
+                            #m = re.match("^Allocated port (.*) for .*", line)
+                            n = re.match("^Error: remote port forwarding failed for listen port.*", line)
+                            if n:
+                                logger.debug("ERROR: REMOTE PORT FAILED!")
+                                self.ssh_proc.kill()
+                                self.establish_ssh_server()
+                            else:
+                                m = re.match(".*All remote forwarding requests processed.*", line)
+                                if m:
+                                    #self.port = m.groups()[0]
+                                    self.lsb_url = '{}://www{}.{}'.format(
+                                        prefs['server_prefix'],
+                                        self.port,
+                                        prefs['lsb_server'])
+                                    self.lsb_url_text = "Go to: {0}".format(
+                                        self.lsb_url)
+                                    self.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
+                                    self.established_ssh_tunnel.emit()
+                                    gotcha = True
+                                    return
                     finally:
                         if not gotcha and self.parse_log_counter < 30:
                             #- it recursively calls itself every 500 ms -------
@@ -1068,7 +1080,8 @@ class LetsShareBooksDialog(QDialog):
 
     def chat(self):
         if self.initial_chat:
-            url = QUrl(u"https://chat.memoryoftheworld.org/calibre.html?nick={}".format(self.librarian.lower()))
+            chat_url = u"https://chat.memoryoftheworld.org/calibre.html?nick="
+            url = QUrl(u"{}{}".format(chat_url, self.librarian.lower()))
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False
 
@@ -1146,7 +1159,10 @@ class LetsShareBooksDialog(QDialog):
 
     def http_import(self, r):
         self.books_container.show()
-        request_data = QByteArray.fromPercentEncoding(r).data()
+        if QT_RUNNING == 5:
+            request_data = QByteArray.fromPercentEncoding(r).data()
+        else:
+            request_data = QByteArray.fromPercentEncoding(r.toUtf8()).data()
         if request_data[:7] != "/?urls=":
             return
 
@@ -1211,7 +1227,8 @@ class LetsShareBooksDialog(QDialog):
             old_text = f.read()
         with open(os.path.join(download_dir, "metadata.opf"), "w") as f:
             new_text = old_text.replace('<guide/>',
-                                        '<guide><reference href="cover.jpg" title="Cover" type="cover"/></guide>')
+                                        '<guide><reference href="cover.jpg" \
+                                        title="Cover" type="cover"/></guide>')
             f.write(new_text)
         return True
 

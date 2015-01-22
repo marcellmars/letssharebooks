@@ -91,7 +91,7 @@ if False:
 
 #- set up logging -------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=True)
+logger = get_logger('letssharebooks', disabled=False)
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------
@@ -238,9 +238,14 @@ class MetadataLibThread(QThread):
         books_metadata = get_lsb_metadata(self.directory_path, self.librarian)
         logger.debug("BOOKS_METADATA: {}".format(books_metadata))
         server_list = set(self.get_server_list(self.sql_db.library_id))
-        local_list = set([book['uuid'] for book in books_metadata])
+        local_list = set([{'uuid': book['uuid'], 'last_modified': book['last_modified']}
+                          for book in books_metadata])
+        logger.debug("SERVER LIST: {}".format(server_list))
+        logger.debug("LOCAL LIST: {}".format(local_list))
         removed_books = server_list - local_list
         added_books = local_list - server_list
+        logger.debug("REMOVED LIST: {}".format(server_list))
+        logger.debug("ADDED LIST: {}".format(local_list))
         library = {}
         try:
             import zlib

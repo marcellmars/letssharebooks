@@ -150,7 +150,7 @@ def remove_from_library(db, library_uuid, books_uuids):
     '''
     [db.books.remove({'uuid':uid}) for uid in books_uuids]
     db.catalog.update({'library_uuid': library_uuid},
-                      {'$pull': {'books': {'$in': books_uuids}}},
+                      {'$pull': {'books.uuid': {'$in': books_uuids}}},
                       upsert=True, multi=False)
 
 #------------------------------------------------------------------------------
@@ -173,7 +173,8 @@ def add_to_library(db, library_uuid, librarian, tunnel, books, portable, portabl
                             utils.remove_dots_from_dict(book),
                             upsert=True, multi=False)
             # collect book uuids for catalog entry
-            books_uuid.append(book['uuid'])
+            books_uuid.append({'uuid': book['uuid'],
+                               'last_modified': book['last_modified']})
         except Exception as e:
             print(e)
     # update catalog metadata collection

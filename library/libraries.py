@@ -148,6 +148,7 @@ def remove_from_library(db, library_uuid, books_uuids):
     '''
     Remove books from the library and update catalog
     '''
+    books_uuids = [uuid[0] for uuid in books_uuids]
     [db.books.remove({'uuid':uid}) for uid in books_uuids]
     db.catalog.update({'library_uuid': library_uuid},
                       {'$pull': {'books.uuid': {'$in': books_uuids}}},

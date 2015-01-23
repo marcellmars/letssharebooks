@@ -39,5 +39,7 @@
     "Preferences", 
     "[let's share books]"
   ], 
-  "grid view visible": false
+    "grid view visible": false,
+    "toolbar_text": "never",
+    "toolbar_icon_size": "small"
 }

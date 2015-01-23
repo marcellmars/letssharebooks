@@ -217,18 +217,15 @@ class MetadataLibThread(QThread):
         if catalog is None:
             return []
         else:
-            return catalog['books']
+            return [(book[0], book[1]) for book in catalog['books']]
 
     def get_directory_path(self):
         from calibre.gui2.ui import get_gui
         file_path = get_gui().library_path.split(os.path.sep)
-        logger.debug("FILE_PATH/GET_GUI: {}".format(file_path))
         if sys.platform == "win32":
             file_path.insert(1, os.path.sep)
-            logger.debug("FILE_PATH insert: {}".format(file_path))
         else:
             file_path.insert(0, '/')
-        logger.debug("FILE_PATH join: {}".format(file_path))
         return os.path.join(*file_path)
 
     def run(self):
@@ -236,16 +233,11 @@ class MetadataLibThread(QThread):
         logger.debug("DB PATH: {}".format(os.path.join(self.directory_path,
                                                        'metadata.db')))
         books_metadata = get_lsb_metadata(self.directory_path, self.librarian)
-        logger.debug("BOOKS_METADATA: {}".format(books_metadata))
         server_list = set(self.get_server_list(self.sql_db.library_id))
-        local_list = set([{'uuid': book['uuid'], 'last_modified': book['last_modified']}
+        local_list = set([(book['uuid'], book['last_modified'])
                           for book in books_metadata])
-        logger.debug("SERVER LIST: {}".format(server_list))
-        logger.debug("LOCAL LIST: {}".format(local_list))
         removed_books = server_list - local_list
         added_books = local_list - server_list
-        logger.debug("REMOVED LIST: {}".format(server_list))
-        logger.debug("ADDED LIST: {}".format(local_list))
         library = {}
         try:
             import zlib
@@ -272,7 +264,7 @@ class MetadataLibThread(QThread):
                 library['books'] = {}
                 library['books']['remove'] = list(removed_books)
                 library['books']['add'] = [book for book in books_metadata
-                                           if book['uuid'] in added_books]
+                                           if (book['uuid'], book['last_modified']) in added_books]
                 json_string = json.dumps(library)
                 file.write(json_string)
             zif.write(os.path.join(self.us.portable_directory,
@@ -299,7 +291,6 @@ class MetadataLibThread(QThread):
             library['books'] = {}
             library['books']['remove'] = []
             library['books']['add'] = [book for book in books_metadata]
-            logger.debug("BOOKS_METADATA: {}".format(books_metadata))
             json_string = json.dumps(library)
             file.write(json_string)
 
@@ -355,6 +346,7 @@ class MetadataLibThread(QThread):
                         prefs['server_prefix'],
                         prefs['lsb_server']),
                     files={'uploaded_file': file}, verify=False)
+                logger.debug("UPLOAD REQUEST: {}".format(r))
                 if r.ok:
                     self.uploaded.emit()
                 else:
@@ -667,9 +659,6 @@ class LetsShareBooksDialog(QDialog):
         certs.append(QSslCertificate(QFile("portable/ca-bundle.crt")))
         config.setCaCertificates(certs)
 
-        logger.info("FAVICON PATH: {}".format(os.path.join(
-                    self.us.portable_directory,
-                    "portable/favicon.html")))
         self.ll.addWidget(self.webview)
 
         #- check if there is a new version of plugin and if yes ---------------
@@ -870,7 +859,6 @@ class LetsShareBooksDialog(QDialog):
             if not quit_metadata:
                 self.metadata_thread.quit()
 
-        logger.info("STARTING METADATA THREAD...")
         self.metadata_thread.sql_db = get_gui().current_db
         self.metadata_thread.port = self.port
         self.metadata_thread.librarian = unicode(self.edit.text())

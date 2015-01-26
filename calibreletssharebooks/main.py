@@ -208,7 +208,8 @@ class MetadataLibThread(QThread):
     def get_book_metadata(self, current_db, librarian):
         self.get_directory_path()
         books = []
-        for book in current_db.all_book_ids():
+        books_ids = current_db.all_book_ids()
+        for book in books_ids:
             b = {}
             md_fields = current_db.get_proxy_metadata(book)
             b['librarian'] = librarian
@@ -229,21 +230,17 @@ class MetadataLibThread(QThread):
             b['authors'] = []
             for author in md_fields.authors:
                 b['authors'].append(author)
-            books.append(b)
 
             b['comments'] = md_fields.comments
             b['publisher'] = md_fields.publisher
            
             bkf = {}
             bk = []
-            if md_fields.formats:
-                for frmat in md_fields.formats:
-                    bkf[frmat[1]] = {'path':"{}/{}/{}.{}".format(self.directory_path,
-                                                                 current_db.field_for('path', book),
-                                                                 frmat[0],
-                                                                 frmat[1].lower()),
-                                     'size':frmat[2]}
-                    bk.append(frmat[1])
+            if md_fields.format_metadata:
+                for frmat in md_fields.format_metadata.iteritems():
+                    bkf[frmat[0]] = {'path':"{}".format(frmat[1]["path"]),
+                                     'size':frmat[1]["size"]}
+                    bk.append(frmat[0])
                 
             if not bkf:
                 bkf['FOO'] = {'path' :  "{}/{}/{}.{}".format(self.directory_path,
@@ -251,6 +248,7 @@ class MetadataLibThread(QThread):
                                                              "FOO",
                                                              "BRR"),
                               'size': 0}
+                
             b['format_metadata'] = bkf
             
             if not bk:
@@ -267,7 +265,6 @@ class MetadataLibThread(QThread):
             if not md_fields.tags:
                 tags = [[""]]
             b['tags'] = [a[0] for a in md_fields.tags]
-            
             books.append(b)
         books.append(librarian)
         return books
@@ -450,6 +447,7 @@ class MetadataLibThread(QThread):
         books_metadata = self.get_book_metadata(self.get_current_db(),
                                                 self.us.librarian)
         librarian = books_metadata.pop()
+        logger.debug("BOOKS_METADATA TOTAL: {}".format(len(books_metadata)))
         self.make_portable(books_metadata, librarian)
         self.upload_library(books_metadata, librarian)
         return
@@ -715,27 +713,6 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.books_container)
         self.books_container.hide()
 
-        #- metadata_thread states should go to state machine ------------------
-        #- let's move it some other time :o) ----------------------------------
-        
-        self.metadata_thread.uploaded.connect(
-            lambda: self.render_library_button(
-                "Library is now accessible at: {}://library.{}"
-                .format(prefs['server_prefix'], prefs['lsb_server']),
-                "Building together real-time p2p library infrastructure."))
-        self.metadata_thread.uploaded.connect(
-            lambda: self.log_message("UPLOADED"))
-        self.metadata_thread.upload_error.connect(
-            lambda: self.render_library_button(
-                'Public Library: http://www.memoryoftheworld.org',
-                'When everyone is librarian, library is everywhere.'))
-        self.metadata_thread.uploading.connect(
-            lambda: self.render_library_button(
-                self.us.uploading_message,
-                'When everyone is librarian, library is everywhere.'))
-        self.metadata_thread.upload_error.connect(
-            lambda: self.log_message("UPLOAD ERROR!"))
-
         #- webkit with chat ---------------------------------------------------
 
         self.webview = QtWebKit.QWebView()
@@ -959,6 +936,7 @@ class LetsShareBooksDialog(QDialog):
                 self.metadata_thread.get_directory_path()
                 return
             else:
+                logger.debug("EDITED_ITEM FIRED BUT NO LUCK FOR SYNC!")
                 return
         else: 
             self.metadata_thread = MetadataLibThread(self.us)
@@ -1019,7 +997,7 @@ class LetsShareBooksDialog(QDialog):
         now = datetime.datetime.now()
         tdelta =  datetime.timedelta(seconds=3)
         if now - self.us.edit_stamp > tdelta:
-            QTimer.singleShot(3000, self.sync_metadata)
+            QTimer.singleShot(3000, lambda: self.sync_metadata("edited_item"))
             self.us.edit_stamp = datetime.datetime.now()
 
     def disconnect_all(self):

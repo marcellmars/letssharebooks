@@ -68,7 +68,7 @@ class UnitedStates(QObject):
 
     def __init__(self):
         QObject.__init__(self)
-        
+        self.edit_stamp = datetime.datetime(2013, 1, 11, 0, 0, 0, 0)
         self.portable_directory = tempfile.mkdtemp()
         self.plugin_url = ('https://github.com/marcellmars/'
                            'letssharebooks/raw/master/calibreletssharebooks/'

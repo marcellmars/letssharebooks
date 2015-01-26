@@ -124,7 +124,8 @@ def import_catalog(db, catalog, portable_url=None):
                    catalog['books']['add'], portable, portable_url)
     # set tunnel to 0 if there is a library with the same tunnel from before
     old_libraries = [i['library_uuid']
-                     for i in db.catalog.find({'tunnel': tunnel})]
+                     for i in db.catalog.find({'tunnel': tunnel}) if i['library_uuid'] != library_uuid]
+    print("OLD_LIBRARIES: {}".format(old_libraries))
     db.catalog.update({'library_uuid': {'$in': old_libraries}},
                       {'$set': {'tunnel': 0}}, multi=True)
     # update catalog metadata

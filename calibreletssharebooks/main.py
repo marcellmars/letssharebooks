@@ -18,6 +18,7 @@ import SimpleHTTPServer
 import SocketServer
 import uuid
 import BaseHTTPServer
+import datetime
 
 try:
     from PyQt4 import QtWebKit
@@ -197,12 +198,80 @@ class ThreadedServer(QThread):
 class MetadataLibThread(QThread):
     uploaded = pyqtSignal()
     upload_error = pyqtSignal()
+    uploading = pyqtSignal()
 
-    def __init__(self, librarian, us):
+    def __init__(self, us):
         QThread.__init__(self)
-        self.librarian = librarian
         self.us = us
+        self.start_library = ""
 
+    def get_book_metadata(self, current_db, librarian):
+        self.get_directory_path()
+        books = []
+        for book in current_db.all_book_ids():
+            b = {}
+            md_fields = current_db.get_proxy_metadata(book)
+            b['librarian'] = librarian
+            b['uuid'] = str(md_fields.uuid)
+            b['application_id'] = md_fields.id
+            if not md_fields.title:
+                md_fields.title = "Unknown"
+            b['title'] = md_fields.title
+            if not md_fields.title_sort:
+                md_fields.title_sort = "Unknown"
+            b['title_sort'] = md_fields.title_sort
+            b['timestamp'] = md_fields.timestamp.isoformat()
+            b['pubdate'] = md_fields.pubdate.isoformat()
+            if not md_fields.last_modified:
+                md_fields.last_modified = b['timestamp']
+            b['last_modified'] = md_fields.last_modified.isoformat()
+            
+            b['authors'] = []
+            for author in md_fields.authors:
+                b['authors'].append(author)
+            books.append(b)
+
+            b['comments'] = md_fields.comments
+            b['publisher'] = md_fields.publisher
+           
+            bkf = {}
+            bk = []
+            if md_fields.formats:
+                for frmat in md_fields.formats:
+                    bkf[frmat[1]] = {'path':"{}/{}/{}.{}".format(self.directory_path,
+                                                                 current_db.field_for('path', book),
+                                                                 frmat[0],
+                                                                 frmat[1].lower()),
+                                     'size':frmat[2]}
+                    bk.append(frmat[1])
+                
+            if not bkf:
+                bkf['FOO'] = {'path' :  "{}/{}/{}.{}".format(self.directory_path,
+                                                             current_db.field_for('path', book),
+                                                             "FOO",
+                                                             "BRR"),
+                              'size': 0}
+            b['format_metadata'] = bkf
+            
+            if not bk:
+                bk = ['BRR']
+            b['formats'] = bk
+            
+            ids = {}
+            if md_fields.identifiers:
+                for i in md_fields.identifiers:
+                    ids[i[0]] = i[1]
+                    
+            b['identifiers'] = ids
+
+            if not md_fields.tags:
+                tags = [[""]]
+            b['tags'] = [a[0] for a in md_fields.tags]
+            
+            books.append(b)
+        books.append(librarian)
+        return books
+                    
     def get_server_list(self, uuid4):
         try:
             r = requests.get("{}://library.{}/get_catalog"
@@ -218,7 +287,13 @@ class MetadataLibThread(QThread):
             return []
         else:
             return [(book[0], book[1]) for book in catalog['books']]
-
+        
+    def get_current_db(self):
+        from calibre.gui2.ui import get_gui
+        self.sql_db = get_gui().current_db.new_api
+        self.sql_db.library_id = get_gui().current_db.library_id 
+        return self.sql_db 
+    
     def get_directory_path(self):
         from calibre.gui2.ui import get_gui
         file_path = get_gui().library_path.split(os.path.sep)
@@ -226,60 +301,25 @@ class MetadataLibThread(QThread):
             file_path.insert(1, os.path.sep)
         else:
             file_path.insert(0, '/')
-        return os.path.join(*file_path)
+        self.directory_path = os.path.join(*file_path)
+        return self.directory_path
 
-    def run(self):
-        self.directory_path = self.get_directory_path()
-        logger.debug("DB PATH: {}".format(os.path.join(self.directory_path,
-                                                       'metadata.db')))
-        books_metadata = get_lsb_metadata(self.directory_path, self.librarian)
-        server_list = set(self.get_server_list(self.sql_db.library_id))
+    def intersect(self, books_metadata):
         local_list = set([(book['uuid'], book['last_modified'])
                           for book in books_metadata])
+        server_list = set(self.get_server_list(self.sql_db.library_id))
         removed_books = server_list - local_list
         added_books = local_list - server_list
-        library = {}
-        try:
-            import zlib
-            mode = zipfile.ZIP_DEFLATED
-        except:
-            mode = zipfile.ZIP_STORED
-        os.makedirs(os.path.join(self.us.portable_directory, 'json'))
+        return removed_books, added_books
 
-        with zipfile.ZipFile(os.path.join(self.us.portable_directory,
-                                          'json',
-                                          'library.json.zip'),
-                             'w', mode) as zif:
-            with open(os.path.join(self.us.portable_directory,
-                                   'json',
-                                   'library.json'),
-                      'wb') as file:
-                library['library_uuid'] = self.sql_db.library_id
-                library['last_modified'] = str(sorted(
-                    [book['last_modified'] for book in books_metadata])[-1])
-                library['tunnel'] = int(self.port)
-                library['librarian'] = self.librarian
-                library['portable'] = False
-                library['portable_url'] = False
-                library['books'] = {}
-                library['books']['remove'] = list(removed_books)
-                library['books']['add'] = [book for book in books_metadata
-                                           if (book['uuid'], book['last_modified']) in added_books]
-                json_string = json.dumps(library)
-                file.write(json_string)
-            zif.write(os.path.join(self.us.portable_directory,
-                                   'json',
-                                   'library.json'),
-                      arcname='library.json')
-            zif.close()
-
+    def make_portable(self, books_metadata, librarian):
         #----------------------------------------------------------------------
         #- prepare BROWSE_LIBRARY.html for portable library in the root -------
         #- directory of current library ---------------------------------------
+        library = {}
         with open(os.path.join(self.us.portable_directory,
-                               'json',
-                               'portable_library.json'), 'wb') as file:
-            library['library_uuid'] = self.sql_db.library_id
+                               'portable/data.js'), 'wb') as file:
+            library['library_uuid'] = "p::{}::p".format(self.sql_db.library_id)
             library['last_modified'] = str(sorted(
                 [book['last_modified'] for book in books_metadata])[-1])
             #- make portable port distinctive -1337 so it can be registered ---
@@ -287,24 +327,16 @@ class MetadataLibThread(QThread):
             library['tunnel'] = -1337
             library['portable'] = False
             library['portable_url'] = False
-            library['librarian'] = self.librarian
+            library['librarian'] = librarian
             library['books'] = {}
             library['books']['remove'] = []
             library['books']['add'] = [book for book in books_metadata]
             json_string = json.dumps(library)
-            file.write(json_string)
+            file.write("LIBRARY = {};".format(json_string))
 
         logger.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
             self.us.portable_directory,
             'portable')))
-        with open(os.path.join(self.us.portable_directory,
-                               'json',
-                               'portable_library.json'), 'r') as fin:
-            with open(os.path.join(self.us.portable_directory,
-                                   'portable/data.js'), 'w') as fout:
-                fout.write('LIBRARY = {};'.format(fin.read()))
-                logger.debug("BEFORE REMOVING: {}".format(self.directory_path))
-
         try:
             shutil.rmtree(os.path.join(self.directory_path, 'static'))
             logger.info("REMOVING PORTABLE DIRECTORY SUCCESS")
@@ -335,28 +367,93 @@ class MetadataLibThread(QThread):
         except Exception as e:
             logger.info("COPY/MOVE ERROR: {}".format(e))
 
-        #----------------------------------------------------------------------
-        #- prepare library.json and upload it to memoryoftheworld.org app -----
-        with open(os.path.join(self.us.portable_directory,
-                               'json',
-                               'library.json.zip'), 'rb') as file:
+    def upload_library(self, books_metadata, librarian, recursive="init"):
+        if recursive == "loop" and self.start_library != self.directory_path:
+            self.start_library = self.directory_path
+            books_metadata = self.get_book_metadata(self.get_current_db(),
+                                                    self.us.librarian)
+            librarian = books_metadata.pop()
+        else:
+            self.start = self.directory_path
+            
+        removed_books, added_books = self.intersect(books_metadata)
+        
+        if not added_books and recursive == "loop":
+            logger.debug("UPLOADED!")
+            self.uploaded.emit()
+        else:
             try:
-                r = requests.post(
-                    "{}://library.{}/upload_catalog".format(
-                        prefs['server_prefix'],
-                        prefs['lsb_server']),
-                    files={'uploaded_file': file}, verify=False)
-                logger.debug("UPLOAD REQUEST: {}".format(r))
-                if r.ok:
-                    self.uploaded.emit()
-                else:
+                import zlib
+                mode = zipfile.ZIP_DEFLATED
+            except:
+                mode = zipfile.ZIP_STORED
+
+            os.makedirs(os.path.join(self.us.portable_directory, 'json'))
+
+            library = {}
+            with zipfile.ZipFile(os.path.join(self.us.portable_directory,
+                                              'json',
+                                              'library.json.zip'),
+                                 'w', mode) as zif:
+                with open(os.path.join(self.us.portable_directory,
+                                       'json',
+                                       'library.json'),
+                          'wb') as file:
+                    library['library_uuid'] = self.sql_db.library_id
+                    library['last_modified'] = str(sorted(
+                        [book['last_modified'] for book in books_metadata])[-1])
+                    library['tunnel'] = int(self.port)
+                    library['librarian'] = librarian
+                    library['portable'] = False
+                    library['portable_url'] = False
+                    library['books'] = {}
+                    library['books']['remove'] = list(removed_books)
+                    books_bulk = list(added_books)[:100]
+                    books_to_add = [book for book in books_metadata
+                                     if (book['uuid'], book['last_modified'])
+                                     in books_bulk]
+                    library['books']['add'] = books_to_add
+                    json_string = json.dumps(library)
+                    file.write(json_string)
+                zif.write(os.path.join(self.us.portable_directory,
+                                       'json',
+                                       'library.json'),
+                          arcname='library.json')
+                zif.close()
+
+            #-------------------------------------------------------------------
+            #- prepare library.json and upload it to memoryoftheworld.org app --
+            with open(os.path.join(self.us.portable_directory,
+                                   'json',
+                                   'library.json.zip'), 'rb') as file:
+                try:
+                    r = requests.post(
+                        "{}://library.{}/upload_catalog".format(
+                            prefs['server_prefix'],
+                            prefs['lsb_server']),
+                        files={'uploaded_file': file}, verify=False)
+                    if r.ok:
+                        self.us.uploading_message = "{} books' metadata are uploading{}".format(len(added_books),
+                                                                                                random.randint(3,10)*".")
+                        self.uploading.emit()
+                    else:
+                        self.upload_error.emit()
+                except requests.exceptions.RequestException as e:
                     self.upload_error.emit()
-            except requests.exceptions.RequestException as e:
-                self.upload_error.emit()
 
-        shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
+            shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
+            self.upload_library(books_metadata, librarian, "loop")
+
+    def run(self):
+        #books_metadata = get_lsb_metadata(self.get_directory_path(),
+        #                                  prefs['librarian'])
+        books_metadata = self.get_book_metadata(self.get_current_db(),
+                                                self.us.librarian)
+        librarian = books_metadata.pop()
+        self.make_portable(books_metadata, librarian)
+        self.upload_library(books_metadata, librarian)
         return
-
+            
 #------------------------------------------------------------------------------
 #- in ConnectionCheck it checks both local calibre content server -------------
 #- and the same service at the other end of ssh tunnel ------------------------
@@ -436,11 +533,11 @@ class LetsShareBooksDialog(QDialog):
         #- check if librarian wants to save her name --------------------------
 
         if prefs['librarian'] == '':
-            self.librarian = get_libranon()
+            self.us.librarian = get_libranon()
         else:
-            self.librarian = prefs['librarian']
+            self.us.librarian = prefs['librarian']
 
-        self.metadata_thread = MetadataLibThread(self.librarian, self.us)
+        self.metadata_thread = MetadataLibThread(self.us)
         self.check_connection = ConnectionCheck()
 
         self.clip = QApplication.clipboard()
@@ -557,7 +654,7 @@ class LetsShareBooksDialog(QDialog):
         self.edit.setObjectName("edit")
         self.edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.edit.setToolTip("Change your librarian name")
-        self.edit.setText(self.librarian)
+        self.edit.setText(self.us.librarian)
 
         self.save_libranon = QPushButton("librarian:")
         self.save_libranon.setSizePolicy(QSizePolicy.Maximum,
@@ -620,7 +717,7 @@ class LetsShareBooksDialog(QDialog):
 
         #- metadata_thread states should go to state machine ------------------
         #- let's move it some other time :o) ----------------------------------
-
+        
         self.metadata_thread.uploaded.connect(
             lambda: self.render_library_button(
                 "Library is now accessible at: {}://library.{}"
@@ -631,6 +728,10 @@ class LetsShareBooksDialog(QDialog):
         self.metadata_thread.upload_error.connect(
             lambda: self.render_library_button(
                 'Public Library: http://www.memoryoftheworld.org',
+                'When everyone is librarian, library is everywhere.'))
+        self.metadata_thread.uploading.connect(
+            lambda: self.render_library_button(
+                self.us.uploading_message,
                 'When everyone is librarian, library is everywhere.'))
         self.metadata_thread.upload_error.connect(
             lambda: self.log_message("UPLOAD ERROR!"))
@@ -773,12 +874,13 @@ class LetsShareBooksDialog(QDialog):
             lambda: self.log_message("ABOUT_PROJECT_CLICKED"))
 
         self.library_state_changed = QState()
-        self.library_state_changed.entered.connect(
-            lambda: self.render_library_button('Uploading library metadata...',
-                                               'Library is now accessible at '
-                                               'https://library.memoryoftheworld.org'))
+        #self.library_state_changed.entered.connect(
+        #    lambda: self.render_library_button('Uploading library metadata...',
+        #                                       'Library is now accessible at '
+        #                                       'https://library.memoryoftheworld.org'))
         self.library_state_changed.setObjectName("library_state_changed")
-        self.library_state_changed.entered.connect(self.sync_metadata)
+        self.library_state_changed.entered.connect(
+            lambda: self.sync_metadata("library_changed"))
         self.library_state_changed.entered.connect(
             lambda: self.log_message("LIBRARY_STATE_CHANGED"))
 
@@ -851,18 +953,34 @@ class LetsShareBooksDialog(QDialog):
 
     #--------------------------------------------------------------------------
 
-    def sync_metadata(self):
-        from calibre.gui2.ui import get_gui
+    def sync_metadata(self, what):
         if self.metadata_thread.isRunning():
-            logger.warning("METADATA THREAD IS STILL RUNNING!")
-            quit_metadata = self.metadata_thread.wait(500)
-            if not quit_metadata:
-                self.metadata_thread.quit()
-
-        self.metadata_thread.sql_db = get_gui().current_db
-        self.metadata_thread.port = self.port
-        self.metadata_thread.librarian = unicode(self.edit.text())
-        self.metadata_thread.start()
+            if what == "library_changed":
+                self.metadata_thread.get_directory_path()
+                return
+            else:
+                return
+        else: 
+            self.metadata_thread = MetadataLibThread(self.us)
+            self.metadata_thread.uploaded.connect(
+                lambda: self.render_library_button(
+                "Library is now accessible at: {}://library.{}"
+                .format(prefs['server_prefix'], prefs['lsb_server']),
+                "Building together real-time p2p library infrastructure."))
+            self.metadata_thread.uploaded.connect(
+                lambda: self.log_message("UPLOADED"))
+            self.metadata_thread.upload_error.connect(
+                lambda: self.render_library_button(
+                'Public Library: http://www.memoryoftheworld.org',
+                'When everyone is librarian, library is everywhere.'))
+            self.metadata_thread.uploading.connect(
+                lambda: self.render_library_button(
+                self.us.uploading_message,
+                'When everyone is librarian, library is everywhere.'))
+            self.metadata_thread.upload_error.connect(
+                lambda: self.log_message("UPLOAD ERROR!"))
+            self.metadata_thread.port = self.port
+            self.metadata_thread.start()
 
     def check_connections(self):
         from calibre.gui2.ui import get_gui
@@ -898,6 +1016,11 @@ class LetsShareBooksDialog(QDialog):
         logger.info("ITEM ID:{} EDITED".format(self.model
                                                .get_book_display_info(i.row())
                                                .id))
+        now = datetime.datetime.now()
+        tdelta =  datetime.timedelta(seconds=3)
+        if now - self.us.edit_stamp > tdelta:
+            QTimer.singleShot(3000, self.sync_metadata)
+            self.us.edit_stamp = datetime.datetime.now()
 
     def disconnect_all(self):
         #- send gotcha=False to check_connection to exit ----------------------
@@ -1061,8 +1184,8 @@ class LetsShareBooksDialog(QDialog):
     def save_librarian(self):
         if self.edit.text() == u"":
             prefs['librarian'] = u""
-            self.librarian = get_libranon()
-            self.edit.setText(self.librarian)
+            self.us.librarian = get_libranon()
+            self.edit.setText(self.us.librarian)
         else:
             prefs['librarian'] = self.edit.text()
             self.edit.setText(prefs['librarian'])
@@ -1074,7 +1197,7 @@ class LetsShareBooksDialog(QDialog):
     def chat(self):
         if self.initial_chat:
             chat_url = u"https://chat.memoryoftheworld.org/calibre.html?nick="
-            url = QUrl(u"{}{}".format(chat_url, self.librarian.lower()))
+            url = QUrl(u"{}{}".format(chat_url, self.us.librarian.lower()))
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False
 

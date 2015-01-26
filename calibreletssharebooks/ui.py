@@ -6,6 +6,7 @@ import tempfile
 import os
 import sys
 import shutil
+import datetime
 
 try:
     from PyQt4.Qt import (QWidgetAction,
@@ -67,6 +68,7 @@ class UnitedStates(QObject):
 
     def __init__(self):
         QObject.__init__(self)
+        
         self.portable_directory = tempfile.mkdtemp()
         self.plugin_url = ('https://github.com/marcellmars/'
                            'letssharebooks/raw/master/calibreletssharebooks/'
@@ -141,7 +143,7 @@ class LetsShareBooksUI(InterfaceAction):
 
     def shutting_down(self):
         #logger.info("SHUTTING_DOWN... {}".format(self.us.portable_directory))
-        if self.d.disconnect_all():
+        if self.disconnect_all():
             shutil.rmtree(os.path.join(self.us.portable_directory))
             #logger.info("DISCONNECT_ALL SUCCEEDED!")
             return True

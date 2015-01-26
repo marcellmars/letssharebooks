@@ -14,6 +14,7 @@ for dckr in ["library", "mongodb", "nginx", "prosody", "sshd"]:
                                                 "'{{ .NetworkSettings.IPAddress }}'",
                                                 "memoryoftheworld_{}_1".format(dckr)])[1:-2]
 
+print(docker_ips)
 #------------------------------------------------------------------------------
 #- add motw nginx ip address to  dnsmasq  -------------------------------------
 

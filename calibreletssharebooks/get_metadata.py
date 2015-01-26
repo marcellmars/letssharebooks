@@ -29,7 +29,7 @@ def get_lsb_metadata(directory_path, librarian):
         b['pubdate'] = book[4]
         #b['path'] = book[9]
         if not book[13]:
-            book[13] = b['last_modified']
+            book[13] = b['timestamp']
         b['last_modified'] = book[13]
 
         #authors

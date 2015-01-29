@@ -21,7 +21,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
         nick = presence['from'].resource
         if nick != self.nick and presence['from'].bare == self.room:
             self.send_message(mto=presence['from'].bare,
-                              mbody="""Dear {}, welcome to the 'Ask a librarian' chat room.\nBrowse and share your public library collection at:\nhttps://library.memoryoftheworld.org/librarian={}""".format(nick.title(),nick.replace(" ", "+")),
+                              mbody="""Dear {}, welcome to the 'Ask a librarian' chat room.\nBrowse and share your public library collection at:\nhttps://library.memoryoftheworld.org/#author=&title=&metadata=&librarian={}&page=1""".format(nick.title(),nick.title().replace(" ", "+")),
                               mtype='groupchat')
         
     def start(self, event):

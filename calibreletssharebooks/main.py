@@ -716,6 +716,8 @@ class LetsShareBooksDialog(QDialog):
         #- webkit with chat ---------------------------------------------------
 
         self.webview = QtWebKit.QWebView()
+        self.webview.page().setLinkDelegationPolicy(2)
+        self.webview.linkClicked.connect(self.open_url)
         self.webview.setMaximumWidth(680)
         self.webview.setMaximumHeight(320)
         self.webview.setSizePolicy(QSizePolicy.Expanding,
@@ -1169,6 +1171,9 @@ class LetsShareBooksDialog(QDialog):
             self.edit.setText(prefs['librarian'])
 
     def open_url(self, url):
+        logger.debug("TYPE(URL): {}".format(type(url)))
+        if type(url) != unicode:
+            url = url.toString()
         self.clip.setText(url)
         webbrowser.open(url)
 

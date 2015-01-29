@@ -21,7 +21,7 @@
 -- for the server. Note that you must create the accounts separately
 -- (see http://prosody.im/doc/creating_accounts for info)
 -- Example: admins = { "user1@example.com", "user2@example.net" }
-admins = {"marcell@xmpp.memoryoftheworld.org" }
+admins = {"biblibothekar@xmpp.memoryoftheworld.org" }
 --admins = {}
 -- Enable use of libevent for better performance under high load
 -- For more information see: http://prosody.im/doc/libevent

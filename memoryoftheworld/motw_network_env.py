@@ -35,8 +35,8 @@ def status():
     elif not dmsq and not hosts and "nameserver 8.8.8.8" in resolv_conf[0]:
         print("https://www.memoryoftheworld.org is set to REMOTE environment.")
     else:
-        print("https://www.memoryoftheworld.org is neither set to \
-        LOCAL nor REMOTE environment. Good luck!")
+        print("https://www.memoryoftheworld.org is neither set to "),
+        print("LOCAL nor REMOTE environment. Good luck!")
 
     for docker_ip in docker_ips.items():
         print("{}: {}".format(docker_ip[0], docker_ip[1]))
@@ -136,14 +136,14 @@ def unset_local_env():
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        if sys.argv[1] == "on":
+        if sys.argv[1] == "local":
             set_local_env()
             status()
-        elif sys.argv[1] == "off":
+        elif sys.argv[1] == "remote":
             unset_local_env()
             status()
         elif sys.argv[1] == "status":
             status()
     else:
-        print("Usage: {} on|off|status".format(sys.argv[0]))
+        print("Usage: {} local|remote|status".format(sys.argv[0]))
 

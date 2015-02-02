@@ -1180,7 +1180,9 @@ class LetsShareBooksDialog(QDialog):
     def chat(self):
         if self.initial_chat:
             chat_url = u"https://chat.memoryoftheworld.org/calibre.html?nick="
-            url = QUrl(u"{}{}".format(chat_url, self.us.librarian.lower()))
+            url = QUrl(u"{}{}".format(chat_url,
+                                      self.us.librarian.title()))
+            logger.debug("CHAT URL: {}".format(url))
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False
 

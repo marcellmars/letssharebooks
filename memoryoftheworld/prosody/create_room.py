@@ -19,9 +19,17 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
     def greetings(self, presence):
         nick = presence['from'].resource
+        
+        welcome = "Dear {}, welcome to the 'Ask a librarian' chat room.\n"
+        welcome += "Browse and share your public library collection at:\n"
+        welcome += "https://library.memoryoftheworld.org/"
+        welcome += "#author=&title=&metadata=&librarian={}&page=1".format(\
+            nick.title(),
+            nick.title().replace(" ", "+")),
+
         if nick != self.nick and presence['from'].bare == self.room:
             self.send_message(mto=presence['from'].bare,
-                              mbody="""Dear {}, welcome to the 'Ask a librarian' chat room.\nBrowse and share your public library collection at:\nhttps://library.memoryoftheworld.org/#author=&title=&metadata=&librarian={}&page=1""".format(nick.title(),nick.title().replace(" ", "+")),
+                              mbody=welcome,
                               mtype='groupchat')
         
     def start(self, event):
@@ -32,7 +40,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
 xmpp = MUCBot("biblibothekar@xmpp.memoryoftheworld.org",
               pickle.load(open("/usr/local/bin/.password","r")),
-              "askalibrarian@conference.memoryoftheworld.org",
+              "ask_a_librarian@conference.memoryoftheworld.org",
               "Bibli Bot Hekar")
 
 xmpp.register_plugin('xep_0045')

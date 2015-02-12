@@ -142,8 +142,8 @@ var open_import_modal = function() {
     modal.dialog({
         autoOpen: false,
         modal: true,
-        minHeight: 300,
-        minWidth: 500,
+        minHeight: 600,
+        minWidth: 800,
         position: { my: "center top", at: "center top"},
         closeOnEscape: true
     });
@@ -167,8 +167,8 @@ var setup_modal = function () {
             modal.dialog({
                 autoOpen: false,
                 modal: true,
-                minHeight: 300,
-                minWidth: 500,
+                minHeight: 600,
+                minWidth: 800,
                 position: { my: "center top", at: "center top"},
                 closeOnEscape: true,
                 open: function() {

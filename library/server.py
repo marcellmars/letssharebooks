@@ -121,7 +121,15 @@ class Root(object):
         query = params.get('query')
         books = libraries.get_books(cherrypy.thread_data.db, page, query)
         return books
-
+    
+    @cherrypy.expose
+    def get_active_librarians(self):
+        '''
+        Ajax backend for fetching active librarians
+        '''
+        librarians = libraries.get_active_librarians(cherrypy.thread_data.db)
+        return librarians
+        
     @cherrypy.expose
     def add_portable(self, url):
         '''

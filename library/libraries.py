@@ -10,6 +10,9 @@ import utils
 import pickle
 import simplejson
 import requests
+import socket
+import json
+import time
 
 #------------------------------------------------------------------------------
 
@@ -256,6 +259,35 @@ def get_books(db, page, query={}):
                            'authors': authors,
                            'titles': titles
                            })
+
+#------------------------------------------------------------------------------
+
+def get_active_ports():
+    data = {'get':'active_tunnel_ports'}
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('sshd', 3773))
+    s.send(json.dumps(data))
+    ports = []
+    while 1:
+        rdata = s.recv(8192)
+        if rdata:
+            ports.append(json.loads(rdata))
+        else:
+            break
+    s.close()
+    print(ports[0], get_active_tunnels()[0])
+    return ports[0]
+
+#------------------------------------------------------------------------------
+
+def get_active_librarians(db):
+    time.sleep(0.5)
+    active_catalogs = db.catalog.find({'$or': [
+                {'tunnel': {'$in': [int(p) for p in get_active_ports()]}},
+                {'portable': True}]})
+    librarians = active_catalogs.distinct('librarian')
+    print([c['librarian'] for c in active_catalogs], librarians)
+    return utils.ser2json({'librarians' : librarians})
 
 #------------------------------------------------------------------------------
 

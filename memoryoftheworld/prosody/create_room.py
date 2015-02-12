@@ -5,12 +5,16 @@ import sleekxmpp
 import sys
 import pickle
 import time
+import requests
+import socket
+import json
 
 time.sleep(4)
 
 class MUCBot(sleekxmpp.ClientXMPP):
     def __init__(self, jid, password, room, nick):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
+        self.base_url = "https://library.memoryoftheworld.org"
         self.room = room
         self.nick = nick
         self.add_event_handler("session_start", self.start)
@@ -20,23 +24,40 @@ class MUCBot(sleekxmpp.ClientXMPP):
     def greetings(self, presence):
         nick = presence['from'].resource
         
-        welcome = "Dear {}, welcome to the 'Ask a librarian' chat room.\n"
+        welcome = "Dear {}, welcome to the 'Ask a librarian' chat room.\n"\
+            .format(nick.title())
         welcome += "Browse and share your public library collection at:\n"
-        welcome += "https://library.memoryoftheworld.org/"
-        welcome += "#author=&title=&metadata=&librarian={}&page=1".format(\
-            nick.title(),
-            nick.title().replace(" ", "+")),
+        welcome += "{}/#author=&title=&metadata=&librarian={}&page=1".format(
+            self.base_url, nick.title().replace(" ", "+"))
 
-        if nick != self.nick and presence['from'].bare == self.room:
+        try:
+            nicks = requests.get("{}/get_active_librarians".format(self.base_url),
+                                 verify = False)
+            if nicks.ok:
+                nicks = nicks.json()['librarians']
+            else:
+                sys.stderr.write("No active librarians?")
+            
+        except requests.exceptions.RequestException as e:
+            nicks = {'librarians': []}
+            sys.stder.write("Web app doesn't work?\nRequestException: {}"\
+                     .format(e))
+                
+        
+        if nick in nicks and presence['from'].bare == self.room:
             self.send_message(mto=presence['from'].bare,
                               mbody=welcome,
                               mtype='groupchat')
+        sys.stderr.write("{} joined Ask a librarian chat room.".format(
+            nick.title()))
         
     def start(self, event):
         self.send_presence()
         self.plugin['xep_0045'].joinMUC(self.room,
                                         self.nick,
                                         wait=True)
+        sys.stderr.write("{} joined Ask a librarian chat room.".format(
+            self.nick))
 
 xmpp = MUCBot("biblibothekar@xmpp.memoryoftheworld.org",
               pickle.load(open("/usr/local/bin/.password","r")),

@@ -31,7 +31,6 @@ def get_tunnel_ports():
             ports.append(check_tunnel_ports(json.loads(rdata)))
         else:
             break
-            break
     s.close()
     return ports
 

@@ -5,6 +5,7 @@
 from bson import json_util as json
 from pymongo import MongoClient
 import simplejson
+import time
 import settings
 
 #------------------------------------------------------------------------------
@@ -70,3 +71,19 @@ def jsonp(func):
             ret = '%s(%s)' % (callback, simplejson.dumps(ret))
         return ret
     return foo
+
+#------------------------------------------------------------------------------
+
+def timeit(method):
+    '''
+    Simple profiling decorator
+    '''
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        print('Exec time for method --{}--: {:.2f} sec'.format(
+                method.__name__,te-ts))
+        return result
+
+    return timed

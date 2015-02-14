@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">19</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">a42f6ae9-bebc-4430-b738-7168157dc381</dc:identifier>
+        <dc:title>MCL1_14</dc:title>
+        <dc:creator opf:file-as="Cicero, Marcus Tullius" opf:role="aut">Marcus Tullius Cicero</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.15.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2005-02-06T23:00:00+00:00</dc:date>
+        <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/14945</dc:identifier>
+        <dc:language>eng</dc:language>
+        <dc:language>lat</dc:language>
+        <dc:subject>Old age -- Early works to 1800</dc:subject>
+        <dc:subject>Classical literature</dc:subject>
+        <meta content="{&quot;Marcus Tullius Cicero&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-01-13T16:46:37+00:00" name="calibre:timestamp"/>
+        <meta content="MCL1_14" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

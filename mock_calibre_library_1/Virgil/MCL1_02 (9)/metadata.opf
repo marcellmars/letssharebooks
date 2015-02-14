@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">9</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">482325ea-dd9a-48b3-a4f8-8b3d8eb22a1d</dc:identifier>
+        <dc:title>MCL1_02</dc:title>
+        <dc:creator opf:file-as="Virgil" opf:role="aut">Virgil</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.15.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>1995-02-28T23:00:00+00:00</dc:date>
+        <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/227</dc:identifier>
+        <dc:language>lat</dc:language>
+        <dc:subject>Aeneas (Legendary character) -- Poetry</dc:subject>
+        <dc:subject>Legends -- Rome -- Poetry</dc:subject>
+        <dc:subject>Classical literature</dc:subject>
+        <meta content="{&quot;Virgil&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-01-13T17:22:14+00:00" name="calibre:timestamp"/>
+        <meta content="MCL1_02" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

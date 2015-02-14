@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">14</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">77891b83-f538-4bea-9a3c-b0affaa1a548</dc:identifier>
+        <dc:title>MCL1_19</dc:title>
+        <dc:creator opf:file-as="Plautus, Titus Maccius" opf:role="aut">Titus Maccius Plautus</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.15.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2005-08-19T22:00:00+00:00</dc:date>
+        <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/16564</dc:identifier>
+        <dc:language>eng</dc:language>
+        <dc:language>lat</dc:language>
+        <dc:subject>Classical literature</dc:subject>
+        <meta content="{&quot;Titus Maccius Plautus&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-02-14T18:06:09+00:00" name="calibre:timestamp"/>
+        <meta content="MCL1_19" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

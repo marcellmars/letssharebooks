@@ -166,7 +166,6 @@ def add_to_library(db, library_uuid, librarian, tunnel, books, portable, portabl
     import_catalog function.
     '''
     books_uuid = []
-    bulk = db.books.initialize_ordered_bulk_op()
     for book in books:
         # add some catalog metadata
         book['library_uuid'] = library_uuid
@@ -175,20 +174,14 @@ def add_to_library(db, library_uuid, librarian, tunnel, books, portable, portabl
         book['librarian'] = librarian
         book['portable_url'] = portable_url
         try:
-            bulk.find({'uuid': book['uuid']}).upsert().update(
-                {'$set': utils.remove_dots_from_dict(book)})
-            # db.books.update({'uuid': book['uuid']},
-            #                 utils.remove_dots_from_dict(book),
-            #                 upsert=True, multi=False)
-            # collect book uuids for catalog entry
+            db.books.update({'uuid': book['uuid']},
+                             utils.remove_dots_from_dict(book),
+                             upsert=True, multi=False)
+            #collect book uuids for catalog entry
             books_uuid.append((book['uuid'],
                                book['last_modified']))
         except Exception as e:
             print(e)
-    try:
-        result = bulk.execute()
-    except Exception as e:
-        logging.error('Error in bulk book update', exc_info=True)
     # update catalog metadata collection
     db.catalog.update({'library_uuid': library_uuid},
                       {'$pushAll': {'books': books_uuid}},

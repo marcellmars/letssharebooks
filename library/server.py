@@ -50,7 +50,6 @@ class Root(object):
         return tmpl.render(app_name=settings.APP_NAME)
 
     @cherrypy.expose
-    #@utils.timeit
     def upload_catalog(self, uploaded_file):
         '''
         End-point for uploading user catalogs

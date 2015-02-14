@@ -27,7 +27,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
         welcome = "Dear {}, welcome to the 'Ask a librarian' chat room.\n"\
             .format(nick.title())
         welcome += "Browse and share your public library collection at:\n"
-        welcome += "{}/#author=&title=&metadata=&librarian={}&page=1".format(
+        welcome += "{}/#librarian={}".format(
             self.base_url, nick.title().replace(" ", "+"))
 
         try:

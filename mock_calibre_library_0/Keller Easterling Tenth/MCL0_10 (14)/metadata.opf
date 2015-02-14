@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">14</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">d134baf2-d130-4365-a6a5-474bc1d9d25e</dc:identifier>
+        <dc:title>MCL0_10</dc:title>
+        <dc:creator opf:file-as="Tenth, Keller Easterling" opf:role="aut">Keller Easterling Tenth</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.11.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2012-05-21T22:00:00+00:00</dc:date>
+        <dc:description>&lt;p&gt;Space is a technology. Buildings and the cities they inhabit have become infrastructural – mobile, monetised networks. For the world’s power players, infrastructure space is a secret weapon, and the rest of us are only just beginning to realise. If Victor Hugo came back to give a TED talk, he might assert that architecture, which he once claimed had been killed by the book, is reincarnate as something more powerful still – as information itself. If this space is a secret weapon, says Keller Easterling, it is a secret best kept from those trained to make space – architects. Meanwhile, entrepreneurs in economics, the social sciences, informatics and activism are developing what might be called spatial software as a political instrument to outwit politics as usual.&lt;/p&gt;</dc:description>
+        <dc:publisher>Strelka Press</dc:publisher>
+        <dc:identifier opf:scheme="MOBI-ASIN">B0085JSC44</dc:identifier>
+        <dc:language>eng</dc:language>
+        <dc:subject>Infrastructures</dc:subject>
+        <meta content="{&quot;Keller Easterling Tenth&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-02-14T18:11:33.362288+00:00" name="calibre:timestamp"/>
+        <meta content="MCL0_10" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

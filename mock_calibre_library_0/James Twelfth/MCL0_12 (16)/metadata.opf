@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">16</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">769035f9-9b25-43b6-8801-ec28a2752b86</dc:identifier>
+        <dc:title>MCL0_12</dc:title>
+        <dc:creator opf:file-as="Twelfth, James" opf:role="aut">James Twelfth</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.11.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2012-03-05T23:00:00+00:00</dc:date>
+        <dc:description>&lt;p class="description"&gt;Beginning in December 2010 popular revolt swept through the Middle East, shocking the world and ushering in a period of unprecedented unrest. Protestors took to the streets to demand greater freedom, democracy, human rights, social justice, and regime change. What caused these uprisings? What is their significance? And what are their likely consequences? In an engaging question-and-answer format, The Arab Uprisings explores all aspects of the revolutionary protests that have rocked the Middle East. Historian James Gelvin begins with an overview--What sparked the Arab uprisings? Where did the demands for democracy and human rights come from? How appropriate is the phrase "Arab Spring"?--before turning to specific countries around the region. He looks at such topics as the role of youth, labor, and religious groups in Tunisia and Egypt and discusses why the military turned against rulers in both countries. Exploring the uprisings in Libya and Yemen, Gelvin explains why these two states are considered "weak," why that status is important for understanding the upheavals there, and why outside powers intervened in Libya but not in Yemen. Next, Gelvin compares two cases that defied expectations: Algeria, which experts assumed would experience a major upheaval after Egypt's, and Syria, which experts failed to foresee. He then looks at the monarchies of Morocco, Jordan, and the Gulf, exploring the commonalities and differences of protest movements in each. The final chapter discusses the implications of the uprisings. What do they mean for the United States? For Iran? Has al-Qaeda been strengthened or weakened? What effects have the uprisings had on the Israel-Palestine conflict? What conclusions might we draw from the uprisings so far? For anyone wishing to understand the dramatic events in the Middle East, The Arab Uprisings is the place to turn.&lt;/p&gt;</dc:description>
+        <dc:publisher>Oxford University</dc:publisher>
+        <dc:identifier opf:scheme="MOBI-ASIN">B0077R8S08</dc:identifier>
+        <dc:identifier opf:scheme="GOOGLE">bJYXHP5PxzUC</dc:identifier>
+        <dc:identifier opf:scheme="ISBN">9780199891771</dc:identifier>
+        <dc:language>eng</dc:language>
+        <dc:subject>Agriculture -- Poetry</dc:subject>
+        <meta content="{&quot;James Twelfth&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-02-14T18:15:08.235174+00:00" name="calibre:timestamp"/>
+        <meta content="MCL0_12" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

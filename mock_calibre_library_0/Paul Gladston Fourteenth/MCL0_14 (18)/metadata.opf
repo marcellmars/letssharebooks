@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">18</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">e4a17b6c-9413-4adc-91b6-1909b60768bb</dc:identifier>
+        <dc:title>MCL0_14</dc:title>
+        <dc:creator opf:file-as="Fourteenth, Paul Gladston" opf:role="aut">Paul Gladston Fourteenth</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.11.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2013-05-02T22:00:00+00:00</dc:date>
+        <dc:description>&lt;div&gt;&lt;p&gt;Avant-Garde Art Groups in China, 1979-1989 is one of the most thought-provoking books on the subject of contemporary Chinese art. It addresses head-on the problematic identity and cultural politics of contemporary Chinese art in the late 1970s and 1980s. At the same time, it gives readers unfamiliar with the field a theoretically sophisticated introduction.&lt;/p&gt;&lt;h3&gt;Review&lt;/h3&gt;&lt;p&gt;“Paul Gladston is one of the few, among many, writers on contemporary Chinese art whom I really find worth reading and thinking about.”  &lt;/p&gt;&lt;p&gt;(Jerome Silbergeld, Princeton University)  &lt;/p&gt;&lt;p&gt;“&lt;em&gt;‘Avant-Garde’ Art Groups in China, 1979–1989 &lt;/em&gt;is one of the most thought-provoking books on the subject of contemporary Chinese art. It addresses head-on the problematic identity and cultural politics of contemporary Chinese art in the late 1970s and 1980s. At the same time, it gives reader unfamiliar with the field a theoretically sophisticated introduction. A must-read even for those already familiar with pressing issues related to globalization and contemporary art in general.”&lt;/p&gt;&lt;p&gt;(Jason C. Kuo, University of Maryland, College Park) &lt;/p&gt;&lt;h3&gt;About the Author&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Paul Gladston&lt;/strong&gt; is associate professor of critical theory and visual culture in the Department of Culture, Film, and Media at the University of Nottingham.&lt;/p&gt;&lt;/div&gt;</dc:description>
+        <dc:publisher>Intellect</dc:publisher>
+        <dc:identifier opf:scheme="AMAZON">B00CNDEEEA</dc:identifier>
+        <dc:identifier opf:scheme="ISBN">9781783200535</dc:identifier>
+        <dc:identifier opf:scheme="MOBI-ASIN">B00CNDEEEA</dc:identifier>
+        <dc:language>eng</dc:language>
+        <dc:subject>Ebookoidz2</dc:subject>
+        <dc:subject>Art</dc:subject>
+        <meta content="{&quot;Paul Gladston Fourteenth&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-02-14T18:18:39.440838+00:00" name="calibre:timestamp"/>
+        <meta content="MCL0_14" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

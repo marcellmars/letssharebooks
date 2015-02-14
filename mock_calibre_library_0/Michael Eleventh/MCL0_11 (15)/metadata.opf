@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">15</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">51a36bed-a151-4b77-8cd1-56743088789f</dc:identifier>
+        <dc:title>MCL0_11</dc:title>
+        <dc:creator opf:file-as="Eleventh, Michael" opf:role="aut">Michael Eleventh</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.11.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2011-08-14T22:00:00+00:00</dc:date>
+        <dc:description>&lt;div&gt;&lt;p&gt;Robert Hughes once described Michael Sorkin as “unique in America––brave, principled, highly informed and fiercely funny.” &lt;em&gt;All Over the Map&lt;/em&gt; confirms all of these superlatives as Sorkin assaults “the national security city, with its architecture of manufactured fear.”&lt;/p&gt;&lt;h3&gt;Review&lt;/h3&gt;&lt;p&gt;“Easily one of the best architecture critics around ... Sorkin is a flaneur with a sense of public purpose.”—Chris Hall, &lt;em&gt;Guardian&lt;/em&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;“America’s most invigorating writer on architecture.”—&lt;em&gt;Observer&lt;/em&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;“Sorkin is one of the most intelligent writers on architecture today.”—&lt;em&gt;Library Journal&lt;/em&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;“Sorkin is a formidable opponent of the banal, the ugly, the stupid and the vapidly posturing which, he argues, are all around us.”—&lt;em&gt;Publishers Weekly&lt;/em&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;“[A]n intense mediation on the role of democracy in architecture, the role of the critic in that democracy and the dilemmas facing an architect who wants to make a difference (by working with that democracy) but needs to make a living (by pleasing an economic and political elite) ... One of the most impressive collections of contemporary criticism you could read.”—&lt;em&gt;Art Review&lt;/em&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;“&lt;em&gt;All Over the Map * is a pleasure to read”—&lt;/em&gt;Times Literary Supplement*&lt;/p&gt;&lt;h3&gt;About the Author&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Michael Sorkin&lt;/strong&gt; is an award-winning architect and Distinguished Professor of Architecture and Director of the Graduate Program in Urban Design at the City College of New York. His books include &lt;em&gt;The Next Jerusalem, After the World Trade Center, Twenty Minutes in Manhattan&lt;/em&gt; and &lt;em&gt;All Over the Map&lt;/em&gt;. &lt;/p&gt;&lt;/div&gt;</dc:description>
+        <dc:publisher>Verso</dc:publisher>
+        <dc:identifier opf:scheme="GOODREADS">11734868</dc:identifier>
+        <dc:identifier opf:scheme="MOBI-ASIN">B007LCXSEK</dc:identifier>
+        <dc:identifier opf:scheme="GOOGLE">tJ-aPgAACAAJ</dc:identifier>
+        <dc:identifier opf:scheme="ISBN">9781844673230</dc:identifier>
+        <dc:identifier opf:scheme="AMAZON">1844672204</dc:identifier>
+        <dc:language>eng</dc:language>
+        <meta content="{&quot;Michael Eleventh&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-02-14T18:12:28.919365+00:00" name="calibre:timestamp"/>
+        <meta content="MCL0_11" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

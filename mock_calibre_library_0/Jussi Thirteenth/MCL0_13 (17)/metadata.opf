@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">17</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">a4ea11a8-3d63-4cae-8301-4427c99ed21f</dc:identifier>
+        <dc:title>MCL0_13</dc:title>
+        <dc:creator opf:file-as="Thirteenth, Jussi" opf:role="aut">Jussi Thirteenth</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.11.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2014-09-22T00:00:00+00:00</dc:date>
+        <dc:description>Smartphones, laptops, tablets, and e-readers all at one time held the promise of a more environmentally healthy world not dependent on paper and deforestation. The result of our ubiquitous digital lives is, as we see in The Anthrobscene, actually quite the opposite: not ecological health but an environmental wasteland, where media never die. Jussi Parikka critiques corporate and human desires as a geophysical force, analyzing the material side of the earth as essential for the existence of media and introducing the notion of an alternative deep time in which media live on in the layer of toxic waste we will leave behind as our geological legacy.</dc:description>
+        <dc:publisher>University of Minnesota</dc:publisher>
+        <dc:identifier opf:scheme="MOBI-ASIN">B00OZ4MRIA</dc:identifier>
+        <dc:identifier opf:scheme="ISBN">9781452944005</dc:identifier>
+        <dc:language>eng</dc:language>
+        <dc:subject>Netculture</dc:subject>
+        <meta content="{&quot;Jussi Thirteenth&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-02-14T18:16:23.745594+00:00" name="calibre:timestamp"/>
+        <meta content="MCL0_13" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

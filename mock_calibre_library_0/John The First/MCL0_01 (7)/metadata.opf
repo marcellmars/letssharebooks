@@ -3,17 +3,15 @@
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
         <dc:identifier opf:scheme="calibre" id="calibre_id">7</dc:identifier>
         <dc:identifier opf:scheme="uuid" id="uuid_id">259725d0-4233-4192-b31c-48ee819c87f7</dc:identifier>
-        <dc:title>The Aeneid</dc:title>
-        <dc:creator opf:file-as="Virgil" opf:role="aut">Virgil</dc:creator>
-        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.16.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:title>MCL0_01</dc:title>
+        <dc:creator opf:file-as="First, John The" opf:role="aut">John The First</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.11.0) [http://calibre-ebook.com]</dc:contributor>
         <dc:date>1995-03-01T00:00:00+00:00</dc:date>
         <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/227</dc:identifier>
         <dc:language>lat</dc:language>
-        <dc:subject>Aeneas (Legendary character) -- Poetry</dc:subject>
-        <dc:subject>Legends -- Rome -- Poetry</dc:subject>
-        <meta content="{&quot;Virgil&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
-        <meta content="2015-01-15T01:16:47.240655+00:00" name="calibre:timestamp"/>
-        <meta content="Aeneid, The" name="calibre:title_sort"/>
+        <meta content="{&quot;John The First&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-01-15T01:16:47+00:00" name="calibre:timestamp"/>
+        <meta content="MCL0_01" name="calibre:title_sort"/>
     </metadata>
     <guide>
         <reference href="cover.jpg" title="Cover" type="cover"/>

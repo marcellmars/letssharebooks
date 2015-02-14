@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">10</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">9a70ad23-f870-4b40-8a7c-439a35fc2873</dc:identifier>
+        <dc:title>MCL0_06</dc:title>
+        <dc:creator opf:file-as="Sixth, William Ridley" opf:role="aut">William Ridley Sixth</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.11.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2005-10-06T22:00:00+00:00</dc:date>
+        <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/16811</dc:identifier>
+        <dc:language>eng</dc:language>
+        <dc:subject>Kamilaroi language -- Terms and phrases</dc:subject>
+        <dc:subject>Kamilaroi language -- Readers</dc:subject>
+        <meta content="{&quot;William Ridley Sixth&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-02-14T18:04:51.306318+00:00" name="calibre:timestamp"/>
+        <meta content="MCL0_06" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>

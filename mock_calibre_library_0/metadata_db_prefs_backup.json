@@ -1,6 +1,524 @@
 {
-  "grouped_search_terms": {}, 
-  "column_color_rules": [], 
+  "field_metadata": {
+    "news": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": true, 
+      "table": "news", 
+      "column": "name", 
+      "is_csp": false, 
+      "category_sort": "name", 
+      "search_terms": [], 
+      "kind": "category", 
+      "datatype": null, 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "news", 
+      "name": "News"
+    }, 
+    "timestamp": {
+      "display": {
+        "date_format": "dd MMM yyyy"
+      }, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 3, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "date"
+      ], 
+      "kind": "field", 
+      "datatype": "datetime", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "timestamp", 
+      "name": "Date"
+    }, 
+    "identifiers": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": true, 
+      "table": null, 
+      "rec_index": 20, 
+      "column": null, 
+      "is_csp": true, 
+      "search_terms": [
+        "identifiers", 
+        "identifier", 
+        "isbn"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {
+        "cache_to_list": ",", 
+        "ui_to_list": ",", 
+        "list_to_ui": ", "
+      }, 
+      "is_editable": true, 
+      "label": "identifiers", 
+      "name": "Identifiers"
+    }, 
+    "tags": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": true, 
+      "table": "tags", 
+      "rec_index": 6, 
+      "column": "name", 
+      "is_csp": false, 
+      "category_sort": "name", 
+      "search_terms": [
+        "tags", 
+        "tag"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {
+        "cache_to_list": ",", 
+        "ui_to_list": ",", 
+        "list_to_ui": ", "
+      }, 
+      "is_editable": true, 
+      "link_column": "tag", 
+      "label": "tags", 
+      "name": "Tags"
+    }, 
+    "id": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 0, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "id"
+      ], 
+      "kind": "field", 
+      "datatype": "int", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "id", 
+      "name": null
+    }, 
+    "author_sort": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 12, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "author_sort"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "author_sort", 
+      "name": "Author Sort"
+    }, 
+    "rating": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": true, 
+      "table": "ratings", 
+      "rec_index": 5, 
+      "column": "rating", 
+      "is_csp": false, 
+      "category_sort": "rating", 
+      "search_terms": [
+        "rating"
+      ], 
+      "kind": "field", 
+      "datatype": "rating", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "link_column": "rating", 
+      "label": "rating", 
+      "name": "Rating"
+    }, 
+    "sort": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 11, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "title_sort"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "sort", 
+      "name": "Title Sort"
+    }, 
+    "title": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 1, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "title"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "title", 
+      "name": "Title"
+    }, 
+    "size": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 4, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "size"
+      ], 
+      "kind": "field", 
+      "datatype": "float", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "size", 
+      "name": "Size"
+    }, 
+    "marked": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 23, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "marked"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "marked", 
+      "name": null
+    }, 
+    "au_map": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 18, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {
+        "cache_to_list": ",", 
+        "ui_to_list": null, 
+        "list_to_ui": null
+      }, 
+      "is_editable": true, 
+      "label": "au_map", 
+      "name": null
+    }, 
+    "series_sort": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 24, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "series_sort"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "series_sort", 
+      "name": "Series Sort"
+    }, 
+    "ondevice": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 22, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "ondevice"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "ondevice", 
+      "name": "On Device"
+    }, 
+    "series": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": true, 
+      "table": "series", 
+      "rec_index": 8, 
+      "column": "name", 
+      "is_csp": false, 
+      "category_sort": "(title_sort(name))", 
+      "search_terms": [
+        "series"
+      ], 
+      "kind": "field", 
+      "datatype": "series", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "link_column": "series", 
+      "label": "series", 
+      "name": "Series"
+    }, 
+    "comments": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 7, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "comments", 
+        "comment"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "comments", 
+      "name": "Comments"
+    }, 
+    "series_index": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 10, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "series_index"
+      ], 
+      "kind": "field", 
+      "datatype": "float", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "series_index", 
+      "name": null
+    }, 
+    "cover": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 17, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "cover"
+      ], 
+      "kind": "field", 
+      "datatype": "int", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "cover", 
+      "name": "Cover"
+    }, 
+    "publisher": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": true, 
+      "table": "publishers", 
+      "rec_index": 9, 
+      "column": "name", 
+      "is_csp": false, 
+      "category_sort": "name", 
+      "search_terms": [
+        "publisher"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "link_column": "publisher", 
+      "label": "publisher", 
+      "name": "Publisher"
+    }, 
+    "last_modified": {
+      "display": {
+        "date_format": "dd MMM yyyy"
+      }, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 19, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "last_modified"
+      ], 
+      "kind": "field", 
+      "datatype": "datetime", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "last_modified", 
+      "name": "Modified"
+    }, 
+    "path": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 14, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "path", 
+      "name": "Path"
+    }, 
+    "formats": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": true, 
+      "table": null, 
+      "rec_index": 13, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "formats", 
+        "format"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {
+        "cache_to_list": ",", 
+        "ui_to_list": ",", 
+        "list_to_ui": ", "
+      }, 
+      "is_editable": true, 
+      "label": "formats", 
+      "name": "Formats"
+    }, 
+    "authors": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": true, 
+      "table": "authors", 
+      "rec_index": 2, 
+      "column": "name", 
+      "is_csp": false, 
+      "category_sort": "sort", 
+      "search_terms": [
+        "authors", 
+        "author"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {
+        "cache_to_list": ",", 
+        "ui_to_list": "&", 
+        "list_to_ui": " & "
+      }, 
+      "is_editable": true, 
+      "link_column": "author", 
+      "label": "authors", 
+      "name": "Authors"
+    }, 
+    "languages": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": true, 
+      "table": "languages", 
+      "rec_index": 21, 
+      "column": "lang_code", 
+      "is_csp": false, 
+      "category_sort": "lang_code", 
+      "search_terms": [
+        "languages", 
+        "language"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {
+        "cache_to_list": ",", 
+        "ui_to_list": ",", 
+        "list_to_ui": ", "
+      }, 
+      "is_editable": true, 
+      "link_column": "lang_code", 
+      "label": "languages", 
+      "name": "Languages"
+    }, 
+    "pubdate": {
+      "display": {
+        "date_format": "MMM yyyy"
+      }, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 15, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "pubdate"
+      ], 
+      "kind": "field", 
+      "datatype": "datetime", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "pubdate", 
+      "name": "Published"
+    }, 
+    "uuid": {
+      "display": {}, 
+      "is_custom": false, 
+      "is_category": false, 
+      "table": null, 
+      "rec_index": 16, 
+      "column": null, 
+      "is_csp": false, 
+      "search_terms": [
+        "uuid"
+      ], 
+      "kind": "field", 
+      "datatype": "text", 
+      "is_multiple": {}, 
+      "is_editable": true, 
+      "label": "uuid", 
+      "name": null
+    }
+  }, 
+  "bools_are_tristate": true, 
+  "gui_view_history": [
+    [
+      9, 
+      "MCL0_05 \u7f85\u751f\u9580"
+    ]
+  ], 
   "book_display_fields": [
     [
       "title", 
@@ -79,569 +597,77 @@
       false
     ]
   ], 
-  "saved_searches": {}, 
-  "user_categories": {}, 
-  "field_metadata": {
-    "identifiers": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {
-        "ui_to_list": ",", 
-        "cache_to_list": ",", 
-        "list_to_ui": ", "
-      }, 
-      "is_editable": true, 
-      "search_terms": [
-        "identifiers", 
-        "identifier", 
-        "isbn"
-      ], 
-      "is_category": true, 
-      "rec_index": 20, 
-      "display": {}, 
-      "is_csp": true, 
-      "kind": "field", 
-      "column": null, 
-      "label": "identifiers", 
-      "name": "Identifiers"
-    }, 
-    "languages": {
-      "table": "languages", 
-      "category_sort": "lang_code", 
-      "is_custom": false, 
-      "column": "lang_code", 
-      "is_multiple": {
-        "ui_to_list": ",", 
-        "cache_to_list": ",", 
-        "list_to_ui": ", "
-      }, 
-      "is_editable": true, 
-      "datatype": "text", 
-      "search_terms": [
-        "languages", 
-        "language"
-      ], 
-      "is_category": true, 
-      "rec_index": 21, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "link_column": "lang_code", 
-      "label": "languages", 
-      "name": "Languages"
-    }, 
-    "sort": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "title_sort"
-      ], 
-      "is_category": false, 
-      "rec_index": 11, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "sort", 
-      "name": "Title Sort"
-    }, 
-    "news": {
-      "table": "news", 
-      "category_sort": "name", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "datatype": null, 
-      "search_terms": [], 
-      "is_category": true, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "category", 
-      "column": "name", 
-      "label": "news", 
-      "name": "News"
-    }, 
-    "tags": {
-      "table": "tags", 
-      "category_sort": "name", 
-      "is_custom": false, 
-      "column": "name", 
-      "is_multiple": {
-        "ui_to_list": ",", 
-        "cache_to_list": ",", 
-        "list_to_ui": ", "
-      }, 
-      "is_editable": true, 
-      "datatype": "text", 
-      "search_terms": [
-        "tags", 
-        "tag"
-      ], 
-      "is_category": true, 
-      "rec_index": 6, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "link_column": "tag", 
-      "label": "tags", 
-      "name": "Tags"
-    }, 
-    "uuid": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "uuid"
-      ], 
-      "is_category": false, 
-      "rec_index": 16, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "uuid", 
-      "name": null
-    }, 
-    "series_index": {
-      "table": null, 
-      "datatype": "float", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "series_index"
-      ], 
-      "is_category": false, 
-      "rec_index": 10, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "series_index", 
-      "name": null
-    }, 
-    "id": {
-      "table": null, 
-      "datatype": "int", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "id"
-      ], 
-      "is_category": false, 
-      "rec_index": 0, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "id", 
-      "name": null
-    }, 
-    "rating": {
-      "table": "ratings", 
-      "category_sort": "rating", 
-      "is_custom": false, 
-      "column": "rating", 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "datatype": "rating", 
-      "search_terms": [
-        "rating"
-      ], 
-      "is_category": true, 
-      "rec_index": 5, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "link_column": "rating", 
-      "label": "rating", 
-      "name": "Rating"
-    }, 
-    "publisher": {
-      "table": "publishers", 
-      "category_sort": "name", 
-      "is_custom": false, 
-      "column": "name", 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "datatype": "text", 
-      "search_terms": [
-        "publisher"
-      ], 
-      "is_category": true, 
-      "rec_index": 9, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "link_column": "publisher", 
-      "label": "publisher", 
-      "name": "Publisher"
-    }, 
-    "ondevice": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "ondevice"
-      ], 
-      "is_category": false, 
-      "rec_index": 22, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "ondevice", 
-      "name": "On Device"
-    }, 
-    "pubdate": {
-      "table": null, 
-      "datatype": "datetime", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "pubdate"
-      ], 
-      "is_category": false, 
-      "rec_index": 15, 
-      "display": {
-        "date_format": "MMM yyyy"
-      }, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "pubdate", 
-      "name": "Published"
-    }, 
-    "last_modified": {
-      "table": null, 
-      "datatype": "datetime", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "last_modified"
-      ], 
-      "is_category": false, 
-      "rec_index": 19, 
-      "display": {
-        "date_format": "dd MMM yyyy"
-      }, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "last_modified", 
-      "name": "Modified"
-    }, 
-    "cover": {
-      "table": null, 
-      "datatype": "int", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "cover"
-      ], 
-      "is_category": false, 
-      "rec_index": 17, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "cover", 
-      "name": "Cover"
-    }, 
-    "series": {
-      "table": "series", 
-      "category_sort": "(title_sort(name))", 
-      "is_custom": false, 
-      "column": "name", 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "datatype": "series", 
-      "search_terms": [
-        "series"
-      ], 
-      "is_category": true, 
-      "rec_index": 8, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "link_column": "series", 
-      "label": "series", 
-      "name": "Series"
-    }, 
-    "marked": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "marked"
-      ], 
-      "is_category": false, 
-      "rec_index": 23, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "marked", 
-      "name": null
-    }, 
-    "formats": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {
-        "ui_to_list": ",", 
-        "cache_to_list": ",", 
-        "list_to_ui": ", "
-      }, 
-      "is_editable": true, 
-      "search_terms": [
-        "formats", 
-        "format"
-      ], 
-      "is_category": true, 
-      "rec_index": 13, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "formats", 
-      "name": "Formats"
-    }, 
-    "series_sort": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "series_sort"
-      ], 
-      "is_category": false, 
-      "rec_index": 24, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "series_sort", 
-      "name": "Series Sort"
-    }, 
-    "title": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "title"
-      ], 
-      "is_category": false, 
-      "rec_index": 1, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "title", 
-      "name": "Title"
-    }, 
-    "timestamp": {
-      "table": null, 
-      "datatype": "datetime", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "date"
-      ], 
-      "is_category": false, 
-      "rec_index": 3, 
-      "display": {
-        "date_format": "dd MMM yyyy"
-      }, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "timestamp", 
-      "name": "Date"
-    }, 
-    "au_map": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {
-        "ui_to_list": null, 
-        "cache_to_list": ",", 
-        "list_to_ui": null
-      }, 
-      "is_editable": true, 
-      "search_terms": [], 
-      "is_category": false, 
-      "rec_index": 18, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "au_map", 
-      "name": null
-    }, 
-    "comments": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "comments", 
-        "comment"
-      ], 
-      "is_category": false, 
-      "rec_index": 7, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "comments", 
-      "name": "Comments"
-    }, 
-    "path": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [], 
-      "is_category": false, 
-      "rec_index": 14, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "path", 
-      "name": "Path"
-    }, 
-    "author_sort": {
-      "table": null, 
-      "datatype": "text", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "author_sort"
-      ], 
-      "is_category": false, 
-      "rec_index": 12, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "author_sort", 
-      "name": "Author Sort"
-    }, 
-    "size": {
-      "table": null, 
-      "datatype": "float", 
-      "is_custom": false, 
-      "is_multiple": {}, 
-      "is_editable": true, 
-      "search_terms": [
-        "size"
-      ], 
-      "is_category": false, 
-      "rec_index": 4, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "column": null, 
-      "label": "size", 
-      "name": "Size"
-    }, 
-    "authors": {
-      "table": "authors", 
-      "category_sort": "sort", 
-      "is_custom": false, 
-      "column": "name", 
-      "is_multiple": {
-        "ui_to_list": "&", 
-        "cache_to_list": ",", 
-        "list_to_ui": " & "
-      }, 
-      "is_editable": true, 
-      "datatype": "text", 
-      "search_terms": [
-        "authors", 
-        "author"
-      ], 
-      "is_category": true, 
-      "rec_index": 2, 
-      "display": {}, 
-      "is_csp": false, 
-      "kind": "field", 
-      "link_column": "author", 
-      "label": "authors", 
-      "name": "Authors"
-    }
-  }, 
   "cover_grid_icon_rules": [], 
   "library_view books view state": {
-    "sort_history": [
-      [
-        "timestamp", 
-        false
-      ]
-    ], 
-    "hidden_columns": [
-      "last_modified", 
-      "languages"
-    ], 
     "last_modified_injected": true, 
-    "languages_injected": true, 
     "column_alignment": {
       "timestamp": "center", 
       "pubdate": "center", 
       "size": "center"
     }, 
+    "hidden_columns": [
+      "last_modified", 
+      "languages"
+    ], 
+    "column_positions": {
+      "publisher": 8, 
+      "tags": 6, 
+      "last_modified": 10, 
+      "ondevice": 0, 
+      "series": 7, 
+      "size": 4, 
+      "languages": 11, 
+      "timestamp": 3, 
+      "pubdate": 9, 
+      "title": 1, 
+      "rating": 5, 
+      "authors": 2
+    }, 
     "column_sizes": {
-      "rating": 75, 
-      "languages": 0, 
-      "pubdate": 100, 
+      "publisher": 98, 
+      "tags": 60, 
       "last_modified": 0, 
       "series": 73, 
-      "authors": 97, 
-      "tags": 60, 
-      "title": 358, 
-      "publisher": 98, 
+      "size": 97, 
+      "languages": 0, 
       "timestamp": 74, 
-      "size": 97
+      "pubdate": 100, 
+      "title": 294, 
+      "rating": 75, 
+      "authors": 210
     }, 
-    "column_positions": {
-      "ondevice": 0, 
-      "languages": 11, 
-      "pubdate": 9, 
-      "last_modified": 10, 
-      "series": 7, 
-      "authors": 2, 
-      "tags": 6, 
-      "title": 1, 
-      "publisher": 8, 
-      "rating": 5, 
-      "timestamp": 3, 
-      "size": 4
-    }
+    "languages_injected": true, 
+    "sort_history": [
+      [
+        "timestamp", 
+        false
+      ], 
+      [
+        "last_modified", 
+        false
+      ], 
+      [
+        "title", 
+        true
+      ], 
+      [
+        "timestamp", 
+        false
+      ], 
+      [
+        "title", 
+        false
+      ], 
+      [
+        "timestamp", 
+        false
+      ]
+    ]
   }, 
   "column_icon_rules": [], 
-  "bools_are_tristate": true, 
-  "tag_browser_hidden_categories": []
+  "grouped_search_terms": {}, 
+  "saved_searches": {}, 
+  "tag_browser_hidden_categories": [], 
+  "user_categories": {}, 
+  "column_color_rules": []
 }

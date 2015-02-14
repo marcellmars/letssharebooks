@@ -17,4 +17,9 @@ RUN pip install tailer
 ADD print_log.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/print_log.py
 
+ADD mock_calibre_library_0 /home/developer/mock_calibre_library_0
+ADD mock_calibre_library_1 /home/developer/mock_calibre_library_1
+RUN chmod -R 777 /home/developer/mock_calibre_library_0
+RUN chmod -R 777 /home/developer/mock_calibre_library_1
+
 ENV HOME /home/developer

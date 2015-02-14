@@ -3,9 +3,9 @@
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
         <dc:identifier opf:scheme="calibre" id="calibre_id">6</dc:identifier>
         <dc:identifier opf:scheme="uuid" id="uuid_id">bc03e606-fd34-4adf-9f84-3a836872abfa</dc:identifier>
-        <dc:title>The Georgics</dc:title>
+        <dc:title>MCL1_06</dc:title>
         <dc:creator opf:file-as="Virgil" opf:role="aut">Virgil</dc:creator>
-        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.16.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.11.0) [http://calibre-ebook.com]</dc:contributor>
         <dc:date>1995-03-01T00:00:00+00:00</dc:date>
         <dc:identifier opf:scheme="URI">http://www.gutenberg.org/ebooks/231</dc:identifier>
         <dc:language>lat</dc:language>
@@ -13,8 +13,8 @@
         <dc:subject>Latin</dc:subject>
         <dc:subject>Agriculture -- Poetry</dc:subject>
         <meta content="{&quot;Virgil&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
-        <meta content="2015-01-15T01:16:40.070629+00:00" name="calibre:timestamp"/>
-        <meta content="Georgics, The" name="calibre:title_sort"/>
+        <meta content="2015-01-15T01:16:40+00:00" name="calibre:timestamp"/>
+        <meta content="MCL1_06" name="calibre:title_sort"/>
     </metadata>
     <guide>
         <reference href="cover.jpg" title="Cover" type="cover"/>

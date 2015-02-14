@@ -3,9 +3,9 @@ calibre0:
     entrypoint: /usr/local/bin/supervisord
     environment:
         DISPLAY: ":0"
+        MCL: "0"
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix
-        - ${MOTW_HOME}/letssharebooks/mock_calibre_library_0/:/home/developer/mock_calibre_library/
         - ${MOTW_HOME}/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/
     dns: 127.0.0.1
 
@@ -14,9 +14,9 @@ calibre1:
     entrypoint: /usr/local/bin/supervisord
     environment:
         DISPLAY: ":0"
+        MCL: "1"
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix
-        - ${MOTW_HOME}/letssharebooks/mock_calibre_library_1/:/home/developer/mock_calibre_library/
         - ${MOTW_HOME}/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/
     dns: 127.0.0.1
 

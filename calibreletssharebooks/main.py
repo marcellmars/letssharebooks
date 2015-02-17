@@ -238,7 +238,9 @@ class MetadataLibThread(QThread):
             bk = []
             if md_fields.format_metadata:
                 for frmat in md_fields.format_metadata.iteritems():
-                    bkf[frmat[0]] = {'path':"{}".format(frmat[1]["path"]),
+                    path = frmat[1]["path"].split(os.path.sep)[-3:]
+                    path = os.path.join(*path)
+                    bkf[frmat[0]] = {'path':"{}".format(path),
                                      'size':frmat[1]["size"]}
                     bk.append(frmat[0])
                 

@@ -109,9 +109,12 @@ var parse_response = function (data) {
  */
 
 var render_book = function(i, book) {
-    var formats = '',
-        base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join(''),
-        authors = '<div id="authorz">';
+    var formats = '';
+    var authors = '<div id="authorz">';
+    var base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
+    if (book.portable) {
+        base_url = book.portable_url;
+    };
     book.formats.map(function (format) {
         var string_parts = gen_book_string_parts(base_url, format, book);
         formats = formats + ' ' + string_parts;
@@ -448,6 +451,16 @@ var init_template_data = function() {
     var portable_book_data = function(base_url, book, formats, authors) {
         book.application_id = '';
         var df_path = get_directory_path(book);
+        var book_title_stripped =  book.title.replace(/\?/g, '');
+        var metadata_urls = [book_title_stripped,
+                             [base_url, '/get/opf/', book.application_id, ' ',
+                              book_title_stripped, '.opf'].join(''),
+                             [base_url, '/get/cover/', book.application_id,
+                              '.jpg'].join('')];
+        $.each(book.formats, function(i, format) {
+            metadata_urls.push([base_url, '/get/', format,  '/',
+                                book.application_id, '.', format].join(''));
+        });
         return {
             'base_url': book.portable_url + '/',
             'book': book,
@@ -457,7 +470,8 @@ var init_template_data = function() {
             'get_cover': '',
             'get_opf' : '',
             'portable_cover': df_path[0] + 'cover.jpg',
-            'portable_opf': df_path[0] + 'metadata'
+            'portable_opf': df_path[0] + 'metadata',
+            'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
         };
     };
 

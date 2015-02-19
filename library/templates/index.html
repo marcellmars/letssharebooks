@@ -77,6 +77,11 @@
       <br />
       <%= authors %></h2>
     <span class="download">Metadata: <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
+    <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+       title="import book directly to calibre" target="import">
+      <span class="lodestone">
+        <img src="../images/lodestone.png" title="import book directly to calibre"/>
+    </a>
   </div>
 </script>
 

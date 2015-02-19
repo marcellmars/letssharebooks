@@ -80,7 +80,6 @@ from calibre_plugins.letssharebooks import requests
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre.library.server import server_config
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
-from calibre_plugins.letssharebooks.get_metadata import get_lsb_metadata
 
 
 __license__   = 'GPL v3'
@@ -226,51 +225,51 @@ class MetadataLibThread(QThread):
             if not md_fields.last_modified:
                 md_fields.last_modified = b['timestamp']
             b['last_modified'] = md_fields.last_modified.isoformat()
-            
+           
             b['authors'] = []
             for author in md_fields.authors:
                 b['authors'].append(author)
 
             b['comments'] = md_fields.comments
             b['publisher'] = md_fields.publisher
-           
+          
             bkf = {}
             bk = []
             if md_fields.format_metadata:
                 for frmat in md_fields.format_metadata.iteritems():
                     path = frmat[1]["path"].split(os.path.sep)[-3:]
                     path = os.path.join(*path)
-                    bkf[frmat[0]] = {'path':"{}".format(path),
-                                     'size':frmat[1]["size"]}
+                    bkf[frmat[0]] = {'path': "{}".format(path),
+                                     'size': frmat[1]["size"]}
                     bk.append(frmat[0])
-                
+              
             if not bkf:
-                bkf['FOO'] = {'path' :  "{}/{}/{}.{}".format(self.directory_path,
-                                                             current_db.field_for('path', book),
-                                                             "FOO",
-                                                             "BRR"),
+                bkf['FOO'] = {'path': "{}/{}/{}.{}".format(self.directory_path,
+                                                           current_db.field_for('path', book),
+                                                           "FOO",
+                                                           "BRR"),
                               'size': 0}
-                
+               
             b['format_metadata'] = bkf
-            
+           
             if not bk:
                 bk = ['BRR']
             b['formats'] = bk
-            
+           
             ids = {}
             if md_fields.identifiers:
                 for i in md_fields.identifiers:
                     ids[i[0]] = i[1]
-                    
+                   
             b['identifiers'] = ids
 
             if not md_fields.tags:
-                tags = [[""]]
+                md_fields.tags = [[""]]
             b['tags'] = [a[0] for a in md_fields.tags]
             books.append(b)
         books.append(librarian)
         return books
-                    
+                   
     def get_server_list(self, uuid4):
         try:
             r = requests.get("{}://library.{}/get_catalog"
@@ -286,13 +285,13 @@ class MetadataLibThread(QThread):
             return []
         else:
             return [(book[0], book[1]) for book in catalog['books']]
-        
+       
     def get_current_db(self):
         from calibre.gui2.ui import get_gui
         self.sql_db = get_gui().current_db.new_api
-        self.sql_db.library_id = get_gui().current_db.library_id 
-        return self.sql_db 
-    
+        self.sql_db.library_id = get_gui().current_db.library_id
+        return self.sql_db
+ 
     def get_directory_path(self):
         from calibre.gui2.ui import get_gui
         file_path = get_gui().library_path.split(os.path.sep)
@@ -374,9 +373,9 @@ class MetadataLibThread(QThread):
             librarian = books_metadata.pop()
         else:
             self.start = self.directory_path
-            
+           
         removed_books, added_books = self.intersect(books_metadata)
-        
+       
         if not added_books and recursive == "loop":
             logger.debug("UPLOADED!")
             self.uploaded.emit()
@@ -409,8 +408,8 @@ class MetadataLibThread(QThread):
                     library['books']['remove'] = list(removed_books)
                     books_bulk = list(added_books)[:100]
                     books_to_add = [book for book in books_metadata
-                                     if (book['uuid'], book['last_modified'])
-                                     in books_bulk]
+                                    if (book['uuid'], book['last_modified'])
+                                    in books_bulk]
                     library['books']['add'] = books_to_add
                     json_string = json.dumps(library)
                     file.write(json_string)
@@ -432,8 +431,10 @@ class MetadataLibThread(QThread):
                             prefs['lsb_server']),
                         files={'uploaded_file': file}, verify=False)
                     if r.ok:
-                        self.us.uploading_message = "{} books' metadata are uploading{}".format(len(added_books),
-                                                                                                random.randint(3,10)*".")
+                        um = "{} books' metadata are uploading{}".format(
+                            len(added_books),
+                            random.randint(3, 10)*".")
+                        self.us.uploading_message = um
                         self.uploading.emit()
                     else:
                         self.upload_error.emit()
@@ -453,7 +454,7 @@ class MetadataLibThread(QThread):
         self.make_portable(books_metadata, librarian)
         self.upload_library(books_metadata, librarian)
         return
-            
+           
 #------------------------------------------------------------------------------
 #- in ConnectionCheck it checks both local calibre content server -------------
 #- and the same service at the other end of ssh tunnel ------------------------
@@ -496,7 +497,7 @@ class HoverHand(QPushButton):
     def __init__(self):
         QPushButton.__init__(self)
         self.setMouseTracking(True)
-        
+       
     def mouseMoveEvent(self, event):
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
@@ -942,7 +943,7 @@ class LetsShareBooksDialog(QDialog):
             else:
                 logger.debug("EDITED_ITEM FIRED BUT NO LUCK FOR SYNC!")
                 return
-        else: 
+        else:
             self.metadata_thread = MetadataLibThread(self.us)
             self.metadata_thread.uploaded.connect(
                 lambda: self.render_library_button(
@@ -999,7 +1000,7 @@ class LetsShareBooksDialog(QDialog):
                                                .get_book_display_info(i.row())
                                                .id))
         now = datetime.datetime.now()
-        tdelta =  datetime.timedelta(seconds=3)
+        tdelta = datetime.timedelta(seconds=3)
         if now - self.us.edit_stamp > tdelta:
             QTimer.singleShot(3000, lambda: self.sync_metadata("edited_item"))
             self.us.edit_stamp = datetime.datetime.now()

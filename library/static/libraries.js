@@ -86,6 +86,11 @@ var parse_response = function (data) {
     $('.import').click(function(e) {
         open_import_modal();
     });
+    // directly open the dialog window, if only 1 book is fetched
+    if (data['books'].length == 1) {
+        var book_uuid = data['books'][0].uuid;
+        $('.cover h2 [rel="' + book_uuid  +  '"].more_about').click();
+    };
 };
 
 /* ----------------------------------------------------------------------------

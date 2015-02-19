@@ -26,21 +26,6 @@ var state_field_mapping = {
 };
 
 /* ----------------------------------------------------------------------------
- * Browser history stuff
- * ----------------------------------------------------------------------------
- */
-
-var push_to_history = function() {
-    var data = {};
-    _.each(state_field_mapping, function(field, property) {
-        data[property] = $(field).val();
-    });
-    data.page = STATE.page;
-    var serialized = $.param(data);
-    history.pushState(data, '', '#'+serialized);
-};
-
-/* ----------------------------------------------------------------------------
  * Precompile templates
  * ----------------------------------------------------------------------------
  */
@@ -352,20 +337,37 @@ var search_query = function (page) {
  * ----------------------------------------------------------------------------
  */
 
+var push_to_history = function() {
+    var data = {};
+    _.each(state_field_mapping, function(field, property) {
+        // serialize only non-empty fields
+        var field_value = $(field).val();
+        if (field_value) {
+            data[property] = field_value;
+        };
+    });
+    // serialize page when greater than 1
+    if (STATE.page && STATE.page > 1) {
+        data.page = STATE.page;
+    }
+    var serialized = $.param(data);
+    history.pushState(data, '', '#' + serialized);
+};
+
 var handle_hash_state = function(event) {
     var deserialized = $.deparam(event);
-    if (_.isEmpty(deserialized)) return;
+    if (_.isEmpty(deserialized)) { return };
     if (!_.isUndefined(deserialized.librarian)) {
         $('#librarian').append(['<option value="', deserialized.librarian,
                                 '">', deserialized.librarian,
                                 '</option>'].join('')); 
-    }
+    };
     _.each(state_field_mapping, function(field, property) {
         $(field).val(deserialized[property]);
     });
     if (deserialized.hasOwnProperty('page')) {
-        STATE.page = parseInt(deserialized['page'], 10);
-    }
+        STATE.page = parseInt(deserialized['page'], 10) || 1;
+    };
     return search_query();
 };
 

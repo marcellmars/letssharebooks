@@ -12,16 +12,17 @@ var STATE = {
     page: 1,
     query: {
         'authors': '',
-        'titles': '',
+        'title': '',
         'search_all': '',
         'librarian': '',
+        'uuid': ''
     }
 };
 
 var state_field_mapping = {
-    'author': '#authors',
+    'authors': '#authors',
     'title': '#titles',
-    'metadata': '#search_all',
+    'search_all': '#search_all',
     'librarian': '#librarian'
 };
 
@@ -322,18 +323,16 @@ var modify_button = function (button, state) {
 /* --------------------------------------------------------------------------*/
 
 var search_query = function (page) {
-    q = {};
-    q.authors = $('#authors').val();
-    q.title = $('#titles').val();
-    q.search_all = $('#search_all').val();
-    q.librarian = $('#librarian').val();
-    STATE.query = q;
+    STATE.query.authors = $('#authors').val();
+    STATE.query.title = $('#titles').val();
+    STATE.query.search_all = $('#search_all').val();
+    STATE.query.librarian = $('#librarian').val();
     if (!_.isUndefined(page)) {
         STATE.page = page;
-    }
+    };
     if (_.isUndefined(STATE.page)) {
       STATE.page = 1;
-    }
+    };
     render_page();
 };
 
@@ -354,7 +353,11 @@ var push_to_history = function() {
     // serialize page when greater than 1
     if (STATE.page && STATE.page > 1) {
         data.page = STATE.page;
-    }
+    };
+    // serialize id, if any
+    if (STATE.query.uuid) {
+        data.uuid = STATE.query.uuid;
+    };
     var serialized = $.param(data);
     history.pushState(data, '', '#' + serialized);
 };
@@ -367,9 +370,15 @@ var handle_hash_state = function(event) {
                                 '">', deserialized.librarian,
                                 '</option>'].join('')); 
     };
+    // fill the visible query fields
     _.each(state_field_mapping, function(field, property) {
         $(field).val(deserialized[property]);
     });
+    // handle id part of the query
+    if (deserialized.hasOwnProperty('uuid')) {
+        STATE.query.uuid = deserialized['uuid'];
+    };
+    // handle page
     if (deserialized.hasOwnProperty('page')) {
         STATE.page = parseInt(deserialized['page'], 10) || 1;
     };

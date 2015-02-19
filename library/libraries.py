@@ -229,16 +229,18 @@ def get_books(db, page, query={}):
             words = v.encode('utf-8').split(' ')
             match_pattern = {'$regex': '.*'.join(words),
                              '$options': 'i'}
-            if k in ['authors', 'title', 'librarian']:
+            if k in ['authors', 'title', 'librarian', 'uuid']:
                 q[k] = match_pattern
             # search all metadata
-            else:
+            elif k == 'search_all':
                 q = {"$or": [{"title": match_pattern},
                              {"authors": match_pattern},
                              {"comments": match_pattern},
                              {"tags": match_pattern},
                              {"publisher": match_pattern},
                              {"identifiers": match_pattern}]}
+            else:
+                pass
     # get all libraries that have active ssh tunnel or reference portables
     active_catalogs = db.catalog.find({'$or': [
                 {'tunnel': {'$in': get_active_tunnels()[0]}},

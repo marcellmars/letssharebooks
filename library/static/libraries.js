@@ -10,6 +10,8 @@ var PREFIX_URL = 'https://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
+    modal_opened: false,
+    direction: '>',
     query: {
         'authors': '',
         'title': '',
@@ -78,6 +80,9 @@ var render_page = function () {
 var parse_response = function (data) {
     // empty main container and render books
     $('#content').empty();
+    if (data['books'].length === 0) {
+        return;
+    };
     $.each(data['books'], render_book);
     // update ui
     update_autocomplete(data);
@@ -99,9 +104,14 @@ var parse_response = function (data) {
     $('.import').click(function(e) {
         open_import_modal();
     });
-    // directly open the dialog window, if only 1 book is fetched
-    if (data['books'].length == 1) {
-        var book_uuid = data['books'][0].uuid;
+    // directly open the dialog window if modal_opened,
+    //or if only 1 book is fetched
+    if (STATE.modal_opened || data['books'].length == 1) {
+        var book_index = 0; // show first if direction is right
+        if (STATE.direction === 0) {
+            book_index = data['books'].length - 1;
+        }
+        var book_uuid = data['books'][book_index].uuid;
         $('.cover h2 [rel="' + book_uuid  +  '"].more_about').click();
     };
 };
@@ -181,6 +191,9 @@ var setup_modal = function () {
                     $('.ui-widget-overlay').bind('click', function() {
                         modal.dialog('close');
                     })
+                },
+                close: function() {
+                    STATE.modal_opened = false;
                 }
             });
             $(modal).find('.import').click(function(e) {
@@ -194,19 +207,26 @@ var setup_modal = function () {
                 var this_cover = $(['.cover h2 [rel="',
                                     book.uuid,
                                     '"].more_about'].join('')).parents('.cover');
-                if (this_cover) {
+                if (this_cover.length) {
                     // navigate right
                     if (e.which === 39) {
                         var next_cover = this_cover.next();
-                        if (next_cover) {
+                        if (next_cover.length) {
+                            STATE.direction = 1;
                             next_cover.find('h2 .more_about').click();
+                        } else {
+                            // try to open next page
+                            next_page(true);
                         };
                     }
                     // navigate left
                     else if (e.which === 37) {
                         var previous_cover = this_cover.prev();
-                        if (previous_cover) {
+                        if (previous_cover.length) {
+                            STATE.direction = 0;
                             previous_cover.find('h2 .more_about').click();
+                        } else {
+                            prev_page(true);
                         };
                     };
                 };
@@ -328,7 +348,13 @@ var generate_metadata = function(books) {
 
 /* --------------------------------------------------------------------------*/
 
-var next_page = function () {
+var next_page = function (modal_opened) {
+    if ($('.next_page').hasClass('not-active')) {
+        return;
+    };
+    if (modal_opened) {
+        STATE.modal_opened = true;
+    };
     STATE.page += 1;
     modify_button('.prev_page', 'active');
     render_page();
@@ -336,9 +362,12 @@ var next_page = function () {
 
 /* --------------------------------------------------------------------------*/
 
-var prev_page = function () {
-    if (STATE.page == 1) {
+var prev_page = function (modal_opened) {
+    if ($('.prev_page').hasClass('not-active') || STATE.page == 1) {
         return;
+    };
+    if (modal_opened) {
+        STATE.modal_opened = true;
     };
     STATE.page -= 1;
     modify_button('.next_page', 'active');
@@ -355,8 +384,8 @@ var prev_page = function () {
  */
 
 var init_toolbar = function () {
-    $('.prev_page').click(function () {prev_page(); });
-    $('.next_page').click(function () {next_page(); });
+    $('.prev_page').click(function () { prev_page(); });
+    $('.next_page').click(function () { next_page(); });
     $('#page-msg').click(function () {
       // going back to the homepage lists ALL books in the DB
       // (i.e. resets the search)

@@ -10,8 +10,8 @@ var PREFIX_URL = 'https://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
-    modal_opened: false,
-    direction: '>', // navigation direction (0 - left, 1 - right)
+    show_modal: false, // open book modal window
+    navigation_direction: 0, // arrow navigation direction (0 - left, 1 - right)
     query: {
         'authors': '',
         'title': '',
@@ -104,11 +104,11 @@ var parse_response = function (data) {
     $('.import').click(function(e) {
         open_import_modal();
     });
-    // directly open the dialog window if modal_opened,
+    // directly open the dialog window if show_modal,
     //or if only 1 book is fetched
-    if (STATE.modal_opened || data['books'].length == 1) {
-        var book_index = 0; // show first if direction is right
-        if (STATE.direction === 0) {
+    if (STATE.show_modal || data['books'].length == 1) {
+        var book_index = 0; // show first if navigation_direction is right
+        if (STATE.navigation_direction === 0) {
             book_index = data['books'].length - 1;
         }
         var book_uuid = data['books'][book_index].uuid;
@@ -193,7 +193,7 @@ var setup_modal = function () {
                     })
                 },
                 close: function() {
-                    STATE.modal_opened = false;
+                    STATE.show_modal = false;
                 }
             });
             $(modal).find('.import').click(function(e) {
@@ -211,7 +211,7 @@ var setup_modal = function () {
                     // navigate right
                     if (e.which === 39) {
                         var next_cover = this_cover.next();
-                        STATE.direction = 1;
+                        STATE.navigation_direction = 1;
                         if (next_cover.length) {
                             next_cover.find('h2 .more_about').click();
                         } else {
@@ -222,7 +222,7 @@ var setup_modal = function () {
                     // navigate left
                     else if (e.which === 37) {
                         var previous_cover = this_cover.prev();
-                        STATE.direction = 0;
+                        STATE.navigation_direction = 0;
                         if (previous_cover.length) {
                             previous_cover.find('h2 .more_about').click();
                         } else {
@@ -348,12 +348,12 @@ var generate_metadata = function(books) {
 
 /* --------------------------------------------------------------------------*/
 
-var next_page = function (modal_opened) {
+var next_page = function (show_modal) {
     if ($('.next_page').hasClass('not-active')) {
         return;
     };
-    if (modal_opened) {
-        STATE.modal_opened = true;
+    if (show_modal) {
+        STATE.show_modal = true;
     };
     STATE.page += 1;
     modify_button('.prev_page', 'active');
@@ -362,12 +362,12 @@ var next_page = function (modal_opened) {
 
 /* --------------------------------------------------------------------------*/
 
-var prev_page = function (modal_opened) {
+var prev_page = function (show_modal) {
     if ($('.prev_page').hasClass('not-active') || STATE.page == 1) {
         return;
     };
-    if (modal_opened) {
-        STATE.modal_opened = true;
+    if (show_modal) {
+        STATE.show_modal = true;
     };
     STATE.page -= 1;
     modify_button('.next_page', 'active');

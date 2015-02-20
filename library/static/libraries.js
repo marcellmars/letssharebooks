@@ -11,7 +11,7 @@ var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
     modal_opened: false,
-    direction: '>',
+    direction: '>', // navigation direction (0 - left, 1 - right)
     query: {
         'authors': '',
         'title': '',
@@ -211,8 +211,8 @@ var setup_modal = function () {
                     // navigate right
                     if (e.which === 39) {
                         var next_cover = this_cover.next();
+                        STATE.direction = 1;
                         if (next_cover.length) {
-                            STATE.direction = 1;
                             next_cover.find('h2 .more_about').click();
                         } else {
                             // try to open next page
@@ -222,8 +222,8 @@ var setup_modal = function () {
                     // navigate left
                     else if (e.which === 37) {
                         var previous_cover = this_cover.prev();
+                        STATE.direction = 0;
                         if (previous_cover.length) {
-                            STATE.direction = 0;
                             previous_cover.find('h2 .more_about').click();
                         } else {
                             prev_page(true);

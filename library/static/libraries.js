@@ -187,6 +187,30 @@ var setup_modal = function () {
                 open_import_modal();
             });
             modal.dialog("open");
+            // navigate modals with left/right arrows
+            $(modal).keydown(function(e) {
+                // close current modal
+                modal.dialog('close');
+                var this_cover = $(['.cover h2 [rel="',
+                                    book.uuid,
+                                    '"].more_about'].join('')).parents('.cover');
+                if (this_cover) {
+                    // navigate right
+                    if (e.which === 39) {
+                        var next_cover = this_cover.next();
+                        if (next_cover) {
+                            next_cover.find('h2 .more_about').click();
+                        };
+                    }
+                    // navigate left
+                    else if (e.which === 37) {
+                        var previous_cover = this_cover.prev();
+                        if (previous_cover) {
+                            previous_cover.find('h2 .more_about').click();
+                        };
+                    };
+                };
+            });
         });
         e.preventDefault();
     });

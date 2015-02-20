@@ -549,12 +549,16 @@ var init_template_data = function() {
     };
     
     window.gen_book_string_parts = function (base_url, format, book) {
+        var final_base_url = book.portable_url + '/';
+        if (is_this_portable()) {
+            final_base_url = '';
+        };
         if (book.portable) {
             book.application_id = '';
             var df_path = get_directory_path(book);
             var file_name = df_path[1].split("/").slice(-1);
             return book_parts_portable_tmpl({
-                'base_url': book.portable_url + '/',
+                'base_url': final_base_url,
                 'format': '',
                 'book': book,
                 'portable_book': df_path[0] + file_name,
@@ -579,8 +583,12 @@ var init_template_data = function() {
         $.each(book.formats, function(i, format) {
             metadata_urls.push([base_url, '/', df_path[0], df_path[1].split("/").slice(-1)].join(''));
         });
+        var final_base_url = book.portable_url + '/';
+        if (is_this_portable()) {
+            final_base_url = '';
+        };
         return {
-            'base_url': book.portable_url + '/',
+            'base_url': final_base_url,
             'book': book,
             'book_title_stripped': '',
             'authors': authors,

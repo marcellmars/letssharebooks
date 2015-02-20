@@ -469,13 +469,10 @@ var init_template_data = function() {
         var df_path = get_directory_path(book);
         var book_title_stripped =  book.title.replace(/\?/g, '');
         var metadata_urls = [book_title_stripped,
-                             [base_url, '/get/opf/', book.application_id, ' ',
-                              book_title_stripped, '.opf'].join(''),
-                             [base_url, '/get/cover/', book.application_id,
-                              '.jpg'].join('')];
+                             [base_url, '/', df_path[0], 'metadata.opf'].join(''),
+                             [base_url, '/', df_path[0], 'cover.jpg'].join('')];
         $.each(book.formats, function(i, format) {
-            metadata_urls.push([base_url, '/get/', format,  '/',
-                                book.application_id, '.', format].join(''));
+            metadata_urls.push([base_url, '/', df_path[0], df_path[1].split("/").slice(-1)].join(''));
         });
         return {
             'base_url': book.portable_url + '/',
@@ -500,7 +497,7 @@ var init_template_data = function() {
                               '.jpg'].join('')];
         $.each(book.formats, function(i, format) {
             metadata_urls.push([base_url, '/get/', format,  '/',
-                                book.application_id, '.', format].join(''));
+                                book.application_id, '.', format.toLowerCase()].join(''));
         });
         return {
             'base_url': base_url,

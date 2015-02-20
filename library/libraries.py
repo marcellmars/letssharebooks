@@ -13,6 +13,7 @@ import requests
 import socket
 import json
 import time
+import logging
 
 #------------------------------------------------------------------------------
 
@@ -63,7 +64,7 @@ def get_active_tunnels_mock():
     '''
     Mock for local/test purposes
     '''
-    return [12345]
+    return [[12345]]
 
 def setup_active_tunnels_func():
     '''
@@ -223,29 +224,33 @@ def get_books(db, page, query={}):
     '''
     # query
     q = {}
+    logging.debug('QUERY: {}'.format(query))
     # extract search parameters and build query
-    for k, v in query.iteritems():
-        if v:
-            words = v.encode('utf-8').split(' ')
-            match_pattern = {'$regex': '.*'.join(words),
-                             '$options': 'i'}
-            if k in ['authors', 'title', 'librarian', 'uuid']:
-                q[k] = match_pattern
+    for field, field_value in query.iteritems():
+        if field_value:
+            words = field_value.encode('utf-8').split(' ')
+            match_pattern = {'$regex': '.*'.join(words), '$options': 'i'}
+            # match fileds with exact mapping
+            if field in ['authors', 'title', 'librarian', 'uuid']:
+                q[field] = match_pattern
             # search all metadata
-            elif k == 'search_all':
-                q = {"$or": [{"title": match_pattern},
-                             {"authors": match_pattern},
-                             {"comments": match_pattern},
-                             {"tags": match_pattern},
-                             {"publisher": match_pattern},
-                             {"identifiers": match_pattern}]}
+            elif field == 'search_all':
+                q = {"$or": [{'title': match_pattern},
+                             {'authors': match_pattern},
+                             {'comments': match_pattern},
+                             {'tags': match_pattern},
+                             {'publisher': match_pattern},
+                             {'identifiers': match_pattern}]}
             else:
-                pass
+                logging.warning('Unrecognized search param {}'.format(field))
     # get all libraries that have active ssh tunnel or reference portables
+    active_tunnels = get_active_tunnels()[0]
+    logging.debug('active_tunnels: {}'.format(active_tunnels))
     active_catalogs = db.catalog.find({'$or': [
-                {'tunnel': {'$in': get_active_tunnels()[0]}},
+                {'tunnel': {'$in': active_tunnels}},
                 {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
+    logging.debug('FINAL QUERY: {}'.format(q))
     librarians = active_catalogs.distinct('librarian')
     authors = db.books.find(q, PUBLIC_BOOK_FIELDS).distinct('authors')
     titles = db.books.find(q, PUBLIC_BOOK_FIELDS).distinct('title')

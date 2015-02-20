@@ -3,6 +3,7 @@
  * ----------------------------------------------------------------------------
  */
 
+var PORTABLE = true;
 var DOMAIN = 'memoryoftheworld.org'
 //var DOMAIN = 'web.dokr'
 var PREFIX_URL = 'https://www';
@@ -12,32 +13,28 @@ var STATE = {
     page: 1,
     query: {
         'authors': '',
-        'titles': '',
+        'title': '',
         'search_all': '',
         'librarian': '',
+        'uuid': ''
     }
 };
 
 var state_field_mapping = {
-    'author': '#authors',
+    'authors': '#authors',
     'title': '#titles',
-    'metadata': '#search_all',
+    'search_all': '#search_all',
     'librarian': '#librarian'
 };
 
 /* ----------------------------------------------------------------------------
- * Browser history stuff
+ * This differentiates webapp and portable libraries. Add PORTABLE variable
+ * to portable library (e.g. var PORTABLE = true).
  * ----------------------------------------------------------------------------
  */
 
-var push_to_history = function() {
-    var data = {};
-    _.each(state_field_mapping, function(field, property) {
-        data[property] = $(field).val();
-    });
-    data.page = STATE.page;
-    var serialized = $.param(data);
-    history.pushState(data, '', '#'+serialized);
+var is_this_portable = function() {
+    return !_.isUndefined(window.PORTABLE); 
 };
 
 /* ----------------------------------------------------------------------------
@@ -80,13 +77,13 @@ var render_page = function () {
 /* --------------------------------------------------------------------------*/
 
 var parse_response = function (data) {
-    /* empty main container and render books */
+    // empty main container and render books
     $('#content').empty();
     $.each(data['books'], render_book);
-    /* update ui */
+    // update ui
     update_autocomplete(data);
     update_pagination_info(data['on_page'], data['total']);
-    /* enable/disable pagination */
+    // enable/disable pagination
     if (data['next_page'] === null) {
         modify_button('.next_page', 'not-active');
     } else {
@@ -96,11 +93,18 @@ var parse_response = function (data) {
         modify_button('.prev_page', 'active');
     };
     setup_modal();
-    /* setup_hover(); don't mark other books on hover in portable */
-    /* alert on import click */
+    if (is_this_portable()) {
+        setup_hover();
+    };
+    // alert on import click
     $('.import').click(function(e) {
         open_import_modal();
     });
+    // directly open the dialog window, if only 1 book is fetched
+    if (data['books'].length == 1) {
+        var book_uuid = data['books'][0].uuid;
+        $('.cover h2 [rel="' + book_uuid  +  '"].more_about').click();
+    };
 };
 
 /* ----------------------------------------------------------------------------
@@ -109,9 +113,12 @@ var parse_response = function (data) {
  */
 
 var render_book = function(i, book) {
-    var formats = '',
-        base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join(''),
-        authors = '<div id="authorz">';
+    var formats = '';
+    var authors = '<div id="authorz">';
+    var base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
+    if (book.portable) {
+        base_url = book.portable_url;
+    };
     book.formats.map(function (format) {
         var string_parts = gen_book_string_parts(base_url, format, book);
         formats = formats + ' ' + string_parts;
@@ -142,8 +149,8 @@ var open_import_modal = function() {
     modal.dialog({
         autoOpen: false,
         modal: true,
-        minHeight: 300,
-        minWidth: 500,
+        minHeight: 600,
+        minWidth: 800,
         position: { my: "center top", at: "center top"},
         closeOnEscape: true
     });
@@ -167,8 +174,8 @@ var setup_modal = function () {
             modal.dialog({
                 autoOpen: false,
                 modal: true,
-                minHeight: 300,
-                minWidth: 500,
+                minHeight: 600,
+                minWidth: 800,
                 position: { my: "center top", at: "center top"},
                 closeOnEscape: true,
                 open: function() {
@@ -184,6 +191,29 @@ var setup_modal = function () {
         });
         e.preventDefault();
     });
+};
+
+/* --------------------------------------------------------------------------*/
+
+var setup_hover = function() {
+    /* mark books that were authord by the one of the authors of the currently
+     selected book */
+    $( ".cover" ).hover(
+        function() {
+            /* get current librarian */
+            var selected_librarian = $(this).attr('rel');
+            /* iterate over all other books */
+            $.each($('.cover').not($(this)), function(i) {
+                var cover = $(this);
+                var librarian = cover.attr('rel');
+                if (selected_librarian == librarian) {
+                    cover.find('.cover-highlight').show();
+                }
+            });
+        }, function() {
+            $('.cover-highlight').hide();
+        }
+    );
 };
 
 /* --------------------------------------------------------------------------*/
@@ -208,11 +238,15 @@ var update_pagination_info = function (items_on_page, total_num_of_items) {
 /* --------------------------------------------------------------------------*/
 
 var update_autocomplete = function(data) {
-    var metadata = generate_metadata(data['books']);
-    $('#authors').autocomplete({source: metadata['authors'],
-                                minLength:2});
-    $('#titles').autocomplete({source: metadata['titles'],
-                               minLength:2});
+    var authors = data['authors'];
+    var titles = data['titles'];
+    if (is_this_portable()) {
+        var metadata = generate_metadata(data['books']);
+        authors = metadata['authors'];
+        titles = metadata['titles'];
+    };
+    $('#authors').autocomplete({source: authors, minLength:2});
+    $('#titles').autocomplete({source: titles, minLength:2});
     $('#librarian').empty();
     if (data['librarians'].length > 1) {
         $('#librarian').append(['<option value="" selected>',
@@ -230,20 +264,25 @@ var update_autocomplete = function(data) {
     if (STATE.query.librarian) {
         $('#librarian').val(STATE.query.librarian);
     } else if (data['librarians'].length == 1 ) {
-        /* if single librarian then update dropdown and title page */
-        var librarian = data['librarians'][0];
-        var sufix = "'s Library";
-        $('#librarian').val(librarian);
-        if ($.inArray(librarian.slice(-1), ['s', 'z']) >= 0) {
-            sufix = "' Library";
+        if (is_this_portable()) {
+            // if single librarian then update dropdown and title page
+            var librarian = data['librarians'][0];
+            var sufix = "'s Library";
+            $('#librarian').val(librarian);
+            if ($.inArray(librarian.slice(-1), ['s', 'z']) >= 0) {
+                sufix = "' Library";
+            };
+            document.title = librarian + sufix;
+        } else {
+            $('#librarian').val(data['librarians'][0]);
         };
-        document.title = librarian + sufix;
     };
 };
 
 /**************************************************************************
  * generate distinct list of authors, titles and librarians
  **************************************************************************/
+
 var generate_metadata = function(books) {
     var sadd = function(s, v) {
         if ($.inArray(v, s) == -1) {
@@ -337,18 +376,16 @@ var modify_button = function (button, state) {
 /* --------------------------------------------------------------------------*/
 
 var search_query = function (page) {
-    q = {};
-    q.authors = $('#authors').val();
-    q.title = $('#titles').val();
-    q.search_all = $('#search_all').val();
-    q.librarian = $('#librarian').val();
-    STATE.query = q;
+    STATE.query.authors = $('#authors').val();
+    STATE.query.title = $('#titles').val();
+    STATE.query.search_all = $('#search_all').val();
+    STATE.query.librarian = $('#librarian').val();
     if (!_.isUndefined(page)) {
         STATE.page = page;
-    }
+    };
     if (_.isUndefined(STATE.page)) {
       STATE.page = 1;
-    }
+    };
     render_page();
 };
 
@@ -357,20 +394,47 @@ var search_query = function (page) {
  * ----------------------------------------------------------------------------
  */
 
+var push_to_history = function() {
+    var data = {};
+    _.each(state_field_mapping, function(field, property) {
+        // serialize only non-empty fields
+        var field_value = $(field).val();
+        if (field_value) {
+            data[property] = field_value;
+        };
+    });
+    // serialize page when greater than 1
+    if (STATE.page && STATE.page > 1) {
+        data.page = STATE.page;
+    };
+    // serialize id, if any
+    if (STATE.query.uuid) {
+        data.uuid = STATE.query.uuid;
+    };
+    var serialized = $.param(data);
+    history.pushState(data, '', '#' + serialized);
+};
+
 var handle_hash_state = function(event) {
     var deserialized = $.deparam(event);
-    if (_.isEmpty(deserialized)) return;
+    if (_.isEmpty(deserialized)) { return };
     if (!_.isUndefined(deserialized.librarian)) {
         $('#librarian').append(['<option value="', deserialized.librarian,
                                 '">', deserialized.librarian,
                                 '</option>'].join('')); 
-    }
+    };
+    // fill the visible query fields
     _.each(state_field_mapping, function(field, property) {
         $(field).val(deserialized[property]);
     });
+    // handle id part of the query
+    if (deserialized.hasOwnProperty('uuid')) {
+        STATE.query.uuid = deserialized['uuid'];
+    };
+    // handle page
     if (deserialized.hasOwnProperty('page')) {
-        STATE.page = parseInt(deserialized['page'], 10);
-    }
+        STATE.page = parseInt(deserialized['page'], 10) || 1;
+    };
     return search_query();
 };
 
@@ -438,7 +502,7 @@ var init_template_data = function() {
             var df_path = get_directory_path(book);
             var file_name = df_path[1].split("/").slice(-1);
             return book_parts_portable_tmpl({
-                'base_url': '',
+                'base_url': book.portable_url + '/',
                 'format': '',
                 'book': book,
                 'portable_book': df_path[0] + file_name,
@@ -456,8 +520,15 @@ var init_template_data = function() {
     var portable_book_data = function(base_url, book, formats, authors) {
         book.application_id = '';
         var df_path = get_directory_path(book);
+        var book_title_stripped =  book.title.replace(/\?/g, '');
+        var metadata_urls = [book_title_stripped,
+                             [base_url, '/', df_path[0], 'metadata.opf'].join(''),
+                             [base_url, '/', df_path[0], 'cover.jpg'].join('')];
+        $.each(book.formats, function(i, format) {
+            metadata_urls.push([base_url, '/', df_path[0], df_path[1].split("/").slice(-1)].join(''));
+        });
         return {
-            'base_url': '',
+            'base_url': book.portable_url + '/',
             'book': book,
             'book_title_stripped': '',
             'authors': authors,
@@ -465,7 +536,8 @@ var init_template_data = function() {
             'get_cover': '',
             'get_opf' : '',
             'portable_cover': df_path[0] + 'cover.jpg',
-            'portable_opf': df_path[0] + 'metadata'
+            'portable_opf': df_path[0] + 'metadata',
+            'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
         };
     };
 
@@ -478,7 +550,7 @@ var init_template_data = function() {
                               '.jpg'].join('')];
         $.each(book.formats, function(i, format) {
             metadata_urls.push([base_url, '/get/', format,  '/',
-                                book.application_id, '.', format].join(''));
+                                book.application_id, '.', format.toLowerCase()].join(''));
         });
         return {
             'base_url': base_url,

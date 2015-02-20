@@ -27,6 +27,16 @@ var state_field_mapping = {
 };
 
 /* ----------------------------------------------------------------------------
+ * This differentiates webapp and portable libraries. Add PORTABLE variable
+ * to portable library (e.g. var PORTABLE = true).
+ * ----------------------------------------------------------------------------
+ */
+
+var is_this_portable = function() {
+    return !_.isUndefined(window.PORTABLE); 
+};
+
+/* ----------------------------------------------------------------------------
  * Precompile templates
  * ----------------------------------------------------------------------------
  */
@@ -66,13 +76,13 @@ var render_page = function () {
 /* --------------------------------------------------------------------------*/
 
 var parse_response = function (data) {
-    /* empty main container and render books */
+    // empty main container and render books
     $('#content').empty();
     $.each(data['books'], render_book);
-    /* update ui */
+    // update ui
     update_autocomplete(data);
     update_pagination_info(data['on_page'], data['total']);
-    /* enable/disable pagination */
+    // enable/disable pagination
     if (data['next_page'] === null) {
         modify_button('.next_page', 'not-active');
     } else {
@@ -82,8 +92,10 @@ var parse_response = function (data) {
         modify_button('.prev_page', 'active');
     };
     setup_modal();
-    setup_hover();
-    /* alert on import click */
+    if (is_this_portable()) {
+        setup_hover();
+    };
+    // alert on import click
     $('.import').click(function(e) {
         open_import_modal();
     });
@@ -225,10 +237,15 @@ var update_pagination_info = function (items_on_page, total_num_of_items) {
 /* --------------------------------------------------------------------------*/
 
 var update_autocomplete = function(data) {
-    $('#authors').autocomplete({source: data['authors'],
-                                minLength:2});
-    $('#titles').autocomplete({source: data['titles'],
-                               minLength:2});
+    var authors = data['authors'];
+    var titles = data['titles'];
+    if (is_this_portable()) {
+        var metadata = generate_metadata(data['books']);
+        authors = metadata['authors'];
+        titles = metadata['titles'];
+    };
+    $('#authors').autocomplete({source: authors, minLength:2});
+    $('#titles').autocomplete({source: titles, minLength:2});
     $('#librarian').empty();
     if (data['librarians'].length > 1) {
         $('#librarian').append(['<option value="" selected>',
@@ -245,9 +262,44 @@ var update_autocomplete = function(data) {
     });
     if (STATE.query.librarian) {
         $('#librarian').val(STATE.query.librarian);
-    } else if (data['librarians'].length == 1 ){
-        $('#librarian').val(data['librarians'][0]);
+    } else if (data['librarians'].length == 1 ) {
+        if (is_this_portable()) {
+            // if single librarian then update dropdown and title page
+            var librarian = data['librarians'][0];
+            var sufix = "'s Library";
+            $('#librarian').val(librarian);
+            if ($.inArray(librarian.slice(-1), ['s', 'z']) >= 0) {
+                sufix = "' Library";
+            };
+            document.title = librarian + sufix;
+        } else {
+            $('#librarian').val(data['librarians'][0]);
+        };
     };
+};
+
+/**************************************************************************
+ * generate distinct list of authors, titles and librarians
+ **************************************************************************/
+
+var generate_metadata = function(books) {
+    var sadd = function(s, v) {
+        if ($.inArray(v, s) == -1) {
+            s.push(v);
+        };
+    };
+    var metadata = {
+        'authors': [],
+        'titles': [],
+    };
+    $.each(books, function(i, book) {
+        var authors = book.authors;
+        $.each(authors, function(j, author) {
+            sadd(metadata['authors'], author);
+        });
+        sadd(metadata['titles'], book.title);
+    });
+    return metadata;
 };
 
 /* --------------------------------------------------------------------------*/

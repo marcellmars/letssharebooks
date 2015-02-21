@@ -43,7 +43,8 @@
   <script type="text/x-template" id="book-content-tmpl">
     <div class="cover" rel='<%= book.librarian %>'>
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-        <img src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" />
+        <img class="cover-img"
+             src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" />
         <div class="cover-highlight">
           <span class="hmsg">Shared by <%= book.librarian %></span>
         </div>
@@ -53,24 +54,39 @@
         <br />
         <%= authors %></h2>
       <span class="download">Download: <%= formats %> </span>
+      <% if (localCalibre.is_connected()) { %>
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
          title="import book directly to calibre" target="import">
         <span class="lodestone">
-          <img src="../images/lodestone.png" title="import book directly to calibre"/>
+          <img src="../images/lodestone.png" title="import book directly to calibre" />
+        </span>
       </a>
-      </span>
+      <% } %>
     </div>
   </script>
 
   <script type="text/x-template" id="book-content-portable-tmpl">
-    <div class="cover">
+    <div class="cover" rel='<%= book.librarian %>'>
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-        <img src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" /></a>
+        <img class="cover-img"
+             src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" />
+        <div class="cover-highlight">
+          <span class="hmsg">Shared by <%= book.librarian %></span>
+        </div>
+      </a>
       <h2>
         <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
         <br />
         <%= authors %></h2>
       <span class="download">Metadata: <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
+      <% if (localCalibre.is_connected()) { %>
+      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+         title="import book directly to calibre" target="import">
+        <span class="lodestone">
+          <img src="../images/lodestone.png" title="import book directly to calibre" />
+        </span>
+      </a>
+      <% } %>
     </div>
   </script>
 
@@ -79,12 +95,14 @@
       <div>
         <div>
           <img class="img_modal" src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" width="120"/>
+          <% if (localCalibre.is_connected()) { %>
           <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
              title="import book directly to calibre" target="import">
             <span class="lodestone_modal">
               <img src="../images/lodestone_modal.png" title="import book directly to calibre" />
+            </span>
           </a>
-          </span>
+          <% } %>
         </div>
         <p><span class="attr">Title:</span> <%= book.title %></p>
         <p><span class="attr">Authors:</span> <%= book.authors %></p>
@@ -100,6 +118,14 @@
     <div id="book-modal" title="<%= book.title %>">
       <div>
         <img class="img_modal" src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" width="120"/>
+        <% if (localCalibre.is_connected()) { %>
+        <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+           title="import book directly to calibre" target="import">
+          <span class="lodestone_modal">
+            <img src="../images/lodestone_modal.png" title="import book directly to calibre" />
+          </span>
+        </a>
+        <% } %>
         <p><span class="attr">Authors:</span> <%= book.authors %></p>
         <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
         <p><span class="attr" title="import metadata directly to calibre">Metadata:</span> <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf">.opf</a></p>
@@ -126,5 +152,6 @@
   <script type="application/javascript" src="static/json2.js"></script>
   <script type="application/javascript" src="static/data.js"></script>
   <script type="application/javascript" src="static/portable.js"></script>
+  <script type="application/javascript" src="static/local_calibre.js"></script>
   <script type="application/javascript" src="static/libraries.js"></script>
 </html>

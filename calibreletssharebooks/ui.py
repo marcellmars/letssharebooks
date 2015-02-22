@@ -118,7 +118,6 @@ class LetsShareBooksUI(InterfaceAction):
             
             elif resource == "portable/libraries.js":
                 lib_lines = res[resource].split(os.linesep)
-                print(lib_lines)
                 lib_lines.insert(4, "var PORTABLE = true;{}".format(os.linesep))
                 with open(os.path.join(self.us.portable_directory,
                                        'portable/libraries.js'), "w") as lib:

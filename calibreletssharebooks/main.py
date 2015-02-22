@@ -154,6 +154,17 @@ class Downloader(QThread):
 #- to import the book(s) ------------------------------------------------------
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def serve_gif(self, gif):
+        logger.debug("GIF!")
+        import cStringIO
+        gif_b64 = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        f = cStringIO.StringIO(gif_b64.decode('base64'))
+        self.send_response(200, 'OK')
+        self.send_header("Content-type", "image/gif")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(f.read())
+    
     def do_OPTIONS(self):
         self.send_response(200, 'OK')
         self.send_header('Allow', 'GET, POST, OPTIONS')
@@ -163,17 +174,22 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        self.send_response(200, 'OK')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.end_headers()
-        self.server.html.web_signal.emit(self.path)
-        self.wfile.write('<body onload="window.close();">')
+        print("SELF.PATH: {}".format(self.path))
+        if self.path[:6] == "/0.gif":
+            self.serve_gif(self.path[1:])    
+        elif self.path[:7] == "/?urls=":
+            self.send_response(200, 'OK')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.server.html.web_signal.emit(self.path)
+            self.wfile.write('<body onload="window.close();">')
 
 
 class ThreadedServer(QThread):
     web_signal = pyqtSignal(str, name="web_signal")
 
     def __init__(self, port):
+        logger.debug("STARTED LOCAL HTTP SERVER!")
         QThread.__init__(self)
         SocketServer.TCPServer.allow_reuse_address = True
         self.httpd = BaseHTTPServer.HTTPServer(("", port), HTTPHandler)
@@ -1267,10 +1283,8 @@ class LetsShareBooksDialog(QDialog):
             request_data = QByteArray.fromPercentEncoding(r).data()
         else:
             request_data = QByteArray.fromPercentEncoding(r.toUtf8()).data()
-        if request_data[:7] != "/?urls=":
-            return
-
-        req_seq = request_data.split('__,__')
+            
+        req_seq = request_data[7:].split('__,__')
 
         book = {}
         book['uuid'] = str(uuid.uuid4())

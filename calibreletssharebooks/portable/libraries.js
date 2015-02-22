@@ -3,7 +3,6 @@
  * ----------------------------------------------------------------------------
  */
 
-var PORTABLE = true;
 var DOMAIN = 'memoryoftheworld.org'
 //var DOMAIN = 'web.dokr'
 var PREFIX_URL = 'https://www';
@@ -11,6 +10,8 @@ var PREFIX_URL = 'https://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
+    show_modal: false, // open book modal window
+    navigation_direction: 0, // arrow navigation direction (0 - left, 1 - right)
     query: {
         'authors': '',
         'title': '',
@@ -79,6 +80,9 @@ var render_page = function () {
 var parse_response = function (data) {
     // empty main container and render books
     $('#content').empty();
+    if (data['books'].length === 0) {
+        return;
+    };
     $.each(data['books'], render_book);
     // update ui
     update_autocomplete(data);
@@ -100,9 +104,14 @@ var parse_response = function (data) {
     $('.import').click(function(e) {
         open_import_modal();
     });
-    // directly open the dialog window, if only 1 book is fetched
-    if (data['books'].length == 1) {
-        var book_uuid = data['books'][0].uuid;
+    // directly open the dialog window if show_modal,
+    //or if only 1 book is fetched
+    if (STATE.show_modal || data['books'].length == 1) {
+        var book_index = 0; // show first if navigation_direction is right
+        if (STATE.navigation_direction === 0) {
+            book_index = data['books'].length - 1;
+        }
+        var book_uuid = data['books'][book_index].uuid;
         $('.cover h2 [rel="' + book_uuid  +  '"].more_about').click();
     };
 };
@@ -182,12 +191,46 @@ var setup_modal = function () {
                     $('.ui-widget-overlay').bind('click', function() {
                         modal.dialog('close');
                     })
+                },
+                close: function() {
+                    STATE.show_modal = false;
                 }
             });
             $(modal).find('.import').click(function(e) {
                 open_import_modal();
             });
             modal.dialog("open");
+            // navigate modals with left/right arrows
+            $(modal).keydown(function(e) {
+                // close current modal
+                modal.dialog('close');
+                var this_cover = $(['.cover h2 [rel="',
+                                    book.uuid,
+                                    '"].more_about'].join('')).parents('.cover');
+                if (this_cover.length) {
+                    // navigate right
+                    if (e.which === 39) {
+                        var next_cover = this_cover.next();
+                        STATE.navigation_direction = 1;
+                        if (next_cover.length) {
+                            next_cover.find('h2 .more_about').click();
+                        } else {
+                            // try to open next page
+                            next_page(true);
+                        };
+                    }
+                    // navigate left
+                    else if (e.which === 37) {
+                        var previous_cover = this_cover.prev();
+                        STATE.navigation_direction = 0;
+                        if (previous_cover.length) {
+                            previous_cover.find('h2 .more_about').click();
+                        } else {
+                            prev_page(true);
+                        };
+                    };
+                };
+            });
         });
         e.preventDefault();
     });
@@ -305,7 +348,13 @@ var generate_metadata = function(books) {
 
 /* --------------------------------------------------------------------------*/
 
-var next_page = function () {
+var next_page = function (show_modal) {
+    if ($('.next_page').hasClass('not-active')) {
+        return;
+    };
+    if (show_modal) {
+        STATE.show_modal = true;
+    };
     STATE.page += 1;
     modify_button('.prev_page', 'active');
     render_page();
@@ -313,9 +362,12 @@ var next_page = function () {
 
 /* --------------------------------------------------------------------------*/
 
-var prev_page = function () {
-    if (STATE.page == 1) {
+var prev_page = function (show_modal) {
+    if ($('.prev_page').hasClass('not-active') || STATE.page == 1) {
         return;
+    };
+    if (show_modal) {
+        STATE.show_modal = true;
     };
     STATE.page -= 1;
     modify_button('.next_page', 'active');
@@ -332,8 +384,8 @@ var prev_page = function () {
  */
 
 var init_toolbar = function () {
-    $('.prev_page').click(function () {prev_page(); });
-    $('.next_page').click(function () {next_page(); });
+    $('.prev_page').click(function () { prev_page(); });
+    $('.next_page').click(function () { next_page(); });
     $('#page-msg').click(function () {
       // going back to the homepage lists ALL books in the DB
       // (i.e. resets the search)
@@ -479,12 +531,16 @@ var init_page = function () {
 /* --------------------------------------------------------------------------*/
 
 $(document).ready(function () {
-    init_template_data();
-    init_page();
+    // try to connect to local calibre server and init page when done
+    localCalibre.done(function(success) {
+        init_template_data();
+        init_page();
+    });
 });
 
 /* --------------------------------------------------------------------------*/
 
+/** Various functions for rendering books with HTML templating */
 var init_template_data = function() {
 
     var get_directory_path = function (book) {
@@ -497,12 +553,16 @@ var init_template_data = function() {
     };
     
     window.gen_book_string_parts = function (base_url, format, book) {
+        var final_base_url = book.portable_url + '/';
+        if (is_this_portable()) {
+            final_base_url = '';
+        };
         if (book.portable) {
             book.application_id = '';
             var df_path = get_directory_path(book);
             var file_name = df_path[1].split("/").slice(-1);
             return book_parts_portable_tmpl({
-                'base_url': book.portable_url + '/',
+                'base_url': final_base_url,
                 'format': '',
                 'book': book,
                 'portable_book': df_path[0] + file_name,
@@ -517,18 +577,27 @@ var init_template_data = function() {
         };
     };
 
+    /** Portable book */
     var portable_book_data = function(base_url, book, formats, authors) {
         book.application_id = '';
         var df_path = get_directory_path(book);
         var book_title_stripped =  book.title.replace(/\?/g, '');
-        var metadata_urls = [book_title_stripped,
-                             [base_url, '/', df_path[0], 'metadata.opf'].join(''),
-                             [base_url, '/', df_path[0], 'cover.jpg'].join('')];
+        var metadata_urls = [
+            book_title_stripped,
+            [base_url, '/', df_path[0], 'metadata.opf'].join(''),
+            [base_url, '/', df_path[0], 'cover.jpg'].join('')];
         $.each(book.formats, function(i, format) {
-            metadata_urls.push([base_url, '/', df_path[0], df_path[1].split("/").slice(-1)].join(''));
+            metadata_urls.push([base_url,
+                                '/',
+                                df_path[0],
+                                df_path[1].split("/").slice(-1)].join(''));
         });
+        var final_base_url = book.portable_url + '/';
+        if (is_this_portable()) {
+            final_base_url = '';
+        };
         return {
-            'base_url': book.portable_url + '/',
+            'base_url': final_base_url,
             'book': book,
             'book_title_stripped': '',
             'authors': authors,
@@ -541,6 +610,7 @@ var init_template_data = function() {
         };
     };
 
+    /** Data for "normal" book (not portable) */
     var book_data = function(base_url, book, formats, authors) {
         var book_title_stripped =  book.title.replace(/\?/g, '');
         var metadata_urls = [book_title_stripped,
@@ -549,8 +619,13 @@ var init_template_data = function() {
                              [base_url, '/get/cover/', book.application_id,
                               '.jpg'].join('')];
         $.each(book.formats, function(i, format) {
-            metadata_urls.push([base_url, '/get/', format,  '/',
-                                book.application_id, '.', format.toLowerCase()].join(''));
+            metadata_urls.push([base_url,
+                                '/get/',
+                                format,
+                                '/',
+                                book.application_id,
+                                '.',
+                                format.toLowerCase()].join(''));
         });
         return {
             'base_url': base_url,
@@ -562,6 +637,7 @@ var init_template_data = function() {
         };
     };
     
+    /** Renders book inside grid */
     window.gen_book_content = function (base_url, book, formats, authors) {
         if (book.portable) {
             return book_content_portable_tmpl(
@@ -572,6 +648,7 @@ var init_template_data = function() {
         };
     };
 
+    /** Renders book modal */
     window.gen_book_modal = function (base_url, book, formats, authors) {
         if (book.portable) {
             return book_modal_portable_tmpl(

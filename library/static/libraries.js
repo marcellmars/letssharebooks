@@ -1,1 +1,0 @@
-../../calibreletssharebooks/portable/libraries.js

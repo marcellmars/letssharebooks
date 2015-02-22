@@ -1,1 +1,0 @@
-../../calibreletssharebooks/portable/local_calibre.js

@@ -26,7 +26,7 @@ SERVER = {
         'dbname': 'letssharebooks_test',
         },
     'live': {
-        'mongo_addr': socket.gethostbyname('mongodb'),
+        'mongo_addr': 1 or socket.gethostbyname('mongodb'),
         'mongo_port': 27017,
         'prefix_url' : 'https://www',
         'host': '0.0.0.0',

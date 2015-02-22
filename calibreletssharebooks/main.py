@@ -19,6 +19,7 @@ import SocketServer
 import uuid
 import BaseHTTPServer
 import datetime
+import cStringIO
 
 try:
     from PyQt4 import QtWebKit
@@ -155,8 +156,6 @@ class Downloader(QThread):
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def serve_gif(self, gif):
-        logger.debug("GIF!")
-        import cStringIO
         gif_b64 = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         f = cStringIO.StringIO(gif_b64.decode('base64'))
         self.send_response(200, 'OK')
@@ -174,8 +173,10 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        print("SELF.PATH: {}".format(self.path))
-        if self.path[:6] == "/0.gif":
+        from calibre.gui2.ui import get_gui
+        gifs = ['0.gif',
+                '{}.gif'.format(get_gui().current_db.library_id)]
+        if self.path[1:] in gifs:
             self.serve_gif(self.path[1:])    
         elif self.path[:7] == "/?urls=":
             self.send_response(200, 'OK')

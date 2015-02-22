@@ -36,8 +36,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-#from calibre_plugins.letssharebooks.my_#logger.import get_logger
-##logger.= get_#logger.'letssharebooks', disabled=True)
+# from calibre_plugins.letssharebooks.my_logger import get_logger
+# logger = get_logger('letssharebooks.ui', disabled=False)
 
 #-----------------------------------------------------------------------------
 
@@ -51,7 +51,6 @@ PORTABLE_RESOURCES = [
     'portable/jquery-ui-1.10.3.custom.min.css',
     'portable/jquery-ui-1.10.3.custom.min.js',
     'portable/json2.js',
-    'portable/libraries.js',
     'portable/local_calibre.js',
     'portable/BROWSE_LIBRARY.html',
     'portable/portable.js',
@@ -61,7 +60,8 @@ PORTABLE_RESOURCES = [
     'portable/favicon.html',
     'portable/ca-bundle.crt',
     'portable/lsbtunnel.exe',
-    'portable/favicon.svg']
+    'portable/favicon.svg',
+    'portable/libraries.js']
 
 
 class UnitedStates(QObject):
@@ -115,6 +115,14 @@ class LetsShareBooksUI(InterfaceAction):
             elif sys.platform == "win32" and resource == "portable/portable.js":
                 #logger.debug("IGNORE {} ON WINDOWS".format(resource))
                 pass
+            
+            elif resource == "portable/libraries.js":
+                lib_lines = res[resource].split(os.linesep)
+                print(lib_lines)
+                lib_lines.insert(4, "var PORTABLE = true;{}".format(os.linesep))
+                with open(os.path.join(self.us.portable_directory,
+                                       'portable/libraries.js'), "w") as lib:
+                   lib.writelines(os.linesep.join(lib_lines))
             else:
                 with open(os.path.join(self.us.portable_directory,
                                        resource), 'wb') as portable:

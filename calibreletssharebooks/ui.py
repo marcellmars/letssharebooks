@@ -52,6 +52,7 @@ PORTABLE_RESOURCES = [
     'portable/jquery-ui-1.10.3.custom.min.js',
     'portable/json2.js',
     'portable/libraries.js',
+    'portable/local_calibre.js',
     'portable/BROWSE_LIBRARY.html',
     'portable/portable.js',
     'portable/portable_win.js',

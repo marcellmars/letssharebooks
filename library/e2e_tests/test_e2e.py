@@ -4,6 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 
 class TestLSBWebApp(unittest.TestCase):
@@ -29,29 +30,19 @@ class TestLSBWebApp(unittest.TestCase):
             EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         # there should be no displayed modals initially
         self.assertEqual(
-            len(self.driver.find_elements_by_class_name('ui-dialog')), 0)
+            len(self.driver.find_elements_by_id('book-modal')), 0)
         # locate first book and click it
         first_book = self.driver.find_element_by_class_name('cover')
         first_book.find_element_by_class_name('more_about').click()
         self.wait.until(
-            EC.visibility_of_element_located((By.CLASS_NAME,'ui-dialog')))
+            EC.presence_of_element_located((By.ID,'book-modal')))
         # there should be single modal displayed
         self.assertEqual(
-            len(self.driver.find_elements_by_class_name('ui-dialog')), 1)
-
-    # def test_book_modal_navigation(self):
-    #     self.driver.get(self.base_url)
-    #     # locate first book and click it
-    #     first_book = self.driver.find_element_by_class_name('cover')
-    #     first_book.find_element_by_class_name('more_about').click()
-    #     # there should be single modal displayed
-    #     displayed_modals = [i for i in self.driver.find_elements_by_id('book-modal') if i.is_displayed()]
-    #     self.assertEqual(len(displayed_modals), 1)
-    #     # nagivate to left modal
-    #     displayed_modals[0].send_keys(Keys.LEFT)
-    #     # there should be no modals displayed
-    #     displayed_modals = [i for i in self.driver.find_elements_by_id('book-modal') if i.is_displayed()]
-    #     self.assertEqual(len(displayed_modals), 0)
+            len(self.driver.find_elements_by_id('book-modal')), 1)
+        self.assertGreater(
+            self.driver.find_element_by_id('book-modal').text.find('Authors:'), -1)
+        # navigate left
+        ActionChains(self.driver).send_keys(Keys.ARROW_RIGHT).perform()
 
     def test_paging(self):
         self.driver.get(self.base_url)

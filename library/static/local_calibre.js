@@ -47,8 +47,10 @@ var localCalibre = (function () {
         done: function(callback) {
             connect(callback);
         },
-        is_connected: function() {
-            return connected;
+        /** returns true if there is local calibre with LSB that
+          * has opened library with the given uuid */
+        isUp: function(uuid) {
+            return connected && localLibrary === uuid;
         }
     };
 })();

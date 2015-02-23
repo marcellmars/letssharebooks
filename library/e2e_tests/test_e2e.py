@@ -24,26 +24,6 @@ class TestLSBWebApp(unittest.TestCase):
         books = self.driver.find_elements_by_class_name('cover')
         self.assertGreater(len(books), 0)
 
-    def test_book_modal(self):
-        self.driver.get(self.base_url)
-        self.wait.until(
-            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
-        # there should be no displayed modals initially
-        self.assertEqual(
-            len(self.driver.find_elements_by_id('book-modal')), 0)
-        # locate first book and click it
-        first_book = self.driver.find_element_by_class_name('cover')
-        first_book.find_element_by_class_name('more_about').click()
-        self.wait.until(
-            EC.presence_of_element_located((By.ID,'book-modal')))
-        # there should be single modal displayed
-        self.assertEqual(
-            len(self.driver.find_elements_by_id('book-modal')), 1)
-        self.assertGreater(
-            self.driver.find_element_by_id('book-modal').text.find('Authors:'), -1)
-        # navigate left
-        ActionChains(self.driver).send_keys(Keys.ARROW_RIGHT).perform()
-
     def test_paging(self):
         self.driver.get(self.base_url)
         self.wait.until(

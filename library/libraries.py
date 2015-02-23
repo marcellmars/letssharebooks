@@ -19,16 +19,17 @@ import logging
 
 # book fields for books in the grid
 PUBLIC_BOOK_FIELDS = {
-    'application_id':1,
-    'title':1,
-    'formats':1,
-    'authors':1,
-    'tunnel':1,
-    'uuid':1,
-    'librarian':1,
-    'portable':1,
-    'portable_url':1,
-    'format_metadata':1,
+    'application_id': 1,
+    'title': 1,
+    'formats': 1,
+    'authors': 1,
+    'tunnel': 1,
+    'uuid': 1,
+    'librarian': 1,
+    'portable': 1,
+    'portable_url': 1,
+    'format_metadata': 1,
+    'library_uuid': 1,
     '_id': 0
     }
 
@@ -204,7 +205,9 @@ def get_catalogs(db):
     '''
     for testing purposes
     '''
-    return utils.ser2json(db.catalog.count())
+    return utils.ser2json(db.catalog.find(
+            {},
+            {'library_uuid':1, 'librarian': 1, '_id': 0}))
 
 #------------------------------------------------------------------------------
 

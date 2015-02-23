@@ -9,14 +9,15 @@ from selenium.webdriver.support import expected_conditions as EC
 class TestLSBWebApp(unittest.TestCase):
 
     def setUp(self):
-        self.base_url = 'http://localhost:4321'
-        #self.base_url = 'https://library.memoryoftheworld.org'
+        #self.base_url = 'http://localhost:4321'
+        self.base_url = 'https://library.memoryoftheworld.org'
         self.driver = webdriver.Firefox()
         self.wait = WebDriverWait(self.driver, 10)
 
     def test_initial_load(self):
         self.driver.get(self.base_url)
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         self.assertEqual(self.driver.title, 'memory of the world library')
         # assert that there are some books on the site initially
         books = self.driver.find_elements_by_class_name('cover')
@@ -24,15 +25,19 @@ class TestLSBWebApp(unittest.TestCase):
 
     def test_book_modal(self):
         self.driver.get(self.base_url)
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         # there should be no displayed modals initially
-        self.assertEqual(len(self.driver.find_elements_by_class_name('ui-dialog')), 0)
+        self.assertEqual(
+            len(self.driver.find_elements_by_class_name('ui-dialog')), 0)
         # locate first book and click it
         first_book = self.driver.find_element_by_class_name('cover')
         first_book.find_element_by_class_name('more_about').click()
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'ui-dialog')))
+        self.wait.until(
+            EC.visibility_of_element_located((By.CLASS_NAME,'ui-dialog')))
         # there should be single modal displayed
-        self.assertEqual(len(self.driver.find_elements_by_class_name('ui-dialog')), 1)
+        self.assertEqual(
+            len(self.driver.find_elements_by_class_name('ui-dialog')), 1)
 
     # def test_book_modal_navigation(self):
     #     self.driver.get(self.base_url)
@@ -50,7 +55,8 @@ class TestLSBWebApp(unittest.TestCase):
 
     def test_paging(self):
         self.driver.get(self.base_url)
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         # previous page is not active initially
         prev_page = self.driver.find_element_by_class_name('prev_page')
         self.assertIn('not-active', prev_page.get_attribute('class'))
@@ -59,12 +65,19 @@ class TestLSBWebApp(unittest.TestCase):
         self.assertIn('active', next_page.get_attribute('class'))
         # get next page
         next_page.click()
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         # previous page should now be active ...
         prev_page2 = self.driver.find_element_by_class_name('prev_page')
         self.assertIn('active', prev_page2.get_attribute('class'))
         # ... and url should contain "page=2"
         self.assertGreater(self.driver.current_url.find('page=2'), -1)
+        # get previous page
+        prev_page2.click()
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.assertEqual(self.driver.current_url.find('page=1'), -1)
+        
 
     def test_search(self):
         
@@ -87,14 +100,16 @@ class TestLSBWebApp(unittest.TestCase):
         form_clear(form)
         form['title'].send_keys('MCL0')
         form['search'].click()
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         books = self.driver.find_elements_by_class_name('cover')
         self.assertGreater(len(books), 0)
         # search for all books for library 1
         form_clear(form)
         form['title'].send_keys('MCL1')
         form['search'].click()
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         books = self.driver.find_elements_by_class_name('cover')
         self.assertGreater(len(books), 0)
 
@@ -102,7 +117,8 @@ class TestLSBWebApp(unittest.TestCase):
         form_clear(form)
         form['author'].send_keys('John The First')
         form['search'].click()
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         books = self.driver.find_elements_by_class_name('cover')
         self.assertEqual(len(books), 1)
 
@@ -110,15 +126,17 @@ class TestLSBWebApp(unittest.TestCase):
         form_clear(form)
         form['search_all'].send_keys('the')
         form['search'].click()
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         books = self.driver.find_elements_by_class_name('cover')
         self.assertGreater(len(books), 0)
 
         # search by LIBRARIAN
         form_clear(form)
-        form['librarian'].select_by_value('Joseph Of Byzantium')
+        form['librarian'].select_by_index(1)
         form['search'].click()
-        self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'cover')))
+        self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME,'cover')))
         books = self.driver.find_elements_by_class_name('cover')
         self.assertGreater(len(books), 0)
 

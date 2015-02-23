@@ -3,7 +3,7 @@
 #------------------------------------------------------------------------------
 import os
 import libraries
-import socket
+import utils
 
 ENV_NAME = None
 ENV = None
@@ -26,7 +26,7 @@ SERVER = {
         'dbname': 'letssharebooks_test',
         },
     'live': {
-        'mongo_addr': socket.gethostbyname('mongodb'),
+        'mongo_addr': utils.get_mongo_live_addr(),
         'mongo_port': 27017,
         'prefix_url' : 'https://www',
         'host': '0.0.0.0',

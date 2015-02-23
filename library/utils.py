@@ -6,6 +6,8 @@ from bson import json_util as json
 from pymongo import MongoClient
 import simplejson
 import time
+import socket
+import logging
 import settings
 
 #------------------------------------------------------------------------------
@@ -87,3 +89,17 @@ def timeit(method):
         return result
 
     return timed
+
+#------------------------------------------------------------------------------
+
+def get_mongo_live_addr():
+    '''
+    Tries to locate "mongodb" instance. If host address resolving fails then is
+    assumes that local configuration is active.
+    '''
+    try:
+        return socket.gethostbyname('mongodb')
+    except Exception:
+        logging.error('socket.gethostbyname for mongodb failed. assume local.',
+                      exc_info=True)
+    return None

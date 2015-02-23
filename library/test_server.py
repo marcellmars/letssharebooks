@@ -47,7 +47,7 @@ class TestCherryPyApp(BaseCherryPyTestCase):
             '''
             fake active tunnels for tests
             '''
-            return [12345]
+            return [[12345]]
 
         # fake get_active_tunnels call
         libraries.get_active_tunnels = fake_get_active_tunnels
@@ -61,13 +61,19 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         utils.remove_all_data(self.db)
 
     def test_index(self):
+        '''
+        Tests index page with some text
+        '''
         response = self.request('/')
         self.assertEqual(response.output_status, '200 OK')
         self.assertGreater(response.body[0].find('memory of the world'), -1)
 
     def test_upload_catalog(self):
+        '''
+        Tris to upload good and bad library
+        '''
         # this library should be uploaded with no problems
-        res = upload_catalog(self, 'test/library.json')
+        res = upload_catalog(self, 'fixtures/library.json')
         self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
 
         # this library should be the only one
@@ -75,26 +81,29 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(res.body, ['1'])
 
         # bad json file
-        res = upload_catalog(self, 'test/bad_library.json')
+        res = upload_catalog(self, 'fixtures/bad_library.json')
         self.assertEqual(res[:20], 'Error in JSONDecode ')
 
     def test_get_books(self):
+        '''
+        Tests if main get_books function works after upload
+        '''
         # first upload some books
-        res = upload_catalog(self, 'test/library.json')
+        res = upload_catalog(self, 'fixtures/library.json')
         self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
         # and now try to get them
-        params = {'page':1,
-                  'query':{'authors':'','titles':'','search_all':''}}
-        r = self.request('/get_books', method='POST',
-                         data=simplejson.dumps(params))
+        r = self.request('/get_books', method='GET')
         self.assertEqual(r.output_status, '200 OK')
         data = simplejson.loads(r.body[0])
         self.assertEqual(data['total'], 2)
         self.assertEqual(len(data['books']), 2)
 
     def test_search(self):
+        '''
+        Search by author, title or librarian
+        '''
         # first upload some books
-        res = upload_catalog(self, 'test/library.json')
+        res = upload_catalog(self, 'fixtures/library.json')
         self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
         # search author
         params = {'page':1, 'query':{'authors':'Heidegger'}}
@@ -106,7 +115,7 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(len(data['books']), 1)
         self.assertEqual(data['books'][0]['authors'][0], 'Martin Heidegger')
         # search title
-        params = {'page':1, 'query':{'titles':'music'}}
+        params = {'page':1, 'query':{'title':'music'}}
         r = self.request('/get_books', method='POST',
                          data=simplejson.dumps(params))
         self.assertEqual(r.output_status, '200 OK')
@@ -125,22 +134,30 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(data['total'], 2)
 
     def test_for_duplicates(self):
+        '''
+        '''
         # try to upload same catalog twice
-        res = upload_catalog(self, 'test/library.json')
+        res = upload_catalog(self, 'fixtures/library.json')
         self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
-        res = upload_catalog(self, 'test/library.json')
+        r = self.request('/get_books', method='GET')
+        # fetch first catalog
+        self.assertEqual(r.output_status, '200 OK')
+        data = simplejson.loads(r.body[0])
+        self.assertEqual(data['total'], 2)
+        # upload second time
+        res = upload_catalog(self, 'fixtures/library.json')
         self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
         # and now try to get them
-        params = {'page':1,
-                  'query':{'authors':'','titles':'','search_all':''}}
-        r = self.request('/get_books', method='POST',
-                         data=simplejson.dumps(params))
+        r = self.request('/get_books', method='GET')
         self.assertEqual(r.output_status, '200 OK')
         data = simplejson.loads(r.body[0])
         self.assertEqual(data['total'], 2)
 
     def test_book(self):
-        res = upload_catalog(self, 'test/library.json')
+        '''
+        Test /book function. Mostly obsolete.
+        '''
+        res = upload_catalog(self, 'fixtures/library.json')
         self.assertEqual(res, '3b876484-0dbd-461f-935a-e58b08c06547')
         uuid = '62a47470-406d-4a88-9bc2-abc01fdd2a69'
         r = self.request('/book', method='POST', uuid=uuid)
@@ -149,27 +166,20 @@ class TestCherryPyApp(BaseCherryPyTestCase):
         self.assertEqual(data['uuid'], uuid)
 
     def test_portable(self):
+        '''
+        Test portable library upload.
+        Note: since portable requires library at some url, this test should
+        somehow mock portable library, but this will work for now.
+        '''
         lib_uuid = '4c876484-0dbd-461f-935a-e58b08c06567'
         # first upload some books
-        res = upload_catalog(self, 'test/portable.json')
+        res = upload_catalog(self, 'fixtures/portable.json')
         self.assertEqual(res, lib_uuid)
         # and now try to get them
-        params = {'page':1,
-                  'query':{'authors':'','titles':'','search_all':''}}
-        r = self.request('/get_books', method='POST',
-                         data=simplejson.dumps(params))
+        r = self.request('/get_books', method='GET')
         self.assertEqual(r.output_status, '200 OK')
         data = simplejson.loads(r.body[0])
         self.assertEqual(data['total'], 1)
-        # try to remove this portable
-        r = self.request('/remove_portable', method='POST', lib_uuid=lib_uuid)
-        self.assertEqual(r.output_status, '200 OK')
-        # assert that all books are removed from db
-        params = {'page':1,
-                  'query':{'authors':'','titles':'','search_all':''}}
-        r = self.request('/get_books', method='POST',
-                         data=simplejson.dumps(params))
-        self.assertEqual(simplejson.loads(r.body[0])['total'], 0)
         
 #------------------------------------------------------------------------------
 

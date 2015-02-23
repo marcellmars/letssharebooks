@@ -206,14 +206,13 @@ var setup_modal = function () {
             modal.dialog("open");
             // navigate modals with left/right arrows
             $(modal).keydown(function(e) {
-                // close current modal
-                modal.dialog('close');
                 var this_cover = $(['.cover h2 [rel="',
                                     book.uuid,
                                     '"].more_about'].join('')).parents('.cover');
                 if (this_cover.length) {
                     // navigate right
                     if (e.which === 39) {
+                        modal.dialog('close');
                         var next_cover = this_cover.next();
                         STATE.navigation_direction = 1;
                         if (next_cover.length) {
@@ -225,6 +224,7 @@ var setup_modal = function () {
                     }
                     // navigate left
                     else if (e.which === 37) {
+                        modal.dialog('close');
                         var previous_cover = this_cover.prev();
                         STATE.navigation_direction = 0;
                         if (previous_cover.length) {

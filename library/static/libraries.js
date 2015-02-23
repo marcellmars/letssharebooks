@@ -171,6 +171,8 @@ var open_import_modal = function() {
 var setup_modal = function () {
     $('.more_about').click(function(e) {
         var uuid = $(this).attr('rel');
+        STATE.query.uuid = uuid;
+        push_to_history();
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
             var formats = '',
             base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
@@ -194,6 +196,8 @@ var setup_modal = function () {
                 },
                 close: function() {
                     STATE.show_modal = false;
+                    STATE.query.uuid = '';
+                    push_to_history();
                 }
             });
             $(modal).find('.import').click(function(e) {

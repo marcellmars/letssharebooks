@@ -4,22 +4,40 @@
 import subprocess
 import sys
 
+DOCKERS = ["01 library", "02 mongodb", "03 nginx", "04 prosody", "05 sshd", "06 php5", "07 db"]
+ALIGN = max(map(len, DOCKERS)) - 3
+
 def get_docker_ips():
     #------------------------------------------------------------------------------
     #- getting ip addresses from dockers  -----------------------------------------
 
     docker_ips = {}
-    for dckr in ["library", "mongodb", "nginx", "prosody", "sshd"]:
+    for dckr in DOCKERS:
         docker_ips[dckr] = subprocess.check_output(["docker",
                                                     "inspect",
                                                     "-f",
                                                     "'{{ .NetworkSettings.IPAddress }}'",
-                                                    "memoryoftheworld_{}_1".format(dckr)])[1:-2]
+                                                    "memoryoftheworld_{}_1".format(dckr[3:])])[1:-2]
 
     return docker_ips
 
+def get_docker_ids():
+    #------------------------------------------------------------------------------
+    #- getting ip addresses from dockers  -----------------------------------------
+
+    docker_ids = {}
+    for dckr in DOCKERS:
+        docker_ids[dckr] = subprocess.check_output(["docker",
+                                                    "inspect",
+                                                    "-f",
+                                                    "'{{ .Id }}'",
+                                                    "memoryoftheworld_{}_1".format(dckr[3:])])[1:-2]
+
+    return docker_ids
+
 def status():
     docker_ips = get_docker_ips()
+    docker_ids = get_docker_ids()
 
     dmsq = [l for l in open("/etc/dnsmasq.d/local", "r").readlines()
             if "address=/memoryoftheworld.org/" in l]
@@ -30,6 +48,7 @@ def status():
     resolv_conf = [l for l in open("/etc/resolv.conf", "r").readlines()
                    if not "nameserver 127.0.0.1" in l]
 
+    print("- - - - -")
     if dmsq and hosts and not resolv_conf:
         print("https://www.memoryoftheworld.org is set to LOCAL environment.")
     elif not dmsq and not hosts and "nameserver 8.8.8.8" in resolv_conf[0]:
@@ -38,8 +57,18 @@ def status():
         print("https://www.memoryoftheworld.org is neither set to "),
         print("LOCAL nor REMOTE environment. Good luck!")
 
-    for docker_ip in docker_ips.items():
-        print("{}: {}".format(docker_ip[0], docker_ip[1]))
+    print("- - - - -")
+    print("               {1:<{0}}  {2} (ip)".format(ALIGN, "host", "172.17.42.1"))
+    
+    docker_ips = sorted([(key, value) for (key,value) in docker_ips.items()])
+    for ip in docker_ips:
+        if ip[1] == "":
+            print("               {1:<{0}}  is not running !".format(ALIGN, ip[0][3:]))
+            continue
+        print("sudo ./msenter {1:<{0}}  {2} (ip)  docker exec {3} (id)".format(ALIGN,
+                                                                ip[0][3:],
+                                                                ip[1],
+                                                                docker_ids[ip[0]][:8]))
 
 def set_local_env():
     docker_ips = get_docker_ips()
@@ -54,13 +83,13 @@ def set_local_env():
 
     for n,d in enumerate(dmsq):
         if d.startswith("address=/memoryoftheworld.org/"):
-            dmsq[n]="address=/memoryoftheworld.org/{}\n".format(docker_ips['nginx'])
+            dmsq[n]="address=/memoryoftheworld.org/{}\n".format(docker_ips['03 nginx'])
             init_address = False
         if d.startswith("interface=docker0"):
             init_docker = False
 
     if init_address:
-        dmsq.append("address=/memoryoftheworld.org/{}\n".format(docker_ips['nginx']))
+        dmsq.append("address=/memoryoftheworld.org/{}\n".format(docker_ips['03 nginx']))
 
     if init_docker:
         dmsq.append("interface=docker0\n")
@@ -76,9 +105,9 @@ def set_local_env():
             hosts.pop(n)
 
     for i in ["xmpp", "anon", "conference"]:
-        hosts.append("{} {}.memoryoftheworld.org\n".format(docker_ips['prosody'], i))
+        hosts.append("{} {}.memoryoftheworld.org\n".format(docker_ips['04 prosody'], i))
 
-    hosts.append("{} memoryoftheworld.org\n".format(docker_ips['sshd']))
+    hosts.append("{} memoryoftheworld.org\n".format(docker_ips['05 sshd']))
 
     open("/etc/hosts", "w").writelines(hosts)
 

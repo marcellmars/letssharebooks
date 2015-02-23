@@ -204,7 +204,9 @@ def get_catalogs(db):
     '''
     for testing purposes
     '''
-    return utils.ser2json(db.catalog.count())
+    return utils.ser2json(db.catalog.find(
+            {},
+            {'library_uuid':1, 'librarian': 1, '_id': 0}))
 
 #------------------------------------------------------------------------------
 

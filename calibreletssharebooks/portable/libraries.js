@@ -171,6 +171,8 @@ var open_import_modal = function() {
 var setup_modal = function () {
     $('.more_about').click(function(e) {
         var uuid = $(this).attr('rel');
+        STATE.query.uuid = uuid;
+        push_to_history();
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
             var formats = '',
             base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
@@ -194,6 +196,8 @@ var setup_modal = function () {
                 },
                 close: function() {
                     STATE.show_modal = false;
+                    STATE.query.uuid = '';
+                    push_to_history();
                 }
             });
             $(modal).find('.import').click(function(e) {
@@ -202,14 +206,13 @@ var setup_modal = function () {
             modal.dialog("open");
             // navigate modals with left/right arrows
             $(modal).keydown(function(e) {
-                // close current modal
-                modal.dialog('close');
                 var this_cover = $(['.cover h2 [rel="',
                                     book.uuid,
                                     '"].more_about'].join('')).parents('.cover');
                 if (this_cover.length) {
                     // navigate right
                     if (e.which === 39) {
+                        modal.dialog('close');
                         var next_cover = this_cover.next();
                         STATE.navigation_direction = 1;
                         if (next_cover.length) {
@@ -221,6 +224,7 @@ var setup_modal = function () {
                     }
                     // navigate left
                     else if (e.which === 37) {
+                        modal.dialog('close');
                         var previous_cover = this_cover.prev();
                         STATE.navigation_direction = 0;
                         if (previous_cover.length) {
@@ -533,6 +537,7 @@ var init_page = function () {
 $(document).ready(function () {
     // try to connect to local calibre server and init page when done
     localCalibre.done(function(success) {
+        console.log('localCalibre finished with ', success);
         init_template_data();
         init_page();
     });

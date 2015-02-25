@@ -226,7 +226,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.send_response(200, 'OK')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            # self.server.html.web_signal.emit(self.path)
+            self.server.html.web_signal.emit(self.path)
             self.wfile.write('<body onload="window.close();">')
         else:
             self.serve_library(self.path)
@@ -1202,7 +1202,8 @@ class LetsShareBooksDialog(QDialog):
             QTimer.singleShot(3000, self.established_ssh_tunnel.emit)
         else:
             self.ssh_proc = subprocess.Popen([
-                'ssh', '-T', '-N', '-g',
+                'ssh', '-T', '-N', '-g', '-C',
+                '-c', 'arcfour,aes128-cbc,blowfish-cbc',
                 '-o', 'TCPKeepAlive=yes',
                 '-o', 'UserKnownHostsFile=/dev/null',
                 '-o', 'StrictHostKeyChecking=no',

@@ -12,8 +12,12 @@ ADD library /etc/nginx/sites-enabled/
 ADD bosh /etc/nginx/sites-enabled/
 ADD candy /etc/nginx/sites-enabled/
 ADD wordpress /etc/nginx/sites-enabled/
+ADD gzip.conf /etc/nginx/conf.d/
 
 ADD wildcard_memoryoftheworld.org_20130714_combined.crt /etc/ssl/certs/
 ADD wildcard_memoryoftheworld.org_20130714.key /etc/ssl/private/
 
 ADD dnsmasq.local /etc/dnsmasq.d/local
+
+RUN mkdir -p /var/www/cache
+RUN chmod -R ugo+rwx /var/www/cache

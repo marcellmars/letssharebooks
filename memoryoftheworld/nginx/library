@@ -9,6 +9,7 @@ server {
         location / {
                 resolver 127.0.0.1;
                 proxy_pass        http://library:4321;
+                proxy_store /var/www/cache$uri;
                 proxy_set_header  X-Real-IP  $remote_addr;
                 proxy_set_header  Host $host;
                 proxy_redirect http:// https://;

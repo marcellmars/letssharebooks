@@ -12,5 +12,6 @@ server {
                 proxy_set_header  X-Real-IP  $remote_addr;
                 proxy_set_header  Host $host;
                 proxy_redirect http:// https://;
+                proxy_store /var/www/cache$uri;
         }
 }

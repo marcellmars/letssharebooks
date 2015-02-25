@@ -64,6 +64,7 @@ nginx:
     entrypoint: /usr/local/bin/supervisord
     volumes: 
         - ${MOTW_HOME}/letssharebooks/candy:/var/www/candy
+        - ${MOTW_HOME}/letssharebooks/cache:/var/www/cache
     volumes_from:
         - php5
     ports:

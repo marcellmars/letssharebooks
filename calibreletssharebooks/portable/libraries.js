@@ -537,7 +537,6 @@ var init_page = function () {
 $(document).ready(function () {
     // try to connect to local calibre server and init page when done
     localCalibre.done(function(success) {
-        console.log('localCalibre finished with ', success);
         init_template_data();
         init_page();
     });

@@ -53,7 +53,7 @@
       <br />
       <%= authors %></h2>
     <span class="download">Download: <%= formats %> </span>
-    <% if (!localCalibre.isUp(book.library_uuid)) { %>
+    <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
     <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
        title="import book directly to calibre" target="import">
       <span class="lodestone">
@@ -78,7 +78,7 @@
       <br />
       <%= authors %></h2>
     <span class="download">Metadata: <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
-    <% if (!localCalibre.isUp(book.library_uuid)) { %>
+    <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
     <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
        title="import book directly to calibre" target="import">
       <span class="lodestone">
@@ -93,7 +93,7 @@
   <div id="book-modal" title="<%= book.title %>">
     <div>
       <img class="img_modal" src="<%= base_url %>/<%= file_path %>cover.jpg" width="120" />
-      <% if (!localCalibre.isUp(book.library_uuid)) { %>
+      <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
          title="import book directly to calibre" target="import">
         <span class="lodestone_modal">
@@ -115,7 +115,7 @@
   <div id="book-modal" title="<%= book.title %>">
     <div>
       <img class="img_modal" src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" width="120"/>
-      <% if (!localCalibre.isUp(book.library_uuid)) { %>
+      <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
          title="import book directly to calibre" target="import">
         <span class="lodestone_modal">

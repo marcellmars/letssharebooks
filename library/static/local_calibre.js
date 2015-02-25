@@ -16,7 +16,7 @@ var localCalibre = (function () {
                 var count_local_gif_err = 0;
                 // locate active libraries on local calibre server
                 $.each(catalogs, function (i, catalog) {
-                    if (localLibrary) {return};
+                    if (localLibrary) { return };
                     var lib_gif = ['<img src="',
                                    baseGIFLocation,
                                    '/',
@@ -49,8 +49,12 @@ var localCalibre = (function () {
         },
         /** returns true if there is local calibre with LSB that
           * has opened library with the given uuid */
-        isUp: function(uuid) {
+        isSharing: function(uuid) {
             return connected && localLibrary === uuid;
+        },
+        /** returns true if import links for books should be rendered */
+        showImportLinks: function(uuid) {
+            return connected && (localLibrary != uuid);
         }
     };
 })();

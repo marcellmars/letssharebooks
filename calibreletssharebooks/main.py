@@ -20,6 +20,10 @@ import uuid
 import BaseHTTPServer
 import datetime
 import cStringIO
+import gzip
+import posixpath
+import urllib
+import mimetypes
 
 try:
     from PyQt4 import QtWebKit
@@ -155,7 +159,95 @@ class Downloader(QThread):
 #- to import the book(s) ------------------------------------------------------
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-    def serve_gif(self, gif):
+    def copyfile(self, source, outputfile):
+        if self.gzip_on:
+            outputfile = gzip.GzipFile(mode='wb', fileobj=outputfile)
+        shutil.copyfileobj(source, outputfile)
+
+    def serve_library(self, path):
+        path = self.translate_path(path)
+        f = None
+        self.gzip_on = None
+        if os.path.isdir(path):
+            if not self.path.endswith('/'):
+                # redirect browser - doing basically what apache does
+                self.send_response(301)
+                self.send_header("Location", self.path + "/")
+                self.end_headers()
+                return None
+            for index in "index.html", "index.htm", "BROWSE_LIBRARY.html":
+                index = os.path.join(path, index)
+                if os.path.exists(index):
+                    path = index
+                    break
+        ctype = self.guess_type(path)
+        
+        try:
+            # Always read in binary mode. Opening files in text mode may cause
+            # newline translations, making the actual size of the content
+            # transmitted *less* than the content-length!
+            f = open(path, 'rb')
+        except IOError:
+            self.send_error(404, "File not found")
+            return None
+
+        if not f:
+            self.send_error(404, "File not found")
+            return None
+            
+        self.send_response(200)
+        self.send_header("Content-type", ctype)
+        #self.send_header("Content-Encoding", "gzip")
+        fs = os.fstat(f.fileno())
+        self.send_header("Content-Length", str(fs[6]))
+        self.send_header("Last-Modified", self.date_time_string(fs.st_mtime))
+        self.end_headers()
+        self.copyfile(f, self.wfile)
+        f.close()
+        return
+       
+    def do_GET(self):
+        from calibre.gui2.ui import get_gui
+
+        file_path = get_gui().library_path.split(os.path.sep)
+        if sys.platform == "win32":
+            file_path.insert(1, os.path.sep)
+        else:
+            file_path.insert(0, '/')
+
+        os.chdir(os.path.join(*file_path))
+
+        gifs = ['0.gif',
+                '{}.gif'.format(get_gui().current_db.library_id)]
+        logger.debug("REQUEST FILE PATH: {}".format(self.path))
+        if self.path[1:] in gifs:
+            self.serve_gif()
+        elif self.path[:7] == "/?urls=":
+            self.send_response(200, 'OK')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            # self.server.html.web_signal.emit(self.path)
+            self.wfile.write('<body onload="window.close();">')
+        else:
+            self.serve_library(self.path)
+
+    def translate_path(self, path):
+       # abandon query parameters
+        path = path.split('?', 1)[0]
+        path = path.split('#', 1)[0]
+        path = posixpath.normpath(urllib.unquote(path))
+        words = path.split('/')
+        words = filter(None, words)
+        path = os.getcwd()
+        for word in words:
+            drive, word = os.path.splitdrive(word)
+            head, word = os.path.split(word)
+            if word in (os.curdir, os.pardir):
+                continue
+            path = os.path.join(path, word)
+        return path
+
+    def serve_gif(self):
         gif_b64 = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         f = cStringIO.StringIO(gif_b64.decode('base64'))
         self.send_response(200, 'OK')
@@ -164,26 +256,30 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(f.read())
     
-    def do_OPTIONS(self):
-        self.send_response(200, 'OK')
-        self.send_header('Allow', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Headers', 'X-Requested-With')
-        self.send_header('Content-Length', '0')
-        self.end_headers()
+    def guess_type(self, path):
+        base, ext = posixpath.splitext(path)
+        if ext in self.extensions_map:
+            return self.extensions_map[ext]
+        ext = ext.lower()
+        if ext in self.extensions_map:
+            return self.extensions_map[ext]
+        else:
+            return self.extensions_map['']
 
-    def do_GET(self):
-        from calibre.gui2.ui import get_gui
-        gifs = ['0.gif',
-                '{}.gif'.format(get_gui().current_db.library_id)]
-        if self.path[1:] in gifs:
-            self.serve_gif(self.path[1:])    
-        elif self.path[:7] == "/?urls=":
-            self.send_response(200, 'OK')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.server.html.web_signal.emit(self.path)
-            self.wfile.write('<body onload="window.close();">')
+    if not mimetypes.inited:
+        mimetypes.init() # try to read system mime.types
+    extensions_map = mimetypes.types_map.copy()
+    extensions_map.update({
+        '': 'application/octet-stream', # Default
+        '.epub': 'application/epub+zip',
+        '.lrf': 'application/x-sony-bbeb',
+        '.azw': 'application/x-mobipocket-ebook',
+        '.tpz': 'application/x-topaz-ebook',
+        '.azw1': 'application/x-topaz-ebook',
+        '.azw2': 'application/x-kindle-application',
+        '.pobi': 'application/x-mobipocket-subscription',
+        '.azw3': 'application/x-mobi8-ebook'
+        })
 
 
 class ThreadedServer(QThread):
@@ -249,7 +345,7 @@ class MetadataLibThread(QThread):
 
             b['comments'] = md_fields.comments
             b['publisher'] = md_fields.publisher
-          
+         
             bkf = {}
             bk = []
             if md_fields.format_metadata:
@@ -259,25 +355,25 @@ class MetadataLibThread(QThread):
                     bkf[frmat[0]] = {'path': "{}".format(path),
                                      'size': frmat[1]["size"]}
                     bk.append(frmat[0])
-              
+             
             if not bkf:
                 bkf['FOO'] = {'path': "{}/{}/{}.{}".format(self.directory_path,
                                                            current_db.field_for('path', book),
                                                            "FOO",
                                                            "BRR"),
                               'size': 0}
-               
+              
             b['format_metadata'] = bkf
-           
+          
             if not bk:
                 bk = ['BRR']
             b['formats'] = bk
-           
+          
             ids = {}
             if md_fields.identifiers:
                 for i in md_fields.identifiers:
                     ids[i[0]] = i[1]
-                   
+                  
             b['identifiers'] = ids
 
             if not md_fields.tags:
@@ -286,7 +382,7 @@ class MetadataLibThread(QThread):
             books.append(b)
         books.append(librarian)
         return books
-                   
+                  
     def get_server_list(self, uuid4):
         try:
             r = requests.get("{}://library.{}/get_catalog"
@@ -302,13 +398,13 @@ class MetadataLibThread(QThread):
             return []
         else:
             return [(book[0], book[1]) for book in catalog['books']]
-       
+      
     def get_current_db(self):
         from calibre.gui2.ui import get_gui
         self.sql_db = get_gui().current_db.new_api
         self.sql_db.library_id = get_gui().current_db.library_id
         return self.sql_db
- 
+
     def get_directory_path(self):
         from calibre.gui2.ui import get_gui
         file_path = get_gui().library_path.split(os.path.sep)
@@ -390,9 +486,9 @@ class MetadataLibThread(QThread):
             librarian = books_metadata.pop()
         else:
             self.start = self.directory_path
-           
+          
         removed_books, added_books = self.intersect(books_metadata)
-       
+      
         if not added_books and recursive == "loop":
             logger.debug("UPLOADED!")
             self.uploaded.emit()
@@ -1085,6 +1181,7 @@ class LetsShareBooksDialog(QDialog):
 
     def establish_ssh_server(self):
         self.port = str(int(random.random()*48000+1024))
+        self.calibre_server_port_mock = "56665"
         if sys.platform == "win32":
             self.lsbtunnel = os.path.join(self.us.portable_directory,
                                           'portable',
@@ -1095,7 +1192,8 @@ class LetsShareBooksDialog(QDialog):
                 .format(self.lsbtunnel,
                         prefs['lsb_server'],
                         self.port,
-                        self.calibre_server_port),
+                        #self.calibre_server_port),
+                        self.calibre_server_port_mock),
                 shell=True)
             self.lsb_url = "{}://www{}.{}".format(prefs['server_prefix'],
                                                   self.port,
@@ -1119,7 +1217,8 @@ class LetsShareBooksDialog(QDialog):
                 prefs['lsb_server'],
                 '-l', 'tunnel', '-R', '{}:localhost:{}'.format(
                     self.port,
-                    self.calibre_server_port),
+                    #self.calibre_server_port),
+                    self.calibre_server_port_mock),
                 '-p', '722'])
             if self.ssh_proc:
                 self.parse_log_counter = 0

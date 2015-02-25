@@ -574,11 +574,42 @@ var init_template_data = function() {
                 'portable_format': format
             });
         } else {
+            book.application_id = '';
+            var df_path = get_directory_path(book);
+            var file_name = df_path[1].split("/").slice(-1);
             return book_parts_tmpl({
                 'base_url': base_url,
+                'file_path': df_path[0],
+                'file_name': file_name,
                 'format': format,
                 'book': book
             });
+        };
+    };
+
+    /** Data for "normal" book (not portable) */
+    var book_data = function(base_url, book, formats, authors) {
+        book.application_id = '';
+        var df_path = get_directory_path(book);
+        var book_title_stripped =  book.title.replace(/\?/g, '');
+        var metadata_urls = [
+            book_title_stripped,
+            [base_url, '/', df_path[0], 'metadata.opf'].join(''),
+            [base_url, '/', df_path[0], 'cover.jpg'].join('')];
+        $.each(book.formats, function(i, format) {
+            metadata_urls.push([base_url,
+                                '/',
+                                df_path[0],
+                                df_path[1].split("/").slice(-1)].join(''));
+        }); 
+        return {
+            'base_url': base_url,
+            'book': book,
+            'book_title_stripped': '',
+            'authors': authors,
+            'formats': formats,
+            'file_path': df_path[0],
+            'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
         };
     };
 
@@ -615,33 +646,6 @@ var init_template_data = function() {
         };
     };
 
-    /** Data for "normal" book (not portable) */
-    var book_data = function(base_url, book, formats, authors) {
-        var book_title_stripped =  book.title.replace(/\?/g, '');
-        var metadata_urls = [book_title_stripped,
-                             [base_url, '/get/opf/', book.application_id, ' ',
-                              book_title_stripped, '.opf'].join(''),
-                             [base_url, '/get/cover/', book.application_id,
-                              '.jpg'].join('')];
-        $.each(book.formats, function(i, format) {
-            metadata_urls.push([base_url,
-                                '/get/',
-                                format,
-                                '/',
-                                book.application_id,
-                                '.',
-                                format.toLowerCase()].join(''));
-        });
-        return {
-            'base_url': base_url,
-            'book': book,
-            'book_title_stripped': book_title_stripped,
-            'authors': authors,
-            'formats': formats,
-            'metadata_urls': encodeURIComponent(metadata_urls.join('__,__')),
-        };
-    };
-    
     /** Renders book inside grid */
     window.gen_book_content = function (base_url, book, formats, authors) {
         if (book.portable) {

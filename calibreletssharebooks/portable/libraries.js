@@ -536,10 +536,15 @@ var init_page = function () {
 
 $(document).ready(function () {
     // try to connect to local calibre server and init page when done
+    if (is_this_portable()) {
+            init_template_data();
+            init_page();
+    } else {
     localCalibre.done(function(success) {
-        init_template_data();
-        init_page();
-    });
+            init_template_data();
+            init_page();
+        })
+    };
 });
 
 /* --------------------------------------------------------------------------*/

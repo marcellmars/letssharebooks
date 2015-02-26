@@ -357,16 +357,15 @@ class MetadataLibThread(QThread):
                     bk.append(frmat[0])
              
             if not bkf:
-                bkf['FOO'] = {'path': "{}/{}/{}.{}".format(self.directory_path,
-                                                           current_db.field_for('path', book),
-                                                           "FOO",
-                                                           "BRR"),
+                bkf['0'] = {'path': "{}/{}.{}".format(current_db.field_for('path', book),
+                                                        ".",
+                                                        "."),
                               'size': 0}
               
             b['format_metadata'] = bkf
           
             if not bk:
-                bk = ['BRR']
+                bk = ['0']
             b['formats'] = bk
           
             ids = {}

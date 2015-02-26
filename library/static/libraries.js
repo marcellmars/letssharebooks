@@ -4,9 +4,7 @@
  */
 
 var DOMAIN = 'memoryoftheworld.org'
-//var DOMAIN = 'web.dokr'
 var PREFIX_URL = 'https://www';
-//var PREFIX_URL = 'http://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
@@ -96,7 +94,9 @@ var parse_response = function (data) {
     if (STATE.page > 1) {
         modify_button('.prev_page', 'active');
     };
-    setup_modal();
+    
+    setup_modal(); 
+    
     if (is_this_portable()) {
         setup_hover();
     };
@@ -114,6 +114,7 @@ var parse_response = function (data) {
         var book_uuid = data['books'][book_index].uuid;
         $('.cover h2 [rel="' + book_uuid  +  '"].more_about').click();
     };
+
 };
 
 /* ----------------------------------------------------------------------------
@@ -203,7 +204,7 @@ var setup_modal = function () {
             $(modal).find('.import').click(function(e) {
                 open_import_modal();
             });
-            modal.dialog("open");
+            modal.dialog("open");            
             // navigate modals with left/right arrows
             $(modal).keydown(function(e) {
                 var this_cover = $(['.cover h2 [rel="',
@@ -233,7 +234,7 @@ var setup_modal = function () {
                             prev_page(true);
                         };
                     };
-                };
+                };    
             });
         });
         e.preventDefault();

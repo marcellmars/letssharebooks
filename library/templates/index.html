@@ -52,7 +52,9 @@
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
       <br />
       <%= authors %></h2>
+    <% if (book.formats[0] != '0') { %>
     <span class="download">Download: <%= formats %> </span>
+    <% } %>
     <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
     <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
        title="import book directly to calibre" target="import">
@@ -76,8 +78,10 @@
     <h2>
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
       <br />
-      <%= authors %></h2>
-    <span class="download">Metadata: <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf" title="import metadata directly to calibre">.opf</a><br />Download: <%= formats %></span>
+      <%= authors %></h2> 
+    <% if (book.formats[0] != '0') { %>
+    <span class="download">Download: <%= formats %></span> 
+    <% } %>
     <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
     <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
        title="import book directly to calibre" target="import">
@@ -104,8 +108,10 @@
     </div>
     <p><span class="attr">Title:</span> <%= book.title %></p>
     <p><span class="attr">Authors:</span> <%= book.authors %></p>
-    <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
+    <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
+    <% if (book.formats[0] != '0') { %>
     <p><span class="attr">Download:</span> <%= formats %></p>
+    <% } %>
     <p><span class="attr">About:</span> <%= book.comments %></p></br>
     <p><a href="<%= base_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
   </div>
@@ -124,9 +130,10 @@
       </a>
       <% } %>
       <p><span class="attr">Authors:</span> <%= book.authors %></p>
-      <p><span class="attr">Publisher:</span> <%= book.publisher %></p>
-      <p><span class="attr" title="import metadata directly to calibre">Metadata:</span> <a href="<%= base_url %><%= get_opf %><%= book.application_id %><%= book_title_stripped %><%= portable_opf %>.opf">.opf</a></p>
+      <p><span class="attr">Publisher:</span> <%= book.publisher %></p>  
+      <% if (book.formats[0] != '0') { %>
       <p><span class="attr">Download:</span> <%= formats %></p>
+      <% } %>
       <p><span class="attr"><%= book.librarian %>:</span> <a href="<%= base_url %>" title="visit librarian" target="_blank"><%= base_url %></a></p>
       <p><span class="attr">About:</span> <%= book.comments %></p>
     </div>

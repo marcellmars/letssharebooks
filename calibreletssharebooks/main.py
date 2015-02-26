@@ -219,7 +219,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         gifs = ['0.gif',
                 '{}.gif'.format(get_gui().current_db.library_id)]
-        logger.debug("REQUEST FILE PATH: {}".format(self.path))
+        #logger.debug("REQUEST FILE PATH: {}".format(self.path))
         if self.path[1:] in gifs:
             self.serve_gif()
         elif self.path[:7] == "/?urls=":
@@ -324,6 +324,17 @@ class MetadataLibThread(QThread):
         for book in books_ids:
             b = {}
             md_fields = current_db.get_proxy_metadata(book)
+            
+            if not md_fields.tags:
+                md_fields.tags = [[""]]
+                
+            b['tags'] = [a for a in md_fields.tags]
+            #logger.debug("B['TAGS']: {}".format(b['tags']))
+            
+            #if [tag for tag in b['tags'] if tag == "private" or tag == "Private"]:
+            #    logger.debug("TAG CATCH!")
+            #    continue
+            
             b['librarian'] = librarian
             b['uuid'] = str(md_fields.uuid)
             b['application_id'] = md_fields.id
@@ -375,9 +386,6 @@ class MetadataLibThread(QThread):
                   
             b['identifiers'] = ids
 
-            if not md_fields.tags:
-                md_fields.tags = [[""]]
-            b['tags'] = [a[0] for a in md_fields.tags]
             books.append(b)
         books.append(librarian)
         return books

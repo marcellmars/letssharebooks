@@ -321,20 +321,33 @@ class MetadataLibThread(QThread):
         self.get_directory_path()
         books = []
         books_ids = current_db.all_book_ids()
+        all_book_ids = []
         for book in books_ids:
             b = {}
             md_fields = current_db.get_proxy_metadata(book)
             
+            b['timestamp'] = md_fields.timestamp.isoformat()
+            b['pubdate'] = md_fields.pubdate.isoformat()
+            
+            if not md_fields.last_modified:
+                md_fields.last_modified = b['timestamp']
+                
+                mi = current_db.get_metadata(md_fields.id)
+                mi.set("last_modified", b['timestamp'])
+                
+            b['last_modified'] = md_fields.last_modified.isoformat()
+ 
             if not md_fields.tags:
                 md_fields.tags = [[""]]
-                
+
             b['tags'] = [a for a in md_fields.tags]
-            #logger.debug("B['TAGS']: {}".format(b['tags']))
-            
-            #if [tag for tag in b['tags'] if tag == "private" or tag == "Private"]:
-            #    logger.debug("TAG CATCH!")
-            #    continue
-            
+
+            if [tag for tag in b['tags'] if tag.lower() == "private"]:
+                from calibre.utils.date import utcnow
+                mi = current_db.get_metadata(md_fields.id)
+                mi.set("last_modified", utcnow().isoformat())
+                continue
+
             b['librarian'] = librarian
             b['uuid'] = str(md_fields.uuid)
             b['application_id'] = md_fields.id
@@ -344,12 +357,7 @@ class MetadataLibThread(QThread):
             if not md_fields.title_sort:
                 md_fields.title_sort = "Unknown"
             b['title_sort'] = md_fields.title_sort
-            b['timestamp'] = md_fields.timestamp.isoformat()
-            b['pubdate'] = md_fields.pubdate.isoformat()
-            if not md_fields.last_modified:
-                md_fields.last_modified = b['timestamp']
-            b['last_modified'] = md_fields.last_modified.isoformat()
-           
+          
             b['authors'] = []
             for author in md_fields.authors:
                 b['authors'].append(author)
@@ -381,12 +389,13 @@ class MetadataLibThread(QThread):
           
             ids = {}
             if md_fields.identifiers:
-                for i in md_fields.identifiers:
-                    ids[i[0]] = i[1]
+                ids = md_fields.identifiers
                   
             b['identifiers'] = ids
-
+            all_book_ids.append(b['uuid'])
             books.append(b)
+            
+        books.append(all_book_ids)
         books.append(librarian)
         return books
                   
@@ -420,20 +429,28 @@ class MetadataLibThread(QThread):
         else:
             file_path.insert(0, '/')
         self.directory_path = os.path.join(*file_path)
-        return self.directory_path
 
-    def intersect(self, books_metadata):
+    def intersect(self, books_metadata, all_book_ids):
         local_list = set([(book['uuid'], book['last_modified'])
                           for book in books_metadata])
         server_list = set(self.get_server_list(self.sql_db.library_id))
-        removed_books = server_list - local_list
-        added_books = local_list - server_list
+        edited_list = local_list - server_list
+        edited_books_ids = set([book[0] for book in edited_list])
+
+        local_books_ids = set(all_book_ids)
+        server_books_ids = set([book[0] for book in server_list])
+
+        added_books = (local_books_ids - server_books_ids) | edited_books_ids
+        removed_books = (server_books_ids - local_books_ids) | added_books
         return removed_books, added_books
 
     def make_portable(self, books_metadata, librarian):
         #----------------------------------------------------------------------
         #- prepare BROWSE_LIBRARY.html for portable library in the root -------
         #- directory of current library ---------------------------------------
+        if not books_metadata:
+            return
+        
         library = {}
         with open(os.path.join(self.us.portable_directory,
                                'portable/data.js'), 'wb') as file:
@@ -485,20 +502,23 @@ class MetadataLibThread(QThread):
         except Exception as e:
             logger.info("COPY/MOVE ERROR: {}".format(e))
 
-    def upload_library(self, books_metadata, librarian, recursive="init"):
-        if recursive == "loop" and self.start_library != self.directory_path:
+    def upload_library(self, books_metadata, removed_books, added_books,
+                       librarian):
+        if self.start_library != self.directory_path:
             self.start_library = self.directory_path
             books_metadata = self.get_book_metadata(self.get_current_db(),
                                                     self.us.librarian)
             librarian = books_metadata.pop()
+            all_book_ids = books_metadata.pop()
+            removed_books, added_books = self.intersect(books_metadata,
+                                                        all_book_ids)
         else:
             self.start = self.directory_path
-          
-        removed_books, added_books = self.intersect(books_metadata)
-      
-        if not added_books and recursive == "loop":
+            
+        if not added_books and not removed_books:
             logger.debug("UPLOADED!")
             self.uploaded.emit()
+            return
         else:
             try:
                 import zlib
@@ -518,18 +538,25 @@ class MetadataLibThread(QThread):
                                        'library.json'),
                           'wb') as file:
                     library['library_uuid'] = self.sql_db.library_id
-                    library['last_modified'] = str(sorted(
-                        [book['last_modified'] for book in books_metadata])[-1])
+                    from calibre.utils.date import utcnow
+                    library['last_modified'] = utcnow().isoformat()
                     library['tunnel'] = int(self.port)
                     library['librarian'] = librarian
                     library['portable'] = False
                     library['portable_url'] = False
                     library['books'] = {}
-                    library['books']['remove'] = list(removed_books)
+                    library['books']['remove'] = list(removed_books)[:100]
                     books_bulk = list(added_books)[:100]
-                    books_to_add = [book for book in books_metadata
-                                    if (book['uuid'], book['last_modified'])
-                                    in books_bulk]
+                    library['books']['add'] = []
+                    books_to_add = []
+                    if books_metadata:
+                        for book in books_metadata:
+                            if book['uuid'] in books_bulk:
+                                book['last_modified'] = library['last_modified']
+                                mi = self.sql_db.get_metadata(book['application_id'])
+                                mi.set("last_modified", library['last_modified'])
+                                books_to_add.append(book)
+
                     library['books']['add'] = books_to_add
                     json_string = json.dumps(library)
                     file.write(json_string)
@@ -552,7 +579,7 @@ class MetadataLibThread(QThread):
                         files={'uploaded_file': file}, verify=False)
                     if r.ok:
                         um = "{} books' metadata are uploading{}".format(
-                            len(added_books),
+                            len(added_books) + len(removed_books),
                             random.randint(3, 10)*".")
                         self.us.uploading_message = um
                         self.uploading.emit()
@@ -562,7 +589,20 @@ class MetadataLibThread(QThread):
                     self.upload_error.emit()
 
             shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
-            self.upload_library(books_metadata, librarian, "loop")
+            
+            if len(added_books) <= 100 and len(removed_books) <= 100:
+                self.uploaded.emit()
+                return
+            else:
+                books_metadata = self.get_book_metadata(self.get_current_db(),
+                                                    self.us.librarian)
+
+                librarian = books_metadata.pop()
+                all_book_ids = books_metadata.pop()
+                removed_books, added_books = self.intersect(books_metadata,
+                                                            all_book_ids)
+                self.upload_library(books_metadata, removed_books, added_books,
+                                librarian)
 
     def run(self):
         #books_metadata = get_lsb_metadata(self.get_directory_path(),
@@ -570,9 +610,12 @@ class MetadataLibThread(QThread):
         books_metadata = self.get_book_metadata(self.get_current_db(),
                                                 self.us.librarian)
         librarian = books_metadata.pop()
-        logger.debug("BOOKS_METADATA TOTAL: {}".format(len(books_metadata)))
+        all_book_ids = books_metadata.pop()
         self.make_portable(books_metadata, librarian)
-        self.upload_library(books_metadata, librarian)
+        removed_books, added_books = self.intersect(books_metadata,
+                                                    all_book_ids)
+        self.upload_library(books_metadata, removed_books, added_books,
+                            librarian)
         return
            
 #------------------------------------------------------------------------------
@@ -637,7 +680,7 @@ class LetsShareBooksDialog(QDialog):
         self.do_user_config = do_user_config
         self.qaction = qaction
         self.us = us
-        logger.info('PORTABLE_TEMP_DIRECTORY: {}'
+        logger.info('REDIRECTED DEBUG OUTPUT: \n\ntail -f {}/log/lsb.log\n'
                     .format(self.us.portable_directory))
         self.files_size_log = {}
         self.book_imports = {}
@@ -891,7 +934,7 @@ class LetsShareBooksDialog(QDialog):
         self.upgrade_button.clicked.connect(functools.partial(self.open_url,
                                                               self.plugin_url))
 
-        logger.debug("RUNNING: {}, LATEST: {}"
+        logger.info("RUNNING: {}, LATEST: {}"
                      .format(str(self.us.running_version),
                              str(self.us.latest_version)))
         version_list = [self.us.running_version, self.us.latest_version]
@@ -1061,7 +1104,7 @@ class LetsShareBooksDialog(QDialog):
                 self.metadata_thread.get_directory_path()
                 return
             else:
-                logger.debug("EDITED_ITEM FIRED BUT NO LUCK FOR SYNC!")
+                logger.info("EDITED_ITEM FIRED BUT NO LUCK FOR SYNC!")
                 return
         else:
             self.metadata_thread = MetadataLibThread(self.us)
@@ -1298,7 +1341,6 @@ class LetsShareBooksDialog(QDialog):
             self.edit.setText(prefs['librarian'])
 
     def open_url(self, url):
-        logger.debug("TYPE(URL): {}".format(type(url)))
         if type(url) != unicode:
             url = url.toString()
         self.clip.setText(url)
@@ -1309,7 +1351,6 @@ class LetsShareBooksDialog(QDialog):
             chat_url = u"https://chat.memoryoftheworld.org/calibre.html?nick="
             url = QUrl(u"{}{}".format(chat_url,
                                       self.us.librarian.title()))
-            logger.debug("CHAT URL: {}".format(url))
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False
 

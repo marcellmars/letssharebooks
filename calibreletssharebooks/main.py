@@ -338,7 +338,7 @@ class MetadataLibThread(QThread):
             b['last_modified'] = md_fields.last_modified.isoformat()
  
             if not md_fields.tags:
-                md_fields.tags = [[""]]
+                md_fields.tags = [""]
 
             b['tags'] = [a for a in md_fields.tags]
 
@@ -503,7 +503,7 @@ class MetadataLibThread(QThread):
             logger.info("COPY/MOVE ERROR: {}".format(e))
 
     def upload_library(self, books_metadata, removed_books, added_books,
-                       librarian):
+                       librarian, all_book_ids, carry):
         if self.start_library != self.directory_path:
             self.start_library = self.directory_path
             books_metadata = self.get_book_metadata(self.get_current_db(),
@@ -545,7 +545,7 @@ class MetadataLibThread(QThread):
                     library['portable'] = False
                     library['portable_url'] = False
                     library['books'] = {}
-                    library['books']['remove'] = list(removed_books)[:100]
+                    library['books']['remove'] = list(removed_books)
                     books_bulk = list(added_books)[:100]
                     library['books']['add'] = []
                     books_to_add = []
@@ -589,20 +589,15 @@ class MetadataLibThread(QThread):
                     self.upload_error.emit()
 
             shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
-            
+            carry += len(books_bulk)
             if len(added_books) <= 100 and len(removed_books) <= 100:
                 self.uploaded.emit()
                 return
             else:
-                books_metadata = self.get_book_metadata(self.get_current_db(),
-                                                    self.us.librarian)
-
-                librarian = books_metadata.pop()
-                all_book_ids = books_metadata.pop()
                 removed_books, added_books = self.intersect(books_metadata,
                                                             all_book_ids)
                 self.upload_library(books_metadata, removed_books, added_books,
-                                librarian)
+                                    librarian, all_book_ids, carry)
 
     def run(self):
         #books_metadata = get_lsb_metadata(self.get_directory_path(),
@@ -615,7 +610,7 @@ class MetadataLibThread(QThread):
         removed_books, added_books = self.intersect(books_metadata,
                                                     all_book_ids)
         self.upload_library(books_metadata, removed_books, added_books,
-                            librarian)
+                            librarian, all_book_ids, 0)
         return
            
 #------------------------------------------------------------------------------

@@ -1,0 +1,6 @@
+Capture photo cover
+===========================
+
+Created by Marcell Mars
+
+Requires calibre >= 1.0.0

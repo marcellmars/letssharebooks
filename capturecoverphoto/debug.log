@@ -1,0 +1,4 @@
+2014-07-27 01:31:32,721: calibre_plugins.letssharebooks.main >> INFO - LOGGING ON
+2014-07-27 01:31:50,095: calibre_plugins.letssharebooks.main >> INFO - PORTABLE_TEMP_DIRECTORY: /tmp/tmpwbJN6c
+2014-07-27 01:31:50,104: calibre_plugins.letssharebooks.main >> INFO - FAVICON PATH: /tmp/tmpwbJN6c/portable/favicon.html
+2014-07-27 01:31:55,661: calibre_plugins.letssharebooks.main >> INFO - STATE: ON

@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <title>preview photo capturing</title>
+    <script>
+      var capture = function () {
+        document.querySelector('img').src = "http://localhost:7711/preview";
+      };
+    </script>
+  </head>
+  <body onload="window.setInterval(capture, 1000)">
+    <img/>
+  <body>
+</html>

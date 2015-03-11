@@ -61,7 +61,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         capture_path = "{}capture.jpg".format(TEMP_DIR)
         C.capture_image(capture_path)
         try:
-            f = open(capture_photo, 'rb')
+            f = open(capture_path, 'rb')
         except IOError:
             self.send_error(404, "File not found")
             return None

@@ -21,12 +21,22 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
           <head>
             <title>preview photo capturing</title>
             <script>
-              var capture = function () {
-                document.querySelector('img').src = "http://localhost:{}/preview";
-              };
+        
+        var counter = 0; 
+        var capture = function () {{
+            counter += 1;
+            if (counter > 1000) {{
+                document.querySelector('body').removeChild(document.querySelector('img'))
+                document.querySelector('body').appendChild(document.createElement('img'))
+                counter = 0;
+                }}
+            document.querySelector('img').src = "http://localhost:{}/preview";
+            document.querySelector('img').style["transform"] = "scale(-1, -1)";
+            }};
+        
             </script>
           </head>
-          <body onload="window.setInterval(capture, 1000)">
+          <body onload="window.setInterval(capture, 300)">
             <img/>
           <body>
         </html>

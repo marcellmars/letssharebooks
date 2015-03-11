@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1000"
+   height="700"
+   id="svg3060"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="camera.svg"
+   inkscape:export-filename="/home/m/devel/letssharebooks/capturecoverphoto/images/camera_working.png"
+   inkscape:export-xdpi="72"
+   inkscape:export-ydpi="72">
+  <defs
+     id="defs3079" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1366"
+     inkscape:window-height="741"
+     id="namedview3077"
+     showgrid="false"
+     inkscape:zoom="0.5"
+     inkscape:cx="517.56444"
+     inkscape:cy="448.28928"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3060"
+     showguides="true"
+     inkscape:guide-bbox="true" />
+  <title
+     id="title3062">Frameless Camera</title>
+  <metadata
+     id="metadata12390">image/svg+xmlOther map symbolsMohamed IbrahimPublic Domainclker.comother map symbols<rdf:RDF>
+  <cc:Work
+     rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type
+       rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+    <dc:title>Frameless Camera</dc:title>
+  </cc:Work>
+</rdf:RDF>
+</metadata>
+  <path
+     d="m 1.4888378e-5,222.60543 0,383.09643 c 0,51.94636 36.108772111622,94.29822 80.958831111622,94.29822 l 837.582654,0 c 44.72198,0 81.2113,-42.35186 81.2113,-94.29822 L 1000,222.75388 C 43.449205,542.3835 740.85303,222.60543 1.4888378e-5,222.60543 z"
+     id="path2788"
+     inkscape:connector-curvature="0"
+     style="fill:#f4d7d7;fill-rule:nonzero"
+     sodipodi:nodetypes="csssccc" />
+  <path
+     d="m 999.7528,513.18579 0,-288.51125 c 0,-95.9924 -36.48942,-143.180739 -81.21141,-143.180739 l -837.582512,0 c -44.85007,0 -80.94042806,48.774809 -80.94042806,144.767209 l 0.23524374,284.75717"
+     id="path2780"
+     inkscape:connector-curvature="0"
+     style="fill:#f4d7d7;fill-rule:nonzero"
+     sodipodi:nodetypes="cssscc" />
+  <path
+     d="m 210.28794,44.091175 -74.76823,0 -8.64579,26.255819 89.64461,0 -6.23059,-26.255819 z"
+     id="path2782"
+     inkscape:connector-curvature="0"
+     style="fill:#f4d7d7;fill-rule:nonzero" />
+  <path
+     d="m 884.59543,30.095691 -99.5633,0 -17.67458,40.499359 133.38717,0 -16.14929,-40.499359 z"
+     id="path2784"
+     inkscape:connector-curvature="0"
+     style="fill:#f4d7d7;fill-rule:nonzero" />
+  <path
+     d="m 621.38306,6.91572e-5 -241.97809,0 L 329.5602,71.090054 l 337.47144,0 z"
+     id="path2786"
+     inkscape:connector-curvature="0"
+     style="fill:#f4d7d7;fill-rule:nonzero"
+     sodipodi:nodetypes="ccccc" />
+  <path
+     sodipodi:type="arc"
+     style="fill:#ffffff;fill-opacity:1;stroke:none"
+     id="path3998"
+     sodipodi:cx="335.69061"
+     sodipodi:cy="418.78455"
+     sodipodi:rx="106.74033"
+     sodipodi:ry="106.74033"
+     d="m 442.43095,418.78455 a 106.74033,106.74033 0 1 1 -213.48067,0 106.74033,106.74033 0 1 1 213.48067,0 z"
+     transform="matrix(2.1173163,0,0,2.0717079,-82.516475,-474.23561)" />
+  <path
+     sodipodi:type="star"
+     style="fill:#ff8080;fill-opacity:1;stroke:none"
+     id="path4000"
+     sodipodi:sides="5"
+     sodipodi:cx="694.58563"
+     sodipodi:cy="530.16577"
+     sodipodi:r1="147.77327"
+     sodipodi:r2="75.518181"
+     sodipodi:arg1="0.82241828"
+     sodipodi:arg2="1.4507368"
+     inkscape:flatsided="false"
+     inkscape:rounded="0"
+     inkscape:randomized="0"
+     d="m 795.13812,638.45306 -91.50758,-33.31272 -80.95981,54.11914 3.40489,-97.32307 -76.48833,-60.27363 93.61191,-26.83624 33.68744,-91.37029 54.45045,80.73736 97.3083,3.80368 -59.95968,76.73467 z"
+     inkscape:transform-center-x="-11.348331"
+     inkscape:transform-center-y="-6.796815"
+     transform="matrix(1.3028614,0.4089192,-0.40011083,1.2747969,-60.095089,-566.48707)" />
+</svg>

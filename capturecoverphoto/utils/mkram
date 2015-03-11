@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [ $1 = "u" ]
+then       
+    umount /tmp/RAM
+    rm -rf /tmp/RAM
+    exit
+fi
+
+if echo $1 | grep '^[0-9]\{1,3\}$' > /dev/null
+then
+   mkdir -p /tmp/RAM
+   mount -t tmpfs -o size=$1m tmpfs /tmp/RAM
+   chmod -R 777 /tmp/RAM
+   exit
+fi
+   
+echo "### USAGE:"
+echo "        \$ sudo mkram n"
+echo "### it will make nMB RAM disk at /tmp/RAM/"
+echo "        \$ sudo mkram u"
+echo "### unmount and remove /tmp/RAM/"

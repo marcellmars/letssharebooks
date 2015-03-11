@@ -8,18 +8,35 @@ import urllib
 import mimetypes
 import piggyphoto as pp
 
-C = pp.camera()
-C.leave_locked()
-
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):       
     def copyfile(self, source, outputfile):
         shutil.copyfileobj(source, outputfile)
+
+    def live(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.wfile.write("""
+        <html>
+          <head>
+            <title>preview photo capturing</title>
+            <script>
+              var capture = function () {
+                document.querySelector('img').src = "http://localhost:{}/preview";
+              };
+            </script>
+          </head>
+          <body onload="window.setInterval(capture, 1000)">
+            <img/>
+          <body>
+        </html>
+        """.format(SERVER_PORT))
         
     def preview(self):
-        C.capture_preview("/tmp/preview.jpg")
+        preview_path = "{}preview.jpg".format(TEMP_DIR)
+        C.capture_preview(preview_path)
         try:
-            f = open("/tmp/preview.jpg", 'rb')
+            f = open(preview_path, 'rb')
         except IOError:
             self.send_error(404, "File not found")
             return None
@@ -41,9 +58,10 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         f.close()
         
     def capture_photo(self):
-        C.capture_image("/tmp/cover.jpg")
+        capture_path = "{}capture.jpg".format(TEMP_DIR)
+        C.capture_image(capture_path)
         try:
-            f = open("/tmp/cover.jpg", 'rb')
+            f = open(capture_photo, 'rb')
         except IOError:
             self.send_error(404, "File not found")
             return None
@@ -67,6 +85,8 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.capture_photo()
         elif self.path[1:] in "preview":
             self.preview()
+        elif self.path[1:] in "live":
+            self.live()
 
     def translate_path(self, path):
        # abandon query parameters
@@ -102,7 +122,23 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         '': 'application/octet-stream',
         })
 
+C = pp.camera()
+C.leave_locked()
+    
+SERVER_PORT = 9980
 
+## before starting this script on linux
+## one should use mkram from ../utils/
+## and make RAM filesystem at /tmp/RAM
+
+TEMP_DIR = "/tmp/RAM/"
+if not os.path.isdir(TEMP_DIR):
+    try:
+        os.mkdir("/tmp/RAM")
+    except Exception as e:
+        TEMP_DIR = "/tmp/"
+        print("Error making /tmp/RAM directory: {}".format(e))
+        
 SocketServer.TCPServer.allow_reuse_address = True
-httpd = BaseHTTPServer.HTTPServer(("", 7711), HTTPHandler)
+httpd = BaseHTTPServer.HTTPServer(("", SERVER_PORT), HTTPHandler)
 httpd.serve_forever()

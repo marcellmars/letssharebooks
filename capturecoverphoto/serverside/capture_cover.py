@@ -30,7 +30,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 document.querySelector('body').appendChild(document.createElement('img'))
                 counter = 0;
                 }}
-            document.querySelector('img').src = "http://localhost:{}/preview";
+            document.querySelector('img').src = "http://localhost:{0}/preview";
             document.querySelector('img').style["transform"] = "scale(-1, -1)";
             }};
         
@@ -43,7 +43,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         """.format(SERVER_PORT))
         
     def preview(self):
-        preview_path = "{}preview.jpg".format(TEMP_DIR)
+        preview_path = "{0}preview.jpg".format(TEMP_DIR)
         C.capture_preview(preview_path)
         try:
             f = open(preview_path, 'rb')
@@ -68,7 +68,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         f.close()
         
     def capture_photo(self):
-        capture_path = "{}capture.jpg".format(TEMP_DIR)
+        capture_path = "{0}capture.jpg".format(TEMP_DIR)
         C.capture_image(capture_path)
         try:
             f = open(capture_path, 'rb')
@@ -147,7 +147,7 @@ if not os.path.isdir(TEMP_DIR):
         os.mkdir("/tmp/RAM")
     except Exception as e:
         TEMP_DIR = "/tmp/"
-        print("Error making /tmp/RAM directory: {}".format(e))
+        print("Error making /tmp/RAM directory: {0}".format(e))
         
 SocketServer.TCPServer.allow_reuse_address = True
 httpd = BaseHTTPServer.HTTPServer(("", SERVER_PORT), HTTPHandler)

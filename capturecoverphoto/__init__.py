@@ -26,7 +26,7 @@ class Kaliweb(InterfaceActionBase):
         # top of the module as importing the config class will also cause the
         # GUI libraries to be loaded, which we do not want when using calibre
         # from the command line
-        from calibre_plugins.capturecover.configi import ConfigWidget
+        from calibre_plugins.capturecover.config import ConfigWidget
         return ConfigWidget()
 
     def save_settings(self, config_widget):

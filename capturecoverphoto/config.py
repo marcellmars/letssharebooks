@@ -22,7 +22,7 @@ from calibre.utils.config import JSONConfig
 prefs = JSONConfig('plugins/capturecover.conf')
 
 # Set defaults
-prefs.defaults['gphoto2_server'] = 'http://192.168.109:7711'
+prefs.defaults['gphoto2_server'] = 'http://127.0.0.1:7711'
 
 
 class ConfigWidget(QWidget):
@@ -43,4 +43,4 @@ class ConfigWidget(QWidget):
         self.l.addLayout(self.ll)
         
     def save_settings(self):
-        prefs['gphoto2_server'] = prefs['gphoto2_server']
+        prefs['gphoto2_server'] = self.gphoto2_server.text()

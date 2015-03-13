@@ -85,11 +85,25 @@ class CapturePhotoCoverUI(InterfaceAction):
         self.actions_unique_map = {}
         self.add_item = create_menu_action_unique(self,
                                                   m,
+                                                  _('Capture cover!'),
+                                                  None,
+                                                  shortcut=False,
+                                                  triggered=self.capture_cover)
+        self.add_item = create_menu_action_unique(self,
+                                                  m,
+                                                  _('Open preview page'),
+                                                  None,
+                                                  shortcut=False,
+                                                  triggered=self.open_preview)
+
+        m.addSeparator()
+        self.add_item = create_menu_action_unique(self,
+                                                  m,
                                                   _('Settings'),
                                                   None,
                                                   shortcut=False,
                                                   triggered=self.show_configuration)
-        m.addSeparator()
+       
         for menu_id, unique_name in self.old_actions_unique_map.iteritems():
             if menu_id not in self.actions_unique_map:
                 self.gui.keyboard.unregister_shortcut(unique_name)
@@ -132,19 +146,19 @@ class CapturePhotoCoverUI(InterfaceAction):
         # Map the rows to book ids
         ids = list(map(self.gui.library_view.model().id, rows))
         local_cover = '/tmp/kvr.jpg'
-        urllib.urlretrieve("http://192.168.1.160:7711/capture",
-                           local_cover)
-        
+        self.qaction.setIcon(get_icon('images/camer.png'))
+        urllib.urlretrieve("{0}/capture".format(prefs['gphoto2_server'],
+                           local_cover))
+        self.qaction.setIcon(get_icon('images/camera_working.png'))
         for book_id in ids:
             from calibre.gui2.ui import get_gui
             get_gui().current_db.new_api.set_cover({book_id: open(local_cover)})
-            get_gui().library_view.model().books_added(1)
-
-    def eventFilter(self, event):
-        print(event)
-        if event.button() == Qt.RightButton:
-            print("RIGHT CLICK!")
+        
+        get_gui().db_images.reset()
+        get_gui().tags_view.recount()
             
+    def open_preview(self):
+        webbrowser.open("{0}/live".format(prefs['gphoto2_server']))
     def apply_settings(self):
         from calibre_plugins.capturecover.config import prefs
         prefs

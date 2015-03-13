@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import SimpleHTTPServer
 import BaseHTTPServer
 import SocketServer
@@ -21,9 +23,24 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
           <head>
             <title>preview photo capturing</title>
             <script>
-        
+        var preview = true;
+        var button = function() {
+        if (document.querySelector('button').textContent == "START PREVIEW") {
+          document.querySelector('button').textContent = "STOP PREVIEW";
+          document.querySelector('button').style["background"] = "rgba(255,0,0,0.2)";
+          preview = true;
+          } else {
+          document.querySelector('button').textContent = "START PREVIEW";
+          document.querySelector('button').style["background"] = "rgba(0,255,0,0.2)";
+          preview = false;
+          }
+        }
+
         var counter = 0; 
         var capture = function () {{
+            if (preview == false) {
+               return
+            }
             counter += 1;
             if (counter > 1000) {{
                 document.querySelector('body').removeChild(document.querySelector('img'))
@@ -37,6 +54,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             </script>
           </head>
           <body onload="window.setInterval(capture, 300)">
+            <button style='width: 100%;font-weight: bold;background: rgba(255,0,0,0.2)' onClick='button();'>STOP PREVIEW</button></br>
             <img/>
           <body>
         </html>
@@ -131,11 +149,14 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     extensions_map.update({
         '': 'application/octet-stream',
         })
-
-C = pp.camera()
+try:
+    C = pp.camera()
+except:
+    C = pp.Camera()
+    
 C.leave_locked()
     
-SERVER_PORT = 9980
+SERVER_PORT = 7711
 
 ## before starting this script on linux
 ## one should use mkram from ../utils/

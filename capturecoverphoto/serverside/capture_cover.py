@@ -38,9 +38,9 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         var counter = 0; 
         var capture = function () {{
-            if (preview == false) {
+            if (preview == false) {{
                return
-            }
+            }}
             counter += 1;
             if (counter > 1000) {{
                 document.querySelector('body').removeChild(document.querySelector('img'))

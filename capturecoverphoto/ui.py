@@ -137,6 +137,8 @@ class CapturePhotoCoverUI(InterfaceAction):
         self.rebuild_menus()
     
     def capture_cover(self):
+        from calibre.gui2.ui import get_gui
+        self.qaction.setIcon(get_icon('images/camera_working.png'))
         rows = self.gui.library_view.selectionModel().selectedRows()
         if not rows or len(rows) == 0:
             return error_dialog(self.gui,
@@ -146,20 +148,21 @@ class CapturePhotoCoverUI(InterfaceAction):
         
         # Map the rows to book ids
         ids = list(map(self.gui.library_view.model().id, rows))
+        get_gui().library_view.model().books_added(len(ids))
         local_cover = '/tmp/kvr.jpg'
-        self.qaction.setIcon(get_icon('images/camera.png'))
-        urllib.urlretrieve("{0}/capture".format(prefs['gphoto2_server'],
-                           local_cover))
-        self.qaction.setIcon(get_icon('images/camera_working.png'))
+        urllib.urlretrieve("{0}/capture".format(prefs['gphoto2_server']),
+                                                    local_cover)
         for book_id in ids:
-            from calibre.gui2.ui import get_gui
             get_gui().current_db.new_api.set_cover({book_id: open(local_cover)})
-        
+
+        get_gui().library_view.model().books_deleted()
         get_gui().db_images.reset()
         get_gui().tags_view.recount()
+        self.qaction.setIcon(get_icon('images/camera.png'))
             
     def open_preview(self):
         webbrowser.open("{0}/live".format(prefs['gphoto2_server']))
+        
     def apply_settings(self):
         from calibre_plugins.capturecover.config import prefs
         prefs

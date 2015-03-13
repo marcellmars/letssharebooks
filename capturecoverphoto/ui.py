@@ -2,6 +2,7 @@ from __future__ import (unicode_literals, division, absolute_import,
                         print_function)
 
 import urllib
+import webbrowser
 
 try:
     from PyQt4.Qt import (QWidgetAction,
@@ -146,7 +147,7 @@ class CapturePhotoCoverUI(InterfaceAction):
         # Map the rows to book ids
         ids = list(map(self.gui.library_view.model().id, rows))
         local_cover = '/tmp/kvr.jpg'
-        self.qaction.setIcon(get_icon('images/camer.png'))
+        self.qaction.setIcon(get_icon('images/camera.png'))
         urllib.urlretrieve("{0}/capture".format(prefs['gphoto2_server'],
                            local_cover))
         self.qaction.setIcon(get_icon('images/camera_working.png'))

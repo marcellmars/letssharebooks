@@ -24,17 +24,17 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             <title>preview photo capturing</title>
             <script>
         var preview = true;
-        var button = function() {
-        if (document.querySelector('button').textContent == "START PREVIEW") {
+        var button = function() {{
+        if (document.querySelector('button').textContent == "START PREVIEW") {{
           document.querySelector('button').textContent = "STOP PREVIEW";
           document.querySelector('button').style["background"] = "rgba(255,0,0,0.2)";
           preview = true;
-          } else {
+          }} else {{
           document.querySelector('button').textContent = "START PREVIEW";
           document.querySelector('button').style["background"] = "rgba(0,255,0,0.2)";
           preview = false;
-          }
-        }
+          }}
+        }}
 
         var counter = 0; 
         var capture = function () {{

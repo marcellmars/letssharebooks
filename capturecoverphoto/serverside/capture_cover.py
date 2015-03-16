@@ -10,6 +10,10 @@ import datetime
 import posixpath
 import urllib
 import mimetypes
+import sys
+
+sys.stderr.write("Location: http://127.0.0.1:7711/status\n")
+sys.stderr.flush()
 
 try:
     from piggyphoto import Camera as camera
@@ -247,7 +251,6 @@ if not os.path.isdir(TEMP_DIR):
         TEMP_DIR = "/tmp/"
         print("Error making /tmp/RAM directory: {0}".format(e))
 
-print("Location:http://localhost:7711/status")
 SocketServer.TCPServer.allow_reuse_address = True
 httpd = BaseHTTPServer.HTTPServer(("", SERVER_PORT), HTTPHandler)
 httpd.serve_forever()

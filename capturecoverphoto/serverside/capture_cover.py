@@ -170,8 +170,6 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.status()
         elif self.path[1:] in "connect":
             self.connect()
-        else:
-            print("Location:http://localhost:7711/status")
 
     def translate_path(self, path):
        # abandon query parameters
@@ -249,6 +247,7 @@ if not os.path.isdir(TEMP_DIR):
         TEMP_DIR = "/tmp/"
         print("Error making /tmp/RAM directory: {0}".format(e))
 
+print("Location:http://localhost:7711/status")
 SocketServer.TCPServer.allow_reuse_address = True
 httpd = BaseHTTPServer.HTTPServer(("", SERVER_PORT), HTTPHandler)
 httpd.serve_forever()

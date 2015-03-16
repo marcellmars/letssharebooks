@@ -170,6 +170,8 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.status()
         elif self.path[1:] in "connect":
             self.connect()
+        else:
+            print("Location:http://localhost:7711/status")
 
     def translate_path(self, path):
        # abandon query parameters

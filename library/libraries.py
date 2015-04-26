@@ -167,6 +167,7 @@ def add_to_library(db, library_uuid, librarian, tunnel, books, portable, portabl
     Adds books to the database and modifies catalog entry. Mostly used with
     import_catalog function.
     '''
+    print("BOOKS: {}".format(books))
     books_uuid = []
     for book in books:
         # add some catalog metadata

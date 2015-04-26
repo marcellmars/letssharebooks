@@ -24,6 +24,7 @@ import gzip
 import posixpath
 import urllib
 import mimetypes
+from pprint import pformat as pp
 
 try:
     from PyQt4 import QtWebKit
@@ -126,8 +127,12 @@ class Downloader(QThread):
 
     def run(self):
         with open(self.dl_file, "wb") as f:
-            response = requests.get(self.url, stream=True, verify=False)
-            total_length = response.headers.get('content-length')
+            try:
+                response = requests.get(self.url, stream=True, verify=False)
+                #response = requests.get(self.url, verify=False)
+                total_length = response.headers.get('content-length')
+            except Exception as e:
+                logger.debug("DOWNLOADING EXCEPTION: {}".format(e))
 
             if total_length is None:
                 f.write(response.content)
@@ -181,7 +186,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                     path = index
                     break
         ctype = self.guess_type(path)
-        
+
         try:
             # Always read in binary mode. Opening files in text mode may cause
             # newline translations, making the actual size of the content
@@ -194,7 +199,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         if not f:
             self.send_error(404, "File not found")
             return None
-            
+
         self.send_response(200)
         self.send_header("Content-type", ctype)
         #self.send_header("Content-Encoding", "gzip")
@@ -205,7 +210,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.copyfile(f, self.wfile)
         f.close()
         return
-       
+
     def do_GET(self):
         from calibre.gui2.ui import get_gui
 
@@ -218,7 +223,8 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         os.chdir(os.path.join(*file_path))
 
         gifs = ['0.gif',
-                '{}.gif'.format(get_gui().current_db.library_id)]
+                '{}.gif'.format(get_gui().current_db.library_id),
+                'favicon.ico']
         #logger.debug("REQUEST FILE PATH: {}".format(self.path))
         if self.path[1:] in gifs:
             self.serve_gif()
@@ -255,7 +261,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(f.read())
-    
+
     def guess_type(self, path):
         base, ext = posixpath.splitext(path)
         if ext in self.extensions_map:
@@ -267,10 +273,10 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             return self.extensions_map['']
 
     if not mimetypes.inited:
-        mimetypes.init() # try to read system mime.types
+        mimetypes.init()
     extensions_map = mimetypes.types_map.copy()
     extensions_map.update({
-        '': 'application/octet-stream', # Default
+        '': 'application/octet-stream',
         '.epub': 'application/epub+zip',
         '.lrf': 'application/x-sony-bbeb',
         '.azw': 'application/x-mobipocket-ebook',
@@ -315,7 +321,7 @@ class MetadataLibThread(QThread):
     def __init__(self, us):
         QThread.__init__(self)
         self.us = us
-        self.start_library = ""
+        self.n_bulk = 3
 
     def get_book_metadata(self, current_db, librarian):
         self.get_directory_path()
@@ -324,19 +330,21 @@ class MetadataLibThread(QThread):
         all_book_ids = []
         for book in books_ids:
             b = {}
-            md_fields = current_db.get_proxy_metadata(book)
-            
+            #md_fields = current_db.get_proxy_metadata(book)
+            md_fields = current_db.get_metadata(book)
+
             b['timestamp'] = md_fields.timestamp.isoformat()
             b['pubdate'] = md_fields.pubdate.isoformat()
-            
+
             if not md_fields.last_modified:
+                logger.debug("IS THIS THE REASON? {}".format(b['timestamp']))
                 md_fields.last_modified = b['timestamp']
-                
+
                 mi = current_db.get_metadata(md_fields.id)
                 mi.set("last_modified", b['timestamp'])
-                
+
             b['last_modified'] = md_fields.last_modified.isoformat()
- 
+
             if not md_fields.tags:
                 md_fields.tags = [""]
 
@@ -357,14 +365,14 @@ class MetadataLibThread(QThread):
             if not md_fields.title_sort:
                 md_fields.title_sort = "Unknown"
             b['title_sort'] = md_fields.title_sort
-          
+
             b['authors'] = []
             for author in md_fields.authors:
                 b['authors'].append(author)
 
             b['comments'] = md_fields.comments
             b['publisher'] = md_fields.publisher
-         
+
             bkf = {}
             bk = []
             if md_fields.format_metadata:
@@ -374,31 +382,31 @@ class MetadataLibThread(QThread):
                     bkf[frmat[0]] = {'path': "{}".format(path),
                                      'size': frmat[1]["size"]}
                     bk.append(frmat[0])
-             
+
             if not bkf:
                 bkf['0'] = {'path': "{}/{}.{}".format(current_db.field_for('path', book),
                                                         ".",
                                                         "."),
                               'size': 0}
-              
+
             b['format_metadata'] = bkf
-          
+
             if not bk:
                 bk = ['0']
             b['formats'] = bk
-          
+
             ids = {}
             if md_fields.identifiers:
                 ids = md_fields.identifiers
-                  
+
             b['identifiers'] = ids
             all_book_ids.append(b['uuid'])
             books.append(b)
-            
-        books.append(all_book_ids)
+
+        books.append(set(all_book_ids))
         books.append(librarian)
         return books
-                  
+
     def get_server_list(self, uuid4):
         try:
             r = requests.get("{}://library.{}/get_catalog"
@@ -414,7 +422,7 @@ class MetadataLibThread(QThread):
             return []
         else:
             return [(book[0], book[1]) for book in catalog['books']]
-      
+
     def get_current_db(self):
         from calibre.gui2.ui import get_gui
         self.sql_db = get_gui().current_db.new_api
@@ -430,18 +438,27 @@ class MetadataLibThread(QThread):
             file_path.insert(0, '/')
         self.directory_path = os.path.join(*file_path)
 
-    def intersect(self, books_metadata, all_book_ids):
+    def intersect(self, books_metadata):
         local_list = set([(book['uuid'], book['last_modified'])
                           for book in books_metadata])
         server_list = set(self.get_server_list(self.sql_db.library_id))
+
         edited_list = local_list - server_list
-        edited_books_ids = set([book[0] for book in edited_list])
+        added_books_ids = [book[0] for book in edited_list]
+        removed_list = server_list - local_list
+        removed_books_ids = list(set([book[0] for book in removed_list]) |
+                             set(added_books_ids))
 
-        local_books_ids = set(all_book_ids)
-        server_books_ids = set([book[0] for book in server_list])
+        added_books = [book for book in books_metadata
+                       if book['uuid'] in added_books_ids]
+        removed_books = [book for book in books_metadata if book['uuid'] in removed_books_ids]
 
-        added_books = (local_books_ids - server_books_ids) | edited_books_ids
-        removed_books = (server_books_ids - local_books_ids) | added_books
+        logger.debug('SERVER_LIST: {}'.format(pp(server_list, width=160)))
+        logger.debug('LOCAL_LIST: {}'.format(pp(local_list, width=160)))
+        logger.debug('EDITED_LIST: {}'.format(pp(edited_list, width=160)))
+        logger.debug('ADDED_BOOKS_IDS: {}'.format(pp(added_books_ids, width=160)))
+        logger.debug('REMOVED_BOOKS_IDS: {}'.format(pp(removed_books_ids, width=160)))
+
         return removed_books, added_books
 
     def make_portable(self, books_metadata, librarian):
@@ -450,23 +467,23 @@ class MetadataLibThread(QThread):
         #- directory of current library ---------------------------------------
         if not books_metadata:
             return
-        
-        library = {}
+
+        self.library = {}
         with open(os.path.join(self.us.portable_directory,
                                'portable/data.js'), 'wb') as file:
-            library['library_uuid'] = "p::{}::p".format(self.sql_db.library_id)
-            library['last_modified'] = str(sorted(
+            self.library['library_uuid'] = "p::{}::p".format(self.sql_db.library_id)
+            self.library['last_modified'] = str(sorted(
                 [book['last_modified'] for book in books_metadata])[-1])
             #- make portable port distinctive -1337 so it can be registered ---
             #- at https://library.memoryoftheworld.org ------------------------
-            library['tunnel'] = -1337
-            library['portable'] = False
-            library['portable_url'] = False
-            library['librarian'] = librarian
-            library['books'] = {}
-            library['books']['remove'] = []
-            library['books']['add'] = [book for book in books_metadata]
-            json_string = json.dumps(library)
+            self.library['tunnel'] = -1337
+            self.library['portable'] = False
+            self.library['portable_url'] = False
+            self.library['librarian'] = librarian
+            self.library['books'] = {}
+            self.library['books']['remove'] = []
+            self.library['books']['add'] = [book for book in books_metadata]
+            json_string = json.dumps(self.library)
             file.write("LIBRARY = {};".format(json_string))
 
         logger.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
@@ -502,102 +519,106 @@ class MetadataLibThread(QThread):
         except Exception as e:
             logger.info("COPY/MOVE ERROR: {}".format(e))
 
+    def zip_library(self, added_books, removed_books, mode):
+        logger.debug("ZIP_LIBRARY!")
+        with zipfile.ZipFile(os.path.join(self.us.portable_directory,
+                                            'json',
+                                            'library.json.zip'),
+                                'w', mode) as zif:
+            with open(os.path.join(self.us.portable_directory,
+                                    'json',
+                                    'library.json'),
+                        'wb') as file:
+                self.library['library_uuid'] = str(self.sql_db.library_id)
+                self.library['tunnel'] = int(self.port)
+                self.library['books'] = {}
+
+                self.library['books']['remove'] = list(removed_books)
+                self.library['books']['add'] = list(added_books)
+                json_string = json.dumps(self.library)
+                file.write(json_string)
+            zif.write(os.path.join(self.us.portable_directory,
+                                    'json',
+                                    'library.json'),
+                        arcname='library.json')
+            zif.close()
+
+    def upload_zip(self, n_total, mode):
+        with open(os.path.join(self.us.portable_directory,
+                                'json',
+                                'library.json.zip'), 'rb') as file:
+            try:
+                r = requests.post(
+                    "{}://library.{}/upload_catalog".format(
+                        prefs['server_prefix'],
+                        prefs['lsb_server']),
+                    files={'uploaded_file': file}, verify=False)
+                if r.ok:
+                    um = "{} books' metadata are uploading{}".format(
+                        n_total,
+                        random.randint(3, 10)*".")
+                    logger.debug("UPLOADING MESSAGE: {}".format(um))
+                    self.us.uploading_message = um
+                    self.uploading.emit()
+                else:
+                    self.upload_error.emit()
+                    return
+
+            except requests.exceptions.RequestException as e:
+                logger.debug("EXCEPTION_UPLOAD_ERROR: {}".format(e))
+                self.upload_error.emit()
+                return
+
+
     def upload_library(self, books_metadata, removed_books, added_books,
-                       librarian, all_book_ids, carry):
-        if self.start_library != self.directory_path:
-            self.start_library = self.directory_path
-            books_metadata = self.get_book_metadata(self.get_current_db(),
-                                                    self.us.librarian)
-            librarian = books_metadata.pop()
-            all_book_ids = books_metadata.pop()
-            removed_books, added_books = self.intersect(books_metadata,
-                                                        all_book_ids)
-        else:
-            self.start = self.directory_path
-            
+                       librarian, all_book_ids):
+        try:
+            import zlib
+            mode = zipfile.ZIP_DEFLATED
+        except:
+            mode = zipfile.ZIP_STORED
+
+        os.makedirs(os.path.join(self.us.portable_directory, 'json'))
+        logger.debug("UPLOAD_LIBRARY!")
         if not added_books and not removed_books:
-            logger.debug("UPLOADED!")
+            self.zip_library([], [], mode)
+            self.upload_zip(0, mode)
+            shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
             self.uploaded.emit()
             return
         else:
-            try:
-                import zlib
-                mode = zipfile.ZIP_DEFLATED
-            except:
-                mode = zipfile.ZIP_STORED
+            logger.debug("BOOKS: {}".format(len(added_books), len(removed_books)))
 
-            os.makedirs(os.path.join(self.us.portable_directory, 'json'))
-
-            library = {}
-            with zipfile.ZipFile(os.path.join(self.us.portable_directory,
-                                              'json',
-                                              'library.json.zip'),
-                                 'w', mode) as zif:
-                with open(os.path.join(self.us.portable_directory,
-                                       'json',
-                                       'library.json'),
-                          'wb') as file:
-                    library['library_uuid'] = self.sql_db.library_id
-                    from calibre.utils.date import utcnow
-                    library['last_modified'] = utcnow().isoformat()
-                    library['tunnel'] = int(self.port)
-                    library['librarian'] = librarian
-                    library['portable'] = False
-                    library['portable_url'] = False
-                    library['books'] = {}
-                    library['books']['remove'] = list(removed_books)
-                    books_bulk = list(added_books)[:100]
-                    library['books']['add'] = []
-                    books_to_add = []
-                    if books_metadata:
-                        for book in books_metadata:
-                            if book['uuid'] in books_bulk:
-                                book['last_modified'] = library['last_modified']
-                                mi = self.sql_db.get_metadata(book['application_id'])
-                                mi.set("last_modified", library['last_modified'])
-                                books_to_add.append(book)
-
-                    library['books']['add'] = books_to_add
-                    json_string = json.dumps(library)
-                    file.write(json_string)
-                zif.write(os.path.join(self.us.portable_directory,
-                                       'json',
-                                       'library.json'),
-                          arcname='library.json')
-                zif.close()
-
-            #-------------------------------------------------------------------
-            #- prepare library.json and upload it to memoryoftheworld.org app --
-            with open(os.path.join(self.us.portable_directory,
-                                   'json',
-                                   'library.json.zip'), 'rb') as file:
-                try:
-                    r = requests.post(
-                        "{}://library.{}/upload_catalog".format(
-                            prefs['server_prefix'],
-                            prefs['lsb_server']),
-                        files={'uploaded_file': file}, verify=False)
-                    if r.ok:
-                        um = "{} books' metadata are uploading{}".format(
-                            len(added_books) + len(removed_books),
-                            random.randint(3, 10)*".")
-                        self.us.uploading_message = um
-                        self.uploading.emit()
-                    else:
-                        self.upload_error.emit()
-                except requests.exceptions.RequestException as e:
-                    self.upload_error.emit()
+            again = False
+            n_total = len(added_books)
+            chunks = [added_books[b:b + max(1,self.n_bulk)]
+                      for b in range(0, len(added_books), max(1,self.n_bulk))]
+            #logger.debug("CHUNKS: {}".format(chunks))
+            for chunk in chunks:
+                #logger.debug("CHUNK: {}".format(chunk))
+                self.zip_library(chunk, removed_books, mode)
+                n_total -= len(chunk)
+                self.upload_zip(n_total, mode)
+                removed_books = []
+                if self.start_library != self.directory_path:
+                    self.start_library = self.directory_path
+                    again = True
+                    break
 
             shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
-            carry += len(books_bulk)
-            if len(added_books) <= 100 and len(removed_books) <= 100:
-                self.uploaded.emit()
-                return
-            else:
-                removed_books, added_books = self.intersect(books_metadata,
-                                                            all_book_ids)
+
+            if again:
+                books_metadata = self.get_book_metadata(self.get_current_db(),
+                                                        self.us.librarian)
+                librarian = books_metadata.pop()
+                all_book_ids = books_metadata.pop()
+                self.make_portable(books_metadata, librarian)
+                self.start_library = self.directory_path
+                removed_books, added_books = self.intersect(books_metadata)
                 self.upload_library(books_metadata, removed_books, added_books,
-                                    librarian, all_book_ids, carry)
+                                    librarian, all_book_ids)
+            else:
+                self.uploaded.emit()
 
     def run(self):
         #books_metadata = get_lsb_metadata(self.get_directory_path(),
@@ -607,12 +628,13 @@ class MetadataLibThread(QThread):
         librarian = books_metadata.pop()
         all_book_ids = books_metadata.pop()
         self.make_portable(books_metadata, librarian)
-        removed_books, added_books = self.intersect(books_metadata,
-                                                    all_book_ids)
+
+        self.start_library = self.directory_path
+        removed_books, added_books = self.intersect(books_metadata)
         self.upload_library(books_metadata, removed_books, added_books,
-                            librarian, all_book_ids, 0)
+                            librarian, all_book_ids)
         return
-           
+
 #------------------------------------------------------------------------------
 #- in ConnectionCheck it checks both local calibre content server -------------
 #- and the same service at the other end of ssh tunnel ------------------------
@@ -655,7 +677,7 @@ class HoverHand(QPushButton):
     def __init__(self):
         QPushButton.__init__(self)
         self.setMouseTracking(True)
-       
+
     def mouseMoveEvent(self, event):
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
@@ -1124,15 +1146,15 @@ class LetsShareBooksDialog(QDialog):
             self.metadata_thread.start()
 
     def check_connections(self):
-        from calibre.gui2.ui import get_gui
         #- new_bookdisplay_data signal every book selection in calibre --------
         #get_gui().library_view.model().new_bookdisplay_data\ -----------------
         #.connect(self.edited_item) -------------------------------------------
         #----------------------------------------------------------------------
         #- model signals dataChanged for every book being changed -------------
         #- it passes index(row, 0) & index(row, total columns -1 --------------
-        self.model = get_gui().library_view.model()
-        self.model.dataChanged.connect(self.edited_item)
+        #from calibre.gui2.ui import get_gui
+        #self.model = get_gui().library_view.model()
+        #self.model.dataChanged.connect(self.edited_item)
 
         if self.initial:
             self.us.library_changed_emit()
@@ -1310,6 +1332,7 @@ class LetsShareBooksDialog(QDialog):
                         elif not gotcha:
                             self.no_internet = True
                             self.lost_connection.emit()
+                logger.debug("PARSE_LOG! COUNTER: {}".format(self.parse_log_counter))
                 parse_log()
 
     def start_calibre_server(self):
@@ -1365,7 +1388,7 @@ class LetsShareBooksDialog(QDialog):
         self.update_download_state()
 
     def update_download_state(self):
-        #logger.info("FILES_SIZE_LOG: {}".format(self.files_size_log))
+        logger.info("FILES_SIZE_LOG: {}".format(self.files_size_log))
         book_s = "books"
         self.tn_books = len(self.book_imports)
         if self.tn_books == 1:
@@ -1378,10 +1401,9 @@ class LetsShareBooksDialog(QDialog):
             t_length = 0
             td_length = 0
             for f in self.book_imports[uid]['files']:
-               # logger.debug("{} total length: {}; downloaded: {}".format(
-               #                             f,
-               #                             self.files_size_log[f][1],
-               #                             self.files_size_log[f][0]))
+                logger.debug("{} total length: {}; downloaded: {}".format(f,
+                                                                          self.files_size_log[f][1],
+                                                                          self.files_size_log[f][0]))
                 t_length += self.files_size_log[f][1]
                 td_length += self.files_size_log[f][0]
 
@@ -1404,7 +1426,7 @@ class LetsShareBooksDialog(QDialog):
                             self.tn_files,
                             self.rst/1000000.)
         self.books.setText(info_text)
-        #logger.info("DOWNLOADING: {}".format(info_text))
+        logger.info("DOWNLOADING: {}".format(info_text))
 
     def finished_download(self, uuid4, dl_file):
         t = [t for t in self.threads_pool if t.dl_file == dl_file][0]
@@ -1422,17 +1444,18 @@ class LetsShareBooksDialog(QDialog):
             self.import_downloaded_book(book['download_dir'], uuid4)
 
     def http_import(self, r):
+        logger.debug("DOWNLOAD URLS REQUEST: {}".format(r))
         self.books_container.show()
         if QT_RUNNING == 5:
             request_data = QByteArray.fromPercentEncoding(r).data()
         else:
             request_data = QByteArray.fromPercentEncoding(r.toUtf8()).data()
-            
+
         req_seq = request_data[7:].split('__,__')
 
         book = {}
         book['uuid'] = str(uuid.uuid4())
-        book['title'] = req_seq[0][7:]
+        book['title'] = req_seq[0]
         book['metadata_opf'] = req_seq[1]
         book['metadata_cover'] = req_seq[2]
         book['formats'] = [format for format in req_seq[3:]]
@@ -1497,10 +1520,14 @@ class LetsShareBooksDialog(QDialog):
     def import_downloaded_book(self, download_dir, uuid4):
         uuid5 = str(uuid4)
         if self.fix_metadata_opf(download_dir):
+            logger.debug("METADATA.OPF FIXED!")
             from calibre.gui2.ui import get_gui
             get_gui().current_db.import_book_directory(download_dir,
                                                        self.log_message)
+
             get_gui().library_view.model().books_added(1)
+            get_gui().db_images.reset()
+            get_gui().tags_view.recount()
         shutil.rmtree(download_dir)
         del self.book_imports[uuid5]
         self.update_download_state()

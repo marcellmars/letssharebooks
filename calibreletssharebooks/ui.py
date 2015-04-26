@@ -115,7 +115,7 @@ class LetsShareBooksUI(InterfaceAction):
             elif sys.platform == "win32" and resource == "portable/portable.js":
                 #logger.debug("IGNORE {} ON WINDOWS".format(resource))
                 pass
-            
+
             elif resource == "portable/libraries.js":
                 lib_lines = res[resource].split(os.linesep)
                 lib_lines.insert(4, "var PORTABLE = true;{}".format(os.linesep))

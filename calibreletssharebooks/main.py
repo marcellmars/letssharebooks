@@ -360,7 +360,7 @@ class MetadataLibThread(QThread):
             b['application_id'] = md_fields.id
             if not md_fields.title:
                 md_fields.title = "Unknown"
-            b['title'] = md_fields.title
+            b['title'] = md_fields.title.replace('"',"'")
             if not md_fields.title_sort:
                 md_fields.title_sort = "Unknown"
             b['title_sort'] = md_fields.title_sort
@@ -483,10 +483,12 @@ class MetadataLibThread(QThread):
         try:
             shutil.rmtree(os.path.join(self.directory_path, 'static'))
         except Exception as e:
+            logger.debug("ERROR REMOVING 'STATIC' DIRECTORY: {}".format(e))
         try:
             os.remove(os.path.join(self.directory_path,
                                    'BROWSE_LIBRARY.html'))
         except Exception as e:
+            logger.debug("ERROR REMOVING BROWSE_LIBRARY.html: {}".format(e))
 
         try:
             shutil.copytree(os.path.join(self.us.portable_directory,
@@ -494,6 +496,7 @@ class MetadataLibThread(QThread):
                             os.path.join(self.directory_path,
                                          'static'))
         except Exception as e:
+            logger.debug("ERROR COPYING 'STATIC/PORTABLE' DIRS: {}".format(e))
 
         try:
             shutil.move(os.path.join(self.directory_path,
@@ -501,6 +504,7 @@ class MetadataLibThread(QThread):
                                      'BROWSE_LIBRARY.html'),
                         os.path.join(self.directory_path))
         except Exception as e:
+            logger.debug("ERROR MOVING 'STATIC/PORTABLE' DIRS: {}".format(e))
 
     def zip_library(self, added_books, removed_books, mode):
         with zipfile.ZipFile(os.path.join(self.us.portable_directory,

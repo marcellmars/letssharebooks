@@ -312,7 +312,6 @@ class ThreadedServer(QThread):
 #- in Metadatalibthread metadata gets into .json, upload to server and --------
 #- prepare if for portable calibre --------------------------------------------
 
-
 class MetadataLibThread(QThread):
     uploaded = pyqtSignal()
     upload_error = pyqtSignal()
@@ -321,7 +320,7 @@ class MetadataLibThread(QThread):
     def __init__(self, us):
         QThread.__init__(self)
         self.us = us
-        self.n_bulk = 3
+        self.n_bulk = 37
 
     def get_book_metadata(self, current_db, librarian):
         self.get_directory_path()
@@ -446,18 +445,11 @@ class MetadataLibThread(QThread):
         edited_list = local_list - server_list
         added_books_ids = [book[0] for book in edited_list]
         removed_list = server_list - local_list
-        removed_books_ids = list(set([book[0] for book in removed_list]) |
+        removed_books = list(set([book[0] for book in removed_list]) |
                              set(added_books_ids))
 
         added_books = [book for book in books_metadata
                        if book['uuid'] in added_books_ids]
-        removed_books = [book for book in books_metadata if book['uuid'] in removed_books_ids]
-
-        logger.debug('SERVER_LIST: {}'.format(pp(server_list, width=160)))
-        logger.debug('LOCAL_LIST: {}'.format(pp(local_list, width=160)))
-        logger.debug('EDITED_LIST: {}'.format(pp(edited_list, width=160)))
-        logger.debug('ADDED_BOOKS_IDS: {}'.format(pp(added_books_ids, width=160)))
-        logger.debug('REMOVED_BOOKS_IDS: {}'.format(pp(removed_books_ids, width=160)))
 
         return removed_books, added_books
 
@@ -465,10 +457,14 @@ class MetadataLibThread(QThread):
         #----------------------------------------------------------------------
         #- prepare BROWSE_LIBRARY.html for portable library in the root -------
         #- directory of current library ---------------------------------------
+        from calibre.utils.date import utcnow
+        self.library = {}
+        self.library['last_modified'] = utcnow().isoformat()
+        self.library['librarian'] = librarian
+
         if not books_metadata:
             return
 
-        self.library = {}
         with open(os.path.join(self.us.portable_directory,
                                'portable/data.js'), 'wb') as file:
             self.library['library_uuid'] = "p::{}::p".format(self.sql_db.library_id)
@@ -479,48 +475,37 @@ class MetadataLibThread(QThread):
             self.library['tunnel'] = -1337
             self.library['portable'] = False
             self.library['portable_url'] = False
-            self.library['librarian'] = librarian
             self.library['books'] = {}
             self.library['books']['remove'] = []
             self.library['books']['add'] = [book for book in books_metadata]
             json_string = json.dumps(self.library)
             file.write("LIBRARY = {};".format(json_string))
 
-        logger.debug('PORTABLE_DIRECTORY: {}'.format(os.path.join(
             self.us.portable_directory,
             'portable')))
         try:
             shutil.rmtree(os.path.join(self.directory_path, 'static'))
-            logger.info("REMOVING PORTABLE DIRECTORY SUCCESS")
         except Exception as e:
-            logger.info("REMOVING PORTABLE DIRECTORY FAILS: {}".format(e))
         try:
             os.remove(os.path.join(self.directory_path,
                                    'BROWSE_LIBRARY.html'))
-            logger.info("REMOVING BROWSE_LIBRARY.html SUCCESS")
         except Exception as e:
-            logger.info("REMOVING BROWSE_LIBRARY.html FAILS:{}".format(e))
 
         try:
             shutil.copytree(os.path.join(self.us.portable_directory,
                                          'portable'),
                             os.path.join(self.directory_path,
                                          'static'))
-            logger.info("COPY/MOVE PORTABLE DIRECTORY SUCCESS")
         except Exception as e:
-            logger.info("COPY/MOVE ERROR: {}".format(e))
 
         try:
             shutil.move(os.path.join(self.directory_path,
                                      'static',
                                      'BROWSE_LIBRARY.html'),
                         os.path.join(self.directory_path))
-            logger.info("COPY/MOVE BROWSE_LIBRARY.html SUCCESS")
         except Exception as e:
-            logger.info("COPY/MOVE ERROR: {}".format(e))
 
     def zip_library(self, added_books, removed_books, mode):
-        logger.debug("ZIP_LIBRARY!")
         with zipfile.ZipFile(os.path.join(self.us.portable_directory,
                                             'json',
                                             'library.json.zip'),
@@ -557,7 +542,6 @@ class MetadataLibThread(QThread):
                     um = "{} books' metadata are uploading{}".format(
                         n_total,
                         random.randint(3, 10)*".")
-                    logger.debug("UPLOADING MESSAGE: {}".format(um))
                     self.us.uploading_message = um
                     self.uploading.emit()
                 else:
@@ -579,23 +563,19 @@ class MetadataLibThread(QThread):
             mode = zipfile.ZIP_STORED
 
         os.makedirs(os.path.join(self.us.portable_directory, 'json'))
-        logger.debug("UPLOAD_LIBRARY!")
-        if not added_books and not removed_books:
-            self.zip_library([], [], mode)
-            self.upload_zip(0, mode)
+        if not added_books:
+            self.zip_library([], removed_books, mode)
+            self.upload_zip(len(removed_books), mode)
             shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
             self.uploaded.emit()
             return
         else:
-            logger.debug("BOOKS: {}".format(len(added_books), len(removed_books)))
-
             again = False
             n_total = len(added_books)
             chunks = [added_books[b:b + max(1,self.n_bulk)]
                       for b in range(0, len(added_books), max(1,self.n_bulk))]
-            #logger.debug("CHUNKS: {}".format(chunks))
+
             for chunk in chunks:
-                #logger.debug("CHUNK: {}".format(chunk))
                 self.zip_library(chunk, removed_books, mode)
                 n_total -= len(chunk)
                 self.upload_zip(n_total, mode)
@@ -638,7 +618,6 @@ class MetadataLibThread(QThread):
 #------------------------------------------------------------------------------
 #- in ConnectionCheck it checks both local calibre content server -------------
 #- and the same service at the other end of ssh tunnel ------------------------
-
 
 class ConnectionCheck(QThread):
     lost_connection = pyqtSignal()

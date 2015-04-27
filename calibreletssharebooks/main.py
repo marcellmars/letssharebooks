@@ -480,9 +480,6 @@ class MetadataLibThread(QThread):
             self.library['books']['add'] = [book for book in books_metadata]
             json_string = json.dumps(self.library)
             file.write("LIBRARY = {};".format(json_string))
-
-            self.us.portable_directory,
-            'portable')))
         try:
             shutil.rmtree(os.path.join(self.directory_path, 'static'))
         except Exception as e:

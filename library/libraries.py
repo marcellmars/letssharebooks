@@ -120,6 +120,7 @@ def import_catalog(db, catalog, portable_url=None):
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid': library_uuid})
     if db_cat:
+        print("BOOKS TO BE REMOVED: {}".format(catalog['books']['remove']))
         if portable:
             raise ValueError('already registered')
         # remove books as requested
@@ -260,7 +261,7 @@ def get_books(db, page, query={}):
     titles = db.books.find(q, PUBLIC_BOOK_FIELDS).distinct('title')
     # paginate books
     items, next_page, on_page, total = paginate(db.books.find(
-            q, PUBLIC_BOOK_FIELDS).sort('title_sort'), page)
+            q, PUBLIC_BOOK_FIELDS).sort('uuid'), page)
     # return serialized books with availability of next page
     return utils.ser2json({'books': list(items),
                            'next_page': next_page,

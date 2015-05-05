@@ -53,7 +53,8 @@ try:
                           QStateMachine,
                           QState,
                           QByteArray,
-                          QCursor)
+                          QCursor,
+                          QProgressBar)
     QT_RUNNING = 4
 except ImportError:
     from PyQt5.Qt import (Qt,
@@ -77,7 +78,8 @@ except ImportError:
                         QStateMachine,
                         QState,
                         QByteArray,
-                        QCursor)
+                        QCursor,
+                        QProgressBar)
     QT_RUNNING = 5
 
 from calibre_plugins.letssharebooks.common_utils import get_icon
@@ -529,7 +531,7 @@ class MetadataLibThread(QThread):
                         arcname='library.json')
             zif.close()
 
-    def upload_zip(self, n_total, mode):
+    def upload_zip(self, n_total, b_total, mode):
         with open(os.path.join(self.us.portable_directory,
                                 'json',
                                 'library.json.zip'), 'rb') as file:
@@ -543,7 +545,8 @@ class MetadataLibThread(QThread):
                     um = "{} books' metadata are uploading{}".format(
                         n_total,
                         random.randint(3, 10)*".")
-                    self.us.uploading_message = um
+                    #self.us.uploading_message = um
+                    self.us.uploading_message = (b_total, n_total, um)
                     self.uploading.emit()
                 else:
                     self.upload_error.emit()
@@ -566,7 +569,7 @@ class MetadataLibThread(QThread):
         os.makedirs(os.path.join(self.us.portable_directory, 'json'))
         if not added_books:
             self.zip_library([], removed_books, mode)
-            self.upload_zip(len(removed_books), mode)
+            self.upload_zip(len(removed_books), len(books_metadata), mode)
             shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
             self.uploaded.emit()
             return
@@ -579,7 +582,7 @@ class MetadataLibThread(QThread):
             for chunk in chunks:
                 self.zip_library(chunk, removed_books, mode)
                 n_total -= len(chunk)
-                self.upload_zip(n_total, mode)
+                self.upload_zip(n_total, len(books_metadata), mode)
                 removed_books = []
                 if self.start_library != self.directory_path:
                     self.start_library = self.directory_path
@@ -769,6 +772,16 @@ class LetsShareBooksDialog(QDialog):
                 text-transform: uppercase;
         }
 
+        QProgressBar {
+                border: 1px solid red;
+                border-radius: 0px;
+        }
+
+        QProgressBar::chunk {
+                background-color: red;
+                width: 5px;
+                margin: 0px;
+        }
 
         """)
 
@@ -792,7 +805,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.l.addWidget(self.lets_share_button)
 
-        self.url_label = QPushButton()
+        self.url_label = HoverHand()
         self.url_label.setSizePolicy(QSizePolicy.MinimumExpanding,
                                      QSizePolicy.MinimumExpanding)
         self.url_label.setObjectName("url")
@@ -803,7 +816,12 @@ class LetsShareBooksDialog(QDialog):
         self.l.addWidget(self.arrow_button)
 
         self.ll.addWidget(self.w)
-        self.ll.addSpacing(5)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setMaximumHeight(3)
+        self.progress_bar.setRange(1,100)
+        self.progress_bar.setTextVisible(False)
+        self.ll.addWidget(self.progress_bar)
+        self.progress_bar.hide()
 
         self.libranon_layout = QHBoxLayout()
         self.libranon_layout.setSpacing(0)
@@ -829,24 +847,24 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.libranon_container)
         self.ll.addSpacing(10)
 
-        self.about_project_button = HoverHand()
-        self.about_project_button.setText(
-            'Public Library: http://www.memoryoftheworld.org')
-        self.about_project_button.setObjectName("url2")
-        self.about_project_button.setToolTip(
-            'When everyone is librarian, library is everywhere.')
-        self.ll.addWidget(self.about_project_button)
+        # self.about_project_button = HoverHand()
+        # self.about_project_button.setText(
+        #     'Public Library: http://www.memoryoftheworld.org')
+        # self.about_project_button.setObjectName("url2")
+        # self.about_project_button.setToolTip(
+        #     'When everyone is librarian, library is everywhere.')
+        # self.ll.addWidget(self.about_project_button)
 
-        self.chat_button = HoverHand()
-        self.chat_button.setText(
-            'Chat room: https://chat.memoryoftheworld.org')
-        self.chat_button.setObjectName("url2")
-        self.chat_button.setToolTip(
-            'Meetings every thursday at 23:59 (central eruopean time)')
-        self.chat_button.clicked.connect(functools.partial(self.open_url,
-                                         "https://chat.memoryoftheworld.org"))
-        self.ll.addWidget(self.chat_button)
-        self.ll.addSpacing(5)
+        # self.chat_button = HoverHand()
+        # self.chat_button.setText(
+        #     'Chat room: https://chat.memoryoftheworld.org')
+        # self.chat_button.setObjectName("url2")
+        # self.chat_button.setToolTip(
+        #     'Meetings every thursday at 23:59 (central eruopean time)')
+        # self.chat_button.clicked.connect(functools.partial(self.open_url,
+        #                                  "https://chat.memoryoftheworld.org"))
+        # self.ll.addWidget(self.chat_button)
+        # self.ll.addSpacing(5)
 
         #- books line with information about importing books ------------------
 
@@ -941,7 +959,8 @@ class LetsShareBooksDialog(QDialog):
                 self.ll.addSpacing(20)
                 self.ll.addWidget(self.upgrade_button)
 
-        #- run local http server for importing books  -------------------------
+        #- run local http server for importing books --------------------------
+        #- and serving the books via ssh tunnel  ------------------------------
         self.import_server = ThreadedServer(56665)
         self.import_server.httpd.html.web_signal.connect(self.http_import)
         self.import_server.start()
@@ -974,13 +993,13 @@ class LetsShareBooksDialog(QDialog):
                                            self.lsb_url_text))
         self.on.entered.connect(lambda: self.log_message("ON"))
 
-        self.calibre_web_server = QState()
-        self.calibre_web_server.setObjectName("calibre_web_server")
-        self.calibre_web_server.entered.connect(self.start_calibre_server)
-        self.calibre_web_server.entered.connect(
-            lambda: self.log_message("CALIBRE_WEB_SERVER"))
-        self.calibre_web_server.entered.connect(
-            lambda: self.render_lsb_button("Stop sharing", self.lsb_url_text))
+        # self.calibre_web_server = QState()
+        # self.calibre_web_server.setObjectName("calibre_web_server")
+        # self.calibre_web_server.entered.connect(self.start_calibre_server)
+        # self.calibre_web_server.entered.connect(
+        #     lambda: self.log_message("CALIBRE_WEB_SERVER"))
+        # self.calibre_web_server.entered.connect(
+        #     lambda: self.render_lsb_button("Stop sharing", self.lsb_url_text))
 
         self.ssh_server = QState()
         self.ssh_server.setObjectName("ssh_server")
@@ -1002,18 +1021,18 @@ class LetsShareBooksDialog(QDialog):
         self.url_label_clicked = QState()
         self.url_label_clicked.setObjectName("url_label_clicked")
         self.url_label_clicked.entered.connect(
-            lambda: self.open_url(self.lsb_url))
+            lambda: self.open_url("https://library.memoryoftheworld.org"))
         self.url_label_clicked.entered.connect(
             lambda: self.log_message("URL_LABEL_CLICKED"))
 
-        self.about_project_clicked = QState()
-        self.about_project_clicked.setObjectName("about_project_clicked")
-        self.about_project_clicked.entered.connect(
-            lambda: self.open_url("{}://library.{}".format(
-                prefs['server_prefix'],
-                prefs['lsb_server'])))
-        self.about_project_clicked.entered.connect(
-            lambda: self.log_message("ABOUT_PROJECT_CLICKED"))
+        # self.about_project_clicked = QState()
+        # self.about_project_clicked.setObjectName("about_project_clicked")
+        # self.about_project_clicked.entered.connect(
+        #     lambda: self.open_url("{}://library.{}".format(
+        #         prefs['server_prefix'],
+        #         prefs['lsb_server'])))
+        # self.about_project_clicked.entered.connect(
+        #     lambda: self.log_message("ABOUT_PROJECT_CLICKED"))
 
         self.library_state_changed = QState()
         #self.library_state_changed.entered.connect(
@@ -1040,14 +1059,15 @@ class LetsShareBooksDialog(QDialog):
         self.off.entered.connect(lambda: self.log_message("OFF"))
 
         self.on.addTransition(self.lets_share_button.clicked,
-                              self.calibre_web_server)
+                              #self.calibre_web_server)
+                              self.ssh_server)
 
-        self.calibre_web_server.addTransition(self.lets_share_button.clicked,
-                                              self.lets_share_button_stopped)
-        self.calibre_web_server.addTransition(self.calibre_didnt_start,
-                                              self.off)
-        self.calibre_web_server.addTransition(self.started_calibre_web_server,
-                                              self.ssh_server)
+        # self.calibre_web_server.addTransition(self.lets_share_button.clicked,
+        #                                       self.lets_share_button_stopped)
+        # self.calibre_web_server.addTransition(self.calibre_didnt_start,
+        #                                       self.off)
+        # self.calibre_web_server.addTransition(self.started_calibre_web_server,
+        #                                       self.ssh_server)
 
         self.ssh_server.addTransition(self.lets_share_button.clicked,
                                       self.lets_share_button_stopped)
@@ -1063,9 +1083,9 @@ class LetsShareBooksDialog(QDialog):
             self.off)
         self.ssh_server_established.addTransition(self.url_label.clicked,
                                                   self.url_label_clicked)
-        self.ssh_server_established.addTransition(
-            self.about_project_button.clicked,
-            self.about_project_clicked)
+        # self.ssh_server_established.addTransition(
+        #     self.about_project_button.clicked,
+        #     self.about_project_clicked)
         self.ssh_server_established.addTransition(
             self.check_connection.lost_connection,
             self.off)
@@ -1073,7 +1093,7 @@ class LetsShareBooksDialog(QDialog):
                                                   self.library_state_changed)
 
         self.url_label_clicked.addTransition(self.ssh_server_established)
-        self.about_project_clicked.addTransition(self.ssh_server_established)
+        # self.about_project_clicked.addTransition(self.ssh_server_established)
         self.library_state_changed.addTransition(self.ssh_server_established)
 
         self.lets_share_button_stopped.addTransition(self.off)
@@ -1081,11 +1101,11 @@ class LetsShareBooksDialog(QDialog):
         self.off.addTransition(self.on)
 
         self.machine.addState(self.on)
-        self.machine.addState(self.calibre_web_server)
+        # self.machine.addState(self.calibre_web_server)
         self.machine.addState(self.ssh_server)
         self.machine.addState(self.ssh_server_established)
         self.machine.addState(self.url_label_clicked)
-        self.machine.addState(self.about_project_clicked)
+        # self.machine.addState(self.about_project_clicked)
         self.machine.addState(self.library_state_changed)
         self.machine.addState(self.lets_share_button_stopped)
         self.machine.addState(self.off)
@@ -1105,21 +1125,31 @@ class LetsShareBooksDialog(QDialog):
                 return
         else:
             self.metadata_thread = MetadataLibThread(self.us)
+            self.metadata_thread.uploading.connect(
+                lambda: self.update_progress_bar(
+                    self.us.uploading_message))
+
             self.metadata_thread.uploaded.connect(
-                lambda: self.render_library_button(
-                "Library is now accessible at: {}://library.{}"
-                .format(prefs['server_prefix'], prefs['lsb_server']),
-                "Building together real-time p2p library infrastructure."))
+                self.progress_bar.hide)
+            self.metadata_thread.uploaded.connect(
+                lambda: self.url_label.setToolTip(
+                    "All metadata uploaded... Click & GO!"))
+
+            # self.metadata_thread.uploaded.connect(
+            #     lambda: self.render_library_button(
+            #     "Library is now accessible at: {}://library.{}"
+            #     .format(prefs['server_prefix'], prefs['lsb_server']),
+            #     "Building together real-time p2p library infrastructure."))
             self.metadata_thread.uploaded.connect(
                 lambda: self.log_message("UPLOADED"))
-            self.metadata_thread.upload_error.connect(
-                lambda: self.render_library_button(
-                'Public Library: http://www.memoryoftheworld.org',
-                'When everyone is librarian, library is everywhere.'))
-            self.metadata_thread.uploading.connect(
-                lambda: self.render_library_button(
-                self.us.uploading_message,
-                'When everyone is librarian, library is everywhere.'))
+            # self.metadata_thread.upload_error.connect(
+            #     lambda: self.render_library_button(
+            #     'Public Library: http://www.memoryoftheworld.org',
+            #     'When everyone is librarian, library is everywhere.'))
+            # # self.metadata_thread.uploading.connect(
+            #     lambda: self.render_library_button(
+            #     self.us.uploading_message,
+            #     'When everyone is librarian, library is everywhere.'))
             self.metadata_thread.upload_error.connect(
                 lambda: self.log_message("UPLOAD ERROR!"))
             self.metadata_thread.port = self.port
@@ -1190,13 +1220,13 @@ class LetsShareBooksDialog(QDialog):
                 self.ssh_proc.kill()
             except Exception as e:
                 logger.warning("Couldn't kill SSH tunnel. dead already?")
-        try:
-            self.main_gui.content_server.exit()
-        except Exception as e:
-            logger.warning("Couldn't kill Calibre web server. "
-                           "dead already?: {}".format(e))
+        # try:
+        #     self.main_gui.content_server.exit()
+        # except Exception as e:
+        #     logger.warning("Couldn't kill Calibre web server. "
+        #                    "dead already?: {}".format(e))
 
-        self.main_gui.content_server = None
+        # self.main_gui.content_server = None
         self.qaction.setIcon(get_icon('images/icon.png'))
 
         self.lsb_url_text = "Be a librarian. Share your library."
@@ -1216,9 +1246,9 @@ class LetsShareBooksDialog(QDialog):
             "portable/favicon.html")))
         return True
 
-    def render_library_button(self, button_label, button_tooltip):
-        self.about_project_button.setText(button_label)
-        self.about_project_button.setToolTip(button_tooltip)
+    # def render_library_button(self, button_label, button_tooltip):
+    #     self.about_project_button.setText(button_label)
+    #     self.about_project_button.setToolTip(button_tooltip)
 
     def render_lsb_button(self, button_label, lsb_url_text):
         self.lsb_url_text = lsb_url_text
@@ -1245,7 +1275,8 @@ class LetsShareBooksDialog(QDialog):
             self.lsb_url = "{}://www{}.{}".format(prefs['server_prefix'],
                                                   self.port,
                                                   prefs['lsb_server'])
-            self.lsb_url_text = "Go to: {}".format(self.lsb_url)
+            #self.lsb_url_text = "Go to: {}".format(self.lsb_url)
+            self.lsb_url_text = "Go to: https://library.memoryoftheworld.org"
             QTimer.singleShot(3000, self.established_ssh_tunnel.emit)
         else:
             self.ssh_proc = subprocess.Popen([
@@ -1260,7 +1291,8 @@ class LetsShareBooksDialog(QDialog):
                 #- when there is a strict firewall here pede.rs will help -----
                 #- because it runs the same ssh tunneling infrastructure ------
                 #- like memoryoftheworld.org but on pede.rs it listens --------
-                #- on port 443 (usually open on firewall because of https) ----
+                #- on port 443 (usually left opened on firewall ---------------
+                #- because of https) ------------------------------------------
                 #'-o', 'ProxyCommand ssh -W %h:%p tunnel@ssh.pede.rs -p 443',
                 prefs['lsb_server'],
                 '-l', 'tunnel', '-R', '{}:localhost:{}'.format(
@@ -1287,7 +1319,9 @@ class LetsShareBooksDialog(QDialog):
                             #m = re.match("^Allocated port (.*) for .*", line)
                             n = re.match("^Error: remote port forwarding failed for listen port.*", line)
                             if n:
-                                logger.debug("ERROR: REMOTE PORT FAILED!")
+                                #- if n matched probably that port ------------
+                                #- on server is already in use ----------------
+                                logger.debug("ERROR: REMOTE SSH PORT FAILED!")
                                 self.ssh_proc.kill()
                                 self.establish_ssh_server()
                             else:
@@ -1298,8 +1332,7 @@ class LetsShareBooksDialog(QDialog):
                                         prefs['server_prefix'],
                                         self.port,
                                         prefs['lsb_server'])
-                                    self.lsb_url_text = "Go to: {0}".format(
-                                        self.lsb_url)
+                                    self.lsb_url_text = "Go to: https://library.memoryoftheworld.org"
                                     self.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
                                     self.established_ssh_tunnel.emit()
                                     gotcha = True
@@ -1315,15 +1348,15 @@ class LetsShareBooksDialog(QDialog):
                 logger.debug("PARSE_LOG! COUNTER: {}".format(self.parse_log_counter))
                 parse_log()
 
-    def start_calibre_server(self):
-        if self.main_gui.content_server is None:
-            self.main_gui.start_content_server()
-            opts, args = server_config().option_parser().parse_args(
-                ['calibre-server'])
-            self.calibre_server_port = opts.port
-            self.started_calibre_web_server.emit()
-        else:
-            self.calibre_didnt_start.emit()
+    # def start_calibre_server(self):
+    #     if self.main_gui.content_server is None:
+    #         self.main_gui.start_content_server()
+    #         opts, args = server_config().option_parser().parse_args(
+    #             ['calibre-server'])
+    #         self.calibre_server_port = opts.port
+    #         self.started_calibre_web_server.emit()
+    #     else:
+    #         self.calibre_didnt_start.emit()
 
     def config(self):
         self.do_user_config(parent=self)
@@ -1512,13 +1545,20 @@ class LetsShareBooksDialog(QDialog):
         del self.book_imports[uuid5]
         self.update_download_state()
 
+    def cancel_download(self):
+        pass
+
     def sslErrorHandler(self, reply, errorList):
             reply.ignoreSslErrors()
             logger.debug("SSL ERRORS: {}".format(errorList))
             return
 
-    def cancel_download(self):
-        pass
+    def update_progress_bar(self, t_books):
+        if self.progress_bar.isHidden():
+            self.progress_bar.show()
+        self.progress_bar.setRange(1, t_books[0])
+        self.progress_bar.setValue(t_books[0]-t_books[1])
+        self.url_label.setToolTip(t_books[2])
 
     def closeEvent(self, e):
         self.hide()

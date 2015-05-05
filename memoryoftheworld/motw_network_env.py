@@ -4,7 +4,14 @@
 import subprocess
 import sys
 
-DOCKERS = ["01 library", "02 mongodb", "03 nginx", "04 prosody", "05 sshd", "06 php5", "07 db"]
+DOCKERS = ["01 library",
+           "02 mongodb",
+           "03 nginx",
+           "04 prosody",
+           "05 sshd",
+           "06 php5",
+           "07 db",
+           "08 rsync"]
 ALIGN = max(map(len, DOCKERS)) - 3
 
 def get_docker_ips():
@@ -41,7 +48,7 @@ def status():
 
     dmsq = [l for l in open("/etc/dnsmasq.d/local", "r").readlines()
             if "address=/memoryoftheworld.org/" in l]
-    
+
     hosts = [l for l in open("/etc/hosts", "r").readlines()
              if "memoryoftheworld.org" in l]
 
@@ -59,7 +66,7 @@ def status():
 
     print("- - - - -")
     print("               {1:<{0}}  {2} (ip)".format(ALIGN, "host", "172.17.42.1"))
-    
+
     docker_ips = sorted([(key, value) for (key,value) in docker_ips.items()])
     for ip in docker_ips:
         if ip[1] == "":
@@ -72,7 +79,7 @@ def status():
 
 def set_local_env():
     docker_ips = get_docker_ips()
-    
+
     #------------------------------------------------------------------------------
     #- add motw nginx ip address to  dnsmasq  -------------------------------------
 
@@ -108,6 +115,7 @@ def set_local_env():
         hosts.append("{} {}.memoryoftheworld.org\n".format(docker_ips['04 prosody'], i))
 
     hosts.append("{} memoryoftheworld.org\n".format(docker_ips['05 sshd']))
+    hosts.append("{} rsync.memoryoftheworld.org\n".format(docker_ips['08 rsync']))
 
     open("/etc/hosts", "w").writelines(hosts)
 

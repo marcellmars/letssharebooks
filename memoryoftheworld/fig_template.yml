@@ -1,3 +1,12 @@
+rsync:
+    build: rsync
+    entrypoint: /usr/local/bin/supervisord
+    ports:
+      - 8733
+    volumes:
+      - ${MOTW_HOME}/letssharebooks/memoryoftheworld/rsync/rsync.d/:/etc/rsync.d/
+      - ${RSYNC_DIRECTORY}/rzynk/:/var/data/rzynk/
+
 sshd:
     build: ssh
     entrypoint: /usr/local/bin/supervisord

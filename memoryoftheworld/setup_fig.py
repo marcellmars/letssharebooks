@@ -7,4 +7,6 @@ for i in ["fig", "calibre"]:
             g.write(f.read().replace('''${MOTW_HOME}''',
                                      G.MOTW_HOME)
                             .replace('''${MOTW_PERSISTENCE}''',
-                                     G.MOTW_PERSISTENCE))
+                                     G.MOTW_PERSISTENCE)
+                            .replace('''${RSYNC_DIRECTORY}''',
+                                     G.RSYNC_DIRECTORY))

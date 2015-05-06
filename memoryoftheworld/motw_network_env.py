@@ -78,6 +78,7 @@ def status():
                                                                 docker_ids[ip[0]][:8]))
 
 def set_local_env():
+    unset_local_env()
     docker_ips = get_docker_ips()
 
     #------------------------------------------------------------------------------

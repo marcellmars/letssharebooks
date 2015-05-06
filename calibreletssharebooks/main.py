@@ -54,7 +54,8 @@ try:
                           QState,
                           QByteArray,
                           QCursor,
-                          QProgressBar)
+                          QProgressBar,
+                          QLabel)
     QT_RUNNING = 4
 except ImportError:
     from PyQt5.Qt import (Qt,
@@ -79,7 +80,8 @@ except ImportError:
                         QState,
                         QByteArray,
                         QCursor,
-                        QProgressBar)
+                        QProgressBar,
+                        QLabel)
     QT_RUNNING = 5
 
 from calibre_plugins.letssharebooks.common_utils import get_icon
@@ -829,20 +831,41 @@ class LetsShareBooksDialog(QDialog):
         self.libranon_container = QWidget()
         self.libranon_container.setLayout(self.libranon_layout)
 
+        self.label = QLabel("Sharing as librarian:")
+        self.label.setObjectName("label")
+
         self.edit = QLineEdit()
         self.edit.setObjectName("edit")
         self.edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.edit.setToolTip("Change your librarian name")
         self.edit.setText(self.us.librarian)
 
-        self.save_libranon = QPushButton("librarian:")
+        self.save_libranon = QPushButton("Save")
         self.save_libranon.setSizePolicy(QSizePolicy.Maximum,
                                          QSizePolicy.Maximum)
         self.save_libranon.setObjectName("share")
         self.save_libranon.setToolTip("Save your librarian name")
-        self.libranon_layout.addWidget(self.save_libranon)
-        self.libranon_layout.addWidget(self.edit)
         self.save_libranon.clicked.connect(self.save_librarian)
+
+        self.edit_libranon = QPushButton("Edit")
+        self.edit_libranon.setSizePolicy(QSizePolicy.Maximum,
+                                         QSizePolicy.Maximum)
+        self.edit_libranon.setObjectName("share")
+        self.edit_libranon.setToolTip("Edit your librarian name")
+        self.edit_libranon.clicked.connect(self.edit_librarian)
+
+        self.new_libranon = QPushButton("New")
+        self.new_libranon.setSizePolicy(QSizePolicy.Maximum,
+                                         QSizePolicy.Maximum)
+        self.new_libranon.setObjectName("share")
+        self.new_libranon.setToolTip("Get new librarian name")
+        self.new_libranon.clicked.connect(self.edit_librarian)
+
+        self.libranon_layout.addWidget(self.label)
+        self.libranon_layout.addWidget(self.edit)
+        self.libranon_layout.addWidget(self.save_libranon)
+        self.libranon_layout.addWidget(self.edit_libranon)
+        self.libranon_layout.addWidget(self.new_libranon)
 
         self.ll.addWidget(self.libranon_container)
         self.ll.addSpacing(10)
@@ -1361,6 +1384,9 @@ class LetsShareBooksDialog(QDialog):
     def config(self):
         self.do_user_config(parent=self)
         self.label.setText(prefs['lsb_server'])
+
+    def edit_librarian(self):
+        self.edit.selectAll()
 
     def save_librarian(self):
         if self.edit.text() == u"":

@@ -4,7 +4,7 @@
  
 # database path
 # Path to the database in which books are stored
-database_path = '/home/developer/library1.db'
+database_path = '/root/library1.db'
  
 # filename pattern
 # Pattern to guess metadata from filenames
@@ -20,7 +20,7 @@ network_timeout = 5
  
 # library path
 # Path to directory in which your library of books is stored
-library_path = u'/home/developer/mock_calibre_library'
+#library_path = u'/root/mock_calibre_library_0'
  
 # language
 # The language in which to display the user interface
@@ -56,7 +56,7 @@ check_for_dupes_on_ctl = False
  
 # installation uuid
 # Installation UUID
-installation_uuid = '4726a188-0b6c-4766-96e1-f4ab0ef376e6'
+installation_uuid = '43aac8c6-ac96-4674-9a4c-edd242412e67'
  
 # new book tags
 # Tags to apply to books added to the library

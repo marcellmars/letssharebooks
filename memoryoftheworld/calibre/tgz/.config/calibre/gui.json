@@ -1,24 +1,33 @@
 {
-  "library_usage_stats": {
-    "/home/developer/mock_calibre_library": 1
-  }, 
-  "book_details_splitter_horizontal_state": [
+  "cover_grid_texture": null, 
+  "book_details_splitter_vertical_state": [
     true, 
-    200
+    120
+  ], 
+  "preferences dialog geometry": {
+    "__value__": "AdnQywACAAAAAADQAAAAGwAABIUAAAMIAAAA2gAAADMAAAR7AAAC/gAAAAAAAAAABVY=", 
+    "__class__": "bytearray"
+  }, 
+  "cover_browser_splitter_horizontal_state": [
+    false, 
+    550
   ], 
   "cover_browser_splitter_vertical_state": [
     false, 
     300
   ], 
-  "tag_browser_splitter_horizontal_state": [
+  "book_details_splitter_horizontal_state": [
     true, 
     200
   ], 
   "quick_start_guide_added": true, 
-  "preferences_window_geometry": {
-    "__value__": "AdnQywABAAAAAAAgAAAAEwAAA9UAAAMIAAAAKgAAAEIAAAPLAAAC/gAAAAAAAA==", 
-    "__class__": "bytearray"
-  }, 
+  "tag_browser_splitter_horizontal_state": [
+    true, 
+    200
+  ], 
+  "toolbar_icon_size": "small", 
+  "grid view visible": false, 
+  "toolbar_text": "never", 
   "action-layout-toolbar": [
     "Add Books", 
     "Edit Metadata", 
@@ -39,7 +48,10 @@
     "Preferences", 
     "[let's share books]"
   ], 
-    "grid view visible": false,
-    "toolbar_text": "never",
-    "toolbar_icon_size": "small"
+  "show_emblems": false, 
+  "cover_grid_color": [
+    80, 
+    80, 
+    80
+  ]
 }

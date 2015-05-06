@@ -124,7 +124,7 @@ scheduler_search_history = cPickle.loads('\x80\x02]q\x01.')
  
 # plugin search history
 # Search history for the plugin preferences
-plugin_search_history = cPickle.loads("\x80\x02]q\x01X\x05\x00\x00\x00let'sq\x02a.")
+plugin_search_history = cPickle.loads('\x80\x02]q\x01.')
  
 # shortcuts search history
 # Search history for the keyboard preferences
@@ -160,7 +160,7 @@ enforce_cpu_limit = True
  
 # gui layout
 # The layout of the user interface. Wide has the book details panel on the right and narrow has it at the bottom.
-gui_layout = 'wide'
+gui_layout = u'narrow'
  
 # show avg rating
 # Show the average rating per item indication in the tag browser

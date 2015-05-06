@@ -3,12 +3,13 @@ FROM librarian/motw
 ADD run.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
 
+RUN  echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
+
 ADD build_calibre.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/build_calibre.sh
 RUN /usr/local/bin/build_calibre.sh
 
-ADD tgz/.config /home/developer/.config
-RUN chmod -R ugo+rwx /home/developer/.config/calibre/
+ADD tgz/.config /root/.config/
 ADD calibre.conf /etc/supervisor/conf.d/
 ADD print_log.conf /etc/supervisor/conf.d/
 ADD dnsmasq.local /etc/dnsmasq.d/local
@@ -17,9 +18,5 @@ RUN pip install tailer
 ADD print_log.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/print_log.py
 
-ADD mock_calibre_library_0 /home/developer/mock_calibre_library_0
-ADD mock_calibre_library_1 /home/developer/mock_calibre_library_1
-RUN chmod -R 777 /home/developer/mock_calibre_library_0
-RUN chmod -R 777 /home/developer/mock_calibre_library_1
-
-ENV HOME /home/developer
+ADD mock_calibre_library_0 /root/mock_calibre_library_0
+ADD mock_calibre_library_1 /root/mock_calibre_library_1

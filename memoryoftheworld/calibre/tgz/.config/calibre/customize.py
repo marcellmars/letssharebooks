@@ -4,7 +4,7 @@
  
 # plugins
 # Installed plugins
-plugins = cPickle.loads("\x80\x02}q\x01X\x13\x00\x00\x00[let's share books]X?\x00\x00\x00/home/developer/.config/calibre/plugins/[let's share books].zipq\x02s.")
+plugins = cPickle.loads("\x80\x02}q\x01X\x13\x00\x00\x00[let's share books]X5\x00\x00\x00/root/.config/calibre/plugins/[let's share books].zipq\x02s.")
  
 # filetype mapping
 # Mapping for filetype plugins

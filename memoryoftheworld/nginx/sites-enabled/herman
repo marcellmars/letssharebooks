@@ -1,0 +1,25 @@
+server {
+        listen 80;
+        listen [::]:80;
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
+
+        server_name herman.memoryoftheworld.org;
+
+        if ($scheme != "https") {
+            rewrite ^ https://$server_name$request_uri? redirect;
+        }
+
+        add_header Strict-Transport-Security max-age=31536000;
+
+        ssl_certificate /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt;  
+        ssl_certificate_key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key;  
+
+        root /var/www/memories_library/HermansLibrary/;
+        access_log /var/log/nginx/herman.memoryoftheworld.org-access.log;
+        error_log /var/log/nginx/herman.memoryoftheworld.org-error.log;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+}

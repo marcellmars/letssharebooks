@@ -1,45 +1,48 @@
 server {
-    listen 80;
-    listen 443;
-    server_name www.memoryoftheworld.org memoryoftheworld.org;
+        listen 80;
+        listen [::]:80;
+        listen 443 default ssl spdy;
+        listen [::]:443 ssl spdy;
 
-    add_header Strict-Transport-Security max-age=31536000;
+        server_name www.memoryoftheworld.org memoryoftheworld.org;
 
-    ssl_certificate /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt;  
-    ssl_certificate_key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key;  
+        if ($scheme != "https") {
+           rewrite ^ https://$server_name$request_uri? redirect;
+        }
 
-    ssl_protocols SSLv3 TLSv1;
-    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-RC4-SHA:ECDHE-RSA-AES128-SHA:RC4:HIGH:!MD5:!aNULL:!EDH;
-    ssl_prefer_server_ciphers on;
+        add_header Strict-Transport-Security max-age=31536000;
 
-    root /var/www/mu.memoryoftheworld.org/;
-    index index.php;
-    access_log /var/log/nginx/memoryoftheworld.org-access.log;
-    error_log /var/log/nginx/memoryoftheworld.org-error.log;
+        ssl_certificate /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt;  
+        ssl_certificate_key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key;  
 
-    if (!-e $request_filename) {
-        rewrite /wp-admin$ $scheme://$host$uri/ permanent;
-        rewrite ^(/[^/]+)?(/wp-.*) $2 last;
-        rewrite ^(/[^/]+)?(/.*\.php) $2 last;
-    }
+        root /var/www/mu.memoryoftheworld.org/;
+        index index.php;
+        access_log /var/log/nginx/memoryoftheworld.org-access.log;
+        error_log /var/log/nginx/memoryoftheworld.org-error.log;
 
-    location / {
-        try_files $uri $uri/ /index.php?$args ;
-    }
+        if (!-e $request_filename) {
+            rewrite /wp-admin$ $scheme://$host$uri/ permanent;
+            rewrite ^(/[^/]+)?(/wp-.*) $2 last;
+            rewrite ^(/[^/]+)?(/.*\.php) $2 last;
+        }
 
-    location ~ \.php$ {
-        try_files $uri /index.php;
-        fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass php5:9000;
-        fastcgi_index index.php;
-        include fastcgi_params;
-    }
+        location / {
+            try_files $uri $uri/ /index.php?$args ;
+        }
 
-    location ~* ^.+\.(ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|rss|atom|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)$ {
-        access_log off; log_not_found off; expires max;
-    }
+        location ~ \.php$ {
+            try_files $uri /index.php;
+            fastcgi_split_path_info ^(.+\.php)(/.+)$;
+            fastcgi_pass php5:9000;
+            fastcgi_index index.php;
+            include fastcgi_params;
+        }
 
-    location = /robots.txt { access_log off; log_not_found off; }
-    location ~ /\. { deny  all; access_log off; log_not_found off; }
+        location ~* ^.+\.(ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|rss|atom|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)$ {
+            access_log off; log_not_found off; expires max;
+        }
+
+        location = /robots.txt { access_log off; log_not_found off; }
+        location ~ /\. { deny  all; access_log off; log_not_found off; }
 }
 

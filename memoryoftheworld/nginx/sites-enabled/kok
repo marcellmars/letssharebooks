@@ -1,0 +1,23 @@
+server {
+    listen 443;
+
+    server_name kok.memoryoftheworld.org;
+
+    add_header Strict-Transport-Security max-age=31536000;
+
+    ssl_certificate /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt;  
+    ssl_certificate_key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key;  
+
+    ssl_protocols SSLv3 TLSv1;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-RC4-SHA:ECDHE-RSA-AES128-SHA:RC4:HIGH:!MD5:!aNULL:!EDH;
+    ssl_prefer_server_ciphers on;
+
+    root /var/www/memories_library/copy/K_O_K/;
+    access_log /var/log/nginx/kok.memoryoftheworld.org-access.log;
+    error_log /var/log/nginx/kok.memoryoftheworld.org-error.log;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+}

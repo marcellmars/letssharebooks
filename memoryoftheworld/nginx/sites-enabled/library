@@ -1,0 +1,21 @@
+server {
+        server_name   "library.memoryoftheworld.org";
+        listen 443;
+        listen 80;
+
+        ssl_certificate /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt;
+        ssl_certificate_key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key;
+
+        location / {
+                resolver 127.0.0.1;
+                proxy_pass        http://library:4321;
+                proxy_store /var/www/cache$uri;
+                proxy_set_header  X-Real-IP  $remote_addr;
+                proxy_set_header  Host $host;
+                proxy_redirect http:// https://;
+                client_max_body_size 20m;
+        }
+
+        error_page 504 /504.html;
+        location = /504.html {}
+}

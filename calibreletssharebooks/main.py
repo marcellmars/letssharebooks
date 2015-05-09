@@ -718,6 +718,16 @@ class LetsShareBooksDialog(QDialog):
                 background-color: white;
         }
 
+        QLabel {
+                font-size: 16px;
+                border-style: solid;
+                border-color: red;
+                background-color: white;
+                color: red;
+                font-family:'BitstreamVeraSansMono',Consolas,monospace;
+                text-transform: uppercase;
+        }
+
         QPushButton {
                 font-size: 16px;
                 border-style: solid;
@@ -766,7 +776,7 @@ class LetsShareBooksDialog(QDialog):
 
         QLineEdit#edit {
                 background-color: white;
-                color: black;
+                color: red;
                 font-size: 16px;
                 border-style: solid;
                 border-color: red;
@@ -831,7 +841,7 @@ class LetsShareBooksDialog(QDialog):
         self.libranon_container = QWidget()
         self.libranon_container.setLayout(self.libranon_layout)
 
-        self.label = QLabel("Sharing as librarian:")
+        self.label = QLabel("Librarian: ")
         self.label.setObjectName("label")
 
         self.edit = QLineEdit()
@@ -840,26 +850,26 @@ class LetsShareBooksDialog(QDialog):
         self.edit.setToolTip("Change your librarian name")
         self.edit.setText(self.us.librarian)
 
-        self.save_libranon = QPushButton("Save")
+        self.save_libranon = QPushButton(" Save ")
         self.save_libranon.setSizePolicy(QSizePolicy.Maximum,
                                          QSizePolicy.Maximum)
         self.save_libranon.setObjectName("share")
         self.save_libranon.setToolTip("Save your librarian name")
         self.save_libranon.clicked.connect(self.save_librarian)
 
-        self.edit_libranon = QPushButton("Edit")
+        self.edit_libranon = QPushButton(" Edit ")
         self.edit_libranon.setSizePolicy(QSizePolicy.Maximum,
                                          QSizePolicy.Maximum)
         self.edit_libranon.setObjectName("share")
         self.edit_libranon.setToolTip("Edit your librarian name")
         self.edit_libranon.clicked.connect(self.edit_librarian)
 
-        self.new_libranon = QPushButton("New")
+        self.new_libranon = QPushButton(" New ")
         self.new_libranon.setSizePolicy(QSizePolicy.Maximum,
                                          QSizePolicy.Maximum)
         self.new_libranon.setObjectName("share")
         self.new_libranon.setToolTip("Get new librarian name")
-        self.new_libranon.clicked.connect(self.edit_librarian)
+        self.new_libranon.clicked.connect(self.new_librarian)
 
         self.libranon_layout.addWidget(self.label)
         self.libranon_layout.addWidget(self.edit)
@@ -1385,17 +1395,18 @@ class LetsShareBooksDialog(QDialog):
         self.do_user_config(parent=self)
         self.label.setText(prefs['lsb_server'])
 
+    def new_librarian(self):
+        prefs['librarian'] = u""
+        self.us.librarian = get_libranon()
+        self.edit.setText(self.us.librarian)
+
     def edit_librarian(self):
         self.edit.selectAll()
 
     def save_librarian(self):
-        if self.edit.text() == u"":
-            prefs['librarian'] = u""
-            self.us.librarian = get_libranon()
-            self.edit.setText(self.us.librarian)
-        else:
-            prefs['librarian'] = self.edit.text()
-            self.edit.setText(prefs['librarian'])
+        prefs['librarian'] = self.edit.text()
+        self.edit.setText(prefs['librarian'])
+        self.us.librarian = prefs['librarian']
 
     def open_url(self, url):
         if type(url) != unicode:

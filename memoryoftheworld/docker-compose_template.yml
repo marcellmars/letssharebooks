@@ -17,8 +17,9 @@ sshd:
     dns: 127.0.0.1
 
 mongodb:
-    build: mongodb
-    entrypoint: /usr/bin/mongod
+    image: mongo:latest
+    #build: mongodb
+    #entrypoint: /usr/bin/mongod
     #volumes:
     #    - ${MOTW_PERSISTENCE}/mongodb/:/data/db/
     expose:

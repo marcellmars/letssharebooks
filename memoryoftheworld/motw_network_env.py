@@ -77,7 +77,7 @@ def status():
                                                                 ip[1],
                                                                 docker_ids[ip[0]][:8]))
 
-def set_local_env():
+def set_local_env(local=True):
     unset_local_env()
     docker_ips = get_docker_ips()
 
@@ -125,6 +125,10 @@ def set_local_env():
 
     open("/etc/resolv.conf", "w").write("nameserver 127.0.0.1\n")
 
+    if local:
+        block_remote_production()
+
+def block_remote_production():
     #------------------------------------------------------------------------------
     #- add iptables rule so remote/production motw server is blocked  -------------
 
@@ -175,13 +179,16 @@ def unset_local_env():
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         if sys.argv[1] == "local":
-            set_local_env()
+            set_local_env(True)
             status()
         elif sys.argv[1] == "remote":
             unset_local_env()
             status()
+        elif sys.argv[1] == "host":
+            set_local_env(False)
+            status()
         elif sys.argv[1] == "status":
             status()
     else:
-        print("Usage: {} local|remote|status".format(sys.argv[0]))
+        print("Usage: {} host | local | remote | status".format(sys.argv[0]))
 

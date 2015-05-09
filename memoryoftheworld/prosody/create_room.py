@@ -23,7 +23,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
     def greetings(self, presence):
         nick = presence['from'].resource
-        
+
         welcome = "Dear {}, welcome to the 'Ask a librarian' chat room.\n"\
             .format(nick.title())
         welcome += "Browse and share your public library collection at:\n"
@@ -37,13 +37,12 @@ class MUCBot(sleekxmpp.ClientXMPP):
                 nicks = nicks.json()['librarians']
             else:
                 sys.stderr.write("No active librarians?")
-            
+
         except requests.exceptions.RequestException as e:
             nicks = {'librarians': []}
             sys.stder.write("Web app doesn't work?\nRequestException: {}"\
                      .format(e))
-                
-        
+
         if nick in nicks and presence['from'].bare == self.room:
             self.send_message(mto=presence['from'].bare,
                               mbody=welcome,

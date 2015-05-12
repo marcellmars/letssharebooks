@@ -24,7 +24,7 @@ import gzip
 import posixpath
 import urllib
 import mimetypes
-from pprint import pformat as pp
+import base64
 
 try:
     from PyQt4 import QtWebKit
@@ -87,6 +87,7 @@ except ImportError:
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
 from calibre_plugins.letssharebooks import requests
+from calibre_plugins.letssharebooks import pyaes
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre.library.server import server_config
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
@@ -225,9 +226,15 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             file_path.insert(0, '/')
 
         os.chdir(os.path.join(*file_path))
+        #- make library_aes_id a separate function so it is called ------------
+        #- from both uploading to server and here -----------------------------
+
+        library_uid = get_gui().current_db.library_id
+        library_aes_id = base64.urlsafe_b64encode(pyaes.AESModeOfOperationCTR(
+            uuid.UUID(prefs["library_uuid"]).bytes).encrypt(library_uid))
 
         gifs = ['0.gif',
-                '{}.gif'.format(get_gui().current_db.library_id),
+                '{}.gif'.format(library_aes_id),
                 'favicon.ico']
         #logger.debug("REQUEST FILE PATH: {}".format(self.path))
         if self.path[1:] in gifs:
@@ -316,6 +323,7 @@ class ThreadedServer(QThread):
 #- in Metadatalibthread metadata gets into .json, upload to server and --------
 #- prepare if for portable calibre --------------------------------------------
 
+
 class MetadataLibThread(QThread):
     uploaded = pyqtSignal()
     upload_error = pyqtSignal()
@@ -364,7 +372,7 @@ class MetadataLibThread(QThread):
             b['application_id'] = md_fields.id
             if not md_fields.title:
                 md_fields.title = "Unknown"
-            b['title'] = md_fields.title.replace('"',"'")
+            b['title'] = md_fields.title.replace('"', "'")
             if not md_fields.title_sort:
                 md_fields.title_sort = "Unknown"
             b['title_sort'] = md_fields.title_sort
@@ -387,10 +395,11 @@ class MetadataLibThread(QThread):
                     bk.append(frmat[0])
 
             if not bkf:
-                bkf['0'] = {'path': "{}/{}.{}".format(current_db.field_for('path', book),
-                                                        ".",
-                                                        "."),
-                              'size': 0}
+                bkf['0'] = {'path': "{}/{}.{}"
+                            .format(current_db.field_for('path', book),
+                                    ".",
+                                    "."),
+                            'size': 0}
 
             b['format_metadata'] = bkf
 
@@ -429,7 +438,10 @@ class MetadataLibThread(QThread):
     def get_current_db(self):
         from calibre.gui2.ui import get_gui
         self.sql_db = get_gui().current_db.new_api
-        self.sql_db.library_id = get_gui().current_db.library_id
+        library_uid = get_gui().current_db.library_id
+        library_aes_id = base64.urlsafe_b64encode(pyaes.AESModeOfOperationCTR(
+            uuid.UUID(prefs["library_uuid"]).bytes).encrypt(library_uid))
+        self.sql_db.library_id = library_aes_id
         return self.sql_db
 
     def get_directory_path(self):
@@ -471,7 +483,8 @@ class MetadataLibThread(QThread):
 
         with open(os.path.join(self.us.portable_directory,
                                'portable/data.js'), 'wb') as file:
-            self.library['library_uuid'] = "p::{}::p".format(self.sql_db.library_id)
+            library_id = self.sql_db.library_id
+            self.library['library_uuid'] = "p::{}::p".format(library_id)
             self.library['last_modified'] = str(sorted(
                 [book['last_modified'] for book in books_metadata])[-1])
             #- make portable port distinctive -1337 so it can be registered ---
@@ -512,13 +525,13 @@ class MetadataLibThread(QThread):
 
     def zip_library(self, added_books, removed_books, mode):
         with zipfile.ZipFile(os.path.join(self.us.portable_directory,
-                                            'json',
-                                            'library.json.zip'),
-                                'w', mode) as zif:
+                                          'json',
+                                          'library.json.zip'),
+                             'w', mode) as zif:
             with open(os.path.join(self.us.portable_directory,
-                                    'json',
-                                    'library.json'),
-                        'wb') as file:
+                                   'json',
+                                   'library.json'),
+                      'wb') as file:
                 self.library['library_uuid'] = str(self.sql_db.library_id)
                 self.library['tunnel'] = int(self.port)
                 self.library['books'] = {}
@@ -528,15 +541,15 @@ class MetadataLibThread(QThread):
                 json_string = json.dumps(self.library)
                 file.write(json_string)
             zif.write(os.path.join(self.us.portable_directory,
-                                    'json',
-                                    'library.json'),
-                        arcname='library.json')
+                                   'json',
+                                   'library.json'),
+                      arcname='library.json')
             zif.close()
 
     def upload_zip(self, n_total, b_total, mode):
         with open(os.path.join(self.us.portable_directory,
-                                'json',
-                                'library.json.zip'), 'rb') as file:
+                               'json',
+                               'library.json.zip'), 'rb') as file:
             try:
                 r = requests.post(
                     "{}://library.{}/upload_catalog".format(
@@ -559,7 +572,6 @@ class MetadataLibThread(QThread):
                 self.upload_error.emit()
                 return
 
-
     def upload_library(self, books_metadata, removed_books, added_books,
                        librarian, all_book_ids):
         try:
@@ -578,8 +590,8 @@ class MetadataLibThread(QThread):
         else:
             again = False
             n_total = len(added_books)
-            chunks = [added_books[b:b + max(1,self.n_bulk)]
-                      for b in range(0, len(added_books), max(1,self.n_bulk))]
+            chunks = [added_books[b:b + max(1, self.n_bulk)]
+                      for b in range(0, len(added_books), max(1, self.n_bulk))]
 
             for chunk in chunks:
                 self.zip_library(chunk, removed_books, mode)
@@ -624,6 +636,7 @@ class MetadataLibThread(QThread):
 #------------------------------------------------------------------------------
 #- in ConnectionCheck it checks both local calibre content server -------------
 #- and the same service at the other end of ssh tunnel ------------------------
+
 
 class ConnectionCheck(QThread):
     lost_connection = pyqtSignal()
@@ -830,7 +843,7 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.w)
         self.progress_bar = QProgressBar()
         self.progress_bar.setMaximumHeight(3)
-        self.progress_bar.setRange(1,100)
+        self.progress_bar.setRange(1, 100)
         self.progress_bar.setTextVisible(False)
         self.ll.addWidget(self.progress_bar)
         self.progress_bar.hide()
@@ -866,7 +879,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.new_libranon = QPushButton(" New ")
         self.new_libranon.setSizePolicy(QSizePolicy.Maximum,
-                                         QSizePolicy.Maximum)
+                                        QSizePolicy.Maximum)
         self.new_libranon.setObjectName("share")
         self.new_libranon.setToolTip("Get new librarian name")
         self.new_libranon.clicked.connect(self.new_librarian)
@@ -879,25 +892,6 @@ class LetsShareBooksDialog(QDialog):
 
         self.ll.addWidget(self.libranon_container)
         self.ll.addSpacing(10)
-
-        # self.about_project_button = HoverHand()
-        # self.about_project_button.setText(
-        #     'Public Library: http://www.memoryoftheworld.org')
-        # self.about_project_button.setObjectName("url2")
-        # self.about_project_button.setToolTip(
-        #     'When everyone is librarian, library is everywhere.')
-        # self.ll.addWidget(self.about_project_button)
-
-        # self.chat_button = HoverHand()
-        # self.chat_button.setText(
-        #     'Chat room: https://chat.memoryoftheworld.org')
-        # self.chat_button.setObjectName("url2")
-        # self.chat_button.setToolTip(
-        #     'Meetings every thursday at 23:59 (central eruopean time)')
-        # self.chat_button.clicked.connect(functools.partial(self.open_url,
-        #                                  "https://chat.memoryoftheworld.org"))
-        # self.ll.addWidget(self.chat_button)
-        # self.ll.addSpacing(5)
 
         #- books line with information about importing books ------------------
 
@@ -942,10 +936,6 @@ class LetsShareBooksDialog(QDialog):
 
         netaccman = self.webview.page().networkAccessManager()
         netaccman.sslErrors.connect(self.sslErrorHandler)
-        #self.connect(self.webview.page().networkAccessManager(),
-        #             SIGNAL("sslErrors (QNetworkReply *, \
-        #                                const QList<QSslError> &)"),
-        #             self.sslErrorHandler)
 
         config = QSslConfiguration.defaultConfiguration()
         certs = config.caCertificates()
@@ -983,8 +973,9 @@ class LetsShareBooksDialog(QDialog):
                                                               self.plugin_url))
 
         logger.info("RUNNING: {}, LATEST: {}"
-                     .format(str(self.us.running_version),
-                             str(self.us.latest_version)))
+                    .format(str(self.us.running_version),
+                            str(self.us.latest_version)))
+
         version_list = [self.us.running_version, self.us.latest_version]
         version_list.sort(key=lambda s: map(int, s.split('.')))
         if self.us.running_version != self.us.latest_version:
@@ -1026,14 +1017,6 @@ class LetsShareBooksDialog(QDialog):
                                            self.lsb_url_text))
         self.on.entered.connect(lambda: self.log_message("ON"))
 
-        # self.calibre_web_server = QState()
-        # self.calibre_web_server.setObjectName("calibre_web_server")
-        # self.calibre_web_server.entered.connect(self.start_calibre_server)
-        # self.calibre_web_server.entered.connect(
-        #     lambda: self.log_message("CALIBRE_WEB_SERVER"))
-        # self.calibre_web_server.entered.connect(
-        #     lambda: self.render_lsb_button("Stop sharing", self.lsb_url_text))
-
         self.ssh_server = QState()
         self.ssh_server.setObjectName("ssh_server")
         self.ssh_server.entered.connect(
@@ -1058,20 +1041,7 @@ class LetsShareBooksDialog(QDialog):
         self.url_label_clicked.entered.connect(
             lambda: self.log_message("URL_LABEL_CLICKED"))
 
-        # self.about_project_clicked = QState()
-        # self.about_project_clicked.setObjectName("about_project_clicked")
-        # self.about_project_clicked.entered.connect(
-        #     lambda: self.open_url("{}://library.{}".format(
-        #         prefs['server_prefix'],
-        #         prefs['lsb_server'])))
-        # self.about_project_clicked.entered.connect(
-        #     lambda: self.log_message("ABOUT_PROJECT_CLICKED"))
-
         self.library_state_changed = QState()
-        #self.library_state_changed.entered.connect(
-        #    lambda: self.render_library_button('Uploading library metadata...',
-        #                                       'Library is now accessible at '
-        #                                       'https://library.memoryoftheworld.org'))
         self.library_state_changed.setObjectName("library_state_changed")
         self.library_state_changed.entered.connect(
             lambda: self.sync_metadata("library_changed"))
@@ -1092,15 +1062,7 @@ class LetsShareBooksDialog(QDialog):
         self.off.entered.connect(lambda: self.log_message("OFF"))
 
         self.on.addTransition(self.lets_share_button.clicked,
-                              #self.calibre_web_server)
                               self.ssh_server)
-
-        # self.calibre_web_server.addTransition(self.lets_share_button.clicked,
-        #                                       self.lets_share_button_stopped)
-        # self.calibre_web_server.addTransition(self.calibre_didnt_start,
-        #                                       self.off)
-        # self.calibre_web_server.addTransition(self.started_calibre_web_server,
-        #                                       self.ssh_server)
 
         self.ssh_server.addTransition(self.lets_share_button.clicked,
                                       self.lets_share_button_stopped)
@@ -1116,9 +1078,6 @@ class LetsShareBooksDialog(QDialog):
             self.off)
         self.ssh_server_established.addTransition(self.url_label.clicked,
                                                   self.url_label_clicked)
-        # self.ssh_server_established.addTransition(
-        #     self.about_project_button.clicked,
-        #     self.about_project_clicked)
         self.ssh_server_established.addTransition(
             self.check_connection.lost_connection,
             self.off)
@@ -1126,7 +1085,6 @@ class LetsShareBooksDialog(QDialog):
                                                   self.library_state_changed)
 
         self.url_label_clicked.addTransition(self.ssh_server_established)
-        # self.about_project_clicked.addTransition(self.ssh_server_established)
         self.library_state_changed.addTransition(self.ssh_server_established)
 
         self.lets_share_button_stopped.addTransition(self.off)
@@ -1134,11 +1092,9 @@ class LetsShareBooksDialog(QDialog):
         self.off.addTransition(self.on)
 
         self.machine.addState(self.on)
-        # self.machine.addState(self.calibre_web_server)
         self.machine.addState(self.ssh_server)
         self.machine.addState(self.ssh_server_established)
         self.machine.addState(self.url_label_clicked)
-        # self.machine.addState(self.about_project_clicked)
         self.machine.addState(self.library_state_changed)
         self.machine.addState(self.lets_share_button_stopped)
         self.machine.addState(self.off)
@@ -1168,23 +1124,11 @@ class LetsShareBooksDialog(QDialog):
                 lambda: self.url_label.setToolTip(
                     "All metadata uploaded... Click & GO!"))
 
-            # self.metadata_thread.uploaded.connect(
-            #     lambda: self.render_library_button(
-            #     "Library is now accessible at: {}://library.{}"
-            #     .format(prefs['server_prefix'], prefs['lsb_server']),
-            #     "Building together real-time p2p library infrastructure."))
             self.metadata_thread.uploaded.connect(
                 lambda: self.log_message("UPLOADED"))
-            # self.metadata_thread.upload_error.connect(
-            #     lambda: self.render_library_button(
-            #     'Public Library: http://www.memoryoftheworld.org',
-            #     'When everyone is librarian, library is everywhere.'))
-            # # self.metadata_thread.uploading.connect(
-            #     lambda: self.render_library_button(
-            #     self.us.uploading_message,
-            #     'When everyone is librarian, library is everywhere.'))
             self.metadata_thread.upload_error.connect(
                 lambda: self.log_message("UPLOAD ERROR!"))
+
             self.metadata_thread.port = self.port
             self.metadata_thread.start()
 
@@ -1252,14 +1196,8 @@ class LetsShareBooksDialog(QDialog):
             try:
                 self.ssh_proc.kill()
             except Exception as e:
-                logger.warning("Couldn't kill SSH tunnel. dead already?")
-        # try:
-        #     self.main_gui.content_server.exit()
-        # except Exception as e:
-        #     logger.warning("Couldn't kill Calibre web server. "
-        #                    "dead already?: {}".format(e))
+                logger.warning("Couldn't kill SSH tunnel. dead? {}".format(e))
 
-        # self.main_gui.content_server = None
         self.qaction.setIcon(get_icon('images/icon.png'))
 
         self.lsb_url_text = "Be a librarian. Share your library."
@@ -1308,8 +1246,7 @@ class LetsShareBooksDialog(QDialog):
             self.lsb_url = "{}://www{}.{}".format(prefs['server_prefix'],
                                                   self.port,
                                                   prefs['lsb_server'])
-            #self.lsb_url_text = "Go to: {}".format(self.lsb_url)
-            self.lsb_url_text = "Go to: https://library.memoryoftheworld.org"
+            self.lsb_url_text = " Go to: https://library.memoryoftheworld.org"
             QTimer.singleShot(3000, self.established_ssh_tunnel.emit)
         else:
             self.ssh_proc = subprocess.Popen([
@@ -1350,7 +1287,8 @@ class LetsShareBooksDialog(QDialog):
 
                         for line in result:
                             #m = re.match("^Allocated port (.*) for .*", line)
-                            n = re.match("^Error: remote port forwarding failed for listen port.*", line)
+                            n = re.match("^Error: remote port forwarding failed for listen port.*",
+                                         line)
                             if n:
                                 #- if n matched probably that port ------------
                                 #- on server is already in use ----------------
@@ -1358,14 +1296,15 @@ class LetsShareBooksDialog(QDialog):
                                 self.ssh_proc.kill()
                                 self.establish_ssh_server()
                             else:
-                                m = re.match(".*All remote forwarding requests processed.*", line)
+                                m = re.match(".*All remote forwarding requests processed.*",
+                                             line)
                                 if m:
                                     #self.port = m.groups()[0]
                                     self.lsb_url = '{}://www{}.{}'.format(
                                         prefs['server_prefix'],
                                         self.port,
                                         prefs['lsb_server'])
-                                    self.lsb_url_text = "Go to: https://library.memoryoftheworld.org"
+                                    self.lsb_url_text = " Go to: https://library.memoryoftheworld.org"
                                     self.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
                                     self.established_ssh_tunnel.emit()
                                     gotcha = True
@@ -1378,18 +1317,9 @@ class LetsShareBooksDialog(QDialog):
                         elif not gotcha:
                             self.no_internet = True
                             self.lost_connection.emit()
-                logger.debug("PARSE_LOG! COUNTER: {}".format(self.parse_log_counter))
+                logger.debug("PARSE_LOG! COUNTER: {}"
+                             .format(self.parse_log_counter))
                 parse_log()
-
-    # def start_calibre_server(self):
-    #     if self.main_gui.content_server is None:
-    #         self.main_gui.start_content_server()
-    #         opts, args = server_config().option_parser().parse_args(
-    #             ['calibre-server'])
-    #         self.calibre_server_port = opts.port
-    #         self.started_calibre_web_server.emit()
-    #     else:
-    #         self.calibre_didnt_start.emit()
 
     def config(self):
         self.do_user_config(parent=self)
@@ -1451,9 +1381,11 @@ class LetsShareBooksDialog(QDialog):
             t_length = 0
             td_length = 0
             for f in self.book_imports[uid]['files']:
-                logger.debug("{} total length: {}; downloaded: {}".format(f,
-                                                                          self.files_size_log[f][1],
-                                                                          self.files_size_log[f][0]))
+                logger.debug("{} total length: {}; downloaded: {}"
+                             .format(f,
+                                     self.files_size_log[f][1],
+                                     self.files_size_log[f][0]))
+
                 t_length += self.files_size_log[f][1]
                 td_length += self.files_size_log[f][0]
 

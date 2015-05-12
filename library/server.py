@@ -116,16 +116,16 @@ class Root(object):
         query = {}
         # this could easily be handled by using json_in decorator. however,
         # cherrypy testing is hard using the same decorator. hence...
-        cl = cherrypy.request.headers.get('Content-Length')  
+        cl = cherrypy.request.headers.get('Content-Length')
         if cl:
             rawbody = cherrypy.request.body.read(int(cl))
             # parse json from request body
-            params = simplejson.loads(rawbody) 
+            params = simplejson.loads(rawbody)
             page = params.get('page')
             query = params.get('query')
         books = libraries.get_books(cherrypy.thread_data.db, page, query)
         return books
-    
+
     @cherrypy.expose
     def get_active_librarians(self):
         '''
@@ -133,7 +133,7 @@ class Root(object):
         '''
         librarians = libraries.get_active_librarians(cherrypy.thread_data.db)
         return librarians
-        
+
     @cherrypy.expose
     def add_portable(self, url):
         '''

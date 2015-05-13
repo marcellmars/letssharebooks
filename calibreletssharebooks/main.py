@@ -24,7 +24,6 @@ import gzip
 import posixpath
 import urllib
 import mimetypes
-import base64
 
 try:
     from PyQt4 import QtWebKit
@@ -87,10 +86,9 @@ except ImportError:
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs
 from calibre_plugins.letssharebooks import requests
-from calibre_plugins.letssharebooks import pyaes
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
-from calibre.library.server import server_config
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
+from calibre_plugins.letssharebooks.shuffle_names import encrypt_uid
 
 
 __license__   = 'GPL v3'
@@ -226,13 +224,9 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             file_path.insert(0, '/')
 
         os.chdir(os.path.join(*file_path))
-        #- make library_aes_id a separate function so it is called ------------
-        #- from both uploading to server and here -----------------------------
 
-        library_uid = get_gui().current_db.library_id
-        library_aes_id = base64.urlsafe_b64encode(pyaes.AESModeOfOperationCTR(
-            uuid.UUID(prefs["library_uuid"]).bytes).encrypt(library_uid))
-
+        library_aes_id = encrypt_uid(prefs['library_uuid'],
+                                     get_gui().current_db.library_id)
         gifs = ['0.gif',
                 '{}.gif'.format(library_aes_id),
                 'favicon.ico']
@@ -368,7 +362,10 @@ class MetadataLibThread(QThread):
                 continue
 
             b['librarian'] = librarian
-            b['uuid'] = str(md_fields.uuid)
+
+            b['uuid'] = encrypt_uid(prefs['library_uuid'],
+                                    str(md_fields.uuid))
+
             b['application_id'] = md_fields.id
             if not md_fields.title:
                 md_fields.title = "Unknown"
@@ -438,9 +435,9 @@ class MetadataLibThread(QThread):
     def get_current_db(self):
         from calibre.gui2.ui import get_gui
         self.sql_db = get_gui().current_db.new_api
-        library_uid = get_gui().current_db.library_id
-        library_aes_id = base64.urlsafe_b64encode(pyaes.AESModeOfOperationCTR(
-            uuid.UUID(prefs["library_uuid"]).bytes).encrypt(library_uid))
+        library_aes_id = encrypt_uid(prefs['library_uuid'],
+                                     get_gui().current_db.library_id)
+
         self.sql_db.library_id = library_aes_id
         return self.sql_db
 

@@ -100,7 +100,7 @@ if False:
 
 #- set up logging -------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=True)
+logger = get_logger('letssharebooks', disabled=False)
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------
@@ -890,6 +890,14 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.libranon_container)
         self.ll.addSpacing(10)
 
+        self.make_portable = HoverHand()
+        self.make_portable.setSizePolicy(QSizePolicy.Expanding,
+                                         QSizePolicy.Expanding)
+        self.make_portable.setObjectName("url")
+        self.make_portable.setText(" Make portable ")
+        self.ll.addWidget(self.make_portable)
+        self.make_portable.hide()
+
         #- books line with information about importing books ------------------
 
         self.books_layout = QHBoxLayout()
@@ -1353,8 +1361,16 @@ class LetsShareBooksDialog(QDialog):
         self.no_internet = False
 
     def keyPressEvent(self, event):
+        self.log_message("Key pressed: {}".format(event))
         if event.key() == Qt.Key_Escape:
             pass
+        elif event.key() == Qt.Key_Control:
+            self.make_portable.show()
+            self.log_message("Here is key P!!!")
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Control:
+            self.make_portable.hide()
 
     def log_message(self, state):
         logger.info("STATE: {}".format(state))

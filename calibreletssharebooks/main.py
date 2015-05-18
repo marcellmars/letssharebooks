@@ -323,10 +323,11 @@ class MetadataLibThread(QThread):
     upload_error = pyqtSignal()
     uploading = pyqtSignal()
 
-    def __init__(self, us):
+    def __init__(self, us, portable=False):
         QThread.__init__(self)
         self.us = us
         self.n_bulk = 37
+        self.portable = portable
 
     def get_book_metadata(self, current_db, librarian):
         self.get_directory_path()
@@ -383,13 +384,20 @@ class MetadataLibThread(QThread):
 
             bkf = {}
             bk = []
-            if md_fields.format_metadata:
-                for frmat in md_fields.format_metadata.iteritems():
-                    path = frmat[1]["path"].split(os.path.sep)[-3:]
-                    path = os.path.join(*path)
-                    bkf[frmat[0]] = {'path': "{}".format(path),
-                                     'size': frmat[1]["size"]}
-                    bk.append(frmat[0])
+            try:
+                if md_fields.format_metadata:
+                    for frmat in md_fields.format_metadata.iteritems():
+                        path = frmat[1]["path"].split(os.path.sep)[-3:]
+                        path = os.path.join(*path)
+                        bkf[frmat[0]] = {'path': "{}".format(path),
+                                         'size': frmat[1]["size"]}
+                        bk.append(frmat[0])
+            except Exception as e:
+                #- most probably calibre needs [Fix missing formats] ----------
+                #- maybe send some info to the user about this ----------------
+                #- too much of a hussle at the moment -------------------------
+                logger.debug("Missing 'path or 'size' in format_metadata: {}"
+                             .format(e))
 
             if not bkf:
                 bkf['0'] = {'path': "{}/{}.{}"
@@ -530,7 +538,7 @@ class MetadataLibThread(QThread):
                                    'library.json'),
                       'wb') as file:
                 self.library['library_uuid'] = str(self.sql_db.library_id)
-                self.library['tunnel'] = int(self.port)
+                self.library['tunnel'] = int(self.us.port)
                 self.library['books'] = {}
 
                 self.library['books']['remove'] = list(removed_books)
@@ -623,6 +631,8 @@ class MetadataLibThread(QThread):
         librarian = books_metadata.pop()
         all_book_ids = books_metadata.pop()
         self.make_portable(books_metadata, librarian)
+        if self.portable:
+            return
 
         self.start_library = self.directory_path
         removed_books, added_books = self.intersect(books_metadata)
@@ -654,6 +664,8 @@ class ConnectionCheck(QThread):
         try:
             while self.gotcha:
                 for url in self.urls:
+                    url = "{}/static/favicon.svg".format(url)
+                    logger.info("{} CHECKED!".format(url))
                     if not requests.get(url, verify=False, timeout=(5)).ok:
                         self.lost_connection.emit()
                         self.gotcha = False
@@ -701,7 +713,7 @@ class LetsShareBooksDialog(QDialog):
         self.initial_chat = True
         self.no_internet = False
 
-        self.lsb_url_text = 'Be a librarian. Share your library.'
+        self.lsb_url_text = ' Be a librarian. Share your library.'
         self.url_label_tooltip = '<<<< Be a librarian.'\
                                  'Click on Start sharing button.<<<<'
         self.lsb_url = 'nourl'
@@ -833,7 +845,7 @@ class LetsShareBooksDialog(QDialog):
         self.url_label.setObjectName("url")
         self.l.addWidget(self.url_label)
 
-        self.arrow_button = QPushButton("_____")
+        self.arrow_button = QPushButton("_______")
         self.arrow_button.setObjectName("arrow")
         self.l.addWidget(self.arrow_button)
 
@@ -890,16 +902,28 @@ class LetsShareBooksDialog(QDialog):
         self.ll.addWidget(self.libranon_container)
         self.ll.addSpacing(10)
 
-        self.make_portable = HoverHand()
-        self.make_portable.setSizePolicy(QSizePolicy.Expanding,
-                                         QSizePolicy.Expanding)
-        self.make_portable.setObjectName("url")
-        self.make_portable.setText(" Make portable ")
-        self.ll.addWidget(self.make_portable)
-        self.make_portable.hide()
+        self.portable_bar = QHBoxLayout()
+        self.portable_bar.setSpacing(0)
+        self.portable_bar.setContentsMargins(0, 0, 0, 0)
+        self.pw = QWidget()
+        self.pw.setLayout(self.portable_bar)
+
+        self.portable_button = HoverHand()
+        self.portable_button.setSizePolicy(QSizePolicy.Expanding,
+                                           QSizePolicy.Expanding)
+        self.portable_button.setObjectName("url")
+        self.portable_button.setText(" Make portable as {}"
+                                     .format(self.us.librarian))
+        self.portable_button.clicked.connect(self.generate_portable)
+
+        self.arrow_button2 = QPushButton("__")
+        self.arrow_button2.setObjectName("arrow")
+        self.portable_bar.addWidget(self.portable_button)
+        self.portable_bar.addWidget(self.arrow_button2)
+        self.ll.addWidget(self.pw)
+        self.pw.hide()
 
         #- books line with information about importing books ------------------
-
         self.books_layout = QHBoxLayout()
         self.books_layout.setSpacing(0)
         self.books_layout.setContentsMargins(0, 0, 0, 0)
@@ -1018,14 +1042,14 @@ class LetsShareBooksDialog(QDialog):
         self.on = QState()
         self.on.setObjectName("on")
         self.on.entered.connect(
-            lambda: self.render_lsb_button("Start sharing",
+            lambda: self.render_lsb_button(" Start sharing ",
                                            self.lsb_url_text))
         self.on.entered.connect(lambda: self.log_message("ON"))
 
         self.ssh_server = QState()
         self.ssh_server.setObjectName("ssh_server")
         self.ssh_server.entered.connect(
-            lambda: self.render_lsb_button("Stop sharing", "Connecting..."))
+            lambda: self.render_lsb_button(" Stop sharing ", "Connecting..."))
         self.ssh_server.entered.connect(
             lambda: self.log_message("SSH_SERVER"))
         self.ssh_server.entered.connect(self.establish_ssh_server)
@@ -1109,7 +1133,7 @@ class LetsShareBooksDialog(QDialog):
 
     #--------------------------------------------------------------------------
 
-    def sync_metadata(self, what):
+    def sync_metadata(self, what="library_changed", portable=False):
         if self.metadata_thread.isRunning():
             if what == "library_changed":
                 self.metadata_thread.get_directory_path()
@@ -1118,13 +1142,18 @@ class LetsShareBooksDialog(QDialog):
                 logger.info("EDITED_ITEM FIRED BUT NO LUCK FOR SYNC!")
                 return
         else:
-            self.metadata_thread = MetadataLibThread(self.us)
+            if portable:
+                self.metadata_thread = MetadataLibThread(self.us, True)
+            else:
+                self.metadata_thread = MetadataLibThread(self.us)
+
             self.metadata_thread.uploading.connect(
                 lambda: self.update_progress_bar(
                     self.us.uploading_message))
 
             self.metadata_thread.uploaded.connect(
                 self.progress_bar.hide)
+
             self.metadata_thread.uploaded.connect(
                 lambda: self.url_label.setToolTip(
                     "All metadata uploaded... Click & GO!"))
@@ -1134,7 +1163,6 @@ class LetsShareBooksDialog(QDialog):
             self.metadata_thread.upload_error.connect(
                 lambda: self.log_message("UPLOAD ERROR!"))
 
-            self.metadata_thread.port = self.port
             self.metadata_thread.start()
 
     def check_connections(self):
@@ -1205,7 +1233,7 @@ class LetsShareBooksDialog(QDialog):
 
         self.qaction.setIcon(get_icon('images/icon.png'))
 
-        self.lsb_url_text = "Be a librarian. Share your library."
+        self.lsb_url_text = " Be a librarian. Share your library."
         self.url_label_tooltip = '<<<< Be a librarian. '\
                                  'Click on Start sharing button.'
 
@@ -1233,7 +1261,7 @@ class LetsShareBooksDialog(QDialog):
         self.url_label.setToolTip(self.url_label_tooltip)
 
     def establish_ssh_server(self):
-        self.port = str(int(random.random()*48000+1024))
+        self.us.port = str(int(random.random()*48000+1024))
         self.calibre_server_port_mock = "56665"
         if sys.platform == "win32":
             self.lsbtunnel = os.path.join(self.us.portable_directory,
@@ -1244,12 +1272,12 @@ class LetsShareBooksDialog(QDialog):
                 'echo y|{0} -N -T tunnel@{1} -R {2}:localhost:{3} -P 722'
                 .format(self.lsbtunnel,
                         prefs['lsb_server'],
-                        self.port,
+                        self.us.port,
                         #self.calibre_server_port),
                         self.calibre_server_port_mock),
                 shell=True)
             self.lsb_url = "{}://www{}.{}".format(prefs['server_prefix'],
-                                                  self.port,
+                                                  self.us.port,
                                                   prefs['lsb_server'])
             self.lsb_url_text = " Go to: https://library.memoryoftheworld.org"
             QTimer.singleShot(3000, self.established_ssh_tunnel.emit)
@@ -1271,7 +1299,7 @@ class LetsShareBooksDialog(QDialog):
                 #'-o', 'ProxyCommand ssh -W %h:%p tunnel@ssh.pede.rs -p 443',
                 prefs['lsb_server'],
                 '-l', 'tunnel', '-R', '{}:localhost:{}'.format(
-                    self.port,
+                    self.us.port,
                     #self.calibre_server_port),
                     self.calibre_server_port_mock),
                 '-p', '722'])
@@ -1307,9 +1335,9 @@ class LetsShareBooksDialog(QDialog):
                                     #self.port = m.groups()[0]
                                     self.lsb_url = '{}://www{}.{}'.format(
                                         prefs['server_prefix'],
-                                        self.port,
+                                        self.us.port,
                                         prefs['lsb_server'])
-                                    self.lsb_url_text = " Go to: https://library.memoryoftheworld.org"
+                                    self.lsb_url_text = " https://library.memoryoftheworld.org"
                                     self.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
                                     self.established_ssh_tunnel.emit()
                                     gotcha = True
@@ -1357,6 +1385,9 @@ class LetsShareBooksDialog(QDialog):
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False
 
+    def generate_portable(self):
+        self.sync_metadata(portable=True)
+
     def stop_connection(self):
         self.no_internet = False
 
@@ -1365,12 +1396,14 @@ class LetsShareBooksDialog(QDialog):
         if event.key() == Qt.Key_Escape:
             pass
         elif event.key() == Qt.Key_Control:
-            self.make_portable.show()
+            self.portable_button.setText(" Make portable as {}"
+                                       .format(self.us.librarian))
+            self.pw.show()
             self.log_message("Here is key P!!!")
 
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:
-            self.make_portable.hide()
+            self.pw.hide()
 
     def log_message(self, state):
         logger.info("STATE: {}".format(state))

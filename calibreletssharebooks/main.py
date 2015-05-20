@@ -913,7 +913,7 @@ class LetsShareBooksDialog(QDialog):
                                            QSizePolicy.Expanding)
         self.portable_button.setObjectName("url")
         self.portable_button.setText(" Make portable as {}"
-                                     .format(self.us.librarian))
+                                     .format(self.edit.text()))
         self.portable_button.clicked.connect(self.generate_portable)
 
         self.arrow_button2 = QPushButton("__")
@@ -1397,9 +1397,8 @@ class LetsShareBooksDialog(QDialog):
             pass
         elif event.key() == Qt.Key_Control:
             self.portable_button.setText(" Make portable as {}"
-                                       .format(self.us.librarian))
+                                         .format(self.edit.text()))
             self.pw.show()
-            self.log_message("Here is key P!!!")
 
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:

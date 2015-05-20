@@ -1134,6 +1134,7 @@ class LetsShareBooksDialog(QDialog):
     #--------------------------------------------------------------------------
 
     def sync_metadata(self, what="library_changed", portable=False):
+        self.us.librarian = self.edit.text()
         if self.metadata_thread.isRunning():
             if what == "library_changed":
                 self.metadata_thread.get_directory_path()
@@ -1368,7 +1369,6 @@ class LetsShareBooksDialog(QDialog):
 
     def save_librarian(self):
         prefs['librarian'] = self.edit.text()
-        self.edit.setText(prefs['librarian'])
         self.us.librarian = prefs['librarian']
 
     def open_url(self, url):
@@ -1381,7 +1381,7 @@ class LetsShareBooksDialog(QDialog):
         if self.initial_chat:
             chat_url = u"https://chat.memoryoftheworld.org/calibre.html?nick="
             url = QUrl(u"{}{}".format(chat_url,
-                                      self.us.librarian.title()))
+                                      self.edit.text().title()))
             self.webview.page().mainFrame().load(url)
             self.initial_chat = False
 

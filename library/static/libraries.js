@@ -204,7 +204,7 @@ var setup_modal = function () {
             $(modal).find('.import').click(function(e) {
                 open_import_modal();
             });
-            modal.dialog("open");            
+            modal.dialog("open");
             // navigate modals with left/right arrows
             $(modal).keydown(function(e) {
                 var this_cover = $(['.cover h2 [rel="',
@@ -561,7 +561,7 @@ var init_template_data = function() {
         directory.forEach(function(el){directory_path += el + '/'});
         return [directory_path, file_path];
     };
-    
+
     window.gen_book_string_parts = function (base_url, format, book) {
         var final_base_url = book.portable_url + '/';
         if (is_this_portable()) {
@@ -570,7 +570,7 @@ var init_template_data = function() {
         if (book.portable) {
             book.application_id = '';
             var df_path = get_directory_path(book);
-            var file_name = df_path[1].split("/").slice(-1);
+            var file_name = df_path[1].split("/").slice(-1)[0].split(".").slice(0, -1) + "." + format.toLowerCase();
             return book_parts_portable_tmpl({
                 'base_url': final_base_url,
                 'format': '',
@@ -581,7 +581,7 @@ var init_template_data = function() {
         } else {
             book.application_id = '';
             var df_path = get_directory_path(book);
-            var file_name = df_path[1].split("/").slice(-1);
+            var file_name = df_path[1].split("/").slice(-1)[0].split(".").slice(0, -1) + "." + format.toLowerCase();
             return book_parts_tmpl({
                 'base_url': base_url,
                 'file_path': df_path[0],
@@ -605,8 +605,10 @@ var init_template_data = function() {
             metadata_urls.push([base_url,
                                 '/',
                                 df_path[0],
-                                df_path[1].split("/").slice(-1)].join(''));
-        }); 
+                                df_path[1].split("/").slice(-1)[0].split(".").slice(0, -1),
+                                '.',
+                                format.toLowerCase()].join(''));
+        });
         return {
             'base_url': base_url,
             'book': book,
@@ -631,7 +633,9 @@ var init_template_data = function() {
             metadata_urls.push([base_url,
                                 '/',
                                 df_path[0],
-                                df_path[1].split("/").slice(-1)].join(''));
+                                df_path[1].split("/").slice(-1)[0].split(".").slice(0, -1),
+                                '.',
+                                format.toLowerCase()].join(''));
         });
         var final_base_url = book.portable_url + '/';
         if (is_this_portable()) {

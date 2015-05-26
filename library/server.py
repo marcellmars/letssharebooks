@@ -21,7 +21,8 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ENVIRONMENT = Environment(loader=FileSystemLoader(
         '{}/templates'.format(CURRENT_DIR)))
 
-CONF = {'/static': {'tools.staticdir.on': True,
+CONF = {'/': {'tools.gzip.on': True},
+        '/static': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'static'),
                     'tools.staticdir.content_types': {'js': 'application/javascript',
                                                       'css': 'text/css',

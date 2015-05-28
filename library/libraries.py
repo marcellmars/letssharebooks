@@ -257,11 +257,11 @@ def get_books(db, page, query={}):
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
     logging.debug('FINAL QUERY: {}'.format(q))
     librarians = active_catalogs.distinct('librarian')
-    authors = db.books.find(q, PUBLIC_BOOK_FIELDS).distinct('authors')
-    titles = db.books.find(q, PUBLIC_BOOK_FIELDS).distinct('title')
+    dbb = db.books.find(q, PUBLIC_BOOK_FIELDS)
+    authors = dbb.distinct('authors')
+    titles = dbb.distinct('title')
     # paginate books
-    items, next_page, on_page, total = paginate(db.books.find(
-            q, PUBLIC_BOOK_FIELDS).sort('uuid'), page)
+    items, next_page, on_page, total = paginate(dbb.sort('uuid'), page)
     # return serialized books with availability of next page
     return utils.ser2json({'books': list(items),
                            'next_page': next_page,

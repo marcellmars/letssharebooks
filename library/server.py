@@ -7,6 +7,7 @@ import pymongo
 import zipfile
 import traceback
 import argparse
+import time
 import libraries
 import settings
 import utils
@@ -174,7 +175,20 @@ def thread_connect(thread_index):
     Creates a db connection and stores it in the current thread
     http://tools.cherrypy.org/wiki/Databases
     '''
-    cherrypy.thread_data.db = utils.connect_to_db(settings.ENV)
+    time_delay = 5
+    max_attempts = 5
+    num_attempts = 0
+    while num_attempts <= max_attempts:
+        try:
+            cherrypy.thread_data.db = utils.connect_to_db(settings.ENV)
+            logging.info('connected to db {}'.format(settings.ENV))
+            return
+        except Exception:
+            logging.error('db connection error. will try again.')
+            time.sleep(time_delay)
+        num_attempts += 1
+    if num_attempts == max_attempts:
+        logging.error('db connection error. did not connect...')
 
 #------------------------------------------------------------------------------
 

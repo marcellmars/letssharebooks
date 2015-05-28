@@ -14,13 +14,8 @@ import settings
 
 def connect_to_db(env):
     db = None
-    try:
-        mongo_client = MongoClient(env['mongo_addr'],
-                                   env['mongo_port'])
-        db = mongo_client[env['dbname']]
-        print("DB: {}".format(db))
-    except Exception as e:
-        print 'unable to connect to mongodb!'
+    mongo_client = MongoClient(env['mongo_addr'], env['mongo_port'])
+    db = mongo_client[env['dbname']]
     return db
 
 #------------------------------------------------------------------------------

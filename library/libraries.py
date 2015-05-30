@@ -257,9 +257,11 @@ def get_books(db, page, query={}):
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
     logging.debug('FINAL QUERY: {}'.format(q))
     librarians = active_catalogs.distinct('librarian')
+    # fetch final cursor
     dbb = db.books.find(q, PUBLIC_BOOK_FIELDS)
-    authors = dbb.distinct('authors')
-    titles = dbb.distinct('title')
+    # distinct authors/titles for autocomplete
+    authors =  dbb.hint([('authors', 1)]).distinct('authors')
+    titles  =  dbb.hint([('title', 1)]).distinct('title')
     # paginate books
     items, next_page, on_page, total = paginate(dbb.sort('uuid'), page)
     # return serialized books with availability of next page

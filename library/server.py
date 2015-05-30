@@ -58,7 +58,7 @@ class Root(object):
         End-point for uploading user catalogs
         '''
         try:
-            res = libraries.handle_uploaded_catalog(cherrypy.thread_data.db,
+            res = libraries.handle_uploaded_catalog(cherrypy.db,
                                                     uploaded_file)
             return res
         except zipfile.BadZipfile as e:
@@ -76,7 +76,7 @@ class Root(object):
         Mostly for testing purposes
         '''
         try:
-            res = libraries.handle_uploaded_catalog(cherrypy.thread_data.db,
+            res = libraries.handle_uploaded_catalog(cherrypy.db,
                                                     uploaded_file,
                                                     zipped=False)
             return res
@@ -91,21 +91,21 @@ class Root(object):
         '''
         Returns whole catalog
         '''
-        return libraries.get_catalog(cherrypy.thread_data.db, uuid)
+        return libraries.get_catalog(cherrypy.db, uuid)
 
     @cherrypy.expose
     def get_catalogs(self):
         '''
         Returns whole catalog
         '''
-        return libraries.get_catalogs(cherrypy.thread_data.db)
+        return libraries.get_catalogs(cherrypy.db)
 
     @cherrypy.expose
     def book(self, uuid):
         '''
         Single book page
         '''
-        book = libraries.get_book(cherrypy.thread_data.db, uuid=uuid)
+        book = libraries.get_book(cherrypy.db, uuid=uuid)
         return book
 
     @cherrypy.expose
@@ -125,7 +125,7 @@ class Root(object):
             params = simplejson.loads(rawbody)
             page = params.get('page')
             query = params.get('query')
-        books = libraries.get_books(cherrypy.thread_data.db, page, query)
+        books = libraries.get_books(cherrypy.db, page, query)
         return books
 
     @cherrypy.expose
@@ -133,7 +133,7 @@ class Root(object):
         '''
         Ajax backend for fetching active librarians
         '''
-        librarians = libraries.get_active_librarians(cherrypy.thread_data.db)
+        librarians = libraries.get_active_librarians(cherrypy.db)
         return librarians
 
     @cherrypy.expose
@@ -141,14 +141,14 @@ class Root(object):
         '''
         Register portable library from remote url and insert its books
         '''
-        return libraries.add_portable(cherrypy.thread_data.db, url)
+        return libraries.add_portable(cherrypy.db, url)
 
     @cherrypy.expose
     def portables(self):
         '''
         Returns all registered portable libraries
         '''
-        return libraries.get_portables(cherrypy.thread_data.db)
+        return libraries.get_portables(cherrypy.db)
 
     @cherrypy.expose
     def remove_portable(self, url):
@@ -156,7 +156,7 @@ class Root(object):
         Removes registered portable library with given lib_uuid
         Just for testing...
         '''
-        return libraries.remove_portable(cherrypy.thread_data.db, url)
+        return libraries.remove_portable(cherrypy.db, url)
 
     @cherrypy.expose
     @utils.jsonp
@@ -164,27 +164,23 @@ class Root(object):
         '''
         Return some status info
         '''
-        return libraries.get_status(cherrypy.thread_data.db)
+        return libraries.get_status(cherrypy.db)
 
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------
 
-def thread_connect(thread_index):
-    '''
-    Creates a db connection and stores it in the current thread
-    http://tools.cherrypy.org/wiki/Databases
-    '''
+def db_connect():
     time_delay = 5
     max_attempts = 5
     num_attempts = 0
     while num_attempts <= max_attempts:
         try:
-            cherrypy.thread_data.db = utils.connect_to_db(settings.ENV)
-            logging.info('connected to db {}'.format(settings.ENV))
+            cherrypy.db = utils.connect_to_db(settings.ENV)
+            logging.info('connected to db.')
             return
         except Exception:
-            logging.error('db connection error. will try again.')
+            logging.error('db connection error. will try again.', exc_info=True)
             time.sleep(time_delay)
         num_attempts += 1
     if num_attempts == max_attempts:
@@ -197,7 +193,8 @@ def start_app(env):
     logging.basicConfig(level=logging.DEBUG)
     # tell cherrypy to call "connect" for each thread, when it starts up
     # result is one db connection per thread
-    cherrypy.engine.subscribe('start_thread', thread_connect)
+    #cherrypy.engine.subscribe('start_thread', thread_connect)
+    db_connect()
     cherrypy.server.socket_host = settings.ENV['host']
     cherrypy.server.socket_port = settings.ENV['port']
     cherrypy.quickstart(Root(), '/', config=CONF)

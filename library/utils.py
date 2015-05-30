@@ -12,10 +12,23 @@ import settings
 
 #------------------------------------------------------------------------------
 
+def ensure_all_indexes(db):
+    '''
+    Create some indexes
+    '''
+    logging.info('Ensuring db indexes.')
+    db.books.ensure_index([('authors', 1)])
+    db.books.ensure_index([('title', 1)])
+    db.books.ensure_index([('uuid', 1), ('library_uuid', 1), ('librarian', 1)])
+
+#------------------------------------------------------------------------------
+
 def connect_to_db(env):
+    logging.info('connecting to db {}'.format(env['mongo_addr']))
     db = None
     mongo_client = MongoClient(env['mongo_addr'], env['mongo_port'])
     db = mongo_client[env['dbname']]
+    ensure_all_indexes(db)
     return db
 
 #------------------------------------------------------------------------------

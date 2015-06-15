@@ -24,6 +24,7 @@ import gzip
 import posixpath
 import urllib
 import mimetypes
+import operator
 
 try:
     from PyQt4 import QtWebKit
@@ -100,7 +101,7 @@ if False:
 
 #- set up logging -------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=True)
+logger = get_logger('letssharebooks', disabled=False)
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------
@@ -499,7 +500,7 @@ class MetadataLibThread(QThread):
             self.library['portable_url'] = False
             self.library['books'] = {}
             self.library['books']['remove'] = []
-            self.library['books']['add'] = [book for book in books_metadata]
+            self.library['books']['add'] = sorted(books_metadata, key=operator.itemgetter('uuid'))
             json_string = json.dumps(self.library)
             file.write("LIBRARY = {};".format(json_string))
         try:

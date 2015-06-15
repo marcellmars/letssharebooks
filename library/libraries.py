@@ -258,14 +258,14 @@ def get_books(db, page, query={}):
     logging.debug('FINAL QUERY: {}'.format(q))
     librarians = active_catalogs.distinct('librarian')
     # fetch final cursor
-    dbb = db.books.find(q, PUBLIC_BOOK_FIELDS)
+    dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('uuid')
     # distinct authors/titles for autocomplete
-    authors =  dbb.hint([('authors', 1)]).distinct('authors')
-    titles  =  dbb.hint([('title', 1)]).distinct('title')
+    authors = dbb.distinct('authors')
+    titles  = dbb.distinct('title')
     # paginate books
-    items, next_page, on_page, total = paginate(dbb.sort('uuid'), page)
+    books, next_page, on_page, total = paginate(dbb, page)
     # return serialized books with availability of next page
-    return utils.ser2json({'books': list(items),
+    return utils.ser2json({'books': books,
                            'next_page': next_page,
                            'on_page': on_page,
                            'total': total,
@@ -369,9 +369,10 @@ def paginate(cursor, page=1, per_page=settings.ITEMS_PER_PAGE):
     '''
     items = cursor.skip((page-1) * per_page).limit(per_page)
     next_page = page + 1
+    num_total_items = cursor.count()
     num_items_page = items.count(True)
-    if num_items_page < per_page:
+    if per_page * page == num_total_items or num_items_page < per_page:
         next_page = None
-    return (items, next_page, num_items_page, cursor.count())
+    return (list(items), next_page, num_items_page, num_total_items)
 
 #------------------------------------------------------------------------------

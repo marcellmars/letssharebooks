@@ -388,9 +388,15 @@ class MetadataLibThread(QThread):
             try:
                 if md_fields.format_metadata:
                     for frmat in md_fields.format_metadata.iteritems():
-                        path = frmat[1]["path"].split(os.path.sep)[-3:]
-                        path = os.path.join(*path)
-                        bkf[frmat[0]] = {'path': "{}".format(path),
+                        file_path = frmat[1]["path"].split(os.path.sep)[-3:]
+                        file_path = os.path.join(*file_path)
+                        file_name = frmat[1]["path"].split(os.path.sep)[-1]
+                        dir_path = frmat[1]["path"].split(os.path.sep)[-3:-1]
+                        dir_path = os.path.join(*dir_path)
+
+                        bkf[frmat[0]] = {'file_path': "{}".format(file_path),
+                                         'file_name': "{}".format(file_name),
+                                         'dir_path': "{}/".format(dir_path),
                                          'size': frmat[1]["size"]}
                         bk.append(frmat[0])
             except Exception as e:
@@ -401,10 +407,13 @@ class MetadataLibThread(QThread):
                              .format(e))
 
             if not bkf:
-                bkf['0'] = {'path': "{}/{}.{}"
+                bkf['0'] = {'file_path': "{}/{}.{}"
                             .format(current_db.field_for('path', book),
                                     ".",
                                     "."),
+                            'file_name': "...",
+                            'dir_path': "{}"
+                            .format(current_db.field_for('path', book)),
                             'size': 0}
 
             b['format_metadata'] = bkf

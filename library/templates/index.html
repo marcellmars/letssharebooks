@@ -33,7 +33,7 @@
 </script>
 
 <script type="text/x-template" id="book-parts-tmpl">
-  <a href="<%= base_url %>/<%= file_path %><%= file_name %>"><%= format.toUpperCase() %></a>
+  <a href="<%= base_url %>/<%= file_path %>"><%= format.toUpperCase() %></a>
 </script>
 
 <script type="text/x-template" id="book-parts-portable-tmpl">
@@ -43,7 +43,7 @@
 <script type="text/x-template" id="book-content-tmpl">
   <div class="cover" rel='<%= book.librarian %>'>
     <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-      <img class="cover-img" src="<%= base_url %>/<%= file_path %>cover.jpg" />
+      <img class="cover-img" src="<%= base_url %>/<%= dir_path %>cover.jpg" />
       <div class="cover-highlight">
         <span class="hmsg">Shared by <%= book.librarian %></span>
       </div>
@@ -70,7 +70,7 @@
   <div class="cover" rel='<%= book.librarian %>'>
     <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
       <img class="cover-img"
-           src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" />
+           src="<%= base_url %><%= portable_cover %>" />
       <div class="cover-highlight">
         <span class="hmsg">Shared by <%= book.librarian %></span>
       </div>
@@ -96,7 +96,7 @@
 <script type="text/x-template" id="book-modal-tmpl">
   <div id="book-modal" title="<%= book.title %>">
     <div>
-      <img class="img_modal" src="<%= base_url %>/<%= file_path %>cover.jpg" width="120" />
+      <img class="img_modal" src="<%= base_url %>/<%= dir_path %>cover.jpg" width="120" />
       <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
          title="import book directly to calibre" target="import">

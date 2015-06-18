@@ -33,7 +33,7 @@
   </script>
 
   <script type="text/x-template" id="book-parts-tmpl">
-    <a href="<%= base_url %>/get/<%= format %>/<%= book.application_id %>.<%= format %>"><%= format.toUpperCase() %></a>
+    <a href="<%= base_url %>/<%= file_path %>">< %= format.toUpperCase() %></a>
   </script>
 
   <script type="text/x-template" id="book-parts-portable-tmpl">
@@ -43,8 +43,7 @@
   <script type="text/x-template" id="book-content-tmpl">
     <div class="cover" rel='<%= book.librarian %>'>
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-        <img class="cover-img"
-             src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" />
+        <img class="cover-img" src="<%= base_url %>/<%= dir_path %>cover.jpg" />
         <div class="cover-highlight">
           <span class="hmsg">Shared by <%= book.librarian %></span>
         </div>
@@ -62,8 +61,7 @@
   <script type="text/x-template" id="book-content-portable-tmpl">
     <div class="cover" rel='<%= book.librarian %>'>
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-        <img class="cover-img"
-             src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" />
+        <img class="cover-img" src="<%= portable_cover %>" />
         <div class="cover-highlight">
           <span class="hmsg">Shared by <%= book.librarian %></span>
         </div>
@@ -96,7 +94,7 @@
   <script type="text/x-template" id="book-modal-portable-tmpl">
     <div id="book-modal" title="<%= book.title %>">
       <div>
-        <img class="img_modal" src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" width="120"/>
+        <img class="img_modal" src="<%= base_url %>/<%= portable_cover %>" width="120"/>
         <p><span class="attr">Authors:</span> <%= book.authors %></p>
         <p><span class="attr">Publisher:</span> <%= book.publisher %></p>  
         <% if (book.formats[0] != '0') { %>

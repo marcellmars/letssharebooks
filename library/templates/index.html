@@ -69,8 +69,7 @@
 <script type="text/x-template" id="book-content-portable-tmpl">
   <div class="cover" rel='<%= book.librarian %>'>
     <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-      <img class="cover-img"
-           src="<%= base_url %>/<%= portable_cover %>" />
+      <img class="cover-img" src="<%= base_url %>/<%= portable_cover %>" />
       <div class="cover-highlight">
         <span class="hmsg">Shared by <%= book.librarian %></span>
       </div>
@@ -120,7 +119,7 @@
 <script type="text/x-template" id="book-modal-portable-tmpl">
   <div id="book-modal" title="<%= book.title %>">
     <div>
-      <img class="img_modal" src="<%= base_url %><%= get_cover %><%= book.application_id %><%= portable_cover %>" width="120"/>
+      <img class="img_modal" src="<%= base_url %>/<%= portable_cover %>" width="120"/>
       <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
          title="import book directly to calibre" target="import">

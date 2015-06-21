@@ -602,7 +602,6 @@ var init_template_data = function() {
                                 '/',
                                 book.format_metadata[format].file_path]);
         });
-        console.log(encodeURIComponent(metadata_urls.join('__,__')))
         return {
             'base_url': base_url,
             'book': book,

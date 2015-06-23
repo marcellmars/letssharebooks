@@ -33,17 +33,13 @@
 </script>
 
 <script type="text/x-template" id="book-parts-tmpl">
-  <a href="<%= base_url %>/<%= file_path %>"><%= format.toUpperCase() %></a>
-</script>
-
-<script type="text/x-template" id="book-parts-portable-tmpl">
-  <a href="<%= base_url %><%= format %><%= book.application_id %><%= portable_book %><%= format.toLowerCase() %>"><%= format.toUpperCase() %><%= portable_format %></a>
+  <a href="<%= file_path %>"><%= format.toUpperCase() %></a>
 </script>
 
 <script type="text/x-template" id="book-content-tmpl">
   <div class="cover" rel='<%= book.librarian %>'>
     <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-      <img class="cover-img" src="<%= base_url %>/<%= dir_path %>cover.jpg" />
+      <img class="cover-img" src="<%= cover_path %>" />
       <div class="cover-highlight">
         <span class="hmsg">Shared by <%= book.librarian %></span>
       </div>
@@ -66,36 +62,10 @@
   </div>
 </script>
 
-<script type="text/x-template" id="book-content-portable-tmpl">
-  <div class="cover" rel='<%= book.librarian %>'>
-    <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-      <img class="cover-img" src="<%= base_url %>/<%= portable_cover %>" />
-      <div class="cover-highlight">
-        <span class="hmsg">Shared by <%= book.librarian %></span>
-      </div>
-    </a>
-    <h2>
-      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
-      <br />
-      <%= authors %></h2> 
-    <% if (book.formats[0] != '0') { %>
-    <span class="download">Download: <%= formats %></span> 
-    <% } %>
-    <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
-    <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
-       title="import book directly to calibre" target="import">
-      <span class="lodestone">
-        <img src="../images/lodestone.png" title="import book directly to calibre" />
-      </span>
-    </a>
-    <% } %>
-  </div>
-</script>
-
 <script type="text/x-template" id="book-modal-tmpl">
   <div id="book-modal" title="<%= book.title %>">
     <div>
-      <img class="img_modal" src="<%= base_url %>/<%= dir_path %>cover.jpg" width="120" />
+      <img class="img_modal" src="<%= cover_path %>" width="120" />
       <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
          title="import book directly to calibre" target="import">
@@ -112,30 +82,7 @@
     <p><span class="attr">Download:</span> <%= formats %></p>
     <% } %>
     <p><span class="attr">About:</span> <%= book.comments %></p></br>
-    <p><a href="<%= base_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
-  </div>
-</script>
-
-<script type="text/x-template" id="book-modal-portable-tmpl">
-  <div id="book-modal" title="<%= book.title %>">
-    <div>
-      <img class="img_modal" src="<%= base_url %>/<%= portable_cover %>" width="120"/>
-      <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
-      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
-         title="import book directly to calibre" target="import">
-        <span class="lodestone_modal">
-          <img src="../images/lodestone_modal.png" title="import book directly to calibre" />
-        </span>
-      </a>
-      <% } %>
-      <p><span class="attr">Authors:</span> <%= book.authors %></p>
-      <p><span class="attr">Publisher:</span> <%= book.publisher %></p>  
-      <% if (book.formats[0] != '0') { %>
-      <p><span class="attr">Download:</span> <%= formats %></p>
-      <% } %>
-      <p><span class="attr"><%= book.librarian %>:</span> <a href="<%= base_url %>" title="visit librarian" target="_blank"><%= base_url %></a></p>
-      <p><span class="attr">About:</span> <%= book.comments %></p>
-    </div>
+    <p><a href="<%= prefix_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
   </div>
 </script>
 

@@ -30,6 +30,7 @@ PUBLIC_BOOK_FIELDS = {
     'portable_url': 1,
     'format_metadata': 1,
     'library_uuid': 1,
+    'prefix_url': 1,
     '_id': 0
     }
 
@@ -46,6 +47,7 @@ PUBLIC_SINGLE_BOOK_FIELDS = {
     'librarian':1,
     'portable':1,
     'portable_url':1,
+    'prefix_url': 1,
     'format_metadata':1,
     '_id': 0
     }
@@ -120,7 +122,7 @@ def import_catalog(db, catalog, portable_url=None):
     # check if library already in the db
     db_cat = db.catalog.find_one({'library_uuid': library_uuid})
     if db_cat:
-        print("BOOKS TO BE REMOVED: {}".format(catalog['books']['remove']))
+        #print("BOOKS TO BE REMOVED: {}".format(catalog['books']['remove']))
         if portable:
             raise ValueError('already registered')
         # remove books as requested
@@ -131,7 +133,7 @@ def import_catalog(db, catalog, portable_url=None):
     # set tunnel to 0 if there is a library with the same tunnel from before
     old_libraries = [i['library_uuid']
                      for i in db.catalog.find({'tunnel': tunnel}) if i['library_uuid'] != library_uuid]
-    print("OLD_LIBRARIES: {}".format(old_libraries))
+    #print("OLD_LIBRARIES: {}".format(old_libraries))
     db.catalog.update({'library_uuid': {'$in': old_libraries}},
                       {'$set': {'tunnel': 0}}, multi=True)
     # update catalog metadata
@@ -168,7 +170,7 @@ def add_to_library(db, library_uuid, librarian, tunnel, books, portable, portabl
     Adds books to the database and modifies catalog entry. Mostly used with
     import_catalog function.
     '''
-    print("BOOKS: {}".format(books))
+    #print("BOOKS: {}".format(books))
     books_uuid = []
     for book in books:
         # add some catalog metadata
@@ -177,6 +179,11 @@ def add_to_library(db, library_uuid, librarian, tunnel, books, portable, portabl
         book['portable'] = portable
         book['librarian'] = librarian
         book['portable_url'] = portable_url
+        book['prefix_url'] = "www{}.{}/".format(tunnel,
+                                                settings.ENV['domain_url'])
+        #print("BOOK['PREFIX_URL']: {}".format(book['prefix_url']))
+        if portable_url:
+            book['prefix_url'] = portable_url
         try:
             db.books.update({'uuid': book['uuid']},
                              utils.remove_dots_from_dict(book),
@@ -289,7 +296,7 @@ def get_active_ports():
         else:
             break
     s.close()
-    print(ports[0], get_active_tunnels()[0])
+    #print(ports[0], get_active_tunnels()[0])
     return ports[0]
 
 #------------------------------------------------------------------------------
@@ -300,18 +307,18 @@ def get_active_librarians(db):
                 {'tunnel': {'$in': [int(p) for p in get_active_ports()]}},
                 {'portable': True}]})
     librarians = active_catalogs.distinct('librarian')
-    print([c['librarian'] for c in active_catalogs], librarians)
+    #print([c['librarian'] for c in active_catalogs], librarians)
     return utils.ser2json({'librarians' : librarians})
 
 #------------------------------------------------------------------------------
 
-def add_portable(db, url):
-    print('Registering portable: with url {}'.format(url))
+def add_portable(db, portable_url):
+    #print('Registering portable: with url {}'.format(portable_url))
     try:
-        libjs = requests.get(url + '/static/data.js').text
+        libjs = requests.get(portable_url + '/static/data.js').text
         libjson = libjs[libjs.find('{'):-1]
         catalog = simplejson.loads(libjson)
-        res = import_catalog(db, catalog, url)
+        res = import_catalog(db, catalog, portable_url)
         return res
     except ValueError as e:
         return utils.ser2json('Already registered...')

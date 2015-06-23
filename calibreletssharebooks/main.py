@@ -101,7 +101,7 @@ if False:
 
 #- set up logging -------------------------------------------------------------
 from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=True)
+logger = get_logger('letssharebooks', disabled=False)
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------
@@ -952,7 +952,8 @@ class LetsShareBooksDialog(QDialog):
                                        QSizePolicy.Maximum)
         self.books_label.setObjectName("share")
         self.books_label.setToolTip(
-            "Books imported from https://library.memoryoftheworld.org")
+            "Books imported from {}://library.{}".format(prefs['server_prefix'],
+                                                         prefs['lsb_server']))
         self.books_layout.addWidget(self.books_label)
         self.books_layout.addWidget(self.books)
         self.books_label.clicked.connect(self.go_do_something)
@@ -1076,7 +1077,8 @@ class LetsShareBooksDialog(QDialog):
         self.url_label_clicked = QState()
         self.url_label_clicked.setObjectName("url_label_clicked")
         self.url_label_clicked.entered.connect(
-            lambda: self.open_url("https://library.memoryoftheworld.org"))
+            lambda: self.open_url("{}://library.{}".format(prefs['server_prefix'],
+                                                           prefs['lsb_server'])))
         self.url_label_clicked.entered.connect(
             lambda: self.log_message("URL_LABEL_CLICKED"))
 
@@ -1290,7 +1292,8 @@ class LetsShareBooksDialog(QDialog):
             self.lsb_url = "{}://www{}.{}".format(prefs['server_prefix'],
                                                   self.us.port,
                                                   prefs['lsb_server'])
-            self.lsb_url_text = " Go to: https://library.memoryoftheworld.org"
+            self.lsb_url_text = " Go to: {}://library.{}".format(prefs['server_prefix'],
+                                                                 prefs['lsb_server'])
             QTimer.singleShot(3000, self.established_ssh_tunnel.emit)
         else:
             self.ssh_proc = subprocess.Popen([
@@ -1348,7 +1351,8 @@ class LetsShareBooksDialog(QDialog):
                                         prefs['server_prefix'],
                                         self.us.port,
                                         prefs['lsb_server'])
-                                    self.lsb_url_text = " https://library.memoryoftheworld.org"
+                                    self.lsb_url_text = " {}://library.{}".format(prefs['server_prefix'],
+                                                                                  prefs['lsb_server'])
                                     self.url_label_tooltip = 'Copy URL to clipboard and check it out in a browser!'
                                     self.established_ssh_tunnel.emit()
                                     gotcha = True
@@ -1389,7 +1393,8 @@ class LetsShareBooksDialog(QDialog):
 
     def chat(self):
         if self.initial_chat:
-            chat_url = u"https://chat.memoryoftheworld.org/calibre.html?nick="
+            chat_url = u"{}://chat.{}/calibre.html?nick=".format(prefs['server_prefix'],
+                                                                 prefs['lsb_server'])
             url = QUrl(u"{}{}".format(chat_url,
                                       self.edit.text().title()))
             self.webview.page().mainFrame().load(url)

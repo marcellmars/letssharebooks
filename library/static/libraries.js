@@ -3,8 +3,6 @@
  * ----------------------------------------------------------------------------
  */
 
-var DOMAIN = 'memoryoftheworld.org'
-var PREFIX_URL = 'https://www';
 var ITEMS_PER_PAGE = 16;
 var STATE = {
     page: 1,
@@ -42,16 +40,12 @@ var is_this_portable = function() {
  */
 
 /* dynamic templates */
+
 var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim()),
     book_parts_tmpl = _.template($('#book-parts-tmpl').text().trim()),
     book_content_tmpl = _.template($('#book-content-tmpl').text().trim()),
     book_modal_tmpl = _.template($('#book-modal-tmpl').text().trim()),
     import_modal_tmpl = _.template($('#import-modal-tmpl').text().trim());
-
-/* portable templates */
-var book_parts_portable_tmpl = _.template($('#book-parts-portable-tmpl').text().trim()),
-    book_content_portable_tmpl = _.template($('#book-content-portable-tmpl').text().trim()),
-    book_modal_portable_tmpl = _.template($('#book-modal-portable-tmpl').text().trim());
 
 /* ----------------------------------------------------------------------------
  * Main ajax entry point
@@ -125,12 +119,8 @@ var parse_response = function (data) {
 var render_book = function(i, book) {
     var formats = '';
     var authors = '<div id="authorz">';
-    var base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
-    if (book.portable) {
-        base_url = book.portable_url;
-    };
     book.formats.map(function (format) {
-        var string_parts = gen_book_string_parts(base_url, format, book);
+        var string_parts = gen_book_string_parts(format, book);
         formats = formats + ' ' + string_parts;
     });
     book.authors.map(function (author) {
@@ -148,7 +138,7 @@ var render_book = function(i, book) {
     var last_comma = authors.lastIndexOf(',');
     authors = authors.substr(0, last_comma) +
         authors.substr(last_comma + 1) + '</div>';
-    var book_content = gen_book_content(base_url, book, formats, authors);
+    var book_content = gen_book_content(book, formats, authors);
     $('#content').append(book_content);
 };
 
@@ -175,13 +165,12 @@ var setup_modal = function () {
         STATE.query.uuid = uuid;
         push_to_history();
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
-            var formats = '',
-            base_url = [ PREFIX_URL, book.tunnel, '.', DOMAIN ].join('');
+            var formats = '';
             book.formats.map(function (format) {
-                var string_parts = gen_book_string_parts(base_url, format, book);
+                var string_parts = gen_book_string_parts(format, book);
                 formats = formats + ' ' + string_parts;
             });
-            var modal_html = gen_book_modal(base_url, book, formats);
+            var modal_html = gen_book_modal(book, formats);
             var modal = $(modal_html);
             modal.dialog({
                 autoOpen: false,
@@ -191,7 +180,7 @@ var setup_modal = function () {
                 position: { my: "center top", at: "center top"},
                 closeOnEscape: true,
                 open: function() {
-                    $('.ui-widget-overlay').bind('click', function() {
+                     $('.ui-widget-overlay').bind('click', function() {
                         modal.dialog('close');
                     })
                 },
@@ -234,7 +223,7 @@ var setup_modal = function () {
                             prev_page(true);
                         };
                     };
-                };    
+                };
             });
         });
         e.preventDefault();
@@ -553,118 +542,45 @@ $(document).ready(function () {
 /** Various functions for rendering books with HTML templating */
 var init_template_data = function() {
 
-    var get_directory_path = function (book) {
-        var format = book.formats[0];
-        var file_path = book.format_metadata[format].path;
-        var directory_path = '';
-        var directory = file_path.split('/').slice(-3,-1);
-        directory.forEach(function(el){directory_path += el + '/'});
-        return [directory_path, file_path];
-    };
-
-    window.gen_book_string_parts = function (base_url, format, book) {
-        var final_base_url = book.portable_url + '/';
-        if (is_this_portable()) {
-            final_base_url = '';
-        };
-        if (book.portable) {
-            book.application_id = '';
-            return book_parts_portable_tmpl({
-                'base_url': final_base_url,
-                'format': '',
-                'book': book,
-                'portable_book': book.format_metadata[format].file_path,
-                'portable_format': format
-            });
-        } else {
-            book.application_id = '';
-            return book_parts_tmpl({
-                'base_url': base_url,
-                'file_path':  book.format_metadata[format].file_path,
-                'file_name':  book.format_metadata[format].file_name,
-                'format': format,
-                'book': book
+    window.gen_book_string_parts = function (format, book) {
+        return book_parts_tmpl({
+            'file_path':  "https://" + book.prefix_url + book.format_metadata[format].file_path,
+            'format': format,
             });
         };
-    };
 
     /** Data for "normal" book (not portable) */
-    var book_data = function(base_url, book, formats, authors) {
+    var book_data = function(book, formats, authors) {
         var format = book.formats[0];
         book.application_id = '';
         var book_title_stripped =  book.title.replace(/\?/g, '');
         var metadata_urls = [
             book_title_stripped,
-            [base_url, '/', book.format_metadata[format].dir_path, 'metadata.opf'].join(''),
-            [base_url, '/', book.format_metadata[format].dir_path, 'cover.jpg'].join('')];
+            [book.prefix_url + book.format_metadata[format].dir_path, 'metadata.opf'].join(''),
+            [book.prefix_url + book.format_metadata[format].dir_path, 'cover.jpg'].join('')];
         $.each(book.formats, function(i, format) {
-            metadata_urls.push([base_url,
-                                '/',
-                                book.format_metadata[format].file_path]);
+            metadata_urls.push([book.prefix_url + book.format_metadata[format].file_path]);
         });
         return {
-            'base_url': base_url,
             'book': book,
             'book_title_stripped': '',
             'authors': authors,
             'formats': formats,
+            'prefix_url': "https://" + book.prefix_url,
             'dir_path': book.format_metadata[format].dir_path,
+            'cover_path': "https://" + book.prefix_url + book.format_metadata[format].dir_path + "cover.jpg",
             'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
         };
     };
 
-    /** Portable book */
-    var portable_book_data = function(base_url, book, formats, authors) {
-        var format = book.formats[0];
-        book.application_id = '';
-        var book_title_stripped =  book.title.replace(/\?/g, '');
-        var metadata_urls = [
-            book_title_stripped,
-            [base_url, '/', book.format_metadata[format].dir_path, 'metadata.opf'].join(''),
-            [base_url, '/', book.format_metadata[format].dir_path, 'cover.jpg'].join('')];
-        $.each(book.formats, function(i, format) {
-            metadata_urls.push([base_url,
-                                '/',
-                                book.format_metadata[format].file_path]);
-        });
-
-        var final_base_url = book.portable_url + '/';
-        if (is_this_portable()) {
-            final_base_url = '';
-        };
-        return {
-            'base_url': final_base_url,
-            'book': book,
-            'book_title_stripped': '',
-            'authors': authors,
-            'formats': formats,
-            'get_cover': book.format_metadata[format].dir_path,
-            'get_opf' : '',
-            'portable_cover': book.format_metadata[format].dir_path + 'cover.jpg',
-            'portable_opf': book.format_metadata[format].dir_path + 'metadata.opf',
-            'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
-        };
-    };
 
     /** Renders book inside grid */
-    window.gen_book_content = function (base_url, book, formats, authors) {
-        if (book.portable) {
-            return book_content_portable_tmpl(
-                portable_book_data(base_url, book, formats, authors));
-        } else {
-            return book_content_tmpl(
-                book_data(base_url, book, formats, authors));
-        };
+    window.gen_book_content = function (book, formats, authors) {
+        return book_content_tmpl(book_data(book, formats, authors));
     };
 
     /** Renders book modal */
-    window.gen_book_modal = function (base_url, book, formats, authors) {
-        if (book.portable) {
-            return book_modal_portable_tmpl(
-                portable_book_data(base_url, book, formats, authors));
-        } else {
-            return book_modal_tmpl(
-                book_data(base_url, book, formats, authors));
-        };
+    window.gen_book_modal = function (book, formats, authors) {
+        return book_modal_tmpl(book_data(book, formats, authors));
     };
 };

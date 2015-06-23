@@ -31,6 +31,7 @@ SERVER = {
         'prefix_url' : 'https://www',
         'host': '0.0.0.0',
         'port': 4321,
+        'domain_url': 'memoryoftheworld.org',
         'dbname': 'letssharebooks',
         },
     'docker': {

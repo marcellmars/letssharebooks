@@ -179,11 +179,11 @@ def add_to_library(db, library_uuid, librarian, tunnel, books, portable, portabl
         book['portable'] = portable
         book['librarian'] = librarian
         book['portable_url'] = portable_url
-        book['prefix_url'] = "www{}.{}/".format(tunnel,
+        book['prefix_url'] = "https://www{}.{}/".format(tunnel,
                                                 settings.ENV['domain_url'])
         #print("BOOK['PREFIX_URL']: {}".format(book['prefix_url']))
         if portable_url:
-            book['prefix_url'] = portable_url
+            book['prefix_url'] = "{}/".format(portable_url)
         try:
             db.books.update({'uuid': book['uuid']},
                              utils.remove_dots_from_dict(book),

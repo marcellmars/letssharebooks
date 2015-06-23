@@ -544,7 +544,7 @@ var init_template_data = function() {
 
     window.gen_book_string_parts = function (format, book) {
         return book_parts_tmpl({
-            'file_path':  "https://" + book.prefix_url + book.format_metadata[format].file_path,
+            'file_path':  book.prefix_url + book.format_metadata[format].file_path,
             'format': format,
             });
         };
@@ -566,9 +566,9 @@ var init_template_data = function() {
             'book_title_stripped': '',
             'authors': authors,
             'formats': formats,
-            'prefix_url': "https://" + book.prefix_url,
+            'prefix_url': book.prefix_url,
             'dir_path': book.format_metadata[format].dir_path,
-            'cover_path': "https://" + book.prefix_url + book.format_metadata[format].dir_path + "cover.jpg",
+            'cover_path': book.prefix_url + book.format_metadata[format].dir_path + "cover.jpg",
             'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
         };
     };

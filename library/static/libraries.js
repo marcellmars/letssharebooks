@@ -556,8 +556,8 @@ var init_template_data = function() {
         var book_title_stripped =  book.title.replace(/\?/g, '');
         var metadata_urls = [
             book_title_stripped,
-            [book.prefix_url + book.format_metadata[format].dir_path, 'metadata.opf'].join(''),
-            [book.prefix_url + book.format_metadata[format].dir_path, 'cover.jpg'].join('')];
+            [book.prefix_url, book.format_metadata[format].dir_path, 'metadata.opf'].join(''),
+            [book.prefix_url, book.format_metadata[format].dir_path, 'cover.jpg'].join('')];
         $.each(book.formats, function(i, format) {
             metadata_urls.push([book.prefix_url + book.format_metadata[format].file_path]);
         });

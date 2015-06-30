@@ -82,13 +82,18 @@ def setup_active_tunnels_func():
 def handle_uploaded_catalog(db, uploaded_file, zipped=True):
     '''
     Opens, unzips and parses uploaded catalog and imports books to the db
+
+    :param uploaded_file: file provided by cherrypy
+    :param zipped: true if file is zipped
     '''
+    logging.info('>>> Processing uploaded file')
     # if uploaded file is zipped json catalog
     if zipped:
+        # save files to tmp folder
         if not os.path.exists('tmp'):
             os.makedirs('tmp')
         content = uploaded_file.file.read()
-        # generate unique filename
+        # generate unique filename and write
         filename = 'tmp/%s-%s' % (uploaded_file.filename, uuid.uuid4())
         with open(filename, "wb") as f:
             f.write(content)
@@ -98,8 +103,9 @@ def handle_uploaded_catalog(db, uploaded_file, zipped=True):
     # else if json is directly uploaded
     else:
         content = uploaded_file
-    # decode from json and import to database
+    # decode from json
     catalog = simplejson.loads(content)
+    # import to database
     res = import_catalog(db, catalog)
     return res
 
@@ -107,96 +113,147 @@ def handle_uploaded_catalog(db, uploaded_file, zipped=True):
 
 def import_catalog(db, catalog, portable_url=None):
     '''
-    Imports user calibre catalog to the database.
-    :db mongo database
-    :catalog python object received from calibre plugin
-    :portable True if this is reference to portable library
+    Imports user catalog to the database.
+
+    :param db: database connection
+    :param catalog: catalog dict received from calibre plugin
+    :param portable_url: url of the portable library (if portable)
     '''
-    library_uuid = catalog['library_uuid']
-    last_modified = catalog['last_modified']
-    librarian = catalog['librarian']
-    tunnel = catalog['tunnel']
-    portable = False
-    if tunnel == -1337 or portable_url:
-        portable = True
-    # check if library already in the db
-    db_cat = db.catalog.find_one({'library_uuid': library_uuid})
+    logging.info('>>> Importing catalog {}'.format(catalog['library_uuid']))
+    catalog['portable_url'] = portable_url
+    catalog['portable'] = False
+    # check of uploaded catalog is provided as portable library
+    if catalog['tunnel'] == -1337 or portable_url:
+        catalog['portable'] = True
+    # check if catalog already exists in the db
+    db_cat = db.catalog.find_one({'library_uuid': catalog['library_uuid']})
     if db_cat:
-        #print("BOOKS TO BE REMOVED: {}".format(catalog['books']['remove']))
-        if portable:
+        if catalog['portable']:
+            # cannot add portable more than once
             raise ValueError('already registered')
-        # remove books as requested
-        remove_from_library(db, library_uuid, catalog['books']['remove'])
+        # first remove books (as requested in the uploaded catalog)
+        remove_from_library(db, catalog)
     # add books as requested (for new library and for sync)
-    add_to_library(db, library_uuid, librarian, tunnel,
-                   catalog['books']['add'], portable, portable_url)
-    # set tunnel to 0 if there is a library with the same tunnel from before
+    add_to_library(db, catalog)
+    # update catalog metadata
+    update_catalog(db, catalog)
+    # update books metadata
+    update_books(db, catalog)
+    return catalog['library_uuid']
+
+#------------------------------------------------------------------------------
+
+def update_catalog(db, catalog):
+    '''
+    Sets tunnel to 0 if there is a library with the same tunnel from before.
+    Updates catalog metadata.
+
+    :param db: database connection
+    :param catalog: catalog dict received from calibre plugin
+    '''
+    logging.info('>>> Updating catalog {}'.format(catalog['library_uuid']))
+    # find libraries that have tunnel number equal to uploaded catalog's
     old_libraries = [i['library_uuid']
-                     for i in db.catalog.find({'tunnel': tunnel}) if i['library_uuid'] != library_uuid]
-    #print("OLD_LIBRARIES: {}".format(old_libraries))
+                     for i in db.catalog.find({'tunnel': catalog['tunnel']})
+                     if i['library_uuid'] != catalog['library_uuid']]
+    # reset their tunnel number to 0
     db.catalog.update({'library_uuid': {'$in': old_libraries}},
                       {'$set': {'tunnel': 0}}, multi=True)
     # update catalog metadata
-    db.catalog.update({'library_uuid': library_uuid},
-                      {'$set': {'last_modified': last_modified,
-                                'tunnel': tunnel,
-                                'librarian': librarian,
-                                'portable': portable,
-                                'portable_url': portable_url}},
-                      upsert=True, multi=False)
-    # update tunnel for all books in current library
-    db.books.update({'library_uuid': library_uuid},
-                    {'$set': {'tunnel': tunnel,
-                              'librarian': librarian}},
-                    multi=True)
-    return library_uuid
-
-#------------------------------------------------------------------------------
-
-def remove_from_library(db, library_uuid, books_uuids):
-    '''
-    Remove books from the library and update catalog
-    '''
-    books_uuids = [uuid for uuid in books_uuids]
-    [db.books.remove({'uuid':uid}) for uid in books_uuids]
-    db.catalog.update({'library_uuid': library_uuid},
-                      {'$pull': {'books': {'$in': books_uuids}}},
+    db.catalog.update({'library_uuid': catalog['library_uuid']},
+                      {'$set': {'last_modified': catalog['last_modified'],
+                                'tunnel': catalog['tunnel'],
+                                'librarian': catalog['librarian'],
+                                'portable': catalog['portable'],
+                                'portable_url': catalog['portable_url']}},
                       upsert=True, multi=False)
 
 #------------------------------------------------------------------------------
+    
+def update_books(db, catalog):
+    '''
+    Updates book metadata for all books in the given library when sharing
+    status is changed. Dynamic book properties that are updated or
+    recalculated are:
 
-def add_to_library(db, library_uuid, librarian, tunnel, books, portable, portable_url=None):
+        - tunnel number
+        - librarian's name
+        - prefix_url (depends on the tunnel)
+        - portable_url
+        - portable flag
+    '''
+
+    def gen_prefix_url(catalog):
+        '''
+        Generates prefix (base) url depending on the type of the library and
+        currently active tunnel
+        '''
+        if catalog['portable_url']:
+            return '{}/'.format(book['portable_url'])
+        else:
+            return 'https://www{}.{}/'.format(
+                catalog['tunnel'], settings.ENV['domain_url'])
+
+    logging.info('>>> Updating books {}'.format(catalog['library_uuid']))
+    db.books.update(
+        {'library_uuid': catalog['library_uuid']},
+        {'$set': {'tunnel': catalog['tunnel'],
+                  'librarian': catalog['librarian'],
+                  'portable': catalog['portable'],
+                  'portable_url': catalog['portable_url'],
+                  'prefix_url': gen_prefix_url(catalog)}},
+        multi=True)
+
+#------------------------------------------------------------------------------
+
+def add_to_library(db, catalog):
     '''
     Adds books to the database and modifies catalog entry. Mostly used with
     import_catalog function.
+
+    :param db: database connection
+    :param catalog: uploaded catalog
     '''
-    #print("BOOKS: {}".format(books))
-    books_uuid = []
-    for book in books:
-        # add some catalog metadata
-        book['library_uuid'] = library_uuid
-        book['tunnel'] = tunnel
-        book['portable'] = portable
-        book['librarian'] = librarian
-        book['portable_url'] = portable_url
-        book['prefix_url'] = "https://www{}.{}/".format(tunnel,
-                                                        settings.ENV['domain_url'])
-        #print("BOOK['PREFIX_URL']: {}".format(book['prefix_url']))
-        if portable_url:
-            book['prefix_url'] = "{}/".format(portable_url)
+    logging.info('>>> Adding books ({})'.format(len(catalog['books']['add'])))
+    books_uuids = [] # will hold inserted books' uuids
+    # add each book to the db.books collection
+    for book in catalog['books']['add']:
+        # embed library_uuid to every book
+        book['library_uuid'] = catalog['library_uuid']
         try:
             db.books.update({'uuid': book['uuid']},
                             utils.remove_dots_from_dict(book),
                             upsert=True, multi=False)
-            #collect book uuids for catalog entry
-            books_uuid.append((book['uuid'],
-                               book['last_modified']))
-        except Exception as e:
-            print(e)
+            # collect (uuid, last_modified) for catalog entry
+            books_uuids.append((book['uuid'], book['last_modified']))
+            logging.info('>>> Added book {}'.format(book['uuid']))
+        except Exception:
+            logging.error(
+                'error in book update ({})'.format(book['uuid']), exc_info=True)
     # update catalog metadata collection
-    db.catalog.update({'library_uuid': library_uuid},
-                      {'$pushAll': {'books': books_uuid}},
+    db.catalog.update({'library_uuid': catalog['library_uuid']},
+                      {'$pushAll': {'books': books_uuids}},
                       upsert=True, multi=False)
+
+#------------------------------------------------------------------------------
+
+def remove_from_library(db, catalog):
+    '''
+    Remove books from the library and update catalog
+
+    :param db: database connection
+    :param library_uuid: uuid of the library
+    :param books_uuids: uuids of the books that need to be removed
+    '''
+    logging.info('>>> Removing books ({})'.format(
+            len(catalog['books']['remove'])))
+    # remove books
+    [db.books.remove({'uuid':uuid}) for uuid in catalog['books']['remove']]
+    # update catalog metadata
+    db.catalog.update(
+        {'library_uuid': catalog['library_uuid']},
+        {'$pull': {'books': {'$in': catalog['books']['remove']}}},
+        upsert=True, multi=False)
 
 #------------------------------------------------------------------------------
 

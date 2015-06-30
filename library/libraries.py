@@ -17,6 +17,11 @@ import logging
 
 #------------------------------------------------------------------------------
 
+LOG = logging.getLogger('motw.' + __name__)
+LOG.setLevel(logging.DEBUG)
+
+#------------------------------------------------------------------------------
+
 # book fields for books in the grid
 PUBLIC_BOOK_FIELDS = {
     'application_id': 1,
@@ -86,7 +91,7 @@ def handle_uploaded_catalog(db, uploaded_file, zipped=True):
     :param uploaded_file: file provided by cherrypy
     :param zipped: true if file is zipped
     '''
-    logging.info('>>> Processing uploaded file')
+    LOG.info('>>> Processing uploaded file')
     # if uploaded file is zipped json catalog
     if zipped:
         # save files to tmp folder
@@ -106,7 +111,7 @@ def handle_uploaded_catalog(db, uploaded_file, zipped=True):
     # decode from json
     catalog = simplejson.loads(content)
     # import to database
-    res = import_catalog(db, catalog)
+    res, err = import_catalog(db, catalog)
     return res
 
 #------------------------------------------------------------------------------
@@ -118,8 +123,10 @@ def import_catalog(db, catalog, portable_url=None):
     :param db: database connection
     :param catalog: catalog dict received from calibre plugin
     :param portable_url: url of the portable library (if portable)
+
+    :returns (library_uuid, err_msg)
     '''
-    logging.info('>>> Importing catalog {}'.format(catalog['library_uuid']))
+    LOG.info('>>> Importing catalog {}'.format(catalog['library_uuid']))
     catalog['portable_url'] = portable_url
     catalog['portable'] = False
     # check of uploaded catalog is provided as portable library
@@ -130,7 +137,7 @@ def import_catalog(db, catalog, portable_url=None):
     if db_cat:
         if catalog['portable']:
             # cannot add portable more than once
-            raise ValueError('already registered')
+            return None, 'portable already registered'
         # first remove books (as requested in the uploaded catalog)
         remove_from_library(db, catalog)
     # add books as requested (for new library and for sync)
@@ -139,7 +146,7 @@ def import_catalog(db, catalog, portable_url=None):
     update_catalog(db, catalog)
     # update books metadata
     update_books(db, catalog)
-    return catalog['library_uuid']
+    return catalog['library_uuid'], None
 
 #------------------------------------------------------------------------------
 
@@ -151,7 +158,7 @@ def update_catalog(db, catalog):
     :param db: database connection
     :param catalog: catalog dict received from calibre plugin
     '''
-    logging.info('>>> Updating catalog {}'.format(catalog['library_uuid']))
+    LOG.info('>>> Updating catalog {}'.format(catalog['library_uuid']))
     # find libraries that have tunnel number equal to uploaded catalog's
     old_libraries = [i['library_uuid']
                      for i in db.catalog.find({'tunnel': catalog['tunnel']})
@@ -189,12 +196,12 @@ def update_books(db, catalog):
         currently active tunnel
         '''
         if catalog['portable_url']:
-            return '{}/'.format(book['portable_url'])
+            return '{}/'.format(catalog['portable_url'])
         else:
             return 'https://www{}.{}/'.format(
                 catalog['tunnel'], settings.ENV['domain_url'])
 
-    logging.info('>>> Updating books {}'.format(catalog['library_uuid']))
+    LOG.info('>>> Updating books {}'.format(catalog['library_uuid']))
     db.books.update(
         {'library_uuid': catalog['library_uuid']},
         {'$set': {'tunnel': catalog['tunnel'],
@@ -214,7 +221,7 @@ def add_to_library(db, catalog):
     :param db: database connection
     :param catalog: uploaded catalog
     '''
-    logging.info('>>> Adding books ({})'.format(len(catalog['books']['add'])))
+    LOG.info('>>> Adding books ({})'.format(len(catalog['books']['add'])))
     books_uuids = [] # will hold inserted books' uuids
     # add each book to the db.books collection
     for book in catalog['books']['add']:
@@ -226,9 +233,9 @@ def add_to_library(db, catalog):
                             upsert=True, multi=False)
             # collect (uuid, last_modified) for catalog entry
             books_uuids.append((book['uuid'], book['last_modified']))
-            logging.info('>>> Added book {}'.format(book['uuid']))
+            LOG.info('>>> Added book {}'.format(book['uuid']))
         except Exception:
-            logging.error(
+            LOG.error(
                 'error in book update ({})'.format(book['uuid']), exc_info=True)
     # update catalog metadata collection
     db.catalog.update({'library_uuid': catalog['library_uuid']},
@@ -245,7 +252,7 @@ def remove_from_library(db, catalog):
     :param library_uuid: uuid of the library
     :param books_uuids: uuids of the books that need to be removed
     '''
-    logging.info('>>> Removing books ({})'.format(
+    LOG.info('>>> Removing books ({})'.format(
             len(catalog['books']['remove'])))
     # remove books
     [db.books.remove({'uuid':uuid}) for uuid in catalog['books']['remove']]
@@ -293,7 +300,7 @@ def get_books(db, page, query={}):
     '''
     # query
     q = {}
-    logging.debug('QUERY: {}'.format(query))
+    LOG.debug('>>> QUERY: {}'.format(query))
     # extract search parameters and build query
     for field, field_value in query.iteritems():
         if field_value:
@@ -311,15 +318,15 @@ def get_books(db, page, query={}):
                              {'publisher': match_pattern},
                              {'identifiers': match_pattern}]}
             else:
-                logging.warning('Unrecognized search param {}'.format(field))
+                LOG.debug('>>> Unrecognized search param {}'.format(field))
     # get all libraries that have active ssh tunnel or reference portables
     active_tunnels = get_active_tunnels()[0]
-    logging.debug('active_tunnels: {}'.format(active_tunnels))
+    LOG.debug('>>> Active_tunnels: {}'.format(active_tunnels))
     active_catalogs = db.catalog.find({'$or': [
                 {'tunnel': {'$in': active_tunnels}},
                 {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
-    logging.debug('FINAL QUERY: {}'.format(q))
+    LOG.debug('>>> FINAL QUERY: {}'.format(q))
     librarians = active_catalogs.distinct('librarian')
     # fetch final cursor
     dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('uuid')
@@ -370,19 +377,23 @@ def get_active_librarians(db):
 #------------------------------------------------------------------------------
 
 def add_portable(db, portable_url):
-    #print('Registering portable: with url {}'.format(portable_url))
+    '''
+    Registers and import portable library
+
+    :param db: database connection
+    :param portable_url: url of the portable library
+    '''
+    LOG.info('>>> Registering portable {}'.format(portable_url))
     try:
         libjs = requests.get(portable_url + '/static/data.js').text
         libjson = libjs[libjs.find('{'):-1]
         catalog = simplejson.loads(libjson)
-        res = import_catalog(db, catalog, portable_url)
+        res, err = import_catalog(db, catalog, portable_url)
+        if err:
+            return err
         return res
-    except ValueError as e:
-        return utils.ser2json('Already registered...')
-    except requests.ConnectionError as e:
-        print('Registering portable: ConnectionError {}'.format(e))
-    except Exception as e:
-        print('Registering portable: Exception {}'.format(e))
+    except Exception:
+        LOG.error('Registering portable', exc_info=True)
     return utils.ser2json('Error while registering portable...')
 
 #------------------------------------------------------------------------------

@@ -106,6 +106,5 @@ def get_mongo_live_addr():
     try:
         return socket.gethostbyname('mongodb')
     except Exception:
-        logging.error('socket.gethostbyname for mongodb failed. assume local.',
-                      exc_info=True)
+        logging.error('socket.gethostbyname for mongodb failed. assume local.')
     return None

@@ -12,9 +12,14 @@ import libraries
 import settings
 import utils
 import simplejson
-import logging
+import logging.config
 from jinja2 import Environment, FileSystemLoader
 from pymongo import MongoClient
+
+#------------------------------------------------------------------------------
+
+LOG = logging.getLogger('motw.' + __name__)
+LOG.setLevel(logging.DEBUG)
 
 #------------------------------------------------------------------------------
 
@@ -177,14 +182,14 @@ def db_connect():
     while num_attempts <= max_attempts:
         try:
             cherrypy.db = utils.connect_to_db(settings.ENV)
-            logging.info('connected to db.')
+            LOG.info('connected to db.')
             return
         except Exception:
-            logging.error('db connection error. will try again.', exc_info=True)
+            LOG.error('db connection error. will try again.', exc_info=True)
             time.sleep(time_delay)
         num_attempts += 1
     if num_attempts == max_attempts:
-        logging.error('db connection error. did not connect...')
+        LOG.error('db connection error. did not connect...')
 
 #------------------------------------------------------------------------------
 

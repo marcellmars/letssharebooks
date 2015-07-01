@@ -139,7 +139,8 @@ def import_catalog(db, catalog, portable_url=None):
             # cannot add portable more than once
             return None, 'portable already registered'
         # first remove books (as requested in the uploaded catalog)
-        remove_from_library(db, catalog)
+        remove_from_library(
+            db, catalog['library_uuid'], catalog['books']['remove'])
     # add books as requested (for new library and for sync)
     add_to_library(db, catalog)
     # update catalog metadata
@@ -244,7 +245,7 @@ def add_to_library(db, catalog):
 
 #------------------------------------------------------------------------------
 
-def remove_from_library(db, catalog):
+def remove_from_library(db, library_uuid, books_uuids):
     '''
     Remove books from the library and update catalog
 
@@ -252,14 +253,13 @@ def remove_from_library(db, catalog):
     :param library_uuid: uuid of the library
     :param books_uuids: uuids of the books that need to be removed
     '''
-    LOG.info('>>> Removing books ({})'.format(
-            len(catalog['books']['remove'])))
+    LOG.info('>>> Removing books ({})'.format(len(books_uuids)))
     # remove books
-    [db.books.remove({'uuid':uuid}) for uuid in catalog['books']['remove']]
+    [db.books.remove({'uuid':uuid}) for uuid in books_uuids]
     # update catalog metadata
     db.catalog.update(
-        {'library_uuid': catalog['library_uuid']},
-        {'$pull': {'books': {'$in': catalog['books']['remove']}}},
+        {'library_uuid': library_uuid},
+        {'$pull': {'books': {'$in': books_uuids}}},
         upsert=True, multi=False)
 
 #------------------------------------------------------------------------------
@@ -415,11 +415,12 @@ def remove_portable(db, url):
     q = {'portable': True, 'portable_url': url}
     portable_cat = db.catalog.find_one(q)
     if portable_cat:
-        remove_from_library(db,
-                            portable_cat['library_uuid'],
-                            portable_cat['books'])
+        remove_from_library(
+            db, portable_cat['library_uuid'], portable_cat['books'])
         db.catalog.remove(q)
         return utils.ser2json('Library removed.')
+    else:
+        return utils.ser2json('Portable not found')
     return utils.ser2json('Error while removing portable...')
 
 #------------------------------------------------------------------------------

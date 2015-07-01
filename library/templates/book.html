@@ -1,12 +1,81 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<a href="{{ book.base_url }}/browse/book/{{ book.application_id }}" target="_blank" class="more_about" title="about this book">
-  <img src="{{ book.base_url }}/get/cover/{{ book.application_id }}.jpg" /></a>
-<h2>
-  <a href="{{ book.base_url }}/browse/book/{{ book.application_id }}" target="_blank" class="more_about" title="about this book">{{ book.title }}</a>
-  <br />
-  {{ book.authors }}
-</h2>
-<span class="download">Download: {{ book.formats }} <a href="http://127.0.0.1:56665/?urls={{ book.metadata_urls }}" title="import book directly to calibre" target="import"></span><span class="lodestone"><img src="../images/lodestone.png" title="import book directly to calibre"/></a></span>
+<div id="book"></div>
+{% endblock %}
+
+{% block scripts %}
+
+<!-- HTML TEMPLATES -->
+
+<script type="text/x-template" id="string-parts-tmpl">
+  <a class="author" data-authors="<%- author_s %>" href="#" title="show only books by <%- author_s %>"><%- author %></a>&nbsp;
+</script>
+
+<script type="text/x-template" id="book-parts-tmpl">
+  <a href="<%= file_path %>"><%= format.toUpperCase() %></a>
+</script>
+
+<script type="text/x-template" id="book-content-tmpl">
+  <div class="cover" rel='<%= book.librarian %>'>
+    <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
+      <img class="cover-img" src="<%= cover_path %>" />
+      <div class="cover-highlight">
+        <span class="hmsg">Shared by <%= book.librarian %></span>
+      </div>
+    </a>
+    <h2>
+      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
+      <br />
+      <%= authors %></h2>
+    <% if (book.formats[0] != '0') { %>
+    <span class="download">Download: <%= formats %> </span>
+    <% } %>
+    <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
+    <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+       title="import book directly to calibre" target="import">
+      <span class="lodestone">
+        <img src="../images/lodestone.png" title="import book directly to calibre" />
+      </span>
+    </a>
+    <% } %>
+  </div>
+</script>
+
+<script type="text/x-template" id="book-modal-tmpl">
+  <div id="book-modal" title="<%= book.title %>">
+    <div>
+      <img class="img_modal" src="<%= cover_path %>" width="120" />
+      <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
+      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+         title="import book directly to calibre" target="import">
+        <span class="lodestone_modal">
+          <img src="../images/lodestone_modal.png" title="import book directly to calibre" />
+        </span>
+      </a>
+      <% } %>
+    </div>
+    <p><span class="attr">Title:</span> <%= book.title %></p>
+    <p><span class="attr">Authors:</span> <%= book.authors %></p>
+    <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
+    <% if (book.formats[0] != '0') { %>
+    <p><span class="attr">Download:</span> <%= formats %></p>
+    <% } %>
+    <p><span class="attr">About:</span> <%= book.comments %></p></br>
+    <p><a href="<%= prefix_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
+  </div>
+</script>
+
+<script type="text/x-template" id="import-modal-tmpl">
+  <div id="import-modal" title="Importing to calibre">
+    <div>
+      <p>Check [let's share books] plugin in your Calibre for downloads...</p>
+    </div>
+  </div>
+</script>
+
+<!-- EXTRA SCRIPTS -->
+
+<script type="application/javascript" src="/static/b.js"></script>
+
 {% endblock %}

@@ -28,6 +28,8 @@
 
 {% block scripts %}
 
+<!-- HTML TEMPLATES -->
+
 <script type="text/x-template" id="string-parts-tmpl">
   <a class="author" data-authors="<%- author_s %>" href="#" title="show only books by <%- author_s %>"><%- author %></a>&nbsp;
 </script>
@@ -93,5 +95,9 @@
     </div>
   </div>
 </script>
+
+<!-- EXTRA SCRIPTS -->
+
+<script type="application/javascript" src="/static/libraries.js"></script>
 
 {% endblock %}

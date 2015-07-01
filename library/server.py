@@ -49,14 +49,32 @@ CONF = {'/': {'tools.gzip.on': True},
 #------------------------------------------------------------------------------
 class Root(object):
 
+    #--------------------------------------------------------------------------
+    # HTML pages
+    #--------------------------------------------------------------------------
+    
     @cherrypy.expose
     def index(self):
         '''
-        Index page
+        Index page with default (grid) view
         '''
         tmpl = ENVIRONMENT.get_template('index.html')
         return tmpl.render(app_name=settings.APP_NAME)
 
+    @cherrypy.expose
+    def b(self, uuid):
+        '''
+        Single book page (permalink)
+        '''
+        tmpl = ENVIRONMENT.get_template('book.html')
+        book = libraries.get_book(cherrypy.db, uuid=uuid)
+        return tmpl.render(book=book,
+                           app_name=settings.APP_NAME)
+
+    #--------------------------------------------------------------------------
+    # API
+    #--------------------------------------------------------------------------
+    
     @cherrypy.expose
     def upload_catalog(self, uploaded_file):
         '''
@@ -111,7 +129,7 @@ class Root(object):
         Single book page
         '''
         book = libraries.get_book(cherrypy.db, uuid=uuid)
-        return book
+        return utils.ser2json(book)
 
     @cherrypy.expose
     #@cherrypy.tools.json_in()

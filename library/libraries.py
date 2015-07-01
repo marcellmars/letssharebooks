@@ -288,8 +288,7 @@ def get_book(db, uuid):
     '''
     Returns book with the param uuid
     '''
-    book = db.books.find_one({'uuid':uuid}, PUBLIC_SINGLE_BOOK_FIELDS)
-    return utils.ser2json(book)
+    return db.books.find_one({'uuid':uuid}, PUBLIC_SINGLE_BOOK_FIELDS)
 
 #------------------------------------------------------------------------------
 
@@ -392,9 +391,12 @@ def add_portable(db, portable_url):
         if err:
             return err
         return res
+    except requests.ConnectionError:
+        return utils.ser2json(
+            'Error while registering portable: connection error')
     except Exception:
         LOG.error('Registering portable', exc_info=True)
-    return utils.ser2json('Error while registering portable...')
+    return utils.ser2json('Error while registering portable. Check logs...')
 
 #------------------------------------------------------------------------------
 

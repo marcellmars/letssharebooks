@@ -3,17 +3,16 @@ body {
     display: block;
     width: 960px;
     margin: 0px auto;
+    font-family: 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
 a {
-    color:white;
+    color: white;
 }
-
-#content {}
 
 img {
     position: absolute;
-    background: url('images/loading.gif') no repeat;
+    background: url('/images/loading.gif') no repeat;
     background-position: top center;
     background-size: cover;
 }
@@ -144,7 +143,7 @@ h2 span {
     height:     100%;
     width:      100%;
     background: rgba(224, 224, 224, 0.4) 
-    url('images/loading.gif') 
+    url('/images/loading.gif') 
     50% 50% 
     no-repeat;
 }
@@ -171,7 +170,7 @@ body.loading .modal {
     font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
-#book-modal .attr {
+.attr {
     color: #ffffff;
     background-color: #000000;
 }
@@ -239,4 +238,14 @@ body.loading .modal {
 
 .cover-highlight-this .hmsg span {
     background-color: #000000;
+}
+
+/* Book permalink page */
+
+#book {
+    margin-top: 30px;
+}
+
+#book a {
+    color: red;
 }

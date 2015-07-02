@@ -41,9 +41,7 @@ var is_this_portable = function() {
 
 /* dynamic templates */
 
-var author_string_parts_tmpl = _.template($('#string-parts-tmpl').text().trim()),
-    book_parts_tmpl = _.template($('#book-parts-tmpl').text().trim()),
-    book_content_tmpl = _.template($('#book-content-tmpl').text().trim()),
+var book_content_tmpl = _.template($('#book-content-tmpl').text().trim()),
     book_modal_tmpl = _.template($('#book-modal-tmpl').text().trim()),
     import_modal_tmpl = _.template($('#import-modal-tmpl').text().trim());
 
@@ -117,28 +115,10 @@ var parse_response = function (data) {
  */
 
 var render_book = function(i, book) {
-    var formats = '';
-    var authors = '<div id="authorz">';
-    book.formats.map(function (format) {
-        var string_parts = gen_book_string_parts(format, book);
-        formats = formats + ' ' + string_parts;
-    });
-    book.authors.map(function (author) {
-        var author_s = author.replace("'", " "),
-            author_param = 'search_author("' + author_s + '")',
-            author_html = author_string_parts_tmpl({
-              'author_s': author_s,
-              'author': author
-            });
-        authors = authors + author_html;
-    });
     $(document).on('click', '.author', function(e) {
         search_author($(this).data('authors'));
     });
-    var last_comma = authors.lastIndexOf(',');
-    authors = authors.substr(0, last_comma) +
-        authors.substr(last_comma + 1) + '</div>';
-    var book_content = gen_book_content(book, formats, authors);
+    var book_content = gen_book_content(book);
     $('#content').append(book_content);
 };
 
@@ -165,12 +145,7 @@ var setup_modal = function () {
         STATE.query.uuid = uuid;
         push_to_history();
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
-            var formats = '';
-            book.formats.map(function (format) {
-                var string_parts = gen_book_string_parts(format, book);
-                formats = formats + ' ' + string_parts;
-            });
-            var modal_html = gen_book_modal(book, formats);
+            var modal_html = gen_book_modal(book);
             var modal = $(modal_html);
             modal.dialog({
                 autoOpen: false,
@@ -539,18 +514,10 @@ $(document).ready(function () {
 
 /* --------------------------------------------------------------------------*/
 
-/** Various functions for rendering books with HTML templating */
 var init_template_data = function() {
 
-    window.gen_book_string_parts = function (format, book) {
-        return book_parts_tmpl({
-            'file_path':  book.prefix_url + book.format_metadata[format].file_path,
-            'format': format,
-            });
-        };
-
-    /** Data for "normal" book (not portable) */
-    var book_data = function(book, formats, authors) {
+    /** Prepare book data for rendering */
+    var book_data = function(book) {
         var format = book.formats[0];
         book.application_id = '';
         var book_title_stripped =  book.title.replace(/\?/g, '');
@@ -563,24 +530,18 @@ var init_template_data = function() {
         });
         return {
             'book': book,
-            'book_title_stripped': '',
-            'authors': authors,
-            'formats': formats,
-            'prefix_url': book.prefix_url,
-            'dir_path': book.format_metadata[format].dir_path,
             'cover_path': book.prefix_url + book.format_metadata[format].dir_path + "cover.jpg",
             'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
         };
     };
 
-
     /** Renders book inside grid */
-    window.gen_book_content = function (book, formats, authors) {
-        return book_content_tmpl(book_data(book, formats, authors));
+    window.gen_book_content = function (book) {
+        return book_content_tmpl(book_data(book));
     };
 
     /** Renders book modal */
-    window.gen_book_modal = function (book, formats, authors) {
-        return book_modal_tmpl(book_data(book, formats, authors));
+    window.gen_book_modal = function (book) {
+        return book_modal_tmpl(book_data(book));
     };
 };

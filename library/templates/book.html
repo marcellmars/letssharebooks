@@ -1,5 +1,15 @@
 {% extends 'base.html' %}
 
+{% block meta %}
+<meta property="og:site_name"       content="{{app_name}}" />
+<meta property="og:title"           content="" />
+<meta property="og:url"             content="" />
+<meta property="og:image"           content="" />
+<meta property="og:description"     content="" />
+<meta property="og:type"            content="books.book" />
+<meta property="books:author"       content="" />
+{% endblock %}
+
 {% block content %}
 <div id="book"></div>
 {% endblock %}

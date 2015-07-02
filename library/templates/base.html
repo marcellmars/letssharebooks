@@ -1,8 +1,9 @@
 <html>
-  <head>
+  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# books: http://ogp.me/ns/books#">
     <title>{{app_name}}</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css" />
     <link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.10.3.custom.min.css" />
+    {% block meta %}{% endblock %}
   </head>
   <body>
     {% block header %}{% endblock %}

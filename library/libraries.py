@@ -36,6 +36,7 @@ PUBLIC_BOOK_FIELDS = {
     'format_metadata': 1,
     'library_uuid': 1,
     'prefix_url': 1,
+    'cover_url': 1,
     '_id': 0
     }
 
@@ -53,6 +54,7 @@ PUBLIC_SINGLE_BOOK_FIELDS = {
     'portable':1,
     'portable_url':1,
     'prefix_url': 1,
+    'cover_url': 1,
     'format_metadata':1,
     '_id': 0
     }
@@ -202,15 +204,32 @@ def update_books(db, catalog):
             return 'https://www{}.{}/'.format(
                 catalog['tunnel'], settings.ENV['domain_url'])
 
+    def gen_cover_url(book, prefix_url):
+        '''
+        Generates cover url
+        '''
+        fmt = book['formats'][0]
+        return '{}{}cover.jpg'.format(
+            prefix_url, book['format_metadata'][fmt]['dir_path'])
+
     LOG.info('>>> Updating books {}'.format(catalog['library_uuid']))
-    db.books.update(
-        {'library_uuid': catalog['library_uuid']},
-        {'$set': {'tunnel': catalog['tunnel'],
-                  'librarian': catalog['librarian'],
-                  'portable': catalog['portable'],
-                  'portable_url': catalog['portable_url'],
-                  'prefix_url': gen_prefix_url(catalog)}},
-        multi=True)
+    books_to_update = db.books.find(
+        {'library_uuid': catalog['library_uuid']})
+    for book in books_to_update:
+        prefix_url = gen_prefix_url(catalog)
+        db.books.update(
+            {'uuid': book['uuid']},
+            {'$set':
+                 {
+                    'tunnel': catalog['tunnel'],
+                    'librarian': catalog['librarian'],
+                    'portable': catalog['portable'],
+                    'portable_url': catalog['portable_url'],
+                    'prefix_url': prefix_url,
+                    'cover_url': gen_cover_url(book, prefix_url)
+                    }
+             },
+            multi=False, upsert=False)
 
 #------------------------------------------------------------------------------
 

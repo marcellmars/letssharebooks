@@ -1,13 +1,20 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<meta property="og:site_name"       content="{{app_name}}" />
-<meta property="og:title"           content="" />
-<meta property="og:url"             content="" />
-<meta property="og:image"           content="" />
-<meta property="og:description"     content="" />
-<meta property="og:type"            content="books.book" />
-<meta property="books:author"       content="" />
+<meta property="og:site_name"
+      content="{{app_name}}" />
+<meta property="og:title"
+      content="{{book.title}} by {{', '.join(book.authors)}}" />
+<meta property="og:url"
+      content="{{this_url}}" />
+<meta property="og:image"
+      content="{{book.cover_url}}" />
+<meta property="og:description"
+      content="" />
+<meta property="og:type"
+      content="books.book" />
+<meta property="books:author"
+      content="{{', '.join(book.authors)}}" />
 {% endblock %}
 
 {% block content %}
@@ -18,7 +25,7 @@
 <script type="text/x-template" id="book-permalink-tmpl">
   <div id="book-permalink" title="<%= book.title %>">
     <img class="cover-permalink"
-         src="<%= book.prefix_url + book.format_metadata[book.formats[0]].dir_path + 'cover.jpg' %>" />
+         src="<%= book.cover_url %>" />
     <div>
       <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"

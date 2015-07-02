@@ -66,10 +66,18 @@ class Root(object):
         '''
         Single book page (permalink)
         '''
-        tmpl = ENVIRONMENT.get_template('book.html')
         book = libraries.get_book(cherrypy.db, uuid=uuid)
-        return tmpl.render(book=book,
-                           app_name=settings.APP_NAME)
+        if book:
+            tmpl = ENVIRONMENT.get_template('book.html')
+            return tmpl.render(
+                book=book,
+                this_url='http://{}/b/{}'.format(
+                    settings.ENV['domain_url'], uuid),
+                app_name=settings.APP_NAME,
+                )
+        else:
+            tmpl = ENVIRONMENT.get_template('404.html')
+            return tmpl.render()
 
     #--------------------------------------------------------------------------
     # API

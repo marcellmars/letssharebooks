@@ -14,6 +14,7 @@ SERVER = {
         'mongo_port': 27017,
         'host': '0.0.0.0',
         'port': 4321,
+        'domain_url': 'memoryoftheworld.org',
         'dbname': 'letssharebooks',
         },
     'test': {
@@ -21,6 +22,7 @@ SERVER = {
         'mongo_port': 27017,
         'host': '0.0.0.0',
         'port': 4321,
+        'domain_url': 'memoryoftheworld.org',
         'dbname': 'letssharebooks_test',
         },
     'live': {
@@ -36,6 +38,7 @@ SERVER = {
         'mongo_port': 27017,
         'host': '0.0.0.0',
         'port': 4321,
+        'domain_url': 'memoryoftheworld.org',
         'dbname': 'letssharebooks',
         }
     }

@@ -1,6 +1,3 @@
-console.log('---------');
-console.log($('#book-permalink-tmpl'));
-
 var common = {
     'templates': {
         'book_permalink': _.template($('#book-permalink-tmpl').text().trim()),

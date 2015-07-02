@@ -35,17 +35,6 @@ var is_this_portable = function() {
 };
 
 /* ----------------------------------------------------------------------------
- * Precompile templates
- * ----------------------------------------------------------------------------
- */
-
-/* dynamic templates */
-
-var book_content_tmpl = _.template($('#book-content-tmpl').text().trim()),
-    book_modal_tmpl = _.template($('#book-modal-tmpl').text().trim()),
-    import_modal_tmpl = _.template($('#import-modal-tmpl').text().trim());
-
-/* ----------------------------------------------------------------------------
  * Main ajax entry point
  * ----------------------------------------------------------------------------
  */
@@ -125,7 +114,7 @@ var render_book = function(i, book) {
 /* --------------------------------------------------------------------------*/
 
 var open_import_modal = function() {
-    var modal = $(import_modal_tmpl({}));
+    var modal = $(common.templates.import_modal({}));
     modal.dialog({
         autoOpen: false,
         modal: true,
@@ -500,13 +489,12 @@ var init_page = function () {
 /* --------------------------------------------------------------------------*/
 
 $(document).ready(function () {
+    init_template_data();
     // try to connect to local calibre server and init page when done
     if (is_this_portable()) {
-            init_template_data();
             init_page();
     } else {
     localCalibre.done(function(success) {
-            init_template_data();
             init_page();
         })
     };
@@ -516,31 +504,13 @@ $(document).ready(function () {
 
 var init_template_data = function() {
 
-    /** Prepare book data for rendering */
-    var book_data = function(book) {
-        var format = book.formats[0];
-        book.application_id = '';
-        var book_title_stripped =  book.title.replace(/\?/g, '');
-        var metadata_urls = [
-            book_title_stripped,
-            [book.prefix_url, book.format_metadata[format].dir_path, 'metadata.opf'].join(''),
-            [book.prefix_url, book.format_metadata[format].dir_path, 'cover.jpg'].join('')];
-        $.each(book.formats, function(i, format) {
-            metadata_urls.push([book.prefix_url + book.format_metadata[format].file_path]);
-        });
-        return {
-            'book': book,
-            'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
-        };
-    };
-
     /** Renders book inside grid */
     window.gen_book_content = function (book) {
-        return book_content_tmpl(book_data(book));
+        return common.templates.book_content(common.gen_book_data(book));
     };
 
     /** Renders book modal */
     window.gen_book_modal = function (book) {
-        return book_modal_tmpl(book_data(book));
+        return common.templates.book_modal(common.gen_book_data(book));
     };
 };

@@ -1,20 +1,23 @@
 {% extends 'base.html' %}
 
-<!-- CONTENT BLOCK -->
-
 {% block content %}
 <div id="book"></div>
 {% endblock %}
 
-{% block scripts %}
-
-<!-- HTML TEMPLATES -->
-
+{% block templates %}
 <script type="text/x-template" id="book-permalink-tmpl">
   <div id="book-permalink" title="<%= book.title %>">
     <img class="cover-permalink"
          src="<%= book.prefix_url + book.format_metadata[book.formats[0]].dir_path + 'cover.jpg' %>" />
     <div>
+      <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
+      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+         title="import book directly to calibre" target="import">
+        <span class="lodestone">
+          <img src="/images/lodestone.png" title="import book directly to calibre" />
+        </span>
+      </a>
+      <% } %>
     </div>
     <p><span class="attr">Title:</span> <%= book.title %></p>
     <p><span class="attr">Authors:</span> <%= book.authors %></p>
@@ -33,9 +36,8 @@
     <p><a href="<%= book.prefix_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p>
   </div>
 </script>
+{% endblock %}
 
-<!-- EXTRA SCRIPTS -->
-
+{% block scripts %}
 <script type="application/javascript" src="/static/b.js"></script>
-
 {% endblock %}

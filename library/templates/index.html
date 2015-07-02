@@ -26,10 +26,7 @@
 <div class="modal"></div>
 {% endblock %}
 
-{% block scripts %}
-
-<!-- HTML TEMPLATES -->
-
+{% block templates %}
 <script type="text/x-template" id="book-content-tmpl">
   <div class="cover" rel='<%= book.librarian %>'>
 
@@ -66,7 +63,7 @@
     <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
        title="import book directly to calibre" target="import">
       <span class="lodestone">
-        <img src="../images/lodestone.png" title="import book directly to calibre" />
+        <img src="/images/lodestone.png" title="import book directly to calibre" />
       </span>
     </a>
     <% } %>
@@ -84,7 +81,7 @@
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
          title="import book directly to calibre" target="import">
         <span class="lodestone_modal">
-          <img src="../images/lodestone_modal.png" title="import book directly to calibre" />
+          <img src="/images/lodestone_modal.png" title="import book directly to calibre" />
         </span>
       </a>
       <% } %>
@@ -112,9 +109,8 @@
     </div>
   </div>
 </script>
+{% endblock %}
 
-<!-- EXTRA SCRIPTS -->
-
+{% block scripts %}
 <script type="application/javascript" src="/static/libraries.js"></script>
-
 {% endblock %}

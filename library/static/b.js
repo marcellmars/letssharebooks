@@ -1,11 +1,4 @@
 /* ----------------------------------------------------------------------------
- * Precompile templates
- * ----------------------------------------------------------------------------
- */
-
-var book_permalink_tmpl = _.template($('#book-permalink-tmpl').text().trim());
-
-/* ----------------------------------------------------------------------------
  * Loads and displays book data
  * ----------------------------------------------------------------------------
  */
@@ -13,7 +6,9 @@ var book_permalink_tmpl = _.template($('#book-permalink-tmpl').text().trim());
 var load_book = function () {
     var uuid = location.pathname.match(/\/b\/(.*)/)[1];
     $.getJSON('/book', {uuid: uuid}).done(function( book ) {
-        $('#book').append(book_permalink_tmpl({'book': book}));
+        $('#book').append(
+            common.templates.book_permalink(
+                common.gen_book_data(book)));
     });
 };
 

@@ -530,7 +530,6 @@ var init_template_data = function() {
         });
         return {
             'book': book,
-            'cover_path': book.prefix_url + book.format_metadata[format].dir_path + "cover.jpg",
             'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
         };
     };

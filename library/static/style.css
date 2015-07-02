@@ -80,7 +80,7 @@ h2 span {
 }
 
 .toolbar {
-    margin-bottom: 3px;
+    margin-bottom: 6px;
     text-align: center;
 }
 
@@ -127,7 +127,7 @@ h2 span {
 }
 
 #authors, #titles, #search_all, #librarian {
-    width: 210px;
+    width: 206px;
     font-size: 1.2em;
     padding: 3px;
     border: 1px solid #ff0000;
@@ -175,12 +175,11 @@ body.loading .modal {
     background-color: #000000;
 }
 
-.img_modal {
+.cover-modal {
     position: relative;
-    width:180px;
+    width: 180px;
     float: right;
     margin: 0px 15px 15px 0px;
-
 }
 
 .only_lib a {
@@ -248,4 +247,12 @@ body.loading .modal {
 
 #book a {
     color: red;
+}
+
+#book .cover-permalink {
+    position: relative;
+    width: 280px;
+    height: auto;
+    float: right;
+    margin: 0px 15px 15px 15px;
 }

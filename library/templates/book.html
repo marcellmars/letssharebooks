@@ -12,6 +12,8 @@
 
 <script type="text/x-template" id="book-permalink-tmpl">
   <div id="book-permalink" title="<%= book.title %>">
+    <img class="cover-permalink"
+         src="<%= book.prefix_url + book.format_metadata[book.formats[0]].dir_path + 'cover.jpg' %>" />
     <div>
     </div>
     <p><span class="attr">Title:</span> <%= book.title %></p>

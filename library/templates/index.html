@@ -86,7 +86,7 @@
       </a>
       <% } %>
     </div>
-    <p><span class="attr">Title:</span> <%= book.title %></p>
+    <p><span class="attr">Title:</span> <%= book.title %> (<a href="/b/<%= book.uuid %>">PERMALINK</a>)</p>
     <p><span class="attr">Authors:</span> <%= book.authors %></p>
     <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
     <% if (book.formats[0] != '0') { %>

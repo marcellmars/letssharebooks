@@ -66,19 +66,8 @@ var parse_response = function (data) {
     $.each(data['books'], render_book);
     // update ui
     update_autocomplete(data);
-    update_pagination_info(data['on_page'], data['total']);
-    // enable/disable pagination
-    if (data['next_page'] === null) {
-        modify_button('.next_page', 'not-active');
-    } else {
-        modify_button('.next_page', 'active');
-    };
-    if (STATE.page > 1) {
-        modify_button('.prev_page', 'active');
-    };
-    
+    nav.update_pagination(data);
     setup_modal(); 
-    
     if (is_this_portable()) {
         setup_hover();
     };
@@ -87,8 +76,7 @@ var parse_response = function (data) {
         open_import_modal();
     });
     // directly open the dialog window if show_modal,
-    //or if only 1 book is fetched
-    if (STATE.show_modal || data['books'].length == 1) {
+    if (STATE.show_modal) {
         var book_index = 0; // show first if navigation_direction is right
         if (STATE.navigation_direction === 0) {
             book_index = data['books'].length - 1;
@@ -136,12 +124,46 @@ var open_import_modal = function() {
 /* --------------------------------------------------------------------------*/
 
 var nav = {
+
+    /* handles navigation: has external dependencies, primarily STATE */
+    
+    // show next page
+    'next_page': function (show_modal) {
+        if ($('.next_page').hasClass('not-active')) {
+            return;
+        };
+        if (show_modal) {
+            STATE.show_modal = true;
+        };
+        STATE.page += 1;
+        this.modify_button('.prev_page', 'active');
+        render_page();
+    },
+    // show previous page
+    'prev_page': function (show_modal) {
+        if ($('.prev_page').hasClass('not-active') || STATE.page == 1) {
+            return;
+        };
+        if (show_modal) {
+            STATE.show_modal = true;
+        };
+        STATE.page -= 1;
+        this.modify_button('.next_page', 'active');
+        $('.next_page').show();
+        if (STATE.page <= 1) {
+            this.modify_button('.prev_page', 'not-active');
+        }
+        render_page();
+    },
+    
     // trigger rendering of the modal by clicking on the main link
     '_show_modal': function(el) {
         el.find('h2 .more_about').click();
     },
+    
     // opens modal next to the current one
     'open_next_modal': function(current) {
+        STATE.navigation_direction = 1;
         var next = current.next();
         // try to find next book in the same row
         if (next.length) {
@@ -153,12 +175,14 @@ var nav = {
                 this._show_modal(col);
             // try to open next page
             } else {
-                next_page(true);
+                nav.next_page(true);
             };
         };
     },
+    
     // opens modal previous to the current one
     'open_prev_modal': function(current) {
+        STATE.navigation_direction = 0;
         var prev = current.prev();
         // try to find previous book in the same row
         if (prev.length) {
@@ -170,10 +194,53 @@ var nav = {
                 this._show_modal(col);
             // try to open next page
             } else {
-                prev_page(true);
+                nav.prev_page(true);
             };
         };
     },
+
+    // updates pagination status
+    'update_pagination': function (data) {
+        // pagination msg
+        if (data['total'] == 0) {
+            $('#page-msg').attr('value', '0 books');
+            return;
+        };
+        var offset = (STATE.page-1) * ITEMS_PER_PAGE + 1;
+        var total = 100;
+        var msg = ['HOME (',
+                   offset,
+                   '-',
+                   offset + data['on_page'] - 1,
+                   'out of',
+                   data['total'],
+                   'books )'].join(' ');
+        $('#page-msg').attr('value', msg);
+        // enable/disable pagination
+        if (data['next_page'] === null) {
+            this.modify_button('.next_page', 'not-active');
+        } else {
+            this.modify_button('.next_page', 'active');
+        };
+        if (STATE.page > 1) {
+            this.modify_button('.prev_page', 'active');
+        };
+    },
+    
+    // changes state of the prev/next page buttons
+    'modify_button': function (button, state) {
+        var elem = $(button);
+        if (state == 'active') {
+            elem.attr('disabled', false);
+            elem.removeClass('not-active');
+            elem.addClass('active');
+        } else if (state == 'not-active') {
+            elem.attr('disabled', true);
+            elem.removeClass('active');
+            elem.addClass('not-active');
+        }
+    }
+    
 };
 
 /* --------------------------------------------------------------------------*/
@@ -213,13 +280,11 @@ var setup_modal = function () {
                     // navigate right
                     if (e.which === 39) {
                         modal.dialog('close');
-                        STATE.navigation_direction = 1;
                         nav.open_next_modal(this_book);
                     }
                     // navigate left
                     else if (e.which === 37) {
                         modal.dialog('close');
-                        STATE.navigation_direction = 0;
                         nav.open_prev_modal(this_book);
                     };
                 };
@@ -250,25 +315,6 @@ var setup_hover = function() {
             $('.cover-highlight').hide();
         }
     );
-};
-
-/* --------------------------------------------------------------------------*/
-
-var update_pagination_info = function (items_on_page, total_num_of_items) {
-    if (total_num_of_items == 0) {
-        $('#page-msg').attr('value', '0 books');
-        return;
-    }
-    var offset = (STATE.page-1) * ITEMS_PER_PAGE + 1;
-    var total = 100;
-    var msg = ['HOME (',
-               offset,
-               '-',
-               offset + items_on_page - 1,
-               'out of',
-               total_num_of_items,
-               'books )'].join(' ');
-    $('#page-msg').attr('value', msg);
 };
 
 /* --------------------------------------------------------------------------*/
@@ -339,83 +385,32 @@ var generate_metadata = function(books) {
     return metadata;
 };
 
-/* --------------------------------------------------------------------------*/
-
-var next_page = function (show_modal) {
-    if ($('.next_page').hasClass('not-active')) {
-        return;
-    };
-    if (show_modal) {
-        STATE.show_modal = true;
-    };
-    STATE.page += 1;
-    modify_button('.prev_page', 'active');
-    render_page();
-};
-
-/* --------------------------------------------------------------------------*/
-
-var prev_page = function (show_modal) {
-    if ($('.prev_page').hasClass('not-active') || STATE.page == 1) {
-        return;
-    };
-    if (show_modal) {
-        STATE.show_modal = true;
-    };
-    STATE.page -= 1;
-    modify_button('.next_page', 'active');
-    $('.next_page').show();
-    if (STATE.page <= 1) {
-        modify_button('.prev_page', 'not-active');
-    }
-    render_page();
-};
-
 /* ----------------------------------------------------------------------------
  * Adds complete toolbar to the top of the page
  * ----------------------------------------------------------------------------
  */
 
 var init_toolbar = function () {
-    $('.prev_page').click(function () { prev_page(); });
-    $('.next_page').click(function () { next_page(); });
+    $('.prev_page').click(function () { nav.prev_page(); });
+    $('.next_page').click(function () { nav.next_page(); });
     $('#page-msg').click(function () {
-      // going back to the homepage lists ALL books in the DB
-      // (i.e. resets the search)
-      _.each(state_field_mapping, function(field, property) {
-        $(field).val('');
-      });
-
-      window.location.hash = '';
-      location.reload();
+        // going back to the homepage lists ALL books in the DB
+        // (i.e. resets the search)
+        _.each(state_field_mapping, function(field, property) {
+            $(field).val('');
+        });
+        window.location.hash = '';
+        location.reload();
     });
     $('#search').click(function() {
         search_query(1);
     });
-    $('#authors, #titles, #search_all').bind('keydown',function(e) {
-        /* if enter is pressed */
+    $('#authors, #titles, #search_all').bind('keydown', function(e) {
+        // if enter is pressed
         if(e.which == 13) {
             search_query();
         }
-    })
-};
-
-/* ----------------------------------------------------------------------------
- * Changes state of the prev/next page buttons
- * ----------------------------------------------------------------------------
- */
-
-var modify_button = function (button, state) {
-    var elem = $(button);
-    if (state == 'active') {
-        elem.attr('disabled', false);
-        elem.removeClass('not-active');
-        elem.addClass('active');
-    } else if (state == 'not-active') {
-        elem.attr('disabled', true);
-        elem.removeClass('active');
-        elem.addClass('not-active');
-    }
+    });
 };
 
 /* --------------------------------------------------------------------------*/
@@ -432,6 +427,13 @@ var search_query = function (page) {
       STATE.page = 1;
     };
     render_page();
+};
+
+/* --------------------------------------------------------------------------*/
+
+var search_author = function (author) {
+    $('#authors').val(author);
+    search_query(1);
 };
 
 /* ----------------------------------------------------------------------------
@@ -477,25 +479,6 @@ var handle_hash_state = function(event) {
 
 /* --------------------------------------------------------------------------*/
 
-var search_author = function (author) {
-    $('#authors').val(author);
-    search_query(1);
-};
-
-/* --------------------------------------------------------------------------*/
-
-$(document).ajaxStart(function () { 
-    $('body').addClass("loading"); 
-});
-
-/* --------------------------------------------------------------------------*/
-
-$(document).ajaxStop(function () { 
-    $('body').removeClass("loading"); 
-});
-
-/* --------------------------------------------------------------------------*/
-
 var init_page = function () {
     init_toolbar();
     /* do not display tooltip for modal close button (it gets automatically
@@ -515,20 +498,6 @@ var init_page = function () {
 
 /* --------------------------------------------------------------------------*/
 
-$(document).ready(function () {
-    init_template_data();
-    // try to connect to local calibre server and init page when done
-    if (is_this_portable()) {
-            init_page();
-    } else {
-    localCalibre.done(function(success) {
-            init_page();
-        })
-    };
-});
-
-/* --------------------------------------------------------------------------*/
-
 var init_template_data = function() {
 
     /** Renders book inside grid */
@@ -541,3 +510,23 @@ var init_template_data = function() {
         return common.templates.book_modal(common.gen_book_data(book));
     };
 };
+
+/* --------------------------------------------------------------------------*/
+
+$(document).ready(function () {
+    $(document).ajaxStart(function () { 
+        $('body').addClass("loading"); 
+    });
+    $(document).ajaxStop(function () { 
+        $('body').removeClass("loading"); 
+    });
+    init_template_data();
+    // try to connect to local calibre server and init page when done
+    if (is_this_portable()) {
+            init_page();
+    } else {
+    localCalibre.done(function(success) {
+            init_page();
+        })
+    };
+});

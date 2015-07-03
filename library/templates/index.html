@@ -76,9 +76,9 @@
 <script type="text/x-template" id="book-modal-tmpl">
   <div id="book-modal" title="<%= book.title %>">
     <div>
-      <img class="cover-modal"
-           src="<%= book.cover_url %>" />
-      <div>
+      <a href="/b/<%= book.uuid %>">
+        <img class="cover-modal" src="<%= book.cover_url %>" />
+      </a>
       <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
          title="import book directly to calibre" target="import">
@@ -88,7 +88,7 @@
       </a>
       <% } %>
     </div>
-    <p><span class="attr">Title:</span> <%= book.title %> (<a href="/b/<%= book.uuid %>">PERMALINK</a>)</p>
+    <p><span class="attr">Title:</span> <a href="/b/<%= book.uuid %>"><%= book.title %></a></p>
     <p><span class="attr">Authors:</span> <%= book.authors %></p>
     <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
     <% if (book.formats[0] != '0') { %>

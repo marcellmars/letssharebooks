@@ -15,7 +15,6 @@ var STATE = {
         'title': '',
         'search_all': '',
         'librarian': '',
-        'uuid': ''
     }
 };
 
@@ -182,8 +181,6 @@ var nav = {
 var setup_modal = function () {
     $('.more_about').click(function(e) {
         var uuid = $(this).attr('rel');
-        STATE.query.uuid = uuid;
-        push_to_history();
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
             var modal_html = gen_book_modal(book);
             var modal = $(modal_html);
@@ -201,8 +198,6 @@ var setup_modal = function () {
                 },
                 close: function() {
                     STATE.show_modal = false;
-                    STATE.query.uuid = '';
-                    push_to_history();
                 }
             });
             $(modal).find('.import').click(function(e) {
@@ -457,10 +452,6 @@ var push_to_history = function() {
     if (STATE.page && STATE.page > 1) {
         data.page = STATE.page;
     };
-    // serialize id, if any
-    if (STATE.query.uuid) {
-        data.uuid = STATE.query.uuid;
-    };
     var serialized = $.param(data);
     history.pushState(data, '', '#' + serialized);
 };
@@ -477,10 +468,6 @@ var handle_hash_state = function(event) {
     _.each(state_field_mapping, function(field, property) {
         $(field).val(deserialized[property]);
     });
-    // handle id part of the query
-    if (deserialized.hasOwnProperty('uuid')) {
-        STATE.query.uuid = deserialized['uuid'];
-    };
     // handle page
     if (deserialized.hasOwnProperty('page')) {
         STATE.page = parseInt(deserialized['page'], 10) || 1;

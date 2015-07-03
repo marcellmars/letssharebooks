@@ -19,7 +19,6 @@ img {
 
 .cover {
     position:relative;
-    display:inline-block;
     width:238px;
     height:360px;
     overflow:hidden;
@@ -239,7 +238,7 @@ body.loading .modal {
     background-color: #000000;
 }
 
-/* Book permalink page */
+/* -- Book permalink page */
 
 #book {
     margin-top: 30px;
@@ -255,4 +254,11 @@ body.loading .modal {
     height: auto;
     float: right;
     margin: 0px 15px 15px 15px;
+}
+
+/* -- Grid CSS */
+
+@media (min-width: 30em) {
+    .row { width: 100%; display: table; table-layout: fixed; }
+    .col { display: table-cell; }
 }

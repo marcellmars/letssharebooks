@@ -28,46 +28,48 @@
 
 {% block templates %}
 <script type="text/x-template" id="book-content-tmpl">
-  <div class="cover" rel='<%= book.librarian %>'>
+  <div class="col">
+    <div class="cover" rel='<%= book.librarian %>'>
 
-    <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-      <img class="cover-grid"
-           src="<%= book.cover_url %>" />
-      <div class="cover-highlight">
-        <span class="hmsg">Shared by <%= book.librarian %></span>
-      </div>
-    </a>
+      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
+        <img class="cover-grid"
+             src="<%= book.cover_url %>" />
+        <div class="cover-highlight">
+          <span class="hmsg">Shared by <%= book.librarian %></span>
+        </div>
+      </a>
 
-    <h2>
-      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
-      <br />
-      <div id="authorz">
-        <% for( var i = 0; i < book.authors.length; i++ ) { %>
-           <% var author = book.authors[i]; var author_s = author.replace("'", " "); %>
-           <a class="author" data-authors="<%- author_s %>" href="#"
-              title="show only books by <%- author_s %>"><%- author %></a>
-        <% } %>
-      </div>
-    </h2>
-    
-    <% if (book.formats[0] != '0') { %>
-    <span class="download">Download:
-      <% for( var i = 0; i < book.formats.length; i++ ) { %>
-        <% var format = book.formats[i] %>
-        <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>"><%= format.toUpperCase() %></a>
-      <% } %>
-    </span>
-    <% } %>
+      <h2>
+        <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
+        <br />
+        <div id="authorz">
+          <% for( var i = 0; i < book.authors.length; i++ ) { %>
+             <% var author = book.authors[i]; var author_s = author.replace("'", " "); %>
+             <a class="author" data-authors="<%- author_s %>" href="#"
+                title="show only books by <%- author_s %>"><%- author %></a>
+             <% } %>
+        </div>
+      </h2>
       
-    <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
-    <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
-       title="import book directly to calibre" target="import">
-      <span class="lodestone">
-        <img src="/images/lodestone.png" title="import book directly to calibre" />
+      <% if (book.formats[0] != '0') { %>
+      <span class="download">Download:
+        <% for( var i = 0; i < book.formats.length; i++ ) { %>
+           <% var format = book.formats[i] %>
+           <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>"><%= format.toUpperCase() %></a>
+           <% } %>
       </span>
-    </a>
-    <% } %>
-    
+      <% } %>
+      
+      <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
+      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+         title="import book directly to calibre" target="import">
+        <span class="lodestone">
+          <img src="/images/lodestone.png" title="import book directly to calibre" />
+        </span>
+      </a>
+      <% } %>
+      
+    </div>
   </div>
 </script>
 

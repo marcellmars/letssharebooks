@@ -4,6 +4,8 @@
  */
 
 var ITEMS_PER_PAGE = 16;
+var GRID_ROW_SIZE = 4;
+
 var STATE = {
     page: 1,
     show_modal: false, // open book modal window
@@ -108,7 +110,13 @@ var render_book = function(i, book) {
         search_author($(this).data('authors'));
     });
     var book_content = gen_book_content(book);
-    $('#content').append(book_content);
+    // find last row
+    var row = $('#content .row:last');
+    // start new row if last one has GRID_ROW_SIZE elements
+    if (i % GRID_ROW_SIZE == 0) {
+        row = $('<div>').addClass('row').appendTo('#content');
+    };
+    $(row).append(book_content);
 };
 
 /* --------------------------------------------------------------------------*/
@@ -124,6 +132,49 @@ var open_import_modal = function() {
         closeOnEscape: true
     });
     modal.dialog("open");
+};
+
+/* --------------------------------------------------------------------------*/
+
+var nav = {
+    // trigger rendering of the modal by clicking on the main link
+    '_show_modal': function(el) {
+        el.find('h2 .more_about').click();
+    },
+    // opens modal next to the current one
+    'open_next_modal': function(current) {
+        var next = current.next();
+        // try to find next book in the same row
+        if (next.length) {
+            this._show_modal(next);
+        } else {
+            // try to move to the row below
+            col = current.parents('.row').next().find('.col:first');
+            if (col.length) {
+                this._show_modal(col);
+            // try to open next page
+            } else {
+                next_page(true);
+            };
+        };
+    },
+    // opens modal previous to the current one
+    'open_prev_modal': function(current) {
+        var prev = current.prev();
+        // try to find previous book in the same row
+        if (prev.length) {
+            this._show_modal(prev);
+        } else {
+            // try to move to the row above
+            col = current.parents('.row').prev().find('.col:last');
+            if (col.length) {
+                this._show_modal(col);
+            // try to open next page
+            } else {
+                prev_page(true);
+            };
+        };
+    },
 };
 
 /* --------------------------------------------------------------------------*/
@@ -160,32 +211,21 @@ var setup_modal = function () {
             modal.dialog("open");
             // navigate modals with left/right arrows
             $(modal).keydown(function(e) {
-                var this_cover = $(['.cover h2 [rel="',
-                                    book.uuid,
-                                    '"].more_about'].join('')).parents('.cover');
-                if (this_cover.length) {
+                var this_book = $(['.col .cover h2 [rel="',
+                                   book.uuid,
+                                   '"].more_about'].join('')).parents('.col');
+                if (this_book.length) {
                     // navigate right
                     if (e.which === 39) {
                         modal.dialog('close');
-                        var next_cover = this_cover.next();
                         STATE.navigation_direction = 1;
-                        if (next_cover.length) {
-                            next_cover.find('h2 .more_about').click();
-                        } else {
-                            // try to open next page
-                            next_page(true);
-                        };
+                        nav.open_next_modal(this_book);
                     }
                     // navigate left
                     else if (e.which === 37) {
                         modal.dialog('close');
-                        var previous_cover = this_cover.prev();
                         STATE.navigation_direction = 0;
-                        if (previous_cover.length) {
-                            previous_cover.find('h2 .more_about').click();
-                        } else {
-                            prev_page(true);
-                        };
+                        nav.open_prev_modal(this_book);
                     };
                 };
             });

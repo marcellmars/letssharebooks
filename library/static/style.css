@@ -1,3 +1,5 @@
+/* -- General */
+
 body {
     background: rgb(255, 255, 255);
     display: block;
@@ -17,22 +19,6 @@ img {
     background-size: cover;
 }
 
-.cover {
-    position:relative;
-    width:238px;
-    height:360px;
-    overflow:hidden;
-    border-right: 2px solid rgb(224, 224, 224);
-    border-bottom: 4px solid rgb(224, 224, 224);
-    background: rgb(0, 0, 0); /* fallback color */
-    background: rgba(0, 0, 0, 0.9);
-}
-
-.cover .more_about img {
-    min-height: 359px;
-    max-height: 100%;
-}
-
 h2 {
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
     //font: bold 16px/22px Helvetica, Sans-Serif; 
@@ -49,6 +35,24 @@ h2 {
 h2 span {
     //font: bold 12px/16px Helvetica, Sans-Serif; 
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
+}
+
+/* -- Book grid view */
+
+.cover {
+    position:relative;
+    width:238px;
+    height:360px;
+    overflow:hidden;
+    border-right: 2px solid rgb(224, 224, 224);
+    border-bottom: 4px solid rgb(224, 224, 224);
+    background: rgb(0, 0, 0); /* fallback color */
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.cover .more_about img {
+    min-height: 359px;
+    max-height: 100%;
 }
 
 .download {
@@ -77,6 +81,8 @@ h2 span {
 #header {
     margin-bottom: 7px;
 }
+
+/* -- Toolbar */
 
 .toolbar {
     margin-bottom: 6px;
@@ -133,28 +139,6 @@ h2 span {
     background-color: #ffffff;
 }
 
-.modal {
-    display:    none;
-    position:   fixed;
-    z-index:    1000;
-    top:        0;
-    left:       0;
-    height:     100%;
-    width:      100%;
-    background: rgba(224, 224, 224, 0.4) 
-    url('/images/loading.gif') 
-    50% 50% 
-    no-repeat;
-}
-
-body.loading {
-    overflow: hidden;
-}
-
-body.loading .modal {
-    display: block;
-}
-
 #authorz {
     //font: bold 12px/16px Helvetica, Sans-Serif; 
     font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
@@ -170,18 +154,6 @@ body.loading .modal {
 }
 
 .attr {
-    color: #ffffff;
-    background-color: #000000;
-}
-
-.cover-modal {
-    position: relative;
-    width: 180px;
-    float: right;
-    margin: 0px 15px 15px 0px;
-}
-
-.only_lib a {
     color: #ffffff;
     background-color: #000000;
 }
@@ -236,6 +208,46 @@ body.loading .modal {
 
 .cover-highlight-this .hmsg span {
     background-color: #000000;
+}
+
+/* -- Modal book window */
+
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba(224, 224, 224, 0.4) 
+    url('/images/loading.gif') 
+    50% 50% 
+    no-repeat;
+}
+
+body.loading {
+    overflow: hidden;
+}
+
+body.loading .modal {
+    display: block;
+}
+
+.cover-modal {
+    position: relative;
+    width: 180px;
+    float: right;
+    margin: 0px 15px 15px 0px;
+}
+
+.only_lib a {
+    color: #ffffff;
+    background-color: #000000;
+}
+
+.book-modal .title:link {
+    text-decoration: none;
 }
 
 /* -- Book permalink page */

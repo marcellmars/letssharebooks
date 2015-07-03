@@ -74,7 +74,7 @@
 </script>
 
 <script type="text/x-template" id="book-modal-tmpl">
-  <div id="book-modal" title="<%= book.title %>">
+  <div id="book-modal" class="book-modal" title="<%= book.title %>">
     <div>
       <a href="/b/<%= book.uuid %>">
         <img class="cover-modal" src="<%= book.cover_url %>" />
@@ -88,7 +88,8 @@
       </a>
       <% } %>
     </div>
-    <p><span class="attr">Title:</span> <a href="/b/<%= book.uuid %>"><%= book.title %></a></p>
+    <p><span class="attr">Title:</span> 
+      <a class="title" href="/b/<%= book.uuid %>"><%= book.title %></a></p>
     <p><span class="attr">Authors:</span> <%= book.authors %></p>
     <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
     <% if (book.formats[0] != '0') { %>

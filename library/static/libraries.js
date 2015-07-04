@@ -7,9 +7,9 @@ var ITEMS_PER_PAGE = 16;
 var GRID_ROW_SIZE = 4;
 
 var STATE = {
-    page: 1,
     show_modal: false, // open book modal window
     navigation_direction: 0, // arrow navigation direction (0 - left, 1 - right)
+    last_id: '', // uuid of the last fetched book
     query: {
         'authors': '',
         'title': '',
@@ -45,13 +45,7 @@ var nav = {
     // Adds complete toolbar to the top of the page
     'init_toolbar': function () {
         var self = this;
-        $('.prev_page').click(function () {
-            nav.prev_page();
-        });
-        $('.next_page').click(function () {
-            nav.next_page();
-        });
-        $('#page-msg').click(function () {
+        $('#home').click(function () {
             // going back to the homepage lists ALL books in the DB
             // (i.e. resets the search)
             _.each(self.state_field_mapping, function(field, property) {
@@ -61,7 +55,7 @@ var nav = {
             location.reload();
         });
         $('#search').click(function() {
-            search.query(1);
+            search.query();
         });
         $('#authors, #titles, #search_all').bind('keydown', function(e) {
             // if enter is pressed
@@ -69,35 +63,22 @@ var nav = {
                 search.query();
             }
         });
+        $('#load-more input').click(function() {
+            ui.render_page();
+        });
     },
-    
-    // show next page
-    'next_page': function (show_modal) {
-        if ($('.next_page').hasClass('not-active')) {
-            return;
-        };
-        if (show_modal) {
-            STATE.show_modal = true;
-        };
-        STATE.page += 1;
-        this.modify_button('.prev_page', 'active');
-        ui.render_page();
+
+    'disable_load_more': function () {
+        $('#load-more input').remove();
     },
-    // show previous page
-    'prev_page': function (show_modal) {
-        if ($('.prev_page').hasClass('not-active') || STATE.page == 1) {
-            return;
-        };
-        if (show_modal) {
-            STATE.show_modal = true;
-        };
-        STATE.page -= 1;
-        this.modify_button('.next_page', 'active');
-        $('.next_page').show();
-        if (STATE.page <= 1) {
-            this.modify_button('.prev_page', 'not-active');
-        }
-        ui.render_page();
+
+    // infinite scroll
+    'init_scroll': function() {
+        $(window).scroll(function () {
+            if ($(window).scrollTop() + screen.height >= $(document).height()) {
+                ui.render_page();
+            };
+        });
     },
     
     // trigger rendering of the modal by clicking on the main link
@@ -117,9 +98,6 @@ var nav = {
             col = current.parents('.row').next().find('.col:first');
             if (col.length) {
                 this._show_modal(col);
-            // try to open next page
-            } else {
-                nav.next_page(true);
             };
         };
     },
@@ -136,9 +114,6 @@ var nav = {
             col = current.parents('.row').prev().find('.col:last');
             if (col.length) {
                 this._show_modal(col);
-            // try to open next page
-            } else {
-                nav.prev_page(true);
             };
         };
     },
@@ -148,48 +123,6 @@ var nav = {
         var modal = $(common.templates.import_modal({}));
         modal.dialog(ui.modal_defaults);
         modal.dialog('open');
-    },
-
-    // updates pagination status
-    'update_pagination': function (data) {
-        // pagination msg
-        if (data['total'] == 0) {
-            $('#page-msg').attr('value', '0 books');
-            return;
-        };
-        var offset = (STATE.page-1) * ITEMS_PER_PAGE + 1;
-        var total = 100;
-        var msg = ['HOME (',
-                   offset,
-                   '-',
-                   offset + data['on_page'] - 1,
-                   'out of',
-                   data['total'],
-                   'books )'].join(' ');
-        $('#page-msg').attr('value', msg);
-        // enable/disable pagination
-        if (data['next_page'] === null) {
-            this.modify_button('.next_page', 'not-active');
-        } else {
-            this.modify_button('.next_page', 'active');
-        };
-        if (STATE.page > 1) {
-            this.modify_button('.prev_page', 'active');
-        };
-    },
-    
-    // changes state of the prev/next page buttons
-    'modify_button': function (button, state) {
-        var elem = $(button);
-        if (state == 'active') {
-            elem.attr('disabled', false);
-            elem.removeClass('not-active');
-            elem.addClass('active');
-        } else if (state == 'not-active') {
-            elem.attr('disabled', true);
-            elem.removeClass('active');
-            elem.addClass('not-active');
-        }
     },
 
     // handles onload browser history
@@ -202,10 +135,6 @@ var nav = {
                 data[property] = field_value;
             };
         });
-        // serialize page when greater than 1
-        if (STATE.page && STATE.page > 1) {
-            data.page = STATE.page;
-        };
         var serialized = $.param(data);
         history.pushState(data, '', '#' + serialized);
     },
@@ -223,10 +152,6 @@ var nav = {
         _.each(this.state_field_mapping, function(field, property) {
             $(field).val(deserialized[property]);
         });
-        // handle page
-        if (deserialized.hasOwnProperty('page')) {
-            STATE.page = parseInt(deserialized['page'], 10) || 1;
-        };
         return search.query();
     },
 };
@@ -238,7 +163,7 @@ var nav = {
 var ui = {
 
     // fetches list of book from the server
-    'render_page': function () {
+    'render_page': function (empty) {
         nav.push_to_history();
         var self = this;
         $.ajax({type: 'POST',
@@ -248,20 +173,26 @@ var ui = {
                 data: JSON.stringify(STATE),
                 dataType: 'json',
                 success: function (data) {
-                    self.parse_response(data);
+                    self.parse_response(data, empty);
                 }
          });
     },
 
     // parses response from the server and renders books
-    'parse_response': function (data) {
+    'parse_response': function (data, empty) {
         var self = this;
         // empty main container and render books
-        $('#content').empty();
+        if (empty) {
+            $('#content').empty();
+        };
         $.each(data['books'], this.render_book);
+        STATE.last_id = data['last_id'];
+        if (STATE.last_id === null) {
+            nav.disable_load_more();
+        };
         // update ui
         self.update_autocomplete(data);
-        nav.update_pagination(data);
+        //nav.update_pagination(data);
         this.setup_modal();
         if (is_this_portable()) {
             // mark books that were authord by the one of the authors of the
@@ -436,23 +367,17 @@ var ui = {
 
 var search = {
 
-    'query': function (page) {
+    'query': function () {
         STATE.query.authors = $('#authors').val();
         STATE.query.title = $('#titles').val();
         STATE.query.search_all = $('#search_all').val();
         STATE.query.librarian = $('#librarian').val();
-        if (!_.isUndefined(page)) {
-            STATE.page = page;
-        };
-        if (_.isUndefined(STATE.page)) {
-            STATE.page = 1;
-        };
-        ui.render_page();
+        ui.render_page(true);
     },
     
     'by_author': function (author) {
         $('#authors').val(author);
-        this.query(1);
+        this.query();
     }
 };
 
@@ -460,6 +385,7 @@ var search = {
 
 var init_page = function () {
     nav.init_toolbar();
+    // nav.init_scroll();
     /* do not display tooltip for modal close button (it gets automatically
      displayed */
     $(document).tooltip({items: '*:not(.ui-dialog-titlebar-close)'});

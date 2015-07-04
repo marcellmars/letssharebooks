@@ -14,6 +14,7 @@ import socket
 import json
 import time
 import logging
+from bson.objectid import ObjectId
 
 #------------------------------------------------------------------------------
 
@@ -37,7 +38,6 @@ PUBLIC_BOOK_FIELDS = {
     'library_uuid': 1,
     'prefix_url': 1,
     'cover_url': 1,
-    '_id': 0
     }
 
 # book fields for book in the modal window
@@ -311,10 +311,9 @@ def get_book(db, uuid):
 
 #------------------------------------------------------------------------------
 
-def get_books(db, page, query={}):
+def get_books(db, last_id, query={}):
     '''
     Reads and returns books from the database.
-    page: parameter for _paginate_ function
     '''
     # query
     q = {}
@@ -344,20 +343,25 @@ def get_books(db, page, query={}):
                 {'tunnel': {'$in': active_tunnels}},
                 {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
-    LOG.debug('>>> FINAL QUERY: {}'.format(q))
     librarians = active_catalogs.distinct('librarian')
+    # infinite scroll query part
+    if last_id:
+        q['_id'] = {'$gt': ObjectId(last_id)}
     # fetch final cursor
+    LOG.debug('>>> FINAL QUERY: {}'.format(q))
     dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('uuid')
     # distinct authors/titles for autocomplete
     authors = dbb.distinct('authors')
     titles  = dbb.distinct('title')
-    # paginate books
-    books, next_page, on_page, total = paginate(dbb, page)
-    # return serialized books with availability of next page
+    # do infinite scroll
+    books = list(dbb.limit(settings.ITEMS_PER_PAGE))
+    # calculate last_id
+    current_last_id = None
+    if books and len(books) == settings.ITEMS_PER_PAGE:
+        current_last_id = str(books[len(books) - 1]['_id'])
     return utils.ser2json({'books': books,
-                           'next_page': next_page,
-                           'on_page': on_page,
-                           'total': total,
+                           'total': dbb.count(),
+                           'last_id': current_last_id,
                            'librarians': librarians,
                            'authors': authors,
                            'titles': titles
@@ -457,19 +461,5 @@ def get_status(db):
                 '$in': [i['library_uuid'] for i in active_catalogs]}})
     return {'num_of_books': books.count(),
             'num_of_librarians': len(active_catalogs.distinct('librarian'))}
-
-#------------------------------------------------------------------------------
-
-def paginate(cursor, page=1, per_page=settings.ITEMS_PER_PAGE):
-    '''
-    Use this in request with pagination
-    '''
-    items = cursor.skip((page-1) * per_page).limit(per_page)
-    next_page = page + 1
-    num_total_items = cursor.count()
-    num_items_page = items.count(True)
-    if per_page * page == num_total_items or num_items_page < per_page:
-        next_page = None
-    return (list(items), next_page, num_items_page, num_total_items)
 
 #------------------------------------------------------------------------------

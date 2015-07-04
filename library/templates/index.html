@@ -2,26 +2,19 @@
 
 {% block header %}
 <div id="header">
-  <div id="top-toolbar" class="toolbar">
-    <input type="button" value="&lt;&lt;&lt;" class="button not-active prev_page" />
-    <input type="button" value="&gt;&gt;&gt;" class="button active next_page" />
-    <input id="page-msg" type="button" class="button active" value="" />
-  </div>
-  <div id="searchbar">
-    <input id="authors" placeholder="authors" />
-    <input id="titles" placeholder="titles" />
-    <input id="search_all" placeholder="search all metadata" />
-    <select id="librarian"></select>
-    <input id="search" type="button" value="SEARCH" class="button active" />
-  </div>
+  <input  id="home"       class="button active" type="button" value="/" />
+  <input  id="authors"    placeholder="authors" />
+  <input  id="titles"     placeholder="titles" />
+  <input  id="search_all" placeholder="search all metadata" />
+  <select id="librarian" />
+  <input  id="search"     type="button" value="SEARCH" class="button active" />
 </div>
 {% endblock %}
 
 {% block content %}
 <div id="content"></div>
-<div id="bottom-toolbar" class="toolbar">
-  <input type="button" value="&lt;&lt;&lt;" class="button not-active prev_page" />
-  <input type="button" value="&gt;&gt;&gt;" class="button active next_page" />
+<div id="load-more">
+  <input type="button" class="button active" value="+" />
 </div>
 <div class="modal"></div>
 {% endblock %}

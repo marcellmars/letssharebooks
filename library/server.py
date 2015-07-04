@@ -145,7 +145,6 @@ class Root(object):
         '''
         Ajax backend for fetching books
         '''
-        page = 1
         query = {}
         # this could easily be handled by using json_in decorator. however,
         # cherrypy testing is hard using the same decorator. hence...
@@ -154,9 +153,9 @@ class Root(object):
             rawbody = cherrypy.request.body.read(int(cl))
             # parse json from request body
             params = simplejson.loads(rawbody)
-            page = params.get('page')
+            last_id = params.get('last_id')
             query = params.get('query')
-        books = libraries.get_books(cherrypy.db, page, query)
+        books = libraries.get_books(cherrypy.db, last_id, query)
         return books
 
     @cherrypy.expose

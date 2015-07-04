@@ -78,31 +78,11 @@ h2 span {
     float: right;
 }
 
+/* -- Header and toolbar */
+
 #header {
+    margin-top: 7px;
     margin-bottom: 7px;
-}
-
-/* -- Toolbar */
-
-.toolbar {
-    margin-bottom: 6px;
-    text-align: center;
-}
-
-.toolbar .prev_page {
-    float: left;
-}
-
-.toolbar .next_page {
-    float: right;
-}
-
-.toolbar #page-msg {
-    width: 400px;
-}
-
-.toolbar .pagination {
-    height: 30px;
 }
 
 .button {
@@ -111,28 +91,23 @@ h2 span {
     font-size: 1em;
     height: 30px;
     width: 90px;
-}
-
-.active {
     background-color: #ff0000;
     color: #ffffff;
     border: none;
 }
 
-.not-active {
-    background-color: #ffffff;
-    color: #ff0000;
-    border: 1px solid #ff0000;
+#home {
+    width: auto;
 }
 
 #search {
     height: 28px;
-    width: 90px;
+    width: 100px;
     float: right;
 }
 
 #authors, #titles, #search_all, #librarian {
-    width: 206px;
+    width: 195px;
     font-size: 1.2em;
     padding: 3px;
     border: 1px solid #ff0000;
@@ -156,6 +131,17 @@ h2 span {
 .attr {
     color: #ffffff;
     background-color: #000000;
+}
+
+/* -- footer */
+
+#load-more {
+    text-align: center;
+    margin-bottom: 7px;
+}
+
+#load-more input {
+    width: 50px;
 }
 
 /* web app specific; e.g. not in portable */

@@ -40,10 +40,10 @@ h2 span {
 /* -- Book grid view */
 
 .cover {
-    position:relative;
-    width:238px;
-    height:360px;
-    overflow:hidden;
+    position: relative;
+    width: 241px;
+    height: 360px;
+    overflow: hidden;
     border-right: 2px solid rgb(224, 224, 224);
     border-bottom: 4px solid rgb(224, 224, 224);
     background: rgb(0, 0, 0); /* fallback color */
@@ -102,12 +102,11 @@ h2 span {
 
 #search {
     height: 28px;
-    width: 100px;
-    float: right;
+    width: 115px;
 }
 
 #authors, #titles, #search_all, #librarian {
-    width: 195px;
+    width: 190px;
     font-size: 1.2em;
     padding: 3px;
     border: 1px solid #ff0000;
@@ -252,11 +251,4 @@ body.loading .modal {
     height: auto;
     float: right;
     margin: 0px 15px 15px 15px;
-}
-
-/* -- Grid CSS */
-
-@media (min-width: 30em) {
-    .row { width: 100%; display: table; table-layout: fixed; }
-    .col { display: table-cell; }
 }

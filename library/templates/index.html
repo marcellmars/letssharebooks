@@ -1,19 +1,23 @@
 {% extends "base.html" %}
 
 {% block header %}
-<div id="header">
-  <input  id="home"       class="button active" type="button" value="/" />
-  <input  id="authors"    placeholder="authors" />
-  <input  id="titles"     placeholder="titles" />
-  <input  id="search_all" placeholder="search all metadata" />
-  <select id="librarian" />
-  <input  id="search"     type="button" value="SEARCH" class="button active" />
+<div id="header" class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <input  id="home"       class="button active" type="button" value="/" />
+      <input  id="authors"    placeholder="authors" />
+      <input  id="titles"     placeholder="titles" />
+      <input  id="search_all" placeholder="search all metadata" />
+      <select id="librarian" ></select>
+      <input  id="search"     type="button" value="SEARCH" class="button active" />
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<div id="content"></div>
-<div id="load-more">
+<div id="content" class="container"></div>
+<div id="load-more" class="container">
   <input type="button" class="button active" value="+" />
 </div>
 <div class="modal"></div>
@@ -21,7 +25,7 @@
 
 {% block templates %}
 <script type="text/x-template" id="book-content-tmpl">
-  <div class="col">
+  <div class="col col-md-3">
     <div class="cover" rel='<%= book.librarian %>'>
 
       <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">

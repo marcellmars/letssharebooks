@@ -317,7 +317,8 @@ def get_books(db, last_id, query={}):
     '''
     # query
     q = {}
-    LOG.debug('>>> QUERY: {}'.format(query))
+    
+    LOG.debug('>>> QUERY: {}, LAST_ID: {}'.format(query, last_id))
     # extract search parameters and build query
     for field, field_value in query.iteritems():
         if field_value:

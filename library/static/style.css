@@ -10,6 +10,17 @@ body {
 
 a {
     color: white;
+    text-decoration: none;
+}
+
+a:hover {
+    color: white;
+    text-decoration: none;
+}
+
+a:visited {
+    color: white;
+    text-decoration: none;
 }
 
 img {
@@ -80,37 +91,8 @@ h2 span {
 
 /* -- Header and toolbar */
 
-#header {
-    margin-top: 7px;
-    margin-bottom: 7px;
-}
-
-.button {
-    cursor: pointer;
-    font-family: 'BitstreamVeraSansMono',Consolas,monospace;
-    font-size: 1em;
-    height: 30px;
-    width: 90px;
-    background-color: #ff0000;
-    color: #ffffff;
-    border: none;
-}
-
-#home {
-    width: auto;
-}
-
 #search {
-    height: 28px;
-    width: 115px;
-}
-
-#authors, #titles, #search_all, #librarian {
-    width: 190px;
-    font-size: 1.2em;
-    padding: 3px;
-    border: 1px solid #ff0000;
-    background-color: #ffffff;
+    width: 120px;
 }
 
 #authorz {
@@ -136,10 +118,10 @@ h2 span {
 
 #load-more {
     text-align: center;
-    margin-bottom: 7px;
+    margin: 7px 0px 7px 0px;
 }
 
-#load-more input {
+#load-more a {
     width: 50px;
 }
 
@@ -211,6 +193,21 @@ h2 span {
     no-repeat;
 }
 
+.book-modal a {
+    color: black;
+    text-decoration: none;
+}
+
+.book-modal a:hover {
+    color: red;
+    text-decoration: none;
+}
+
+.book-modal a:visited {
+    color: black;
+    text-decoration: none;
+}
+
 body.loading {
     overflow: hidden;
 }
@@ -229,10 +226,6 @@ body.loading .modal {
 .only_lib a {
     color: #ffffff;
     background-color: #000000;
-}
-
-.book-modal .title:link {
-    text-decoration: none;
 }
 
 /* -- Book permalink page */

@@ -368,6 +368,9 @@ var ui = {
 var search = {
 
     'query': function () {
+        // reset last_id for search
+        STATE.last_id = null;
+        // fill STATE
         STATE.query.authors = $('#authors').val();
         STATE.query.title = $('#titles').val();
         STATE.query.search_all = $('#search_all').val();

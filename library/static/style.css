@@ -61,6 +61,8 @@ h2 span {
 
 .navbar {
     padding-left: 30px;
+    margin-top: 5px;
+    margin-bottom: 0px;
 }
 
 /* -- Book grid view */

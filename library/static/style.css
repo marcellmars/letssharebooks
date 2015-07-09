@@ -246,13 +246,13 @@ body.loading .modal {
 }
 
 #book a {
-    color: red;
+    color: grey;
 }
 
 #book .cover-permalink {
-    position: relative;
-    width: 280px;
-    height: auto;
-    float: right;
-    margin: 0px 15px 15px 15px;
+    max-width: 280px;
+}
+
+#book .about {
+    margin-top: 40px;
 }

@@ -55,6 +55,14 @@ h2 span {
     max-width: 195px;
 }
 
+#search {
+    width: 120px;
+}
+
+.navbar {
+    padding-left: 30px;
+}
+
 /* -- Book grid view */
 
 .cover {

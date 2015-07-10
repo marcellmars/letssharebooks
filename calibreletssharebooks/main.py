@@ -25,6 +25,7 @@ import posixpath
 import urllib
 import mimetypes
 import operator
+import threading
 
 try:
     from PyQt4 import QtWebKit
@@ -131,12 +132,14 @@ class Downloader(QThread):
 
     def run(self):
         with open(self.dl_file, "wb") as f:
+            total_length = None
             try:
                 response = requests.get(self.url, stream=True, verify=False)
                 #response = requests.get(self.url, verify=False)
                 total_length = response.headers.get('content-length')
             except Exception as e:
                 logger.debug("DOWNLOADING EXCEPTION: {}".format(e))
+                return
 
             if total_length is None:
                 f.write(response.content)
@@ -294,6 +297,10 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         })
 
 
+class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    pass
+
+
 class ThreadedServer(QThread):
     web_signal = pyqtSignal(str, name="web_signal")
 
@@ -301,7 +308,8 @@ class ThreadedServer(QThread):
         logger.debug("STARTED LOCAL HTTP SERVER!")
         QThread.__init__(self)
         SocketServer.TCPServer.allow_reuse_address = True
-        self.httpd = BaseHTTPServer.HTTPServer(("", port), HTTPHandler)
+        #self.httpd = BaseHTTPServer.HTTPServer(("", port), HTTPHandler)
+        self.httpd = ThreadedTCPServer(("", port), HTTPHandler)
         self.httpd.html = self
 
         #- self.httpd.socket  will make this http server ----------------------
@@ -312,7 +320,10 @@ class ThreadedServer(QThread):
         #                                    server_side=True)
 
     def run(self):
-        self.httpd.serve_forever()
+        self.threaded_httpd = threading.Thread(target=self.httpd.serve_forever)
+        #self.httpd.serve_forever()
+        self.threaded_httpd.daemon = True
+        self.threaded_httpd.start()
 
 #------------------------------------------------------------------------------
 #- in Metadatalibthread metadata gets into .json, upload to server and --------

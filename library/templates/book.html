@@ -27,34 +27,76 @@
 
 {% block templates %}
 <script type="text/x-template" id="book-permalink-tmpl">
-  <div id="book-permalink" title="<%= book.title %>">
-    <img class="cover-permalink"
-         src="<%= book.cover_url %>" />
-    <div>
-      <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
-      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
-         title="import book directly to calibre" target="import">
-        <span class="lodestone">
-          <img src="/images/lodestone.png" title="import book directly to calibre" />
-        </span>
-      </a>
-      <% } %>
+  <div id="book-permalink" title="<%= book.title %>" class="container">
+    <div class="row">
+      <div class="col-md-8">
+        
+        <div class="row">
+          <div class="col-md-2">
+            <span class="attr">Title:</span>
+          </div>
+          <div class="col-md-10"><%= book.title %></div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-2">
+            <span class="attr">Authors:</span>
+          </div>
+          <div class="col-md-10"><%= book.authors %></div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-2">
+            <span class="attr">Publisher:</span>
+          </div>
+          <div class="col-md-10"><%= book.publisher %></div>
+        </div>
+
+        <% if (book.formats[0] != '0') { %>
+        <div class="row">
+          <div class="col-md-2">
+            <span class="attr">Download:</span>
+          </div>
+          <div class="col-md-10">
+            <% for( var i = 0; i < book.formats.length; i++ ) { %>
+               <% var format = book.formats[i] %>
+               <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>">
+                 <%= format.toUpperCase() %>
+               </a>
+               <% } %>
+          </div>
+        </div>
+        <% } %>
+
+        <div class="row about">
+          <div class="col-md-12">
+            <span class="attr">About:</span> <%= book.comments %> 
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12">
+            Browse only <a href="<%= book.prefix_url %>" target="_blank"><%= book.librarian %>'s library</a>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-md-4">
+
+        <img class="cover-permalink img-responsive" src="<%= book.cover_url %>" />
+        
+        <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
+        <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+           title="import book directly to calibre" target="import">
+          <span class="lodestone_modal">
+            <img src="/images/lodestone.png" title="import book directly to calibre" />
+          </span>
+        </a>
+        <% } %>
+      </div>
     </div>
-    <p><span class="attr">Title:</span> <%= book.title %></p>
-    <p><span class="attr">Authors:</span> <%= book.authors %></p>
-    <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
-
-    <% if (book.formats[0] != '0') { %>
-    <p><span class="attr">Download:</span> 
-      <% for( var i = 0; i < book.formats.length; i++ ) { %>
-        <% var format = book.formats[i] %>
-        <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>"><%= format.toUpperCase() %></a>
-      <% } %>
-    </p>
-    <% } %>
-
-    <p><span class="attr">About:</span> <%= book.comments %></p></br>
-    <p><a href="<%= book.prefix_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p>
+ 
   </div>
 </script>
 {% endblock %}

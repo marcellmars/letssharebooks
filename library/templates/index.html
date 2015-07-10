@@ -1,35 +1,25 @@
 {% extends "base.html" %}
 
 {% block header %}
-<nav class="navbar navbar-default">
+<nav class="navbar">
+  
   <div class="container-fluid">
 
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
       <a class="navbar-brand" href="#">
         <img id="home" alt="motw home" src="/static/motw.ico">
       </a>
     </div>
 
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      
-      <form class="navbar-form navbar-left" role="search">
-        <div class="form-group">
-          <input id="authors" type="text" class="form-control" placeholder="authors">
-          <input id="titles" type="text" class="form-control" placeholder="titles">
-          <input id="search_all" type="text" class="form-control" placeholder="all metadata">
-          <select id="librarian" class="form-control"></select>
-        </div>
-      </form>
+    <div class="collapse navbar-collapse">
 
-      <ul class="navbar-form navbar-right">
-        <button id="search" type="submit" class="btn btn-default">SEARCH</button>
-      </ul>
+      <form class="navbar-form navbar-right">
+        <input id="authors" type="text" class="form-control input-sm" placeholder="authors">
+        <input id="titles" type="text" class="form-control input-sm" placeholder="titles">
+        <input id="search_all" type="text" class="form-control input-sm" placeholder="all metadata">
+        <select id="librarian" class="form-control input-sm"></select>
+        <button id="search" type="submit" class="btn btn-danger btn-sm">SEARCH</button>
+      </form>
       
     </div>
   </div>
@@ -40,7 +30,7 @@
 {% block content %}
 <div id="content" class="container"></div>
 <div id="load-more">
-  <input class="btn btn-default" type="button" value="LOAD MORE">
+  <input class="btn btn-danger" type="button" value="LOAD MORE">
 </div>
 <div class="modal"></div>
 {% endblock %}

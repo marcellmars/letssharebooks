@@ -48,6 +48,23 @@ h2 span {
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
+/* -- Navbar */
+
+#librarian {
+    width: 195px;
+    max-width: 195px;
+}
+
+#search {
+    width: 120px;
+}
+
+.navbar {
+    padding-left: 30px;
+    margin-top: 5px;
+    margin-bottom: 0px;
+}
+
 /* -- Book grid view */
 
 .cover {
@@ -89,17 +106,6 @@ h2 span {
     float: right;
 }
 
-/* -- Header and toolbar */
-
-#search {
-    width: 120px;
-}
-
-#authorz {
-    //font: bold 12px/16px Helvetica, Sans-Serif; 
-    font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
-}
-
 .more_about {
     text-decoration: none;
 }
@@ -112,6 +118,11 @@ h2 span {
 .attr {
     color: #ffffff;
     background-color: #000000;
+}
+
+#authorz {
+    //font: bold 12px/16px Helvetica, Sans-Serif; 
+    font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
 /* -- footer */
@@ -235,13 +246,13 @@ body.loading .modal {
 }
 
 #book a {
-    color: red;
+    color: grey;
 }
 
 #book .cover-permalink {
-    position: relative;
-    width: 280px;
-    height: auto;
-    float: right;
-    margin: 0px 15px 15px 15px;
+    max-width: 280px;
+}
+
+#book .about {
+    margin-top: 40px;
 }

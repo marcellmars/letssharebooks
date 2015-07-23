@@ -1,0 +1,27 @@
+server {
+        listen 80;
+        listen [::]:80;
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
+
+        server_name jessica.memoryoftheworld.org;
+
+        if ($scheme != "https") {
+            rewrite ^ https://$server_name$request_uri? redirect;
+        }
+
+        add_header Strict-Transport-Security max-age=31536000;
+
+        ssl_certificate /etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt;
+        ssl_certificate_key /etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key;
+
+        root /var/www/candy/example/;
+        access_log /var/log/nginx/jessica.memoryoftheworld.org-access.log;
+        error_log /var/log/nginx/jessica.memoryoftheworld.org-error.log;
+
+        error_page 404 /custom_404.html;
+        location = /custom_404.html {
+                internal;
+        }
+
+}

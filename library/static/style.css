@@ -253,6 +253,6 @@ body.loading .modal {
     max-width: 280px;
 }
 
-#book-permalink .about {
-    margin-top: 40px;
+#book-permalink .property {
+    margin-top: 10px;
 }

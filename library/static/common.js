@@ -1,9 +1,15 @@
 var common = {
     'templates': {
-        'book_permalink': _.template($('#book-permalink-tmpl').text().trim()),
-        'book_content'  : _.template($('#book-content-tmpl').text().trim()),
-        'book_modal'    : _.template($('#book-modal-tmpl').text().trim()),
-        'import_modal'  : _.template($('#import-modal-tmpl').text().trim())
+        'book_permalink'             : _.template(
+            $('#book-permalink-tmpl').text().trim()),
+        'book_permalink_navbar_text' : _.template(
+            $('#book-permalink-navbar-text-tmpl').text().trim()),
+        'book_content'               : _.template(
+            $('#book-content-tmpl').text().trim()),
+        'book_modal'                 : _.template(
+            $('#book-modal-tmpl').text().trim()),
+        'import_modal'               : _.template(
+            $('#import-modal-tmpl').text().trim())
     },
     
     // Prepare book data for rendering

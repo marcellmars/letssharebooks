@@ -21,11 +21,35 @@
 
 {% endblock %}
 
+{% block header %}
+<nav class="navbar">
+  
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">
+        <img id="home" alt="motw home" src="/static/motw.ico">
+      </a>
+    </div>
+
+    <div class="collapse navbar-collapse">
+      <p class="navbar-text"></p>
+    </div>
+
+  </div>
+</nav>
+
+{% endblock %}
+
 {% block content %}
-<div id="book"></div>
+<div id="content" class="container"></div>
 {% endblock %}
 
 {% block templates %}
+<script type="text/x-template" id="book-permalink-navbar-text-tmpl">
+  <%= book.title %> by <%= book.authors %>
+</script>
+
 <script type="text/x-template" id="book-permalink-tmpl">
   <div id="book-permalink" title="<%= book.title %>" class="container">
     <div class="row">

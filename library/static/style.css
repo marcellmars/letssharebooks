@@ -241,18 +241,18 @@ body.loading .modal {
 
 /* -- Book permalink page */
 
-#book {
+#book-permalink {
     margin-top: 30px;
 }
 
-#book a {
+#book-permalink a {
     color: grey;
 }
 
-#book .cover-permalink {
+#book-permalink .cover-permalink {
     max-width: 280px;
 }
 
-#book .about {
+#book-permalink .about {
     margin-top: 40px;
 }

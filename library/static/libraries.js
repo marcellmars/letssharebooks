@@ -11,9 +11,8 @@ var STATE = {
     navigation_direction: 0, // arrow navigation direction (0 - left, 1 - right)
     last_id: '', // uuid of the last fetched book
     query: {
-        'authors': '',
-        'title': '',
-        'search_all': '',
+        'text': '',
+        'property': '',
         'librarian': '',
     }
 };
@@ -36,10 +35,9 @@ var nav = {
 
     // maps state field to input html elements
     'state_field_mapping': {
-        'authors':    '#authors',
-        'title':      '#titles',
-        'search_all': '#search_all',
-        'librarian':  '#librarian'
+        'text'     : '#text',
+        'property' : '#property',
+        'librarian': '#librarian'
     },
 
     // Adds complete toolbar to the top of the page
@@ -57,7 +55,7 @@ var nav = {
         $('#search').click(function() {
             search.query();
         });
-        $('#authors, #titles, #search_all').bind('keydown', function(e) {
+        $('#text').bind('keydown', function(e) {
             // if enter is pressed
             if(e.which == 13) {
                 search.query();
@@ -371,15 +369,15 @@ var search = {
         // reset last_id for search
         STATE.last_id = null;
         // fill STATE
-        STATE.query.authors = $('#authors').val();
-        STATE.query.title = $('#titles').val();
-        STATE.query.search_all = $('#search_all').val();
+        STATE.query.text = $('#text').val();
+        STATE.query.property = $('#property').val();
         STATE.query.librarian = $('#librarian').val();
         ui.render_page(true);
     },
     
     'by_author': function (author) {
-        $('#authors').val(author);
+        $('#text').val(author);
+        $('#property').val('authors');
         this.query();
     }
 };

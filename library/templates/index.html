@@ -14,9 +14,12 @@
     <div class="collapse navbar-collapse">
 
       <form class="navbar-form navbar-right">
-        <input id="authors" type="text" class="form-control input-sm" placeholder="authors">
-        <input id="titles" type="text" class="form-control input-sm" placeholder="titles">
-        <input id="search_all" type="text" class="form-control input-sm" placeholder="all metadata">
+        <input  id="text" type="text" class="form-control input-sm" placeholder="type here...">
+        <select id="property" class="form-control input-sm">
+          <option value="authors">Authors</option>
+          <option value="title">Title</option>
+          <option value="all">All metadata</option>
+        </select>
         <select id="librarian" class="form-control input-sm"></select>
         <button id="search" type="submit" class="btn btn-danger btn-sm">SEARCH</button>
       </form>

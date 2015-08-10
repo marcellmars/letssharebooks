@@ -21,36 +21,48 @@
 
 {% endblock %}
 
+{% block header %}
+<nav class="navbar">
+  
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">
+        <img id="home" alt="motw home" src="/static/motw.ico">
+      </a>
+    </div>
+
+    <div class="collapse navbar-collapse">
+      <p class="navbar-text"></p>
+    </div>
+
+  </div>
+</nav>
+
+{% endblock %}
+
 {% block content %}
-<div id="book"></div>
+<div id="content" class="container"></div>
 {% endblock %}
 
 {% block templates %}
+<script type="text/x-template" id="book-permalink-navbar-text-tmpl">
+  <%= book.title %> :: <%= book.authors %>
+</script>
+
 <script type="text/x-template" id="book-permalink-tmpl">
   <div id="book-permalink" title="<%= book.title %>" class="container">
     <div class="row">
       <div class="col-md-8">
-        
-        <div class="row">
-          <div class="col-md-2">
-            <span class="attr">Title:</span>
-          </div>
-          <div class="col-md-10"><%= book.title %></div>
-        </div>
 
-        <div class="row">
+        <% for( var i = 0; i < properties.length; i++ ) { %>
+        <div class="row property">
           <div class="col-md-2">
-            <span class="attr">Authors:</span>
+            <span class="attr"><%= properties[i].display_name %></span>
           </div>
-          <div class="col-md-10"><%= book.authors %></div>
+          <div class="col-md-10"><%= book[properties[i].name] %></div>
         </div>
-        
-        <div class="row">
-          <div class="col-md-2">
-            <span class="attr">Publisher:</span>
-          </div>
-          <div class="col-md-10"><%= book.publisher %></div>
-        </div>
+        <% } %>
 
         <% if (book.formats[0] != '0') { %>
         <div class="row">
@@ -67,18 +79,6 @@
           </div>
         </div>
         <% } %>
-
-        <div class="row about">
-          <div class="col-md-12">
-            <span class="attr">About:</span> <%= book.comments %> 
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-md-12">
-            Browse only <a href="<%= book.prefix_url %>" target="_blank"><%= book.librarian %>'s library</a>
-          </div>
-        </div>
 
       </div>
 

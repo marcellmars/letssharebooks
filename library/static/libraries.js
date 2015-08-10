@@ -11,9 +11,8 @@ var STATE = {
     navigation_direction: 0, // arrow navigation direction (0 - left, 1 - right)
     last_id: '', // uuid of the last fetched book
     query: {
-        'authors': '',
-        'title': '',
-        'search_all': '',
+        'text': '',
+        'property': '',
         'librarian': '',
     }
 };
@@ -36,10 +35,9 @@ var nav = {
 
     // maps state field to input html elements
     'state_field_mapping': {
-        'authors':    '#authors',
-        'title':      '#titles',
-        'search_all': '#search_all',
-        'librarian':  '#librarian'
+        'text'     : '#text',
+        'property' : '#property',
+        'librarian': '#librarian'
     },
 
     // Adds complete toolbar to the top of the page
@@ -57,7 +55,7 @@ var nav = {
         $('#search').click(function() {
             search.query();
         });
-        $('#authors, #titles, #search_all').bind('keydown', function(e) {
+        $('#text').bind('keydown', function(e) {
             // if enter is pressed
             if(e.which == 13) {
                 search.query();
@@ -66,6 +64,10 @@ var nav = {
         $('#load-more input').click(function() {
             ui.render_page();
         });
+        $("#property").change(function () {
+            ui.change_autocomplete();
+        });
+        
     },
 
     'disable_load_more': function () {
@@ -191,8 +193,7 @@ var ui = {
             nav.disable_load_more();
         };
         // update ui
-        self.update_autocomplete(data);
-        //nav.update_pagination(data);
+        self.update_toolbar(data);
         this.setup_modal();
         if (is_this_portable()) {
             // mark books that were authord by the one of the authors of the
@@ -242,16 +243,31 @@ var ui = {
         $(row).append(book_content);
     },
 
-    'update_autocomplete': function(data) {
-        var authors = data['authors'];
-        var titles = data['titles'];
+    'change_autocomplete': function() {
+        var source = [];
+        var property = $('#property').val();
+        if (property == 'authors') {
+            source = STATE.autocomplete.authors;
+        } else if (property == 'title') {
+            source = STATE.autocomplete.titles;
+        };
+        $('#text').autocomplete({source: source, minLength:2});
+    },
+
+    'update_toolbar': function(data) {
+        STATE.autocomplete = {
+            authors: data['authors'],
+            titles: data['titles']
+        };
         if (is_this_portable()) {
             var metadata = this.generate_metadata(data['books']);
-            authors = metadata['authors'];
-            titles = metadata['titles'];
+            STATE.autocomplete = {
+                authors: metadata['authors'],
+                titles: metadata['titles']
+            };
         };
-        $('#authors').autocomplete({source: authors, minLength:2});
-        $('#titles').autocomplete({source: titles, minLength:2});
+        this.change_autocomplete();
+        
         $('#librarian').empty();
         if (data['librarians'].length > 1) {
             $('#librarian').append(['<option value="" selected>',
@@ -371,15 +387,15 @@ var search = {
         // reset last_id for search
         STATE.last_id = null;
         // fill STATE
-        STATE.query.authors = $('#authors').val();
-        STATE.query.title = $('#titles').val();
-        STATE.query.search_all = $('#search_all').val();
+        STATE.query.text = $('#text').val();
+        STATE.query.property = $('#property').val();
         STATE.query.librarian = $('#librarian').val();
         ui.render_page(true);
     },
     
     'by_author': function (author) {
-        $('#authors').val(author);
+        $('#text').val(author);
+        $('#property').val('authors');
         this.query();
     }
 };

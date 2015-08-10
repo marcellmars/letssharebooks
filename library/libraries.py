@@ -319,24 +319,28 @@ def get_books(db, last_id, query={}):
     q = {}
     
     LOG.debug('>>> QUERY: {}, LAST_ID: {}'.format(query, last_id))
+
     # extract search parameters and build query
-    for field, field_value in query.iteritems():
-        if field_value:
-            words = field_value.encode('utf-8').split(' ')
-            match_pattern = {'$regex': '.*'.join(words), '$options': 'i'}
-            # match fileds with exact mapping
-            if field in ['authors', 'title', 'librarian', 'uuid']:
-                q[field] = match_pattern
-            # search all metadata
-            elif field == 'search_all':
-                q = {"$or": [{'title': match_pattern},
-                             {'authors': match_pattern},
-                             {'comments': match_pattern},
-                             {'tags': match_pattern},
-                             {'publisher': match_pattern},
-                             {'identifiers': match_pattern}]}
-            else:
-                LOG.debug('>>> Unrecognized search param {}'.format(field))
+    # text + property
+    q_text = query.get('text')
+    q_property = query.get('property', 'all')
+    if q_text:
+        words = q_text.encode('utf-8').split(' ')
+        match_pattern = {'$regex': '.*'.join(words), '$options': 'i'}
+        if q_property in ['authors', 'title']:
+            q[q_property] = match_pattern
+        else:
+            q = {"$or": [{'title': match_pattern},
+                         {'authors': match_pattern},
+                         {'comments': match_pattern},
+                         {'tags': match_pattern},
+                         {'publisher': match_pattern},
+                         {'identifiers': match_pattern}]}
+    # librarian
+    q_librarian = query.get('librarian')
+    if q_librarian:
+        q['librarian'] = q_librarian.encode('utf-8')
+
     # get all libraries that have active ssh tunnel or reference portables
     active_tunnels = get_active_tunnels()[0]
     LOG.debug('>>> Active_tunnels: {}'.format(active_tunnels))
@@ -345,17 +349,22 @@ def get_books(db, last_id, query={}):
                 {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
     librarians = active_catalogs.distinct('librarian')
+
     # infinite scroll query part
     if last_id:
         q['_id'] = {'$gt': ObjectId(last_id)}
+
     # fetch final cursor
     LOG.debug('>>> FINAL QUERY: {}'.format(q))
     dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('uuid')
+
     # distinct authors/titles for autocomplete
     authors = dbb.distinct('authors')
     titles  = dbb.distinct('title')
+
     # do infinite scroll
     books = list(dbb.limit(settings.ITEMS_PER_PAGE))
+
     # calculate last_id
     current_last_id = None
     if books and len(books) == settings.ITEMS_PER_PAGE:

@@ -64,6 +64,10 @@ var nav = {
         $('#load-more input').click(function() {
             ui.render_page();
         });
+        $("#property").change(function () {
+            ui.change_autocomplete();
+        });
+        
     },
 
     'disable_load_more': function () {
@@ -189,8 +193,7 @@ var ui = {
             nav.disable_load_more();
         };
         // update ui
-        self.update_autocomplete(data);
-        //nav.update_pagination(data);
+        self.update_toolbar(data);
         this.setup_modal();
         if (is_this_portable()) {
             // mark books that were authord by the one of the authors of the
@@ -240,16 +243,31 @@ var ui = {
         $(row).append(book_content);
     },
 
-    'update_autocomplete': function(data) {
-        var authors = data['authors'];
-        var titles = data['titles'];
+    'change_autocomplete': function() {
+        var source = [];
+        var property = $('#property').val();
+        if (property == 'authors') {
+            source = STATE.autocomplete.authors;
+        } else if (property == 'title') {
+            source = STATE.autocomplete.titles;
+        };
+        $('#text').autocomplete({source: source, minLength:2});
+    },
+
+    'update_toolbar': function(data) {
+        STATE.autocomplete = {
+            authors: data['authors'],
+            titles: data['titles']
+        };
         if (is_this_portable()) {
             var metadata = this.generate_metadata(data['books']);
-            authors = metadata['authors'];
-            titles = metadata['titles'];
+            STATE.autocomplete = {
+                authors: metadata['authors'],
+                titles: metadata['titles']
+            };
         };
-        $('#authors').autocomplete({source: authors, minLength:2});
-        $('#titles').autocomplete({source: titles, minLength:2});
+        this.change_autocomplete();
+        
         $('#librarian').empty();
         if (data['librarians'].length > 1) {
             $('#librarian').append(['<option value="" selected>',

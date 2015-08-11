@@ -2,10 +2,13 @@
 
 body {
     background: rgb(255, 255, 255);
-    display: block;
-    width: 960px;
-    margin: 0px auto;
     font-family: 'BitstreamVeraSansMono', Consolas, monospace;
+}
+
+.navbar {
+    width: 960px;
+    display: block;
+    margin: 0px auto;
 }
 
 a {
@@ -139,10 +142,6 @@ h2 span {
 #load-more {
     text-align: center;
     margin: 7px 0px 7px 0px;
-}
-
-#load-more a {
-    width: 50px;
 }
 
 /* web app specific; e.g. not in portable */

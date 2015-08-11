@@ -407,7 +407,7 @@ var init_page = function () {
     // nav.init_scroll();
     /* do not display tooltip for modal close button (it gets automatically
      displayed */
-    $(document).tooltip({items: '*:not(.ui-dialog-titlebar-close)'});
+    //$(document).tooltip({items: '*:not(.ui-dialog-titlebar-close)'});
     if (window.location.hash != '') {
       var state = window.location.hash.substr(1);
       nav.handle_hash_state(state);

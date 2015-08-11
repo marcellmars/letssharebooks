@@ -5,12 +5,6 @@ body {
     font-family: 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
-.navbar {
-    width: 960px;
-    display: block;
-    margin: 0px auto;
-}
-
 a {
     color: white;
     text-decoration: none;
@@ -53,29 +47,47 @@ h2 span {
 
 /* -- Navbar */
 
-#text {
-    width: 300px;
+/* .navbar { */
+/*     width: 960px; */
+/*     display: block; */
+/*     margin: 0px auto; */
+/* } */
+
+.navbar {
+    margin-bottom: 0px;
 }
 
-#property {
-    width: 195px;
-    max-width: 195px;
+.navbar-toggle {
+    background-color: #C9302C;
 }
 
-#librarian {
-    width: 195px;
-    max-width: 195px;
+.navbar-toggle .icon-bar {
+    background-color: white;
 }
+
+/* #text { */
+/*     width: 300px; */
+/* } */
+
+/* #property { */
+/*     width: 195px; */
+/*     max-width: 195px; */
+/* } */
+
+/* #librarian { */
+/*     width: 195px; */
+/*     max-width: 195px; */
+/* } */
 
 #search {
     width: 120px;
 }
 
-.navbar {
-    padding-left: 30px;
-    margin-top: 5px;
-    margin-bottom: 0px;
-}
+/* .navbar { */
+/*     //padding-left: 30px; */
+/*     margin-top: 5px; */
+/*     margin-bottom: 0px; */
+/* } */
 
 /* -- Book grid view */
 

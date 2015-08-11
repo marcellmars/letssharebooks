@@ -2,25 +2,41 @@
 
 {% block header %}
 <nav class="navbar">
-  
-  <div class="container-fluid">
+  <div class="container">
 
     <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
       <a class="navbar-brand" href="#">
         <img id="home" alt="motw home" src="/static/motw.ico">
       </a>
     </div>
 
-    <div class="collapse navbar-collapse">
+    <div class="collapse navbar-collapse" id="navbar">
 
       <form class="navbar-form navbar-right">
-        <input  id="text" type="text" class="form-control input-sm" placeholder="type here...">
-        <select id="property" class="form-control input-sm">
-          <option value="authors">Authors</option>
-          <option value="title">Title</option>
-          <option value="all">All metadata</option>
-        </select>
-        <select id="librarian" class="form-control input-sm"></select>
+
+        <div class="form-group">
+          <select id="property" class="form-control input-sm">
+            <option value="authors">Authors</option>
+            <option value="title">Title</option>
+            <option value="all">All metadata</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <input  id="text" type="text" class="form-control input-sm" placeholder="type here...">
+        </div>
+        
+        <div class="form-group">
+          <select id="librarian" class="form-control input-sm"></select>
+        </div>
+
         <button id="search" type="submit" class="btn btn-danger btn-sm">SEARCH</button>
       </form>
       

@@ -45,14 +45,6 @@ h2 span {
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
-/* -- Navbar */
-
-/* .navbar { */
-/*     width: 960px; */
-/*     display: block; */
-/*     margin: 0px auto; */
-/* } */
-
 .navbar {
     margin-bottom: 0px;
 }
@@ -65,29 +57,45 @@ h2 span {
     background-color: white;
 }
 
-/* #text { */
-/*     width: 300px; */
-/* } */
+/* toolbar elements for tablet */
 
-/* #property { */
-/*     width: 195px; */
-/*     max-width: 195px; */
-/* } */
+@media (min-width: 768px) {
 
-/* #librarian { */
-/*     width: 195px; */
-/*     max-width: 195px; */
-/* } */
+    #text {
+        width: 290px;
+    }
 
-#search {
-    width: 120px;
+    #search {
+        width: 120px;
+    }
+
 }
 
-/* .navbar { */
-/*     //padding-left: 30px; */
-/*     margin-top: 5px; */
-/*     margin-bottom: 0px; */
-/* } */
+/* toolbar elements for desktop */
+
+@media (min-width: 992px) {
+
+    #text {
+        width: 360px;
+    }
+
+    #property {
+        width: 195px;
+        max-width: 195px;
+    }
+
+    #librarian {
+        width: 195px;
+        max-width: 195px;
+    }
+
+    #search {
+        width: 120px;
+    }
+
+}
+
+
 
 /* -- Book grid view */
 

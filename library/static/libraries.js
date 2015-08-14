@@ -92,15 +92,8 @@ var nav = {
     'open_next_modal': function(current) {
         STATE.navigation_direction = 1;
         var next = current.next();
-        // try to find next book in the same row
         if (next.length) {
             this._show_modal(next);
-        } else {
-            // try to move to the row below
-            col = current.parents('.row').next().find('.col:first');
-            if (col.length) {
-                this._show_modal(col);
-            };
         };
     },
     
@@ -108,15 +101,8 @@ var nav = {
     'open_prev_modal': function(current) {
         STATE.navigation_direction = 0;
         var prev = current.prev();
-        // try to find previous book in the same row
         if (prev.length) {
             this._show_modal(prev);
-        } else {
-            // try to move to the row above
-            col = current.parents('.row').prev().find('.col:last');
-            if (col.length) {
-                this._show_modal(col);
-            };
         };
     },
 
@@ -234,10 +220,9 @@ var ui = {
             search.by_author($(this).data('authors'));
         });
         var book_content = gen_book_content(book);
-        // find last row in the css grid
+        // create grid row
         var row = $('#content .row:last');
-        // start new row if last one has GRID_ROW_SIZE elements
-        if (i % GRID_ROW_SIZE == 0) {
+        if (!row.length) {
             row = $('<div>').addClass('row').appendTo('#content');
         };
         $(row).append(book_content);

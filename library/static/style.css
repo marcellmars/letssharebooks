@@ -270,7 +270,6 @@ body.loading .modal {
 /* -- Book permalink page */
 
 #book-permalink {
-    margin-top: 30px;
 }
 
 #book-permalink a {
@@ -282,5 +281,5 @@ body.loading .modal {
 }
 
 #book-permalink .property {
-    margin-top: 10px;
+    margin-bottom: 10px;
 }

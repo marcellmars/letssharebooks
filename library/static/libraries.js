@@ -322,42 +322,55 @@ var ui = {
         var self = this;
         $('.more_about').click(function(e) {
             var uuid = $(this).attr('rel');
-            $.getJSON('book', {uuid: uuid}).done(function( book ) {
-                var modal = $(gen_book_modal(book));
-                var _conf = self.modal_defaults;
-                _conf.open = function() {
-                    $('.ui-widget-overlay').bind('click', function() {
-                        modal.dialog('close');
-                    })
-                };
-                _conf.close = function() {
-                    STATE.show_modal = false;
-                };
-                modal.dialog(_conf);
-                $(modal).find('.import').click(function(e) {
-                    nav.open_import_modal();
-                });
-                modal.dialog("open");
-                // navigate modals with left/right arrows
-                $(modal).keydown(function(e) {
-                    var this_book = $(['.col .cover h2 [rel="',
-                                       book.uuid,
-                                       '"].more_about'].join('')).parents('.col');
-                    if (this_book.length) {
-                        // navigate right
-                        if (e.which === 39) {
-                            modal.dialog('close');
-                            nav.open_next_modal(this_book);
-                        }
-                        // navigate left
-                        else if (e.which === 37) {
-                            modal.dialog('close');
-                            nav.open_prev_modal(this_book);
-                        };
-                    };
-                });
-            });
+            if (common.is_mobile) {
+                // open permalink on mobile
+                location.href = '/b/' + uuid;
+            } else {
+                // open mobile on tablet+desktop
+                self.open_book_modal(uuid);
+            };
             e.preventDefault();
+        });
+    },
+
+    //
+    // opens book info inside modal window
+    //
+    'open_book_modal': function(uuid) {
+        $.getJSON('book', {uuid: uuid}).done(function( book ) {
+            var modal = $(gen_book_modal(book));
+            var _conf = ui.modal_defaults;
+            _conf.open = function() {
+                $('.ui-widget-overlay').bind('click', function() {
+                    modal.dialog('close');
+                })
+            };
+            _conf.close = function() {
+                STATE.show_modal = false;
+            };
+            modal.dialog(_conf);
+            $(modal).find('.import').click(function(e) {
+                nav.open_import_modal();
+            });
+            modal.dialog('open');
+            // navigate modals with left/right arrows
+            $(modal).keydown(function(e) {
+                var this_book = $(['.col .cover h2 [rel="',
+                                   book.uuid,
+                                   '"].more_about'].join('')).parents('.col');
+                if (this_book.length) {
+                    // navigate right
+                    if (e.which === 39) {
+                        modal.dialog('close');
+                        nav.open_next_modal(this_book);
+                    }
+                    // navigate left
+                    else if (e.which === 37) {
+                        modal.dialog('close');
+                        nav.open_prev_modal(this_book);
+                    };
+                };
+            });
         });
     }
 };

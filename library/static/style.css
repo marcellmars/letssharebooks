@@ -66,7 +66,7 @@ h2 span {
 @media (min-width: 768px) {
 
     #text {
-        width: 290px;
+        width: 250px;
     }
 
     #search {
@@ -80,7 +80,7 @@ h2 span {
 @media (min-width: 992px) {
 
     #text {
-        width: 360px;
+        width: 355px;
     }
 
     #property {

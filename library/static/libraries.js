@@ -33,14 +33,18 @@ var is_this_portable = function() {
 
 var nav = {
 
+    //
     // maps state field to input html elements
+    //
     'state_field_mapping': {
         'text'     : '#text',
         'property' : '#property',
         'librarian': '#librarian'
     },
 
+    //
     // Adds complete toolbar to the top of the page
+    //
     'init_toolbar': function () {
         var self = this;
         $('#home').click(function () {
@@ -52,14 +56,18 @@ var nav = {
             window.location.hash = '';
             location.reload();
         });
-        $('#search').click(function() {
-            search.query();
+        $('#search').click(function(e) {
+            search.query(true);
+            e.stopImmediatePropagation();
+            e.preventDefault();
         });
         $('#text').bind('keydown', function(e) {
             // if enter is pressed
-            if(e.which == 13) {
-                search.query();
-            }
+            if (e.which == 13) {
+                search.query(true);
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            };
         });
         $('#load-more input').click(function() {
             ui.render_page();
@@ -70,25 +78,23 @@ var nav = {
         
     },
 
+    //
+    // removes LOAD MORE button
+    //
     'disable_load_more': function () {
         $('#load-more input').remove();
     },
 
-    // infinite scroll
-    'init_scroll': function() {
-        $(window).scroll(function () {
-            if ($(window).scrollTop() + screen.height >= $(document).height()) {
-                ui.render_page();
-            };
-        });
-    },
-    
+    //
     // trigger rendering of the modal by clicking on the main link
+    //
     '_show_modal': function(el) {
         el.find('h2 .more_about').click();
     },
-    
+
+    //
     // opens modal next to the current one
+    //
     'open_next_modal': function(current) {
         STATE.navigation_direction = 1;
         var next = current.next();
@@ -96,8 +102,10 @@ var nav = {
             this._show_modal(next);
         };
     },
-    
+
+    //
     // opens modal previous to the current one
+    //
     'open_prev_modal': function(current) {
         STATE.navigation_direction = 0;
         var prev = current.prev();
@@ -106,14 +114,18 @@ var nav = {
         };
     },
 
+    //
     // opens window for local importing
+    //
     'open_import_modal': function() {
         var modal = $(common.templates.import_modal({}));
         modal.dialog(ui.modal_defaults);
         modal.dialog('open');
     },
 
-    // handles onload browser history
+    //
+    // pushes current state to the browser history
+    //
     'push_to_history': function() {
         var data = {};
         _.each(this.state_field_mapping, function(field, property) {
@@ -127,20 +139,23 @@ var nav = {
         history.pushState(data, '', '#' + serialized);
     },
 
-    // parses params and dispaches on search
-    'handle_hash_state': function(event) {
+    //
+    // parses search params and initiates search
+    // (triggered by onhashchange event)
+    //
+    'handle_hash_state': function(event, push_state) {
         var deserialized = $.deparam(event);
         if (_.isEmpty(deserialized)) { return };
         if (!_.isUndefined(deserialized.librarian)) {
             $('#librarian').append(['<option value="', deserialized.librarian,
                                     '">', deserialized.librarian,
-                                    '</option>'].join('')); 
+                                    '</option>'].join(''));
         };
         // fill the visible query fields
         _.each(this.state_field_mapping, function(field, property) {
             $(field).val(deserialized[property]);
         });
-        return search.query();
+        return search.query(push_state);
     },
 };
 
@@ -150,9 +165,11 @@ var nav = {
 
 var ui = {
 
-    // fetches list of book from the server
+    //
+    // initiates the page content rendering by fetching list of books
+    // from the server
+    //
     'render_page': function (empty) {
-        nav.push_to_history();
         var self = this;
         $.ajax({type: 'POST',
                 url: 'get_books',
@@ -166,7 +183,9 @@ var ui = {
          });
     },
 
+    //
     // parses response from the server and renders books
+    //
     'parse_response': function (data, empty) {
         var self = this;
         // empty main container and render books
@@ -176,6 +195,7 @@ var ui = {
         $.each(data['books'], this.render_book);
         STATE.last_id = data['last_id'];
         if (STATE.last_id === null) {
+            // disable LOAD MORE button when there are no more results
             nav.disable_load_more();
         };
         // update ui
@@ -199,9 +219,17 @@ var ui = {
                 }
             );
         };
+        // display all books by the author whose name is clicked
+        $(document).on('click', '.author', function(e) {
+            search.by_author($(this).data('authors'));
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        });
         // alert on import click
-        $('.import').click(function(e) {
+        $(document).on('click', '.import', function(e) {
             nav.open_import_modal();
+            e.stopImmediatePropagation();
+            e.preventDefault();
         });
         // directly open the dialog window if show_modal
         if (STATE.show_modal) {
@@ -214,12 +242,12 @@ var ui = {
         };
     },
 
+    //
     // renders single book
+    //
     'render_book': function(i, book) {
-        $(document).on('click', '.author', function(e) {
-            search.by_author($(this).data('authors'));
-        });
-        var book_content = gen_book_content(book);
+        var book_content = common.templates.book_content(
+            common.gen_book_data(book));
         // create grid row
         var row = $('#content .row:last');
         if (!row.length) {
@@ -228,6 +256,9 @@ var ui = {
         $(row).append(book_content);
     },
 
+    //
+    // dynamically update autocomplete data based on the selected property
+    //
     'change_autocomplete': function() {
         var source = [];
         var property = $('#property').val();
@@ -239,6 +270,9 @@ var ui = {
         $('#text').autocomplete({source: source, minLength:2});
     },
 
+    //
+    // sets up toolbar functionalities
+    //
     'update_toolbar': function(data) {
         STATE.autocomplete = {
             authors: data['authors'],
@@ -285,8 +319,9 @@ var ui = {
         };
     },
 
-    
+    //
     // generate distinct list of authors, titles and librarians
+    //
     'generate_metadata': function(books) {
         var sadd = function(s, v) {
             if ($.inArray(v, s) == -1) {
@@ -307,7 +342,9 @@ var ui = {
         return metadata;
     },
 
+    //
     // modal default conf
+    //
     'modal_defaults': {
         autoOpen: false,
         modal: true,
@@ -317,7 +354,9 @@ var ui = {
         closeOnEscape: true
     },
 
+    //
     // sets up modal book window
+    //
     'setup_modal': function () {
         var self = this;
         $('.more_about').click(function(e) {
@@ -329,6 +368,7 @@ var ui = {
                 // open mobile on tablet+desktop
                 self.open_book_modal(uuid);
             };
+            e.stopImmediatePropagation();
             e.preventDefault();
         });
     },
@@ -338,7 +378,8 @@ var ui = {
     //
     'open_book_modal': function(uuid) {
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
-            var modal = $(gen_book_modal(book));
+            var modal = $(common.templates.book_modal(
+                common.gen_book_data(book)));
             var _conf = ui.modal_defaults;
             _conf.open = function() {
                 $('.ui-widget-overlay').bind('click', function() {
@@ -381,20 +422,32 @@ var ui = {
 
 var search = {
 
-    'query': function () {
+    //
+    // initiate search by populating STATE and calling render_page
+    // push_state param determines whether state should be pushed to the
+    // browser history
+    //
+    'query': function (push_state) {
         // reset last_id for search
         STATE.last_id = null;
         // fill STATE
         STATE.query.text = $('#text').val();
         STATE.query.property = $('#property').val();
         STATE.query.librarian = $('#librarian').val();
+        // if user initiated action (e.g. click for search)
+        if (push_state) {
+            nav.push_to_history();
+        };
         ui.render_page(true);
     },
-    
+
+    //
+    // search by author only
+    //
     'by_author': function (author) {
         $('#text').val(author);
         $('#property').val('authors');
-        this.query();
+        this.query(true);
     }
 };
 
@@ -402,47 +455,37 @@ var search = {
 
 var init_page = function () {
     nav.init_toolbar();
-    // nav.init_scroll();
     /* do not display tooltip for modal close button (it gets automatically
      displayed */
     //$(document).tooltip({items: '*:not(.ui-dialog-titlebar-close)'});
     if (window.location.hash != '') {
-      var state = window.location.hash.substr(1);
-      nav.handle_hash_state(state);
+        // first check if there are any params. if any, process them and
+        // push state to browser history (true)
+        var state = window.location.hash.substr(1);
+        nav.handle_hash_state(state, true);
     } else {
-      ui.render_page();
-    }
-    window.onpopstate = function(e) {
-      var state = window.location.hash.substr(1);
-      nav.handle_hash_state(state);
+        // if not, then just render page as is and push state
+        ui.render_page();
+        nav.push_to_history();
     };
-};
-
-/* --------------------------------------------------------------------------*/
-
-var init_template_data = function() {
-
-    /** Renders book inside grid */
-    window.gen_book_content = function (book) {
-        return common.templates.book_content(common.gen_book_data(book));
-    };
-
-    /** Renders book modal */
-    window.gen_book_modal = function (book) {
-        return common.templates.book_modal(common.gen_book_data(book));
-    };
+    // this event will fire when 'back' button is pressed
+    $(window).bind('hashchange', function(e) {
+        var state = window.location.hash.substr(1);
+        // don't push now to state
+        nav.handle_hash_state(state, false);
+    });
+    //$(window).trigger('hashchange');
 };
 
 /* --------------------------------------------------------------------------*/
 
 $(document).ready(function () {
     $(document).ajaxStart(function () { 
-        $('body').addClass("loading"); 
+        $('body').addClass('loading'); 
     });
     $(document).ajaxStop(function () { 
-        $('body').removeClass("loading"); 
+        $('body').removeClass('loading'); 
     });
-    init_template_data();
     // try to connect to local calibre server and init page when done
     if (is_this_portable()) {
             init_page();

@@ -29,7 +29,7 @@ var localCalibre = (function () {
                         localLibrary = catalog.library_uuid;
                         callback(true);
                     })
-                    .error(function() {
+                    .on('error', function() {
                         count_local_gif_err += 1;
                         if (count_local_gif_err === catalogs.length) {
                             callback(false);
@@ -39,7 +39,7 @@ var localCalibre = (function () {
             });
 	      })
         // 0.gif is not available
-        .error(function() {
+        .on('error', function() {
             callback(false);
 	      });
     };

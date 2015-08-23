@@ -171,6 +171,9 @@ class Downloader(QThread):
 #- to import the book(s) ------------------------------------------------------
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    timeout = 5
+    lock = threading.Lock()
+
     def copyfile(self, source, outputfile):
         if self.gzip_on:
             outputfile = gzip.GzipFile(mode='wb', fileobj=outputfile)
@@ -178,6 +181,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def serve_library(self, path):
         path = self.translate_path(path)
+        logger.debug("SERVE_LIBRARY PATH: {}".format(path))
         f = None
         self.gzip_on = None
         if os.path.isdir(path):
@@ -186,7 +190,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 self.send_response(301)
                 self.send_header("Location", self.path + "/")
                 self.end_headers()
-                return None
+                return
             for index in "index.html", "index.htm", "BROWSE_LIBRARY.html":
                 index = os.path.join(path, index)
                 if os.path.exists(index):
@@ -200,12 +204,14 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             # transmitted *less* than the content-length!
             f = open(path, 'rb')
         except IOError:
-            self.send_error(404, "File not found")
-            return None
+            self.send_error(404, 'File not found')
+            self.connection.close()
+            return
 
         if not f:
-            self.send_error(404, "File not found")
-            return None
+            self.send_error(404, 'File not found')
+            self.connection.close()
+            return
 
         self.send_response(200)
         self.send_header("Content-type", ctype)
@@ -310,6 +316,7 @@ class ThreadedServer(QThread):
         SocketServer.TCPServer.allow_reuse_address = True
         #self.httpd = BaseHTTPServer.HTTPServer(("", port), HTTPHandler)
         self.httpd = ThreadedTCPServer(("", port), HTTPHandler)
+        self.httpd.daemon = True
         self.httpd.html = self
 
         #- self.httpd.socket  will make this http server ----------------------
@@ -322,7 +329,7 @@ class ThreadedServer(QThread):
     def run(self):
         self.threaded_httpd = threading.Thread(target=self.httpd.serve_forever)
         #self.httpd.serve_forever()
-        self.threaded_httpd.daemon = True
+        #self.threaded_httpd.daemon = True
         self.threaded_httpd.start()
 
 #------------------------------------------------------------------------------

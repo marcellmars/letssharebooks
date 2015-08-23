@@ -1,39 +1,31 @@
+/* -- General */
+
 body {
     background: rgb(255, 255, 255);
-    display: block;
-    width: 960px;
-    margin: 0px auto;
+    font-family: 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
 a {
-    color:white;
+    color: white;
+    text-decoration: none;
 }
 
-#content {}
-
-img {
-    position: absolute;
-    background: url('images/loading.gif') no repeat;
-    background-position: top center;
-    background-size: cover;
+a:hover {
+    color: white;
+    text-decoration: none;
 }
 
-.cover {
-    position:relative;
-    display:inline-block;
-    width:238px;
-    height:360px;
-    overflow:hidden;
-    border-right: 2px solid rgb(224, 224, 224);
-    border-bottom: 4px solid rgb(224, 224, 224);
-    background: rgb(0, 0, 0); /* fallback color */
-    background: rgba(0, 0, 0, 0.9);
+a:visited {
+    color: white;
+    text-decoration: none;
 }
 
-.cover .more_about img {
-    min-height: 359px;
-    max-height: 100%;
-}
+/* img { */
+/*     position: absolute; */
+/*     background: url('/images/loading.gif') no repeat; */
+/*     background-position: top center; */
+/*     background-size: cover; */
+/* } */
 
 h2 {
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
@@ -53,9 +45,88 @@ h2 span {
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
+.navbar {
+    margin-bottom: 0px;
+}
+
+.navbar .navbar-brand img {
+    position: absolute;
+}
+
+.navbar-toggle {
+    background-color: #C9302C;
+}
+
+.navbar-toggle .icon-bar {
+    background-color: white;
+}
+
+/* toolbar elements for tablet */
+
+@media (min-width: 768px) {
+
+    #text {
+        width: 250px;
+    }
+
+    #search {
+        width: 120px;
+    }
+
+}
+
+/* toolbar elements for desktop */
+
+@media (min-width: 992px) {
+
+    #text {
+        width: 355px;
+    }
+
+    #property {
+        width: 195px;
+        max-width: 195px;
+    }
+
+    #librarian {
+        width: 195px;
+        max-width: 195px;
+    }
+
+    #search {
+        width: 120px;
+    }
+
+}
+
+
+/* -- Book grid view */
+
+.col {
+    padding: 2px;
+}
+
+.cover {
+    display: block;
+    position: relative;
+    //width: 241px;
+    height: 360px;
+    overflow: hidden;
+    //border-right: 2px solid rgb(224, 224, 224);
+    background: rgb(0, 0, 0); /* fallback color */
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.cover .cover-grid {
+    min-height: 359px;
+    max-height: 100%;
+    margin: 0 auto;
+    display: block;
+}
+
 .download {
-    position:absolute;
-    bottom:1px;
+    position: absolute;
+    bottom: 1px;
     left: 0;
     //font: bold 14px/20px Helvetica, Sans-Serif;
     font: bold 16px/22px 'BitstreamVeraSansMono', Consolas, monospace;
@@ -76,92 +147,6 @@ h2 span {
     float: right;
 }
 
-#header {
-    margin-bottom: 7px;
-}
-
-.toolbar {
-    margin-bottom: 3px;
-    text-align: center;
-}
-
-.toolbar .prev_page {
-    float: left;
-}
-
-.toolbar .next_page {
-    float: right;
-}
-
-.toolbar #page-msg {
-    width: 400px;
-}
-
-.toolbar .pagination {
-    height: 30px;
-}
-
-.button {
-    cursor: pointer;
-    font-family: 'BitstreamVeraSansMono',Consolas,monospace;
-    font-size: 1em;
-    height: 30px;
-    width: 90px;
-}
-
-.active {
-    background-color: #ff0000;
-    color: #ffffff;
-    border: none;
-}
-
-.not-active {
-    background-color: #ffffff;
-    color: #ff0000;
-    border: 1px solid #ff0000;
-}
-
-#search {
-    height: 28px;
-    width: 90px;
-    float: right;
-}
-
-#authors, #titles, #search_all, #librarian {
-    width: 210px;
-    font-size: 1.2em;
-    padding: 3px;
-    border: 1px solid #ff0000;
-    background-color: #ffffff;
-}
-
-.modal {
-    display:    none;
-    position:   fixed;
-    z-index:    1000;
-    top:        0;
-    left:       0;
-    height:     100%;
-    width:      100%;
-    background: rgba(224, 224, 224, 0.4) 
-    url('images/loading.gif') 
-    50% 50% 
-    no-repeat;
-}
-
-body.loading {
-    overflow: hidden;
-}
-
-body.loading .modal {
-    display: block;
-}
-
-#authorz {
-    //font: bold 12px/16px Helvetica, Sans-Serif; 
-    font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
-}
-
 .more_about {
     text-decoration: none;
 }
@@ -171,22 +156,21 @@ body.loading .modal {
     font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
-#book-modal .attr {
+.attr {
     color: #ffffff;
     background-color: #000000;
 }
 
-.img_modal {
-    position: relative;
-    width:180px;
-    float: right;
-    margin: 0px 15px 15px 0px;
-
+#authors {
+    //font: bold 12px/16px Helvetica, Sans-Serif; 
+    font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }
 
-.only_lib a {
-    color: #ffffff;
-    background-color: #000000;
+/* -- footer */
+
+#load-more {
+    text-align: center;
+    margin: 7px 0px 7px 0px;
 }
 
 /* web app specific; e.g. not in portable */
@@ -239,4 +223,72 @@ body.loading .modal {
 
 .cover-highlight-this .hmsg span {
     background-color: #000000;
+}
+
+/* -- Modal book window */
+
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba(224, 224, 224, 0.4) 
+    url('/images/loading.gif') 
+    50% 50% 
+    no-repeat;
+}
+
+.book-modal a {
+    color: black;
+    text-decoration: none;
+}
+
+.book-modal a:hover {
+    color: red;
+    text-decoration: none;
+}
+
+.book-modal a:visited {
+    color: black;
+    text-decoration: none;
+}
+
+body.loading {
+    overflow: hidden;
+}
+
+body.loading .modal {
+    display: block;
+}
+
+.cover-modal {
+    position: relative;
+    width: 180px;
+    float: right;
+    margin: 0px 15px 15px 0px;
+}
+
+.only_lib a {
+    color: #ffffff;
+    background-color: #000000;
+}
+
+/* -- Book permalink page */
+
+#book-permalink {
+}
+
+#book-permalink a {
+    color: grey;
+}
+
+#book-permalink .cover-permalink {
+    max-width: 280px;
+}
+
+#book-permalink .property {
+    margin-bottom: 10px;
 }

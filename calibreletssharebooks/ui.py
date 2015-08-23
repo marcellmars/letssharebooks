@@ -36,8 +36,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-# from calibre_plugins.letssharebooks.my_logger import get_logger
-# logger = get_logger('letssharebooks.ui', disabled=False)
+from calibre_plugins.letssharebooks.my_logger import get_logger
+logger = get_logger('letssharebooks.ui', disabled=False)
 
 #-----------------------------------------------------------------------------
 
@@ -50,18 +50,28 @@ PORTABLE_RESOURCES = [
     'portable/jquery-migrate-1.2.1.js',
     'portable/jquery-ui-1.10.3.custom.min.css',
     'portable/jquery-ui-1.10.3.custom.min.js',
+    'portable/common.js',
     'portable/json2.js',
     'portable/local_calibre.js',
     'portable/BROWSE_LIBRARY.html',
     'portable/portable.js',
-    'portable/portable_win.js',
     'portable/style.css',
     'portable/underscore-min.js',
     'portable/favicon.html',
     'portable/ca-bundle.crt',
     'portable/lsbtunnel.exe',
     'portable/favicon.svg',
-    'portable/libraries.js']
+    'portable/motw.ico',
+    'portable/libraries.js',
+    'portable/bootstrap/css/bootstrap.min.css',
+    'portable/bootstrap/css/bootstrap-theme.min.css',
+    'portable/bootstrap/js/bootstrap.min.js',
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.eot',
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.svg',
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.ttf',
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.woff',
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.woff2'
+]
 
 
 class UnitedStates(QObject):
@@ -105,18 +115,17 @@ class LetsShareBooksUI(InterfaceAction):
 
         res = self.load_resources(PORTABLE_RESOURCES)
         os.makedirs(os.path.join(self.us.portable_directory, 'portable'))
+        os.makedirs(os.path.join(self.us.portable_directory, 'portable/bootstrap'))
+        os.makedirs(os.path.join(self.us.portable_directory, 'portable/bootstrap/css'))
+        os.makedirs(os.path.join(self.us.portable_directory, 'portable/bootstrap/js'))
+        os.makedirs(os.path.join(self.us.portable_directory, 'portable/bootstrap/fonts'))
         for resource in res.keys():
-            #logger.debug("RESOURCE KEY: {}".format(resource))
-            if sys.platform == "win32" and resource == "portable/portable_win.js":
-                #logger.debug("WIN_RESOURCE KEY: {}".format(resource))
+            logger.debug("RESOURCES: {}".format(resource))
+            if resource.startswith('portable/bootstrap'):
                 with open(os.path.join(self.us.portable_directory,
-                                       'portable/portable.js'), 'w') as portable:
+                                       resource), 'wb') as portable:
                     portable.write(res[resource])
-            elif sys.platform == "win32" and resource == "portable/portable.js":
-                #logger.debug("IGNORE {} ON WINDOWS".format(resource))
-                pass
-
-            elif resource == "portable/libraries.js":
+            if resource == "portable/libraries.js":
                 lib_lines = res[resource].split(os.linesep)
                 lib_lines.insert(4, "var PORTABLE = true;{}".format(os.linesep))
                 with open(os.path.join(self.us.portable_directory,

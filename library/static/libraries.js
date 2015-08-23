@@ -3,9 +3,6 @@
  * ----------------------------------------------------------------------------
  */
 
-var ITEMS_PER_PAGE = 16;
-var GRID_ROW_SIZE = 4;
-
 var STATE = {
     show_modal: false, // open book modal window
     navigation_direction: 0, // arrow navigation direction (0 - left, 1 - right)
@@ -201,8 +198,8 @@ var ui = {
         // update ui
         self.update_toolbar(data);
         this.setup_modal();
-        if (is_this_portable()) {
-            // mark books that were authord by the one of the authors of the
+        if (!is_this_portable()) {
+            // mark books that were authored by the one of the authors of the
             // currently selected book
             $('.cover').hover(
                 function() {

@@ -4,36 +4,10 @@
 
 $(document).ready(function () {
 
-//    var BOOKS = [];
     var BOOKS = LIBRARY.books.add
     var LIBRARIANS = [];
 
-/*    $.getJSON("static/library.json", function(data){
-        BOOKS = data.books.add;
-        generate_metadata();
-        render_page(); /* from library.js */
-//    });
-
-    /**************************************************************************
-    * generate distinct list of authors, titles and librarians
-    **************************************************************************/
-    var generate_metadata = function() {
-        
-        /* helper function; add value v to set s */
-        var sadd = function(s, v) {
-            if ($.inArray(v, s) == -1) {
-                s.push(v);
-            };
-        };
-        
-        $.each(BOOKS, function(i, book) {
-            /* add librarians */
-            sadd(LIBRARIANS, book.librarian);
-            /* setup portable */
-            book.portable = true;
-            book.portable_url = '';
-        });
-    }();
+    var ITEMS_PER_PAGE = 16;
 
     /**************************************************************************
     * mock ajax call for get_books
@@ -58,24 +32,33 @@ $(document).ready(function () {
     var mock_get_books = function(params) {
         ret = {
             'books': [],
+            'authors': [],
+            'titles': [],
             'librarians': LIBRARIANS,
-            'next_page': params.page + 1, 
-            'on_page': -1,
             'total': 0,
+            'last_id': null,
         };
 
         var books = BOOKS;
-        if (params.query.authors !== '' || params.query.title !== '' ||
-            params.query.librarian !== '' || params.query.search_all !== '') {
-            books = search(params.query, books);
-        }
-        var offset = (params.page-1)*ITEMS_PER_PAGE;
+        // if (params.query.text !== '' || params.query.librarian !== '') {
+        //     books = search(params.query, books);
+        // };
+        var offset = 0;
+        if (params.last_id !== null) {
+            // find index of first book that has id greater than last_id
+            for(var i=0;i<books.length;i++) {
+                if(books[i].uuid > params.last_id) {
+                    break;
+                };
+                offset += 1;
+            };
+        };
         ret.books = books.slice(offset, offset + ITEMS_PER_PAGE);
-        ret.on_page = ret.books.length;
+        ret.last_id = null;
+        if (offset < books.length && ret.books.length == ITEMS_PER_PAGE) {
+            ret.last_id = _.last(ret.books).uuid;
+        };
         ret.total = books.length;
-        if (offset + ITEMS_PER_PAGE >= ret.total) {
-            ret.next_page = null;
-        }
         return ret;
     };
 

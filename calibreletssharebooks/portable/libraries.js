@@ -201,7 +201,7 @@ var ui = {
         // update ui
         self.update_toolbar(data);
         this.setup_modal();
-        if (is_this_portable()) {
+        if (!is_this_portable()) {
             // mark books that were authord by the one of the authors of the
             // currently selected book
             $('.cover').hover(

@@ -1,110 +1,148 @@
-<html>
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# books: http://ogp.me/ns/books#">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MEMORY OF THE WORLD</title>
-    <link rel="stylesheet" type="text/css" href="static/style.css" />
-    <link rel="stylesheet" type="text/css" href="static/jquery-ui-1.10.3.custom.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstap-theme.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.10.3.custom.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/style.css" />
   </head>
   <body>
-    <div id="header">
-      <div id="top-toolbar" class="toolbar">
-        <input type="button" value="&lt;&lt;&lt;" class="button not-active prev_page" />
-        <input type="button" value="&gt;&gt;&gt;" class="button active next_page" />
-        <input id="page-msg" type="button" class="button active" value="" />
+    <nav class="navbar">
+      <div class="container">
+
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          
+          <a class="navbar-brand" href="#">
+            <img id="home" alt="motw home" src="/static/motw.ico" />
+          </a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbar">
+
+          <form class="navbar-form navbar-right">
+
+            <div class="form-group">
+              <select id="property" class="form-control input-sm">
+                <option value="authors">Authors</option>
+                <option value="title">Title</option>
+                <option value="all">All metadata</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <input  id="text" type="text" class="form-control input-sm" placeholder="type here...">
+            </div>
+            
+            <div class="form-group">
+              <select id="librarian" class="form-control input-sm"></select>
+            </div>
+
+            <button id="search" type="submit" class="btn btn-danger btn-sm">SEARCH</button>
+          </form>
+          
+        </div>
       </div>
-      <div id="searchbar">
-        <input id="authors" placeholder="authors" />
-        <input id="titles" placeholder="titles" />
-        <input id="search_all" placeholder="search all metadata" />
-        <select id="librarian"></select>
-        <input id="search" type="button" value="SEARCH" class="button active" />
+    </nav>
+
+    <div id="content" class="container"></div>
+    <div id="load-more">
+      <div class="container">
+        <input class="btn btn-danger" type="button" value="LOAD MORE">
       </div>
     </div>
-    <div id="content"></div>
-    <div id="bottom-toolbar" class="toolbar">
-      <input type="button" value="&lt;&lt;&lt;" class="button not-active prev_page" />
-      <input type="button" value="&gt;&gt;&gt;" class="button active next_page" />
-    </div>
+    
     <div class="modal"></div>
-    <div class="modal"></div>
+    
   </body>
-  
-  <script type="text/x-template" id="string-parts-tmpl">
-    <a class="author" data-authors="<%- author_s %>" href="#" title="show only books by <%- author_s %>"><%- author %></a>&nbsp;
-  </script>
-
-  <script type="text/x-template" id="book-parts-tmpl">
-    <a href="<%= base_url %>/<%= file_path %>">< %= format.toUpperCase() %></a>
-  </script>
-
-  <script type="text/x-template" id="book-parts-portable-tmpl">
-    <a href="<%= base_url %><%= format %><%= book.application_id %><%= portable_book %><%= format.toLowerCase() %>"><%= format.toUpperCase() %><%= portable_format %></a>
-  </script>
 
   <script type="text/x-template" id="book-content-tmpl">
-    <div class="cover" rel='<%= book.librarian %>'>
-      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-        <img class="cover-img" src="<%= base_url %>/<%= dir_path %>cover.jpg" />
-        <div class="cover-highlight">
-          <span class="hmsg">Shared by <%= book.librarian %></span>
-        </div>
-      </a>
-      <h2>
-        <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
-        <br />
-        <%= authors %></h2> 
-      <% if (book.formats[0] != '0') { %>
-      <span class="download">Download: <%= formats %> </span>
-      <% } %>
-    </div>
-  </script>
+    <div class="col col-sm-4 col-md-3">
+      <div class="cover" rel='<%= book.librarian %>'>
 
-  <script type="text/x-template" id="book-content-portable-tmpl">
-    <div class="cover" rel='<%= book.librarian %>'>
-      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
-        <img class="cover-img" src="<%= portable_cover %>" />
-        <div class="cover-highlight">
-          <span class="hmsg">Shared by <%= book.librarian %></span>
-        </div>
-      </a>
-      <h2>
-        <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book"><%= book.title %></a>
-        <br />
-        <%= authors %></h2> 
-      <% if (book.formats[0] != '0') { %>
-      <span class="download">Download: <%= formats %></span>
-      <% } %>
+        <a href="#" class="more_about" rel='<%= book.uuid %>'
+           title="about this book">
+          <img class="cover-grid" src="<%= book.cover_url %>" />
+          <div class="cover-highlight">
+            <span class="hmsg">Shared by <%= book.librarian %></span>
+          </div>
+        </a>
+
+        <h2>
+          <a href="#" class="more_about" rel='<%= book.uuid %>'
+             title="about this book"><%= book.title %></a>
+          
+          <div id="authors">
+            <% for( var i = 0; i < book.authors.length; i++ ) { %>
+               <% var author = book.authors[i]; var author_s = author.replace("'", " "); %>
+               <a class="author" data-authors="<%- author_s %>" href="#"
+                  title="show only books by <%- author_s %>"><%- author %></a>
+               <% } %>
+          </div>
+        </h2>
+        
+        <% if (book.formats[0] != '0') { %>
+        <span class="download">Download:
+          <% for( var i = 0; i < book.formats.length; i++ ) { %>
+             <% var format = book.formats[i] %>
+             <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>"><%= format.toUpperCase() %></a>
+             <% } %>
+        </span>
+        <% } %>
+        
+        <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
+        <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+           title="import book directly to calibre" target="import">
+          <span class="lodestone">
+            <img src="/images/lodestone.png" title="import book directly to calibre" />
+          </span>
+        </a>
+        <% } %>
+        
+      </div>
     </div>
   </script>
 
   <script type="text/x-template" id="book-modal-tmpl">
-    <div id="book-modal" title="<%= book.title %>">
+    <div id="book-modal" class="book-modal" title="<%= book.title %>">
       <div>
-        <img class="img_modal" src="<%= base_url %>/get/cover/<%= book.application_id %>.jpg" width="120"/>
+        <a href="/b/<%= book.uuid %>">
+          <img class="cover-modal" src="<%= book.cover_url %>" />
+        </a>
+        <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
+        <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+           title="import book directly to calibre" target="import">
+          <span class="lodestone_modal">
+            <img src="/images/lodestone_modal.png" title="import book directly to calibre" />
+          </span>
+        </a>
+        <% } %>
       </div>
-      <p><span class="attr">Title:</span> <%= book.title %></p>
+      <p><span class="attr">Title:</span> 
+        <a class="title" href="/b/<%= book.uuid %>"><%= book.title %></a></p>
       <p><span class="attr">Authors:</span> <%= book.authors %></p>
       <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
       <% if (book.formats[0] != '0') { %>
-      <p><span class="attr">Download:</span> <%= formats %></p>
+      <p><span class="attr">Download:</span> 
+        <% for( var i = 0; i < book.formats.length; i++ ) { %>
+           <% var format = book.formats[i] %>
+           <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>"><%= format.toUpperCase() %></a>
+           <% } %>
+      </p>
       <% } %>
       <p><span class="attr">About:</span> <%= book.comments %></p></br>
+      <p><a href="<%= book.prefix_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
     </div>
   </script>
 
-  <script type="text/x-template" id="book-modal-portable-tmpl">
-    <div id="book-modal" title="<%= book.title %>">
-      <div>
-        <img class="img_modal" src="<%= base_url %>/<%= portable_cover %>" width="120"/>
-        <p><span class="attr">Authors:</span> <%= book.authors %></p>
-        <p><span class="attr">Publisher:</span> <%= book.publisher %></p>  
-        <% if (book.formats[0] != '0') { %>
-        <p><span class="attr">Download:</span> <%= formats %></p>
-        <% } %>
-        <p><span class="attr">About:</span> <%= book.comments %></p>
-      </div>
-    </div>
-  </script>
-  
   <script type="text/x-template" id="import-modal-tmpl">
     <div id="import-modal" title="Importing to calibre">
       <div>
@@ -112,15 +150,17 @@
       </div>
     </div>
   </script>
-  
-  <script type="application/javascript" src="static/underscore-min.js"></script>
-  <script type="application/javascript" src="static/jquery-1.10.2.min.js"></script>
-  <script type="application/javascript" src="static/jquery-migrate-1.2.1.js"></script>
-  <script type="application/javascript" src="static/jquery-ui-1.10.3.custom.min.js"></script>
-  <script type="application/javascript" src="static/jquery.ba-bbq.min.js"></script>
-  <script type="application/javascript" src="static/json2.js"></script>
-  <script type="application/javascript" src="static/data.js"></script>
-  <script type="application/javascript" src="static/portable.js"></script>
-  <script type="application/javascript" src="static/libraries.js"></script>
-  <!--<script type="application/javascript" src="static/local_calibre.js"></script>-->
+
+  <script type="application/javascript" src="/static/underscore-min.js"></script>
+  <script type="application/javascript" src="/static/jquery-1.10.2.min.js"></script>
+  <script type="application/javascript" src="/static/jquery-migrate-1.2.1.js"></script>
+  <script type="application/javascript" src="/static/jquery-ui-1.10.3.custom.min.js"></script>
+  <script type="application/javascript" src="/static/jquery.ba-bbq.min.js"></script>
+  <script type="application/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
+
+  <script type="application/javascript" src="/static/json2.js"></script>
+  <script type="application/javascript" src="/static/data.js"></script>
+  <script type="application/javascript" src="/static/portable.js"></script>
+  <script type="application/javascript" src="/static/common.js"></script>
+  <script type="application/javascript" src="/static/libraries.js"></script>
 </html>

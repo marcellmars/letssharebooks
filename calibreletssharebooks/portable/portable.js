@@ -32,11 +32,12 @@ $(document).ready(function () {
     var mock_get_books = function(params) {
         ret = {
             'books': [],
-            'authors': [],
-            'titles': [],
-            'librarians': LIBRARIANS,
             'total': 0,
             'last_id': null,
+            // 
+            'authors': [],
+            'titles': [],
+            'librarians': [],
         };
 
         var books = BOOKS;

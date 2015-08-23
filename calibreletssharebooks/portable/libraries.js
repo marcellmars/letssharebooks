@@ -3,9 +3,6 @@
  * ----------------------------------------------------------------------------
  */
 
-var ITEMS_PER_PAGE = 16;
-var GRID_ROW_SIZE = 4;
-
 var STATE = {
     show_modal: false, // open book modal window
     navigation_direction: 0, // arrow navigation direction (0 - left, 1 - right)
@@ -202,7 +199,7 @@ var ui = {
         self.update_toolbar(data);
         this.setup_modal();
         if (!is_this_portable()) {
-            // mark books that were authord by the one of the authors of the
+            // mark books that were authored by the one of the authors of the
             // currently selected book
             $('.cover').hover(
                 function() {
@@ -284,6 +281,7 @@ var ui = {
                 authors: metadata['authors'],
                 titles: metadata['titles']
             };
+            data.librarians = metadata.librarians;
         };
         this.change_autocomplete();
         
@@ -331,6 +329,7 @@ var ui = {
         var metadata = {
             'authors': [],
             'titles': [],
+            'librarians': []
         };
         $.each(books, function(i, book) {
             var authors = book.authors;
@@ -338,6 +337,7 @@ var ui = {
                 sadd(metadata['authors'], author);
             });
             sadd(metadata['titles'], book.title);
+            sadd(metadata['librarians'], book.librarian);
         });
         return metadata;
     },

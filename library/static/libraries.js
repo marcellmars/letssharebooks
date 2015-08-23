@@ -281,6 +281,7 @@ var ui = {
                 authors: metadata['authors'],
                 titles: metadata['titles']
             };
+            data.librarians = metadata.librarians;
         };
         this.change_autocomplete();
         
@@ -328,6 +329,7 @@ var ui = {
         var metadata = {
             'authors': [],
             'titles': [],
+            'librarians': []
         };
         $.each(books, function(i, book) {
             var authors = book.authors;
@@ -335,6 +337,7 @@ var ui = {
                 sadd(metadata['authors'], author);
             });
             sadd(metadata['titles'], book.title);
+            sadd(metadata['librarians'], book.librarian);
         });
         return metadata;
     },

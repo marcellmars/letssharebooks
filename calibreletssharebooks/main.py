@@ -403,6 +403,8 @@ class MetadataLibThread(QThread):
 
             bkf = {}
             bk = []
+
+            b['cover_url'] = ""
             try:
                 if md_fields.format_metadata:
                     for frmat in md_fields.format_metadata.iteritems():
@@ -417,6 +419,7 @@ class MetadataLibThread(QThread):
                                          'dir_path': "{}/".format(dir_path),
                                          'size': frmat[1]["size"]}
                         bk.append(frmat[0])
+                    b['cover_url'] = "{}/cover.jpg".format(dir_path)
             except Exception as e:
                 #- most probably calibre needs [Fix missing formats] ----------
                 #- maybe send some info to the user about this ----------------

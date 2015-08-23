@@ -20,12 +20,12 @@ a:visited {
     text-decoration: none;
 }
 
-img {
-    position: absolute;
-    background: url('/images/loading.gif') no repeat;
-    background-position: top center;
-    background-size: cover;
-}
+/* img { */
+/*     position: absolute; */
+/*     background: url('/images/loading.gif') no repeat; */
+/*     background-position: top center; */
+/*     background-size: cover; */
+/* } */
 
 h2 {
     font: bold 18px/24px 'BitstreamVeraSansMono', Consolas, monospace;
@@ -49,6 +49,10 @@ h2 span {
     margin-bottom: 0px;
 }
 
+.navbar .navbar-brand img {
+    position: absolute;
+}
+
 .navbar-toggle {
     background-color: #C9302C;
 }
@@ -62,7 +66,7 @@ h2 span {
 @media (min-width: 768px) {
 
     #text {
-        width: 290px;
+        width: 250px;
     }
 
     #search {
@@ -76,7 +80,7 @@ h2 span {
 @media (min-width: 992px) {
 
     #text {
-        width: 360px;
+        width: 355px;
     }
 
     #property {
@@ -96,28 +100,33 @@ h2 span {
 }
 
 
-
 /* -- Book grid view */
 
+.col {
+    padding: 2px;
+}
+
 .cover {
+    display: block;
     position: relative;
-    width: 241px;
+    //width: 241px;
     height: 360px;
     overflow: hidden;
-    border-right: 2px solid rgb(224, 224, 224);
-    border-bottom: 4px solid rgb(224, 224, 224);
+    //border-right: 2px solid rgb(224, 224, 224);
     background: rgb(0, 0, 0); /* fallback color */
     background: rgba(0, 0, 0, 0.9);
 }
 
-.cover .more_about img {
+.cover .cover-grid {
     min-height: 359px;
     max-height: 100%;
+    margin: 0 auto;
+    display: block;
 }
 
 .download {
-    position:absolute;
-    bottom:1px;
+    position: absolute;
+    bottom: 1px;
     left: 0;
     //font: bold 14px/20px Helvetica, Sans-Serif;
     font: bold 16px/22px 'BitstreamVeraSansMono', Consolas, monospace;
@@ -152,7 +161,7 @@ h2 span {
     background-color: #000000;
 }
 
-#authorz {
+#authors {
     //font: bold 12px/16px Helvetica, Sans-Serif; 
     font: bold 14px/18px 'BitstreamVeraSansMono', Consolas, monospace;
 }

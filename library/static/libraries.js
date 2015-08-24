@@ -10,7 +10,7 @@ var STATE = {
     query: {
         'text': '',
         'property': '',
-        'librarian': '',
+        'librarian': ''
     }
 };
 
@@ -72,7 +72,6 @@ var nav = {
         $("#property").change(function () {
             ui.change_autocomplete();
         });
-        
     },
 
     //
@@ -161,7 +160,7 @@ var nav = {
             $(field).val(deserialized[property]);
         });
         return search.query(push_state);
-    },
+    }
 };
 
 /* --------------------------------------------------------------------------
@@ -296,7 +295,7 @@ var ui = {
             data.librarians = metadata.librarians;
         };
         this.change_autocomplete();
-        
+
         $('#librarian').empty();
         if (data['librarians'].length > 1) {
             $('#librarian').append(['<option value="" selected>',

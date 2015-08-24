@@ -116,23 +116,26 @@ class LetsShareBooksUI(InterfaceAction):
         self.us = UnitedStates()
 
         res = self.load_resources(PORTABLE_RESOURCES)
-        os.makedirs(os.path.join(self.us.portable_directory, 'portable'))
-        os.makedirs(os.path.join(self.us.portable_directory, 'portable/bootstrap'))
-        os.makedirs(os.path.join(self.us.portable_directory, 'portable/bootstrap/css'))
-        os.makedirs(os.path.join(self.us.portable_directory, 'portable/bootstrap/js'))
-        os.makedirs(os.path.join(self.us.portable_directory, 'portable/bootstrap/fonts'))
+
+        os.makedirs(os.path.join(self.us.portable_directory,
+                                 'portable'))
+        os.makedirs(os.path.join(self.us.portable_directory,
+                                 'portable/bootstrap'))
+        os.makedirs(os.path.join(self.us.portable_directory,
+                                 'portable/bootstrap/css'))
+        os.makedirs(os.path.join(self.us.portable_directory,
+                                 'portable/bootstrap/js'))
+        os.makedirs(os.path.join(self.us.portable_directory,
+                                 'portable/bootstrap/fonts'))
+
         for resource in res.keys():
             logger.debug("RESOURCES: {}".format(resource))
-            if resource.startswith('portable/bootstrap'):
-                with open(os.path.join(self.us.portable_directory,
-                                       resource), 'wb') as portable:
-                    portable.write(res[resource])
             if resource == "portable/libraries.js":
                 lib_lines = res[resource].split(os.linesep)
                 lib_lines.insert(4, "var PORTABLE = true;{}".format(os.linesep))
                 with open(os.path.join(self.us.portable_directory,
                                        'portable/libraries.js'), "w") as lib:
-                   lib.writelines(os.linesep.join(lib_lines))
+                    lib.writelines(os.linesep.join(lib_lines))
             else:
                 with open(os.path.join(self.us.portable_directory,
                                        resource), 'wb') as portable:

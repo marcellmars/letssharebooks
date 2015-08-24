@@ -10,7 +10,7 @@ var STATE = {
     query: {
         'text': '',
         'property': '',
-        'librarian': '',
+        'librarian': ''
     }
 };
 

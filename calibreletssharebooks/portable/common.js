@@ -45,6 +45,9 @@ var common = {
              book.format_metadata[format].dir_path,
              'cover.jpg'].join('')];
         $.each(book.formats, function(i, format) {
+            if (book.prefix_url === undefined) {
+                book.prefix_url = document.location.origin + "/";
+            };
             metadata_urls.push(
                 [book.prefix_url + book.format_metadata[format].file_path]);
         });

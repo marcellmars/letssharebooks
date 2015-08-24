@@ -385,7 +385,7 @@ class MetadataLibThread(QThread):
 
             b['uuid'] = encrypt_uid(prefs['library_uuid'],
                                     str(md_fields.uuid))
-
+            b['library_uuid'] = "p::{}::p".format(current_db.library_id)
             b['application_id'] = md_fields.id
             if not md_fields.title:
                 md_fields.title = "Unknown"

@@ -5,6 +5,10 @@ var localCalibre = (function () {
     var baseGIFLocation = 'http://localhost:56665/';
     /** connects to local calibre server with callback(success=true|false) */
     var connect = function(callback) {
+        if (document.location.origin === "file://") {
+            callback(false);
+            return;
+        }
         // try to locate 0.gif
         $('<img src="' + baseGIFLocation + '0.gif" />')
         // 0.gif is available
@@ -16,11 +20,12 @@ var localCalibre = (function () {
                 // locate active libraries on local calibre server
                 $.each(catalogs, function (i, catalog) {
                     if (localLibrary) { return };
-                    
+
                     local_library_uuid = catalog.library_uuid;
                     if (catalog.library_uuid.indexOf("p::") == 0) {
-                        local_library_uuid = catalog.library_uuid.slice(3,-3)}
-                    
+                        local_library_uuid = catalog.library_uuid.slice(3,-3);
+                    }
+
                     var lib_gif = ['<img src="',
                                    baseGIFLocation,
                                    local_library_uuid,

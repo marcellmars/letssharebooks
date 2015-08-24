@@ -5,7 +5,7 @@
 $(document).ready(function () {
 
     // external dependency: var LIBRARY (data.js)
-    var BOOKS = LIBRARY.books.add
+    var BOOKS = LIBRARY.books.add;
 
     // how many books to show on single page
     var ITEMS_PER_PAGE = 16;
@@ -45,7 +45,7 @@ $(document).ready(function () {
             // these will be populated later (in the libraries.js)
             'authors': [],
             'titles': [],
-            'librarians': [],
+            'librarians': []
         };
         var books = BOOKS;
         if (params.query.text !== '' || params.query.librarian !== '') {

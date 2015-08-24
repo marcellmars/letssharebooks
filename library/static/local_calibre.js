@@ -16,15 +16,18 @@ var localCalibre = (function () {
                 // locate active libraries on local calibre server
                 $.each(catalogs, function (i, catalog) {
                     if (localLibrary) { return };
-                    
+
                     local_library_uuid = catalog.library_uuid;
+
                     if (catalog.library_uuid.indexOf("p::") == 0) {
-                        local_library_uuid = catalog.library_uuid.slice(3,-3)}
-                    
+                        local_library_uuid = catalog.library_uuid.slice(3,-3);
+                    };
+
                     var lib_gif = ['<img src="',
                                    baseGIFLocation,
                                    local_library_uuid,
                                    '.gif" />'].join('');
+
                     $(lib_gif).load(function() {
                         localLibrary = catalog.library_uuid;
                         callback(true);

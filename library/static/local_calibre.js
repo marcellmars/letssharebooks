@@ -34,23 +34,23 @@ var localCalibre = (function () {
                         localLibrary = catalog.library_uuid;
                         callback(true);
                     })
-                    .error(function() {
-                        count_local_gif_err += 1;
-                        if (count_local_gif_err === catalogs.length) {
-                            callback(false);
-                        };
-	                  });
+                        .on(error, function() {
+                            count_local_gif_err += 1;
+                            if (count_local_gif_err === catalogs.length) {
+                                callback(false);
+                            };
+	                      });
                 });
             });
 	      })
         // 0.gif is not available
-        .error(function() {
-            callback(false);
-	      });
+            .on(error, function() {
+                callback(false);
+	          });
     };
     return {
         done: function(callback) {
-                connect(callback);
+            connect(callback);
         },
         /** returns true if there is local calibre with LSB that
           * has opened library with the given uuid */

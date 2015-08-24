@@ -11,7 +11,7 @@ $(document).ready(function () {
     var ITEMS_PER_PAGE = 16;
 
     //
-    // mock ajax call for get_books
+    // mock ajax call (get_books)
     //
     $.ajax = function(params) {
         if (params.url == 'get_books') {
@@ -20,11 +20,17 @@ $(document).ready(function () {
     };
 
     //
-    // mock getJSON for get_book
+    // mock all getJSON calls
     //
     $.getJSON = function(url, params) {
-        var book = mock_book(params.uuid);
-        return {done: function(f){f(book);}};
+        if (url === 'get_catalogs') {
+            var catalogs = [{librarian: LIBRARY.librarian,
+                             library_uuid: LIBRARY.library_uuid}];
+            return {done: function(f){f(catalogs);}};
+        } else if (url === 'book'){
+            var book = mock_book(params.uuid);
+            return {done: function(f){f(book);}};
+        };
     };
 
     //

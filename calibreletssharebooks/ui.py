@@ -48,8 +48,7 @@ PORTABLE_RESOURCES = [
     'portable/jquery.ba-bbq.min.js',
     'portable/jquery.mockjax.js',
     'portable/jquery-migrate-1.2.1.js',
-    'portable/jquery-ui-1.10.3.custom.min.css',
-    'portable/jquery-ui-1.10.3.custom.min.js',
+    'portable/typeahead.bundle.min.js',
     'portable/common.js',
     'portable/json2.js',
     'portable/local_calibre.js',
@@ -60,8 +59,6 @@ PORTABLE_RESOURCES = [
     'portable/favicon.html',
     'portable/ca-bundle.crt',
     'portable/lsbtunnel.exe',
-    'portable/favicon.svg',
-    'portable/motw.ico',
     'portable/libraries.js',
     'portable/bootstrap/css/bootstrap.min.css',
     'portable/bootstrap/css/bootstrap-theme.min.css',
@@ -70,7 +67,12 @@ PORTABLE_RESOURCES = [
     'portable/bootstrap/fonts/glyphicons-halflings-regular.svg',
     'portable/bootstrap/fonts/glyphicons-halflings-regular.ttf',
     'portable/bootstrap/fonts/glyphicons-halflings-regular.woff',
-    'portable/bootstrap/fonts/glyphicons-halflings-regular.woff2'
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.woff2',
+    # images
+    'portable/favicon.svg',
+    'portable/motw.ico',
+    'portable/lodestone.png',
+    'portable/lodestone_modal.png'
 ]
 
 

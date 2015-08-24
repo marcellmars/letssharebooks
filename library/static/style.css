@@ -137,14 +137,18 @@ h2 span {
 }
 
 .lodestone {
-    position:absolute;
-    bottom:33px;
-    right: 33px;
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
 }
 
 .lodestone_modal {
     position: relative;
     float: right;
+}
+
+.lodestone_modal .import-to-calibre {
+    position: absolute;
 }
 
 .more_about {
@@ -227,20 +231,6 @@ h2 span {
 
 /* -- Modal book window */
 
-.modal {
-    display:    none;
-    position:   fixed;
-    z-index:    1000;
-    top:        0;
-    left:       0;
-    height:     100%;
-    width:      100%;
-    background: rgba(224, 224, 224, 0.4) 
-    url('/images/loading.gif') 
-    50% 50% 
-    no-repeat;
-}
-
 .book-modal a {
     color: black;
     text-decoration: none;
@@ -291,4 +281,48 @@ body.loading .modal {
 
 #book-permalink .property {
     margin-bottom: 10px;
+}
+
+/* -- typeahead */
+
+.typeahead,
+.tt-query, /* UPDATE: newer versions use tt-input instead of tt-query */
+.tt-hint {
+    width: 100%;
+    height: 30px;
+    padding: 8px 12px;
+    border: 2px solid #ccc;
+    outline: none;
+}
+
+.tt-hint {
+    color: #999;
+}
+
+.tt-menu { /* UPDATE: newer versions use tt-menu instead of tt-dropdown-menu */
+    width: 100%;
+    padding: 8px 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.tt-suggestion {
+  padding: 3px 20px;
+}
+
+.tt-suggestion:hover {
+  cursor: pointer;
+  color: #fff;
+  background-color: #0097cf;
+}
+
+.tt-suggestion.tt-cursor {
+  color: #fff;
+  background-color: #0097cf;
+
+}
+
+.tt-suggestion p {
+  margin: 0;
 }

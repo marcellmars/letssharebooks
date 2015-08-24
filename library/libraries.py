@@ -51,6 +51,7 @@ PUBLIC_SINGLE_BOOK_FIELDS = {
     'publisher':1,
     'comments':1,
     'librarian':1,
+    'library_uuid': 1,
     'portable':1,
     'portable_url':1,
     'prefix_url': 1,

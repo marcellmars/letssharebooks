@@ -122,9 +122,10 @@ var nav = {
     // opens window for local importing
     //
     'open_import_modal': function() {
-        var modal = $(common.templates.import_modal({}));
-        modal.dialog(ui.modal_defaults);
-        modal.dialog('open');
+        var modal = common.templates.import_modal({});
+        console.log(modal);
+        $('#modal').empty().append(modal);
+        $('#modal').modal();
     },
 
     //
@@ -232,10 +233,8 @@ var ui = {
             e.preventDefault();
         });
         // alert on import click
-        $(document).on('click', '.import', function(e) {
+        $(document).on('click', '.import-to-calibre', function(e) {
             nav.open_import_modal();
-            e.stopImmediatePropagation();
-            e.preventDefault();
         });
         // directly open the dialog window if show_modal
         if (STATE.show_modal) {
@@ -246,6 +245,8 @@ var ui = {
             var book_uuid = data['books'][book_index].uuid;
             $('.cover h2 [rel="' + book_uuid  +  '"].more_about').click();
         };
+        // init all tooltips
+        $('[data-toggle="tooltip"]').tooltip();
     },
 
     //
@@ -273,7 +274,9 @@ var ui = {
         } else if (property == 'title') {
             source = STATE.autocomplete.titles;
         };
-        $('#text').autocomplete({source: source, minLength:2});
+        $('#text').typeahead(
+            {minLength: 2, highlight: false, hint: false},
+            {name: property, source: common.substringMatcher(source)});
     },
 
     //
@@ -352,18 +355,6 @@ var ui = {
     },
 
     //
-    // modal default conf
-    //
-    'modal_defaults': {
-        autoOpen: false,
-        modal: true,
-        minHeight: 600,
-        minWidth: 800,
-        position: { my: 'center top', at: 'center top'},
-        closeOnEscape: true
-    },
-
-    //
     // sets up modal book window
     //
     'setup_modal': function () {
@@ -387,40 +378,37 @@ var ui = {
     //
     'open_book_modal': function(uuid) {
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
-            var modal = $(common.templates.book_modal(
-                common.gen_book_data(book)));
-            var _conf = ui.modal_defaults;
-            _conf.open = function() {
-                $('.ui-widget-overlay').bind('click', function() {
-                    modal.dialog('close');
-                })
-            };
-            _conf.close = function() {
-                STATE.show_modal = false;
-            };
-            modal.dialog(_conf);
-            $(modal).find('.import').click(function(e) {
-                nav.open_import_modal();
-            });
-            modal.dialog('open');
+            $('#modal').empty();
+            var modal = common.templates.book_modal(
+                common.gen_book_data(book));
+            // // update global state on close
+            // $('#modal').on('hide.bs.modal', function (e) {
+            //     STATE.show_modal = false;
+            // });
+            // // open import modal on '.import' click
+            // $(modal).find('.import').click(function(e) {
+            //     nav.open_import_modal();
+            // });
             // navigate modals with left/right arrows
-            $(modal).keydown(function(e) {
+            $('#modal').keydown(function(e) {
                 var this_book = $(['.col .cover h2 [rel="',
                                    book.uuid,
                                    '"].more_about'].join('')).parents('.col');
                 if (this_book.length) {
                     // navigate right
                     if (e.which === 39) {
-                        modal.dialog('close');
-                        nav.open_next_modal(this_book);
+                        $('#modal').modal('hide');
+                        setTimeout(function() {nav.open_next_modal(this_book);}, 500);
                     }
                     // navigate left
                     else if (e.which === 37) {
-                        modal.dialog('close');
-                        nav.open_prev_modal(this_book);
+                        $('#modal').modal('hide');
+                        setTimeout(function() {nav.open_prev_modal(this_book);}, 500);
                     };
                 };
             });
+            $('#modal').append(modal);
+            $('#modal').modal();
         });
     }
 };
@@ -496,11 +484,14 @@ $(document).ready(function () {
         $('body').removeClass('loading'); 
     });
     // try to connect to local calibre server and init page when done
-    if (is_this_portable()) {
-            init_page();
-    } else {
-        localCalibre.done(function(success) {
-            init_page();
-        })
-    };
+    // if (is_this_portable()) {
+    //         init_page();
+    // } else {
+    //     localCalibre.done(function(success) {
+    //         init_page();
+    //     })
+    // };
+    localCalibre.done(function(success) {
+        init_page();
+    });
 });

@@ -53,7 +53,7 @@
     <input class="btn btn-danger hidden" type="button" value="LOAD MORE">
   </div>
 </div>
-<div class="modal"></div>
+<div id="modal" class="modal fade" role="dialog" tabindex="-1" aria-labelledby="book-modal-label"></div>
 {% endblock %}
 
 {% block templates %}
@@ -61,8 +61,7 @@
   <div class="col col-sm-4 col-md-3">
     <div class="cover" rel='<%= book.librarian %>'>
 
-      <a href="#" class="more_about" rel='<%= book.uuid %>'
-         title="about this book">
+      <a href="#" class="more_about" rel='<%= book.uuid %>' title="about this book">
         <img class="cover-grid" src="<%= book.cover_url %>" />
         <div class="cover-highlight">
           <span class="hmsg">Shared by <%= book.librarian %></span>
@@ -76,8 +75,7 @@
         <div id="authors">
           <% for( var i = 0; i < book.authors.length; i++ ) { %>
              <% var author = book.authors[i]; var author_s = author.replace("'", " "); %>
-             <a class="author" data-authors="<%- author_s %>" href="#"
-                title="show only books by <%- author_s %>"><%- author %></a>
+             <a class="author" data-authors="<%- author_s %>" href="#" data-toggle="tooltip" data-placement="bottom" title="show only books by <%- author_s %>"><%- author %></a>
              <% } %>
         </div>
       </h2>
@@ -92,11 +90,9 @@
       <% } %>
       
       <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
-      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
+      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import-to-calibre" data-toggle="tooltip" data-placement="bottom"
          title="import book directly to calibre" target="import">
-        <span class="lodestone">
-          <img src="/images/lodestone.png" title="import book directly to calibre" />
-        </span>
+        <img class="lodestone" src="/static/lodestone.png" />
       </a>
       <% } %>
       
@@ -105,41 +101,58 @@
 </script>
 
 <script type="text/x-template" id="book-modal-tmpl">
-  <div id="book-modal" class="book-modal" title="<%= book.title %>">
-    <div>
-      <a href="/b/<%= book.uuid %>">
-        <img class="cover-modal" src="<%= book.cover_url %>" />
-      </a>
-      <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
-      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
-         title="import book directly to calibre" target="import">
-        <span class="lodestone_modal">
-          <img src="/images/lodestone_modal.png" title="import book directly to calibre" />
-        </span>
-      </a>
-      <% } %>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><%= book.title %></h4>
+      </div>
+      <div class="modal-body">
+        <div id="book-modal" class="book-modal" title="<%= book.title %>">
+          <div class="lodestone_modal">
+            <a href="/b/<%= book.uuid %>">
+              <img class="cover-modal" src="<%= book.cover_url %>" />
+            </a>
+            <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
+            <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import-to-calibre" data-toggle="tooltip" data-placement="bottom"
+               title="import book directly to calibre" target="import">
+              <img src="/static/lodestone_modal.png" />
+            </a>
+            <% } %>
+          </div>
+          <p><span class="attr">Title:</span> 
+            <a class="title" href="/b/<%= book.uuid %>"><%= book.title %></a></p>
+          <p><span class="attr">Authors:</span> <%= book.authors %></p>
+          <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
+          <% if (book.formats[0] != '0') { %>
+          <p><span class="attr">Download:</span> 
+            <% for( var i = 0; i < book.formats.length; i++ ) { %>
+               <% var format = book.formats[i] %>
+               <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>"><%= format.toUpperCase() %></a>
+               <% } %>
+          </p>
+          <% } %>
+          <p><span class="attr">About:</span> <%= book.comments %></p></br>
+          <p><a href="<%= book.prefix_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
     </div>
-    <p><span class="attr">Title:</span> 
-      <a class="title" href="/b/<%= book.uuid %>"><%= book.title %></a></p>
-    <p><span class="attr">Authors:</span> <%= book.authors %></p>
-    <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
-    <% if (book.formats[0] != '0') { %>
-    <p><span class="attr">Download:</span> 
-      <% for( var i = 0; i < book.formats.length; i++ ) { %>
-        <% var format = book.formats[i] %>
-        <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>"><%= format.toUpperCase() %></a>
-      <% } %>
-    </p>
-    <% } %>
-    <p><span class="attr">About:</span> <%= book.comments %></p></br>
-    <p><a href="<%= book.prefix_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
   </div>
 </script>
 
 <script type="text/x-template" id="import-modal-tmpl">
-  <div id="import-modal" title="Importing to calibre">
-    <div>
-      <p>Check [let's share books] plugin in your Calibre for downloads...</p>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Importing to calibre</h4>
+      </div>
+      <div class="modal-body">
+        <p>Check [let's share books] plugin in your Calibre for downloads...</p>
+      </div>
     </div>
   </div>
 </script>

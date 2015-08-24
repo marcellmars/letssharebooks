@@ -76,10 +76,17 @@ var nav = {
     },
 
     //
-    // removes LOAD MORE button
+    // enable LOAD MORE button
+    //
+    'enable_load_more': function () {
+        $('#load-more input').removeClass('hidden');
+    },
+
+    //
+    // disable LOAD MORE button
     //
     'disable_load_more': function () {
-        $('#load-more input').remove();
+        $('#load-more input').addClass('hidden');
     },
 
     //
@@ -194,6 +201,8 @@ var ui = {
         if (STATE.last_id === null) {
             // disable LOAD MORE button when there are no more results
             nav.disable_load_more();
+        } else {
+            nav.enable_load_more();
         };
         // update ui
         self.update_toolbar(data);

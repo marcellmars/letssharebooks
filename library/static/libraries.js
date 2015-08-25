@@ -413,6 +413,25 @@ var ui = {
                     };
                 };
             });
+            // var mc = new Hammer(document.getElementById('modal'));
+            // mc.on("swipeleft swiperight", function(ev) {
+            //     console.log(ev.type + ' gesture detected.');
+            //     var this_book = $(['.col .cover h2 [rel="',
+            //                        book.uuid,
+            //                        '"].more_about'].join('')).parents('.col');
+            //     if (this_book.length) {
+            //         // navigate right
+            //         if (ev.type == 'swiperight') {
+            //             $('#modal').modal('hide');
+            //             setTimeout(function() {nav.open_next_modal(this_book);}, 500);
+            //         }
+            //         // navigate left
+            //         else if (ev.type == 'swipeleft') {
+            //             $('#modal').modal('hide');
+            //             setTimeout(function() {nav.open_prev_modal(this_book);}, 500);
+            //         };
+            //     };
+            // });
             $('#modal').append(modal);
             $('#modal').modal();
         });

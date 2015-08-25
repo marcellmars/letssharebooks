@@ -4,11 +4,15 @@
 <nav class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
-      <a class="navbar-brand" href="#">
-        <img id="home" alt="motw home" src="/static/motw.ico" />
+      <a class="navbar-brand hidden-lg" href="#">
+        <img id="home" class="home-link" alt="motw home" src="/static/motw.ico" />
       </a>
+      <p class="navbar-text home-link home-text hidden-xs">LIBRARY</p>
+      <p class="navbar-text" id="num-books"></p>
     </div>
-    <p class="navbar-text hidden-xs">100 books online</p>
+    <div class="navbar-right hidden-xs widget-title">
+      <a href="https://www.memoryoftheworld.org" target="_blank">MEMORY OF THE WORLD</a>
+    </div>
   </div>
 </nav>
 

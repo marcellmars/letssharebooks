@@ -44,7 +44,7 @@ var nav = {
     //
     'init_toolbar': function () {
         var self = this;
-        $('#home').click(function () {
+        $('.home-link').click(function () {
             // going back to the homepage lists ALL books in the DB
             // (i.e. resets the search)
             _.each(self.state_field_mapping, function(field, property) {
@@ -282,6 +282,13 @@ var ui = {
     // sets up toolbar functionalities
     //
     'update_toolbar': function(data) {
+        // update total number of books in the header
+        $.getJSON('status?callback=?').done(function(data) {
+            if (data.num_of_books > 0) {
+                $('#num-books').text('LIVE (' + data.num_of_books + ' books)');
+            };
+        });
+        // setup autocomplete
         STATE.autocomplete = {
             authors: data['authors'],
             titles: data['titles']

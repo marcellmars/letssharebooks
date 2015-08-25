@@ -27,9 +27,12 @@ $(document).ready(function () {
             var catalogs = [{librarian: LIBRARY.librarian,
                              library_uuid: LIBRARY.library_uuid}];
             return {done: function(f){f(catalogs);}};
-        } else if (url === 'book'){
+        } else if (url === 'book') {
             var book = mock_book(params.uuid);
             return {done: function(f){f(book);}};
+        } else if (url === 'status?callback=?') {
+            var data = {num_of_books: BOOKS.length};
+            return {done: function(f){f(data);}};
         };
     };
 

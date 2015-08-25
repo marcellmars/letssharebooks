@@ -50,6 +50,10 @@ h2 span {
     margin-bottom: 0px;
 }
 
+.navbar .navbar-brand{
+    margin-right: 10px;
+}
+
 .navbar .navbar-brand img {
     position: absolute;
 }
@@ -60,6 +64,13 @@ h2 span {
 
 .navbar-toggle .icon-bar {
     background-color: white;
+}
+
+.home-text {
+    background-color: #ff0000 !important;
+    color: white !important;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 /* --decrease size of the top navbar */
@@ -341,4 +352,39 @@ body.loading .modal {
 
 .tt-suggestion p {
   margin: 0;
+}
+
+/* -- pure css logotype */
+
+.widget-title {
+    height: 0;
+    border: .6875em solid red;
+    border-right-color: transparent;
+    float: right;
+    font-size: 1em;
+    line-height: 1.5;
+    margin-top: 5px;
+}
+
+
+.widget-title a
+{
+    float: left;
+    font-size: 1em;
+    line-height: 1.5em;
+    letter-spacing: 1px;
+    margin: -.6875em 0 0;
+    padding: 0 .5em 0 0;
+    text-transform: uppercase;
+    color: #fff;
+    font-weight: normal;
+}
+
+.widget-title a:hover {
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.widget-title a:visited {
+    text-decoration: none;
 }

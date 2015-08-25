@@ -8,7 +8,23 @@
     <link rel="stylesheet" type="text/css" href="static/style.css" />
   </head>
   <body>
-    <nav class="navbar">
+
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand hidden-lg" href="#">
+            <img id="home" class="home-link" alt="motw home" src="static/motw.ico" />
+          </a>
+          <p class="navbar-text home-link home-text hidden-xs">LIBRARY</p>
+          <p class="navbar-text" id="num-books"></p>
+        </div>
+        <div class="navbar-right hidden-xs widget-title">
+          <a href="https://www.memoryoftheworld.org" target="_blank">MEMORY OF THE WORLD</a>
+        </div>
+      </div>
+    </nav>
+
+    <nav class="navbar navbar-search">
       <div class="container">
 
         <div class="navbar-header">
@@ -18,15 +34,11 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          
-          <a class="navbar-brand" href="#">
-            <img id="home" alt="motw home" src="static/motw.ico" />
-          </a>
         </div>
 
         <div class="collapse navbar-collapse" id="navbar">
 
-          <form class="navbar-form navbar-right">
+          <form class="navbar-form">
 
             <div class="form-group">
               <select id="property" class="form-control input-sm">

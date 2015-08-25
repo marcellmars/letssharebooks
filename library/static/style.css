@@ -86,6 +86,21 @@ h2 span {
 .navbar-fixed-top .navbar-text {
     margin-top: 4px;
     margin-bottom: 0px;
+    margin-left: 0px;
+}
+
+.navbar-form {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.navbar-collapse {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.navbar-right {
+    margin-right: 0px;
 }
 
 /* toolbar elements for tablet */
@@ -93,7 +108,17 @@ h2 span {
 @media (min-width: 768px) {
 
     #text {
-        width: 340px;
+        width: 397px;
+    }
+
+    .navbar-form {
+        padding-right: 0px;
+        padding-left: 0px;
+    }
+
+    .navbar-collapse {
+        padding-right: 0px;
+        padding-left: 0px;
     }
 
 }
@@ -103,7 +128,7 @@ h2 span {
 @media (min-width: 992px) {
 
     #text {
-        width: 403px;
+        width: 463px;
     }
 
     #property {
@@ -114,6 +139,16 @@ h2 span {
     #librarian {
         width: 195px;
         max-width: 195px;
+    }
+
+    .navbar-form {
+        padding-right: 0px;
+        padding-left: 0px;
+    }
+
+    .navbar-collapse {
+        padding-right: 0px;
+        padding-left: 0px;
     }
 
 }

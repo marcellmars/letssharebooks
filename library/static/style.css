@@ -96,10 +96,6 @@ h2 span {
         width: 250px;
     }
 
-    #search {
-        width: 120px;
-    }
-
 }
 
 /* toolbar elements for desktop */
@@ -118,10 +114,6 @@ h2 span {
     #librarian {
         width: 195px;
         max-width: 195px;
-    }
-
-    #search {
-        width: 120px;
     }
 
 }

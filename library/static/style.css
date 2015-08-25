@@ -346,6 +346,10 @@ body.loading .modal {
   margin: 0;
 }
 
+.twitter-typeahead {
+    width: 100%;
+}
+
 /* -- pure css logotype */
 
 .widget-title {

@@ -67,10 +67,14 @@ h2 span {
 }
 
 .home-text {
-    background-color: #ff0000 !important;
+    background-color: #ff0000;
     color: white !important;
     padding-left: 5px;
     padding-right: 5px;
+}
+
+.home-text:hover {
+    background-color: #cc0000;
 }
 
 /* --decrease size of the top navbar */
@@ -108,7 +112,7 @@ h2 span {
 @media (min-width: 768px) {
 
     #text {
-        width: 397px;
+        width: 357px;
     }
 
     .navbar-form {
@@ -397,6 +401,15 @@ body.loading .modal {
     margin-top: 5px;
 }
 
+.widget-title:hover {
+    height: 0;
+    border: .6875em solid #cc0000;
+    border-right-color: transparent;
+    float: right;
+    font-size: 1em;
+    line-height: 1.5;
+    margin-top: 5px;
+}
 
 .widget-title a
 {
@@ -409,13 +422,14 @@ body.loading .modal {
     text-transform: uppercase;
     color: #fff;
     font-weight: normal;
+    text-decoration: none;
 }
 
-.widget-title a:hover {
-    text-decoration: none;
-    font-weight: bold;
+.btn {
+    border: 0px solid;
 }
 
-.widget-title a:visited {
-    text-decoration: none;
+#content .row {
+    margin-left: 0px;
+    margin-right: 0px;
 }

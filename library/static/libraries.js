@@ -482,14 +482,6 @@ $(document).ready(function () {
     $(document).ajaxStop(function () { 
         $('body').removeClass('loading'); 
     });
-    // try to connect to local calibre server and init page when done
-    // if (is_this_portable()) {
-    //         init_page();
-    // } else {
-    //     localCalibre.done(function(success) {
-    //         init_page();
-    //     })
-    // };
     localCalibre.done(function(success) {
         init_page();
     });

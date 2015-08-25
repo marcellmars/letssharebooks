@@ -1,7 +1,18 @@
 {% extends "base.html" %}
 
 {% block header %}
-<nav class="navbar">
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">
+        <img id="home" alt="motw home" src="/static/motw.ico" />
+      </a>
+    </div>
+    <p class="navbar-text hidden-xs">100 books online</p>
+  </div>
+</nav>
+
+<nav class="navbar navbar-search">
   <div class="container">
 
     <div class="navbar-header">
@@ -11,15 +22,11 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      
-      <a class="navbar-brand" href="#">
-        <img id="home" alt="motw home" src="/static/motw.ico" />
-      </a>
     </div>
 
     <div class="collapse navbar-collapse" id="navbar">
 
-      <form class="navbar-form navbar-right">
+      <form class="navbar-form">
 
         <div class="form-group">
           <select id="property" class="form-control input-sm">

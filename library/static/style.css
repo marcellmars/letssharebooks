@@ -3,6 +3,7 @@
 body {
     background: rgb(255, 255, 255);
     font-family: 'BitstreamVeraSansMono', Consolas, monospace;
+    padding-top: 32px;
 }
 
 a {
@@ -61,6 +62,21 @@ h2 span {
     background-color: white;
 }
 
+/* --decrease size of the top navbar */
+
+.navbar-fixed-top {min-height:28px !important;}
+
+.navbar-fixed-top .navbar-nav > li > a, .navbar-fixed-top .navbar-brand {
+    padding-top: 4px !important; 
+    padding-bottom: 0 !important;
+    height: 28px;
+}
+
+.navbar-fixed-top .navbar-text {
+    margin-top: 4px;
+    margin-bottom: 0px;
+}
+
 /* toolbar elements for tablet */
 
 @media (min-width: 768px) {
@@ -80,7 +96,7 @@ h2 span {
 @media (min-width: 992px) {
 
     #text {
-        width: 355px;
+        width: 345px;
     }
 
     #property {

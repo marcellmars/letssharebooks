@@ -93,7 +93,7 @@ h2 span {
 @media (min-width: 768px) {
 
     #text {
-        width: 250px;
+        width: 340px;
     }
 
 }
@@ -103,7 +103,7 @@ h2 span {
 @media (min-width: 992px) {
 
     #text {
-        width: 345px;
+        width: 403px;
     }
 
     #property {

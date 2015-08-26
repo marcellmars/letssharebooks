@@ -1,9 +1,5 @@
 import os
 import cherrypy
-import requests
-import glob
-import simplejson
-import pymongo
 import zipfile
 import traceback
 import argparse
@@ -14,7 +10,6 @@ import utils
 import simplejson
 import logging.config
 from jinja2 import Environment, FileSystemLoader
-from pymongo import MongoClient
 
 #------------------------------------------------------------------------------
 
@@ -25,7 +20,7 @@ LOG.setLevel(logging.DEBUG)
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ENVIRONMENT = Environment(loader=FileSystemLoader(
-        '{}/templates'.format(CURRENT_DIR)))
+    '{}/templates'.format(CURRENT_DIR)))
 
 CONF = {'/': {'tools.gzip.on': True},
         '/static': {'tools.staticdir.on': True,
@@ -33,26 +28,32 @@ CONF = {'/': {'tools.gzip.on': True},
                     'tools.staticdir.content_types': {'js': 'application/javascript',
                                                       'css': 'text/css',
                                                       'gif': 'image/gif'
-                                                      }},
+                                                      }
+                    },
         '/images': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'images'),
                     'tools.staticdir.content_types': {'svg': 'image/svg+xml',
                                                       'png': 'image/png',
                                                       'gif': 'image/gif'
-                                                      }},
+                                                      }
+                    },
         '/favicon.ico': {'tools.staticfile.on': True,
-                         'tools.staticfile.filename': os.path.join(
-            CURRENT_DIR, 'static/connected.ico')}}
+                         'tools.staticfile.filename': os.path.join(CURRENT_DIR,
+                                                                   'static/connected.ico')
+                         }
+        }
 
 #------------------------------------------------------------------------------
 # Exposed resources
 #------------------------------------------------------------------------------
+
+
 class Root(object):
 
     #--------------------------------------------------------------------------
     # HTML pages
     #--------------------------------------------------------------------------
-    
+
     @cherrypy.expose
     def index(self):
         '''
@@ -82,7 +83,7 @@ class Root(object):
     #--------------------------------------------------------------------------
     # API
     #--------------------------------------------------------------------------
-    
+
     @cherrypy.expose
     def upload_catalog(self, uploaded_file):
         '''
@@ -203,6 +204,13 @@ class Root(object):
         '''
         return libraries.get_autocomplete(cherrypy.db)
 
+    @cherrypy.expose
+    def ping_autocomplete(self):
+        '''
+        Returns pre-computed autocomplete data
+        '''
+        return libraries.calculate_autocomplete(cherrypy.db)
+
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------
@@ -224,6 +232,7 @@ def db_connect():
         LOG.error('db connection error. did not connect...')
 
 #------------------------------------------------------------------------------
+
 
 def start_app(env):
     settings.set_env(env)

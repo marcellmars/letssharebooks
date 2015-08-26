@@ -433,3 +433,13 @@ body.loading .modal {
     margin-left: 0px;
     margin-right: 0px;
 }
+
+.modal-header {
+    color: #FFF;
+    background-color: #C00;
+}
+
+.modal .close {
+    color: white;
+    opacity: 0.7;
+}

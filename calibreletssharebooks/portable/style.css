@@ -21,6 +21,20 @@ a:visited {
     text-decoration: none;
 }
 
+.black-link {
+    color: black;
+    text-decoration: none;
+}
+
+.black-link:hover {
+    color: red;
+    text-decoration: none;
+}
+
+.black-link:visited {
+    text-decoration: none;
+}
+
 /* img { */
 /*     position: absolute; */
 /*     background: url('/images/loading.gif') no repeat; */
@@ -289,20 +303,6 @@ h2 span {
 
 /* -- Modal book window */
 
-.book-modal a {
-    color: red;
-    text-decoration: none;
-}
-
-.book-modal a:hover {
-    color: #cc0000;
-    text-decoration: none;
-}
-
-.book-modal a:visited {
-    text-decoration: none;
-}
-
 body.loading {
     overflow: hidden;
 }
@@ -328,20 +328,6 @@ body.loading .modal {
 
 #book-permalink {
     margin-top: 15px;
-}
-
-#book-permalink a {
-    color: red;
-    text-decoration: none;
-}
-
-#book-permalink a:hover {
-    color: #cc0000;
-    text-decoration: none;
-}
-
-.#book-permalink a:visited {
-    text-decoration: none;
 }
 
 #book-permalink .cover-permalink {
@@ -461,4 +447,12 @@ body.loading .modal {
 
 .modal .modal-footer {
     border-top: none;
+}
+
+.modal .permalink span {
+    color: black;
+}
+
+.modal .permalink span:hover {
+    color: red;
 }

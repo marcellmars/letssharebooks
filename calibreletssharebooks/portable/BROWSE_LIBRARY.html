@@ -149,7 +149,7 @@
             <p><span class="attr">Download:</span> 
               <% for( var i = 0; i < book.formats.length; i++ ) { %>
                  <% var format = book.formats[i] %>
-                 <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>"><%= format.toUpperCase() %></a>
+                 <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>" class="black-link"><%= format.toUpperCase() %></a>
                  <% } %>
             </p>
             <% } %>

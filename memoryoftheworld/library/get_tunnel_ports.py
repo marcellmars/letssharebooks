@@ -24,7 +24,8 @@ def check_tunnel_ports(ports):
     return tp
 
 
-def get_tunnel_ports(pports):
+def get_tunnel_ports():
+    global pports
     data = {'get': 'active_tunnel_ports'}
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('sshd', 3773))
@@ -48,6 +49,6 @@ def get_tunnel_ports(pports):
     return ports
 
 while True:
-    ports = get_tunnel_ports(pports)
+    ports = get_tunnel_ports()
     pickle.dump(ports, open("/tmp/active_tunnel_ports", "wb"))
     time.sleep(10)

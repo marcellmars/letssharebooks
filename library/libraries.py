@@ -370,7 +370,7 @@ def get_books(db, last_id, query={}):
     current_last_id = None
     if books and len(books) == settings.ITEMS_PER_PAGE:
         current_last_id = str(books[len(books) - 1]['_id'])
-    return utils.ser2json({'books': books,
+    return utils.ser2json({'books': utils.sanitize_html(books),
                            'total': dbb.count(),
                            'last_id': current_last_id,
                            'librarians': librarians,

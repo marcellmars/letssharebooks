@@ -9,8 +9,10 @@ import time
 import socket
 import logging
 import settings
+from lxml.html.clean import clean_html
 
 #------------------------------------------------------------------------------
+
 
 def ensure_all_indexes(db):
     '''
@@ -21,6 +23,7 @@ def ensure_all_indexes(db):
 
 #------------------------------------------------------------------------------
 
+
 def connect_to_db(env):
     logging.info('connecting to db {}'.format(env['mongo_addr']))
     db = None
@@ -30,6 +33,7 @@ def connect_to_db(env):
     return db
 
 #------------------------------------------------------------------------------
+
 
 def remove_dots_from_dict(d):
     '''
@@ -47,17 +51,19 @@ def remove_dots_from_dict(d):
 
 #------------------------------------------------------------------------------
 
+
 def ser2json(data):
     '''
     Pretty print for json
     '''
-    indent=None
+    indent = None
     if settings.ENV_NAME in ['local', 'test']:
-        indent=4
+        indent = 4
     return json.dumps(data, sort_keys=True, indent=indent,
                       default=json.default)
 
 #------------------------------------------------------------------------------
+
 
 def remove_all_data(db):
     '''
@@ -67,6 +73,7 @@ def remove_all_data(db):
     db.catalog.remove()
 
 #------------------------------------------------------------------------------
+
 
 def jsonp(func):
     def foo(self, *args, **kwargs):
@@ -82,6 +89,7 @@ def jsonp(func):
 
 #------------------------------------------------------------------------------
 
+
 def timeit(method):
     '''
     Simple profiling decorator
@@ -91,12 +99,13 @@ def timeit(method):
         result = method(*args, **kw)
         te = time.time()
         print('Exec time for method --{}--: {:.2f} sec'.format(
-                method.__name__,te-ts))
+            method.__name__, te-ts))
         return result
 
     return timed
 
 #------------------------------------------------------------------------------
+
 
 def get_mongo_live_addr():
     '''
@@ -108,3 +117,13 @@ def get_mongo_live_addr():
     except Exception:
         logging.error('socket.gethostbyname for mongodb failed. assume local.')
     return None
+
+#------------------------------------------------------------------------------
+
+
+def sanitize_html(books):
+    def clean_book(book):
+        book['comments'] = clean_html(book['comments'])
+        return book
+
+    return [clean_book(book) for book in books]

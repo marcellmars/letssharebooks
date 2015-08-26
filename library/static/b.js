@@ -9,8 +9,6 @@ var load_book = function () {
         var bdata = common.gen_book_data(book);
         $('#content').append(
             common.templates.book_permalink(bdata));
-        $('.navbar-text').append(
-            common.templates.book_permalink_navbar_text(bdata));
     });
 };
 

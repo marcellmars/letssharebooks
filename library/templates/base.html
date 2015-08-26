@@ -9,6 +9,20 @@
     {% block meta %}{% endblock %}
   </head>
   <body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a href="/" class="navbar-brand visible-xs">
+            <img id="home" class="home-link" alt="motw home" src="/static/motw.ico" />
+          </a>
+          <a href="/" class="navbar-text home-link home-text hidden-xs">LIBRARY</a>
+          <p class="navbar-text" id="num-books"></p>
+        </div>
+        <div class="navbar-right hidden-xs widget-title">
+          <a href="https://www.memoryoftheworld.org" target="_blank">MEMORY OF THE WORLD</a>
+        </div>
+      </div>
+    </nav>
     {% block header %}{% endblock %}
     {% block content %}{% endblock %}
   </body>

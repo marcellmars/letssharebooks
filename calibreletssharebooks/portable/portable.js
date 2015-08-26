@@ -48,10 +48,7 @@ $(document).ready(function () {
             'books': [],
             'total': 0,
             'last_id': null,
-            // these will be populated later (in the libraries.js)
-            'authors': [],
-            'titles': [],
-            'librarians': []
+            'librarians': [LIBRARY.librarian]
         };
         var books = BOOKS;
         if (params.query.text !== '' || params.query.librarian !== '') {

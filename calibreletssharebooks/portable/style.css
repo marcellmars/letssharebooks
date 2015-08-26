@@ -290,17 +290,14 @@ h2 span {
 /* -- Modal book window */
 
 .book-modal a {
-    color: black;
     text-decoration: none;
 }
 
 .book-modal a:hover {
-    color: red;
     text-decoration: none;
 }
 
 .book-modal a:visited {
-    color: black;
     text-decoration: none;
 }
 
@@ -316,7 +313,8 @@ body.loading .modal {
     position: relative;
     width: 180px;
     float: right;
-    margin: 0px 15px 15px 0px;
+    margin: 0px;
+    max-height: 300px;
 }
 
 .only_lib a {
@@ -327,6 +325,7 @@ body.loading .modal {
 /* -- Book permalink page */
 
 #book-permalink {
+    margin-top: 15px;
 }
 
 #book-permalink a {
@@ -439,7 +438,15 @@ body.loading .modal {
     background-color: #C00;
 }
 
+.modal-body {
+    min-height: 300px;
+}
+
 .modal .close {
     color: white;
     opacity: 0.7;
+}
+
+.modal .modal-footer {
+    border-top: none;
 }

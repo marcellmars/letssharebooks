@@ -1,20 +1,6 @@
 {% extends "base.html" %}
 
 {% block header %}
-<nav class="navbar navbar-default navbar-fixed-top">
-  <div class="container">
-    <div class="navbar-header">
-      <a class="navbar-brand visible-xs" href="#">
-        <img id="home" class="home-link" alt="motw home" src="/static/motw.ico" />
-      </a>
-      <a href="" class="navbar-text home-link home-text hidden-xs">LIBRARY</a>
-      <p class="navbar-text" id="num-books"></p>
-    </div>
-    <div class="navbar-right hidden-xs widget-title">
-      <a href="https://www.memoryoftheworld.org" target="_blank">MEMORY OF THE WORLD</a>
-    </div>
-  </div>
-</nav>
 
 <nav class="navbar navbar-search">
   <div class="container">
@@ -149,10 +135,10 @@
           </p>
           <% } %>
           <p><span class="attr">About:</span> <%= book.comments %></p></br>
-          <p><a href="<%= book.prefix_url %>" target="_blank">Browse only <%= book.librarian %>'s library</a></p></br>
         </div>
       </div>
       <div class="modal-footer">
+        <a href="<%= book.prefix_url %>" class="btn btn-default pull-left" role="button" target="_blank"><%= book.librarian %>'s library</a>
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
     </div>

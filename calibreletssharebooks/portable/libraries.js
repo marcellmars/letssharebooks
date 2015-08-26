@@ -200,14 +200,6 @@ var ui = {
                 authors: data['authors'],
                 titles: data['titles']
             };
-            if (is_this_portable()) {
-                var metadata = self.generate_metadata(data['books']);
-                STATE.autocomplete = {
-                    authors: metadata['authors'],
-                    titles: metadata['titles']
-                };
-                data.librarians = metadata.librarians;
-            };
             self.change_autocomplete();
         });
     },
@@ -364,31 +356,6 @@ var ui = {
                 $('#librarian').val(data['librarians'][0]);
             };
         };
-    },
-
-    //
-    // generate distinct list of authors, titles and librarians
-    //
-    'generate_metadata': function(books) {
-        var sadd = function(s, v) {
-            if ($.inArray(v, s) == -1) {
-                s.push(v);
-            };
-        };
-        var metadata = {
-            'authors': [],
-            'titles': [],
-            'librarians': []
-        };
-        $.each(books, function(i, book) {
-            var authors = book.authors;
-            $.each(authors, function(j, author) {
-                sadd(metadata['authors'], author);
-            });
-            sadd(metadata['titles'], book.title);
-            sadd(metadata['librarians'], book.librarian);
-        });
-        return metadata;
     },
 
     //

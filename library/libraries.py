@@ -371,23 +371,17 @@ def get_books(db, last_id, query={}):
     LOG.debug('>>> FINAL QUERY: {}'.format(q))
     dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('uuid')
 
-    # distinct authors/titles for autocomplete
-    #authors = dbb.distinct('authors')
-    #titles  = dbb.distinct('title')
-
-    # do infinite scroll
+    # do infinite loading
     books = list(dbb.limit(settings.ITEMS_PER_PAGE))
 
     # calculate last_id
     current_last_id = None
     if books and len(books) == settings.ITEMS_PER_PAGE:
         current_last_id = str(books[len(books) - 1]['_id'])
+        
     return utils.ser2json({'books': books,
-                           'total': dbb.count(),
                            'last_id': current_last_id,
                            'librarians': librarians,
-                           #'authors': authors,
-                           #'titles': titles
                            })
 
 #------------------------------------------------------------------------------
@@ -454,12 +448,17 @@ def calculate_autocomplete(db):
         {'$or': [{'tunnel': {'$in': active_tunnels}},
                  {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
-    dbb = db.books.find(q, {'authors': 1, 'title': 1})
+    dbb = db.books.find(q, {'authors': 1, 'title': 1, 'tags': 1})
+    # calculate books' tags
+    tags = set()
+    for book in dbb:
+        tags.update(book.get('tags'))
     db.autocomplete.drop()
     db.autocomplete.insert({
             'authors': dbb.distinct('authors'),
             'titles': dbb.distinct('title'),
-            #'librarians': active_catalogs.distinct('librarian')
+            'tags': list(tags),
+            'librarians': active_catalogs.distinct('librarian')
             })
 
 #------------------------------------------------------------------------------

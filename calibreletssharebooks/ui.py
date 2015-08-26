@@ -49,6 +49,7 @@ PORTABLE_RESOURCES = [
     'portable/jquery.mockjax.js',
     'portable/jquery-migrate-1.2.1.js',
     'portable/typeahead.bundle.min.js',
+    'portable/hammer.min.js',
     'portable/common.js',
     'portable/json2.js',
     'portable/local_calibre.js',

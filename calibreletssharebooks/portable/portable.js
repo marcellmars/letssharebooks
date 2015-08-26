@@ -33,6 +33,9 @@ $(document).ready(function () {
         } else if (url === 'status?callback=?') {
             var data = {num_of_books: BOOKS.length};
             return {done: function(f){f(data);}};
+        } else if (url === 'autocomplete') {
+            var metadata = generate_metadata(BOOKS);
+            return {done: function(f){f(metadata);}};
         };
     };
 
@@ -122,5 +125,33 @@ $(document).ready(function () {
             };
         };
         return books;
+    };
+
+    //
+    // generate distinct list of authors, titles and librarians
+    //
+    var generate_metadata = function(books) {
+        var sadd = function(s, v) {
+            if ($.inArray(v, s) == -1) {
+                s.push(v);
+            };
+        };
+        var metadata = {
+            'authors': [],
+            'titles': [],
+            'tags': [],
+        };
+        $.each(books, function(i, book) {
+            var authors = book.authors;
+            $.each(authors, function(j, author) {
+                sadd(metadata['authors'], author);
+            });
+            var tags = book.tags;
+            $.each(tags, function(j, tag) {
+                sadd(metadata['tags'], tag);
+            });
+            sadd(metadata['titles'], book.title);
+        });
+        return metadata;
     };
 });

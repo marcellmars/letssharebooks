@@ -369,7 +369,8 @@ def get_books(db, last_id, query={}):
 
     # fetch final cursor
     LOG.debug('>>> FINAL QUERY: {}'.format(q))
-    dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('uuid')
+    # dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('uuid')
+    dbb = db.books.find(q, PUBLIC_BOOK_FIELDS)
 
     # do infinite loading
     books = list(dbb.limit(settings.ITEMS_PER_PAGE))

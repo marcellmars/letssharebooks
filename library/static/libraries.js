@@ -432,12 +432,15 @@ var ui = {
                     // navigate left
                     else if (e.which === 37) {
                         nav.open_prev_modal(this_book);
+                    }
+                    // exit
+                    else if (e.which === 27) {
+                        $('#modal').modal('hide');
                     };
                 };
             });
             var mc = new Hammer(document.getElementById('modal'));
             mc.on("swipeleft swiperight", function(ev) {
-                console.log(ev.type + ' gesture detected.');
                 if (this_book.length) {
                     // navigate right
                     if (ev.type == 'swipeleft') {

@@ -121,9 +121,8 @@ def get_mongo_live_addr():
 #------------------------------------------------------------------------------
 
 
-def sanitize_html(books):
-    def clean_book(book):
-        book['comments'] = clean_html(book['comments'])
-        return book
-
-    return [clean_book(book) for book in books]
+def sanitize_html(book):
+    comments = book.get('comments')
+    if comments:
+        book['comments'] = clean_html(comments)
+    return book

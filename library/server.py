@@ -222,6 +222,7 @@ def db_connect():
     while num_attempts <= max_attempts:
         try:
             cherrypy.db = utils.connect_to_db(settings.ENV)
+            libraries.init(cherrypy.db)
             LOG.info('connected to db.')
             return
         except Exception:

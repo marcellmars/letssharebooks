@@ -62,6 +62,15 @@ PUBLIC_SINGLE_BOOK_FIELDS = {
 
 #------------------------------------------------------------------------------
 
+def init(db):
+    '''
+    Perform some actions on startup
+    '''
+    # pre-calculate autocomplete
+    calculate_autocomplete(db)
+
+#------------------------------------------------------------------------------
+    
 def get_active_tunnels():
     '''
     Returns list of active tunnels used by the get_books function

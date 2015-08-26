@@ -91,8 +91,11 @@ var nav = {
     //
     // trigger rendering of the modal by clicking on the main link
     //
-    '_show_modal': function(el) {
-        el.find('h2 .more_about').click();
+    '_show_modal': function(cover) {
+        var uuid = $(cover).find('.cover h2 .more_about').attr('rel');
+        if (uuid) {
+            ui.open_book_modal(uuid, false);
+        };
     },
 
     //
@@ -122,7 +125,6 @@ var nav = {
     //
     'open_import_modal': function() {
         var modal = common.templates.import_modal({});
-        console.log(modal);
         $('#modal').empty().append(modal);
         $('#modal').modal();
     },
@@ -372,7 +374,7 @@ var ui = {
                 location.href = '/b/' + uuid;
             } else {
                 // open mobile on tablet+desktop
-                self.open_book_modal(uuid);
+                self.open_book_modal(uuid, true);
             };
             e.stopImmediatePropagation();
             e.preventDefault();
@@ -382,58 +384,47 @@ var ui = {
     //
     // opens book info inside modal window
     //
-    'open_book_modal': function(uuid) {
+    'open_book_modal': function(uuid, firstRun) {
+        var self = this;
         $.getJSON('book', {uuid: uuid}).done(function( book ) {
-            $('#modal').empty();
+            var this_book = $(['.col .cover h2 [rel="',
+                               book.uuid,
+                               '"].more_about'].join('')).parents('.col');
             var modal = common.templates.book_modal(
                 common.gen_book_data(book));
-            // // update global state on close
-            // $('#modal').on('hide.bs.modal', function (e) {
-            //     STATE.show_modal = false;
-            // });
-            // // open import modal on '.import' click
-            // $(modal).find('.import').click(function(e) {
-            //     nav.open_import_modal();
-            // });
-            // navigate modals with left/right arrows
+            $('#modal').empty();
+            $('#modal').off('keydown');
             $('#modal').keydown(function(e) {
-                var this_book = $(['.col .cover h2 [rel="',
-                                   book.uuid,
-                                   '"].more_about'].join('')).parents('.col');
                 if (this_book.length) {
                     // navigate right
                     if (e.which === 39) {
-                        $('#modal').modal('hide');
-                        setTimeout(function() {nav.open_next_modal(this_book);}, 500);
+                        nav.open_next_modal(this_book);
                     }
                     // navigate left
                     else if (e.which === 37) {
-                        $('#modal').modal('hide');
-                        setTimeout(function() {nav.open_prev_modal(this_book);}, 500);
+                        nav.open_prev_modal(this_book);
                     };
                 };
             });
-            // var mc = new Hammer(document.getElementById('modal'));
-            // mc.on("swipeleft swiperight", function(ev) {
-            //     console.log(ev.type + ' gesture detected.');
-            //     var this_book = $(['.col .cover h2 [rel="',
-            //                        book.uuid,
-            //                        '"].more_about'].join('')).parents('.col');
-            //     if (this_book.length) {
-            //         // navigate right
-            //         if (ev.type == 'swiperight') {
-            //             $('#modal').modal('hide');
-            //             setTimeout(function() {nav.open_next_modal(this_book);}, 500);
-            //         }
-            //         // navigate left
-            //         else if (ev.type == 'swipeleft') {
-            //             $('#modal').modal('hide');
-            //             setTimeout(function() {nav.open_prev_modal(this_book);}, 500);
-            //         };
-            //     };
-            // });
+            var mc = new Hammer(document.getElementById('modal'));
+            mc.on("swipeleft swiperight", function(ev) {
+                console.log(ev.type + ' gesture detected.');
+                if (this_book.length) {
+                    // navigate right
+                    if (ev.type == 'swipeleft') {
+                        nav.open_next_modal(this_book);
+                    }
+                    // navigate left
+                    else if (ev.type == 'swiperight') {
+                        nav.open_prev_modal(this_book);
+                    };
+                };
+            });
             $('#modal').append(modal);
-            $('#modal').modal();
+            // open modal only on first click
+            if (firstRun) {
+                $('#modal').modal();
+            };
         });
     }
 };

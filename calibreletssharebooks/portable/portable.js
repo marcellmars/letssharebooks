@@ -92,7 +92,7 @@ $(document).ready(function () {
             });
         };
         // set default property to 'all', if not specified
-        if (!_.contains(['authors', 'title', 'all'], q.property)) {
+        if (!_.contains(['authors', 'title', 'tags', 'all'], q.property)) {
             q.property = 'all';
         };
         // perform search
@@ -107,6 +107,11 @@ $(document).ready(function () {
             } else if (q.property == 'authors') {
                 books = books.filter(function(book, i) {
                     return regex.test(book.authors.join(' '));
+                });
+            // search tags
+            } else if (q.property == 'tags') {
+                books = books.filter(function(book, i) {
+                    return regex.test(book.tags.join(' '));
                 });
             // search all metadata
             } else {

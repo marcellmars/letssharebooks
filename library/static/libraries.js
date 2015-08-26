@@ -196,10 +196,7 @@ var ui = {
         // setup autocomplete
         $.getJSON('autocomplete', {}).done(function(data) {
             if (data === null) {return;}
-            STATE.autocomplete = {
-                authors: data['authors'],
-                titles: data['titles']
-            };
+            STATE.autocomplete = data;
             self.change_autocomplete();
         });
     },
@@ -307,6 +304,8 @@ var ui = {
             source = STATE.autocomplete.authors;
         } else if (property == 'title') {
             source = STATE.autocomplete.titles;
+        } else if (property == 'tags') {
+            source = STATE.autocomplete.tags;
         };
         $('#text').typeahead('destroy').typeahead(
             {minLength: 2, highlight: false, hint: false},

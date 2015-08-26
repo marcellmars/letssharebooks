@@ -52,7 +52,7 @@
           <div class="col-md-10">
             <% for( var i = 0; i < book.formats.length; i++ ) { %>
                <% var format = book.formats[i] %>
-               <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>">
+               <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>" class="black-link">
                  <%= format.toUpperCase() %>
                </a>
                <% } %>

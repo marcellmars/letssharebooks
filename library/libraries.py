@@ -150,6 +150,8 @@ def import_catalog(db, catalog, portable_url=None):
     update_catalog(db, catalog)
     # update books metadata
     update_books(db, catalog)
+    # pre-calculate autocomplete
+    calculate_autocomplete(db)
     return catalog['library_uuid'], None
 
 #------------------------------------------------------------------------------
@@ -361,8 +363,8 @@ def get_books(db, last_id, query={}):
     dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('uuid')
 
     # distinct authors/titles for autocomplete
-    authors = dbb.distinct('authors')
-    titles  = dbb.distinct('title')
+    #authors = dbb.distinct('authors')
+    #titles  = dbb.distinct('title')
 
     # do infinite scroll
     books = list(dbb.limit(settings.ITEMS_PER_PAGE))
@@ -375,8 +377,8 @@ def get_books(db, last_id, query={}):
                            'total': dbb.count(),
                            'last_id': current_last_id,
                            'librarians': librarians,
-                           'authors': authors,
-                           'titles': titles
+                           #'authors': authors,
+                           #'titles': titles
                            })
 
 #------------------------------------------------------------------------------
@@ -408,6 +410,51 @@ def get_active_librarians(db):
     #print([c['librarian'] for c in active_catalogs], librarians)
     return utils.ser2json({'librarians' : librarians})
 
+#------------------------------------------------------------------------------
+
+def get_status(db):
+    '''
+    Return some status info
+    '''
+    active_catalogs = db.catalog.find({'$or': [
+                {'tunnel': {'$in': get_active_tunnels()[0]}},
+                {'portable': True}]})
+    books = db.books.find({'library_uuid': {
+                '$in': [i['library_uuid'] for i in active_catalogs]}})
+    return {'num_of_books': books.count(),
+            'num_of_librarians': len(active_catalogs.distinct('librarian'))}
+
+#------------------------------------------------------------------------------
+
+def get_autocomplete(db):
+    '''
+    Returns pre-computed autocomplete data
+    '''
+    return utils.ser2json(db.autocomplete.find_one({}, {'_id': 0}))
+
+#------------------------------------------------------------------------------
+
+def calculate_autocomplete(db):
+    '''
+    Calculates autocomplete data and insert them into db.autocomplete
+    collection
+    '''
+    q = {}
+    active_tunnels = get_active_tunnels()[0]
+    active_catalogs = db.catalog.find(
+        {'$or': [{'tunnel': {'$in': active_tunnels}},
+                 {'portable': True}]})
+    q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
+    dbb = db.books.find(q, {'authors': 1, 'title': 1})
+    db.autocomplete.drop()
+    db.autocomplete.insert({
+            'authors': dbb.distinct('authors'),
+            'titles': dbb.distinct('title'),
+            #'librarians': active_catalogs.distinct('librarian')
+            })
+
+#------------------------------------------------------------------------------
+# PORTABLE management
 #------------------------------------------------------------------------------
 
 def add_portable(db, portable_url):
@@ -459,19 +506,5 @@ def remove_portable(db, url):
     else:
         return utils.ser2json('Portable not found')
     return utils.ser2json('Error while removing portable...')
-
-#------------------------------------------------------------------------------
-
-def get_status(db):
-    '''
-    Return some status info
-    '''
-    active_catalogs = db.catalog.find({'$or': [
-                {'tunnel': {'$in': get_active_tunnels()[0]}},
-                {'portable': True}]})
-    books = db.books.find({'library_uuid': {
-                '$in': [i['library_uuid'] for i in active_catalogs]}})
-    return {'num_of_books': books.count(),
-            'num_of_librarians': len(active_catalogs.distinct('librarian'))}
 
 #------------------------------------------------------------------------------

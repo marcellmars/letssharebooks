@@ -196,6 +196,13 @@ class Root(object):
         '''
         return libraries.get_status(cherrypy.db)
 
+    @cherrypy.expose
+    def autocomplete(self):
+        '''
+        Returns pre-computed autocomplete data
+        '''
+        return libraries.get_autocomplete(cherrypy.db)
+
 #------------------------------------------------------------------------------
 # app entry point
 #------------------------------------------------------------------------------

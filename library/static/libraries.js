@@ -172,6 +172,47 @@ var nav = {
 var ui = {
 
     //
+    // pre-render
+    //
+    'init': function() {
+        var self = this;
+        nav.init_toolbar();
+        if (window.location.hash != '') {
+            // first check if there are any params. if any, process them and
+            // push state to browser history (true)
+            var state = window.location.hash.substr(1);
+            nav.handle_hash_state(state, true);
+        } else {
+            // if not, then just render page as is and push state
+            ui.render_page();
+            nav.push_to_history();
+        };
+        // this event will fire when 'back' button is pressed
+        $(window).bind('hashchange', function(e) {
+            var state = window.location.hash.substr(1);
+            // don't push now to state
+            nav.handle_hash_state(state, false);
+        });
+        // setup autocomplete
+        $.getJSON('autocomplete', {}).done(function(data) {
+            if (data === null) {return;}
+            STATE.autocomplete = {
+                authors: data['authors'],
+                titles: data['titles']
+            };
+            if (is_this_portable()) {
+                var metadata = self.generate_metadata(data['books']);
+                STATE.autocomplete = {
+                    authors: metadata['authors'],
+                    titles: metadata['titles']
+                };
+                data.librarians = metadata.librarians;
+            };
+            self.change_autocomplete();
+        });
+    },
+
+    //
     // initiates the page content rendering by fetching list of books
     // from the server
     //
@@ -275,7 +316,7 @@ var ui = {
         } else if (property == 'title') {
             source = STATE.autocomplete.titles;
         };
-        $('#text').typeahead(
+        $('#text').typeahead('destroy').typeahead(
             {minLength: 2, highlight: false, hint: false},
             {name: property, source: common.substringMatcher(source)});
     },
@@ -287,23 +328,11 @@ var ui = {
         // update total number of books in the header
         $.getJSON('status?callback=?').done(function(data) {
             if (data.num_of_books > 0) {
-                $('#num-books').text( data.num_of_books + ' books, ' + document.getElementsByClassName("cover").length + " shown");
+                $('#num-books').text( data.num_of_books + ' books, ' + $('.cover').length + " shown");
+            } else {
+                $('#num-books').text('no books');
             };
         });
-        // setup autocomplete
-        STATE.autocomplete = {
-            authors: data['authors'],
-            titles: data['titles']
-        };
-        if (is_this_portable()) {
-            var metadata = this.generate_metadata(data['books']);
-            STATE.autocomplete = {
-                authors: metadata['authors'],
-                titles: metadata['titles']
-            };
-            data.librarians = metadata.librarians;
-        };
-        this.change_autocomplete();
 
         $('#librarian').empty();
         if (data['librarians'].length > 1) {
@@ -467,27 +496,7 @@ var search = {
 /* --------------------------------------------------------------------------*/
 
 var init_page = function () {
-    nav.init_toolbar();
-    /* do not display tooltip for modal close button (it gets automatically
-     displayed */
-    //$(document).tooltip({items: '*:not(.ui-dialog-titlebar-close)'});
-    if (window.location.hash != '') {
-        // first check if there are any params. if any, process them and
-        // push state to browser history (true)
-        var state = window.location.hash.substr(1);
-        nav.handle_hash_state(state, true);
-    } else {
-        // if not, then just render page as is and push state
-        ui.render_page();
-        nav.push_to_history();
-    };
-    // this event will fire when 'back' button is pressed
-    $(window).bind('hashchange', function(e) {
-        var state = window.location.hash.substr(1);
-        // don't push now to state
-        nav.handle_hash_state(state, false);
-    });
-    //$(window).trigger('hashchange');
+    
 };
 
 /* --------------------------------------------------------------------------*/
@@ -500,6 +509,6 @@ $(document).ready(function () {
         $('body').removeClass('loading'); 
     });
     localCalibre.done(function(success) {
-        init_page();
+        ui.init();
     });
 });

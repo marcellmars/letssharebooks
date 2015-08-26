@@ -56,6 +56,7 @@ PUBLIC_SINGLE_BOOK_FIELDS = {
     'portable_url':1,
     'prefix_url': 1,
     'cover_url': 1,
+    'card': 1,
     'format_metadata':1,
     '_id': 0
     }

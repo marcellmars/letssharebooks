@@ -3,20 +3,20 @@
 {% block meta %}
 
 {# FB tags #}
-<meta property="og:site_name"    content="{{app_name}}" />
+<meta property="og:site_name"    content="Memory of the World" />
 <meta property="og:title"        content="{{book.title}} by {{', '.join(book.authors)}}" />
 <meta property="og:url"          content="{{this_url}}" />
 <meta property="og:image"        content="{{book.cover_url}}" />
-<meta property="og:description"  content="{{book.comments}}" />
+<meta property="og:description"  content="{{book.card.description}}" />
 <meta property="og:type"         content="books.book" />
 <meta property="books:author"    content="{{', '.join(book.authors)}}" />
 
 {# Twitter tags #}
 <meta name="twitter:card"        content="summary_large_image">
-<meta name="twitter:site"        content="{{app_name}}">
+<meta name="twitter:site"        content="Memory of the World">
 <meta name="twitter:creator"     content="{{', '.join(book.authors)}}">
-<meta name="twitter:title"       content="{{book.title}}">
-<meta name="twitter:description" content="{{book.comments}}">
+<meta name="twitter:title"       content="{{book.title}} by {{', '.join(book.authors)}}">
+<meta name="twitter:description" content="{{book.card.description}}">
 <meta name="twitter:image"       content="{{book.cover_url}}">
 
 {% endblock %}

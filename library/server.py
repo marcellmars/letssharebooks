@@ -70,6 +70,7 @@ class Root(object):
         book = libraries.get_book(cherrypy.db, uuid=uuid)
         if book:
             tmpl = ENVIRONMENT.get_template('book.html')
+            print("BOOK_KEYS: {}".format(book.keys()))
             return tmpl.render(
                 book=book,
                 this_url='http://{}/b/{}'.format(

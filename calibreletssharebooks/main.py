@@ -17,7 +17,6 @@ import shutil
 import SimpleHTTPServer
 import SocketServer
 import uuid
-import BaseHTTPServer
 import datetime
 import cStringIO
 import gzip
@@ -26,6 +25,7 @@ import urllib
 import mimetypes
 import operator
 import threading
+import cgi
 
 try:
     from PyQt4 import QtWebKit
@@ -399,6 +399,13 @@ class MetadataLibThread(QThread):
                 b['authors'].append(author)
 
             b['comments'] = md_fields.comments
+
+            card = {}
+            tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
+            no_tags = tag_re.sub('', str(b['comments']))
+            card['description'] = cgi.escape(no_tags)[:250].replace('"', "")
+            b['card'] = card
+
             b['publisher'] = md_fields.publisher
 
             bkf = {}

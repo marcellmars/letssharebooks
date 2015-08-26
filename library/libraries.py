@@ -340,7 +340,7 @@ def get_books(db, last_id, query={}):
     if q_text:
         words = q_text.encode('utf-8').split(' ')
         match_pattern = {'$regex': '.*'.join(words), '$options': 'i'}
-        if q_property in ['authors', 'title']:
+        if q_property in ['authors', 'title', 'tags']:
             q[q_property] = match_pattern
         else:
             q = {"$or": [{'title': match_pattern},

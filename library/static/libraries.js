@@ -287,7 +287,7 @@ var ui = {
         // update total number of books in the header
         $.getJSON('status?callback=?').done(function(data) {
             if (data.num_of_books > 0) {
-                $('#num-books').text('LIVE (' + data.num_of_books + ' books)');
+                $('#num-books').text( data.num_of_books + ' books, ' + document.getElementsByClassName("cover").length + " shown");
             };
         });
         // setup autocomplete

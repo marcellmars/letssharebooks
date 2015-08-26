@@ -121,9 +121,7 @@
       <div class="modal-body">
         <div id="book-modal" class="book-modal" title="<%= book.title %>">
           <div class="lodestone_modal">
-            <a href="/b/<%= book.uuid %>">
-              <img class="cover-modal" src="<%= book.cover_url %>" />
-            </a>
+            <img class="cover-modal" src="<%= book.cover_url %>" />
             <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
             <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import-to-calibre" data-toggle="tooltip" data-placement="bottom"
                title="import book directly to calibre" target="import">
@@ -131,8 +129,15 @@
             </a>
             <% } %>
           </div>
-          <p><span class="attr">Title:</span> 
-            <a class="title" href="/b/<%= book.uuid %>"><%= book.title %></a></p>
+          <p>
+            <span class="attr">Title:</span> 
+            <span class="title"><%= book.title %><a href="/b/<%= book.uuid %>" class="permalink">
+              <% if (!is_this_portable()) { %>
+              <span class="glyphicon glyphicon-link" aria-hidden="true"></span>
+              <% } %>
+              </a>
+            </span>
+          </p>
           <p><span class="attr">Authors:</span> <%= book.authors %></p>
           <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
           <% if (book.formats[0] != '0') { %>

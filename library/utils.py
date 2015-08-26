@@ -9,7 +9,16 @@ import time
 import socket
 import logging
 import settings
-from lxml.html.clean import clean_html
+from lxml.html.clean import clean_html, Cleaner
+
+#------------------------------------------------------------------------------
+
+
+CLEANER = Cleaner(allow_tags=['br', 'p', 'ul', 'li', 'ol'],
+                  remove_unknown_tags=False,
+                  safe_attrs=frozenset([]),
+                  page_structure=True)
+
 
 #------------------------------------------------------------------------------
 
@@ -124,5 +133,5 @@ def get_mongo_live_addr():
 def sanitize_html(book):
     comments = book.get('comments')
     if comments:
-        book['comments'] = clean_html(comments)
+        book['comments'] = CLEANER.clean_html(comments)
     return book

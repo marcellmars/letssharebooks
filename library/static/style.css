@@ -290,10 +290,12 @@ h2 span {
 /* -- Modal book window */
 
 .book-modal a {
+    color: red;
     text-decoration: none;
 }
 
 .book-modal a:hover {
+    color: #cc0000;
     text-decoration: none;
 }
 
@@ -329,7 +331,17 @@ body.loading .modal {
 }
 
 #book-permalink a {
-    color: grey;
+    color: red;
+    text-decoration: none;
+}
+
+#book-permalink a:hover {
+    color: #cc0000;
+    text-decoration: none;
+}
+
+.#book-permalink a:visited {
+    text-decoration: none;
 }
 
 #book-permalink .cover-permalink {

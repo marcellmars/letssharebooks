@@ -16,7 +16,7 @@ def check_tunnel_ports(ports):
         except Exception as e:
             print("ss didn't parse port as integer: {}".format(e))
         try:
-            if type(port) == int and port > 1024:
+            if type(port) == int:
                 r = requests.get("http://{}:{}".format(socket.gethostbyname('sshd'),
                                                        port))
                 if r.ok:

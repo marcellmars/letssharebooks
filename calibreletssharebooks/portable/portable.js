@@ -71,6 +71,10 @@ $(document).ready(function () {
             ret.last_id = _.last(ret.books).uuid;
         };
         ret.total = books.length;
+        // add prefix_url to all books
+        $.each(books, function(i, book) {
+            book.prefix_url = '';
+        });
         return ret;
     };
 

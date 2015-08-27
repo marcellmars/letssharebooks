@@ -45,7 +45,7 @@ var common = {
                 {'name': 'About',
                  'render': function(book) {return book.comments;},
                  'if_display': function(book) {
-                     return _.isUndefined(book.comments);
+                     return book.comments !== null;
                  }},
                 ]
         },
@@ -74,7 +74,7 @@ var common = {
                 {'name': 'About',
                  'render': function(book) {return book.comments;},
                  'if_display': function(book) {
-                     return _.isUndefined(book.comments);
+                     return book.comments !== null;
                  }},
                 ]
         }

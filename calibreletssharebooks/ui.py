@@ -44,36 +44,39 @@ logger = get_logger('letssharebooks.ui', disabled=False)
 
 PLUGIN_ICONS = ['images/icon.png', 'images/icon_connected.png']
 PORTABLE_RESOURCES = [
+    # html
+    'portable/BROWSE_LIBRARY.html',
+    'portable/favicon.html',
+    # js
     'portable/jquery-1.10.2.min.js',
     'portable/jquery.ba-bbq.min.js',
-    'portable/jquery.mockjax.js',
     'portable/jquery-migrate-1.2.1.js',
+    'portable/underscore-min.js',
+    'portable/bootstrap/js/bootstrap.min.js',
     'portable/typeahead.bundle.min.js',
     'portable/hammer.min.js',
+    'portable/portable.js',
     'portable/common.js',
+    'portable/libraries.js',
     'portable/json2.js',
     'portable/local_calibre.js',
-    'portable/BROWSE_LIBRARY.html',
-    'portable/portable.js',
-    'portable/style.css',
-    'portable/underscore-min.js',
-    'portable/favicon.html',
-    'portable/ca-bundle.crt',
-    'portable/lsbtunnel.exe',
-    'portable/libraries.js',
+    # css
     'portable/bootstrap/css/bootstrap.min.css',
-    'portable/bootstrap/css/bootstrap-theme.min.css',
-    'portable/bootstrap/js/bootstrap.min.js',
-    'portable/bootstrap/fonts/glyphicons-halflings-regular.eot',
-    'portable/bootstrap/fonts/glyphicons-halflings-regular.svg',
-    'portable/bootstrap/fonts/glyphicons-halflings-regular.ttf',
-    'portable/bootstrap/fonts/glyphicons-halflings-regular.woff',
-    'portable/bootstrap/fonts/glyphicons-halflings-regular.woff2',
+    'portable/style.css',
     # images
     'portable/favicon.svg',
     'portable/motw.ico',
     'portable/lodestone.png',
     'portable/lodestone_modal.png'
+    # fonts
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.eot',
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.svg',
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.ttf',
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.woff',
+    'portable/bootstrap/fonts/glyphicons-halflings-regular.woff2',
+    # other
+    'portable/ca-bundle.crt',
+    'portable/lsbtunnel.exe',
 ]
 
 

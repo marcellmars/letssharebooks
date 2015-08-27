@@ -105,6 +105,11 @@ var nav = {
         STATE.navigation_direction = 1;
         var next = current.next();
         if (next.length) {
+            if (STATE.last_id !== null && next.next().length == 0) {
+                // if there are no more books displayed then
+                // try to load more from the server
+                ui.render_page();
+            };
             this._show_modal(next);
         };
     },
@@ -364,13 +369,7 @@ var ui = {
         var self = this;
         $('.more_about').click(function(e) {
             var uuid = $(this).attr('rel');
-            if (common.is_mobile) {
-                // open permalink on mobile
-                location.href = '/b/' + uuid;
-            } else {
-                // open mobile on tablet+desktop
-                self.open_book_modal(uuid, true);
-            };
+            self.open_book_modal(uuid, true);
             e.stopImmediatePropagation();
             e.preventDefault();
         });

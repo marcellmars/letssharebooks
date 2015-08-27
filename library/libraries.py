@@ -366,16 +366,15 @@ def get_books(db, last_id, query={}):
 
     # infinite scroll query part
     if last_id:
-        q['_id'] = {'$gt': ObjectId(last_id)}
+        q['_id'] = {'$lt': ObjectId(last_id)}
 
     # fetch final cursor
     LOG.debug('>>> FINAL QUERY: {}'.format(q))
-    # dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('uuid')
-    dbb = db.books.find(q, PUBLIC_BOOK_FIELDS)
+    dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('_id', -1)
+    #dbb = db.books.find(q, PUBLIC_BOOK_FIELDS)
 
     # do infinite loading
     books = list(dbb.limit(settings.ITEMS_PER_PAGE))
-
     # calculate last_id
     current_last_id = None
     if books and len(books) == settings.ITEMS_PER_PAGE:

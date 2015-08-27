@@ -128,8 +128,8 @@
           <% for( var i = 0; i < book.authors.length; i++ ) { %>
           <% var author = book.authors[i]; var author_s = author.replace("'", " "); if (i < book.authors.length -1){ var author = book.authors[i] + ", "};  %>
           <%- author %>
-          <% } %>
-        </p>
+              <% } %>
+          </p>
           <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
           <% if (book.formats[0] != '0') { %>
           <p><span class="attr">Download:</span> 

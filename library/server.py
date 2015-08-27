@@ -73,7 +73,7 @@ class Root(object):
             print("BOOK_KEYS: {}".format(book.keys()))
             return tmpl.render(
                 book=book,
-                this_url='http://{}/b/{}'.format(
+                this_url='https://library.{}/b/{}'.format(
                     settings.ENV['domain_url'], uuid),
                 app_name=settings.APP_NAME,
                 )

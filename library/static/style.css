@@ -22,12 +22,12 @@ a:visited {
 }
 
 .black-link {
-    color: black;
+    color: black !important;
     text-decoration: none;
 }
 
 .black-link:hover {
-    color: red;
+    color: red !important;
     text-decoration: none;
 }
 
@@ -433,7 +433,7 @@ body.loading .modal {
 
 .modal-header {
     color: #FFF;
-    background-color: #C00;
+    background-color: #F00;
 }
 
 .modal-body {

@@ -72,7 +72,7 @@
         
         <div id="authors">
           <% for( var i = 0; i < book.authors.length; i++ ) { %>
-             <% var author = book.authors[i]; var author_s = author.replace("'", " "); %>
+             <% var author = book.authors[i]; var author_s = author.replace("'", " "); if (i < book.authors.length -1){ var author = book.authors[i] + ", "};  %>
              <a class="author" data-authors="<%- author_s %>" href="#" data-toggle="tooltip" data-placement="bottom" title="show only books by <%- author_s %>"><%- author %></a>
              <% } %>
         </div>
@@ -88,8 +88,7 @@
       <% } %>
       
       <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
-      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import-to-calibre" data-toggle="tooltip" data-placement="bottom"
-         title="import book directly to calibre" target="import">
+      <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import-to-calibre" data-toggle="tooltip" data-placement="bottom" title="import book directly to calibre" target="import">
         <img class="lodestone" src="/static/lodestone.png" />
       </a>
       <% } %>
@@ -110,8 +109,7 @@
           <div class="lodestone_modal">
             <img class="cover-modal" src="<%= book.cover_url %>" />
             <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
-            <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import-to-calibre" data-toggle="tooltip" data-placement="bottom"
-               title="import book directly to calibre" target="import">
+            <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import-to-calibre" data-toggle="tooltip" data-placement="bottom" title="import book directly to calibre" target="import">
               <img src="/static/lodestone_modal.png" />
             </a>
             <% } %>
@@ -125,7 +123,13 @@
               </a>
             </span>
           </p>
-          <p><span class="attr">Authors:</span> <%= book.authors %></p>
+          <!--           <p><span class="attr">Authors:</span> <%= book.authors %></p> -->
+          <p><span class="attr">Authors:</span>
+          <% for( var i = 0; i < book.authors.length; i++ ) { %>
+          <% var author = book.authors[i]; var author_s = author.replace("'", " "); if (i < book.authors.length -1){ var author = book.authors[i] + ", "};  %>
+          <%- author %>
+          <% } %>
+        </p>
           <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
           <% if (book.formats[0] != '0') { %>
           <p><span class="attr">Download:</span> 
@@ -139,8 +143,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a href="<%= book.prefix_url %>" class="btn btn-default pull-left" role="button" target="_blank"><%= book.librarian %>'s library</a>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <a href="<%= book.prefix_url %>" class="btn btn-default pull-left" role="button" target="_blank"><%= book.librarian.toUpperCase() %>'S LIBRARY</a>
+        <button type="button" class="btn btn-default" data-dismiss="modal">CLOSE</button>
       </div>
     </div>
   </div>

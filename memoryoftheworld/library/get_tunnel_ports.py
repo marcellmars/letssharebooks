@@ -12,10 +12,15 @@ def check_tunnel_ports(ports):
     tp = []
     for port in ports:
         try:
-            r = requests.get("http://{}:{}".format(socket.gethostbyname('sshd'),
-                                                   port))
-            if r.ok:
-                tp.append(int(port))
+            port = int(port)
+        except Exception as e:
+            print("ss didn't parse port as integer: {}".format(e))
+        try:
+            if type(port) == int and port > 1024:
+                r = requests.get("http://{}:{}".format(socket.gethostbyname('sshd'),
+                                                       port))
+                if r.ok:
+                    tp.append(int(port))
         except Exception as e:
             print("exception: {}".format(e))
             print("except: {}".format(port))

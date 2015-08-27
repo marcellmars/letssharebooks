@@ -460,3 +460,27 @@ body.loading .modal {
 .modal .permalink span:hover {
     color: red;
 }
+
+/* -- loading */
+
+.loading-img {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba(224, 224, 224, 0.4) 
+    url('/images/loading.gif') 
+    50% 50% 
+    no-repeat;
+}
+
+body.loading {
+    overflow: hidden;
+}
+
+body.loading .loading-img {
+    display: block;
+}

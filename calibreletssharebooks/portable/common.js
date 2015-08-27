@@ -22,19 +22,26 @@ var common = {
     // Select which book properties will be rendered
     //
     'layout': {
+        // book permalink page
         'book-permalink': {
             'properties': [
+                
                 {'name': 'Title',
                  'render': function(book) {return book.title;},
                  'if_display': function(book) {return true;}},
+                
                 {'name': 'Authors',
                  'render': function(book) {
                      return book.authors.join(', ');
                  },
                  'if_display': function(book) {return true;}},
+                
                 {'name': 'Publisher',
                 'render': function(book) {return book.publisher;},
-                 'if_display': function(book) {return true;}},
+                 'if_display': function(book) {
+                     return book.publisher !== null;
+                 }},
+                
                 {'name': 'Download',
                  'render': function(book) {
                      return common.templates.book_downloads({book: book});
@@ -42,28 +49,36 @@ var common = {
                  'if_display': function(book) {
                      return book.formats[0] != '0';
                  }},
+                
                 {'name': 'About',
                  'render': function(book) {return book.comments;},
                  'if_display': function(book) {
                      return book.comments !== null;
                  }},
-                ]
+            ]
         },
+        // book modal (and default)
         'book-modal': {
             'properties': [
+                
                 {'name': 'Title',
                  'render': function(book) {
                      return common.templates.book_modal_attr_title({book: book});
                  },
                  'if_display': function(book) {return true;}},
+                
                 {'name': 'Authors',
                  'render': function(book) {
                      return book.authors.join(', ');
                  },
                  'if_display': function(book) {return true;}},
+                
                 {'name': 'Publisher',
                 'render': function(book) {return book.publisher;},
-                 'if_display': function(book) {return true;}},
+                 'if_display': function(book) {
+                     return book.publisher !== null;
+                 }},
+                
                 {'name': 'Download',
                  'render': function(book) {
                      return common.templates.book_downloads({book: book});
@@ -71,12 +86,13 @@ var common = {
                  'if_display': function(book) {
                      return book.formats[0] != '0';
                  }},
+                
                 {'name': 'About',
                  'render': function(book) {return book.comments;},
                  'if_display': function(book) {
                      return book.comments !== null;
                  }},
-                ]
+            ]
         }
     },
 

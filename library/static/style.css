@@ -453,6 +453,10 @@ body.loading .modal {
     color: black;
 }
 
+.modal .property {
+    margin-bottom: 10px;
+}
+
 .modal .permalink span:hover {
     color: red;
 }

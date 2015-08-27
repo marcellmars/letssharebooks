@@ -55,6 +55,16 @@
 {% endblock %}
 
 {% block templates %}
+
+<script type="text/x-template" id="book-downloads-tmpl">
+  <% for( var i = 0; i < book.formats.length; i++ ) { %>
+     <% var format = book.formats[i] %>
+     <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>" class="black-link">
+       <%= format.toUpperCase() %>
+     </a>
+   <% } %>
+</script>
+
 <script type="text/x-template" id="book-content-tmpl">
   <div class="col col-sm-4 col-md-3">
     <div class="cover" rel='<%= book.librarian %>'>
@@ -97,6 +107,16 @@
   </div>
 </script>
 
+<script type="text/x-template" id="book-modal-attr-title-tmpl">
+  <span class="title"><%= book.title %>
+    <a href="/b/<%= book.uuid %>" class="permalink">
+      <% if (!is_this_portable()) { %>
+      <span class="glyphicon glyphicon-link" aria-hidden="true"></span>
+      <% } %>
+    </a>
+  </span>
+</script>
+
 <script type="text/x-template" id="book-modal-tmpl">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -106,7 +126,8 @@
       </div>
       <div class="modal-body">
         <div id="book-modal" class="book-modal" title="<%= book.title %>">
-          <div class="lodestone_modal">
+
+          <div class="lodestone_modal hidden-xs">
             <img class="cover-modal" src="<%= book.cover_url %>" />
             <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
             <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import-to-calibre" data-toggle="tooltip" data-placement="bottom" title="import book directly to calibre" target="import">
@@ -114,38 +135,25 @@
             </a>
             <% } %>
           </div>
-          <p>
-            <span class="attr">Title:</span> 
-            <span class="title"><%= book.title %><a href="/b/<%= book.uuid %>" class="permalink">
-              <% if (!is_this_portable()) { %>
-              <span class="glyphicon glyphicon-link" aria-hidden="true"></span>
-              <% } %>
-              </a>
-            </span>
-          </p>
-          <!--           <p><span class="attr">Authors:</span> <%= book.authors %></p> -->
-          <p><span class="attr">Authors:</span>
-          <% for( var i = 0; i < book.authors.length; i++ ) { %>
-          <% var author = book.authors[i]; var author_s = author.replace("'", " "); if (i < book.authors.length -1){ var author = book.authors[i] + ", "};  %>
-          <%- author %>
-              <% } %>
-          </p>
-          <p><span class="attr">Publisher:</span> <%= book.publisher %></p> 
-          <% if (book.formats[0] != '0') { %>
-          <p><span class="attr">Download:</span> 
-            <% for( var i = 0; i < book.formats.length; i++ ) { %>
-               <% var format = book.formats[i] %>
-               <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>" class="black-link"><%= format.toUpperCase() %></a>
-               <% } %>
-          </p>
-          <% } %>
-          <p><span class="attr">About:</span> <%= book.comments %></p></br>
+
+          <% for( var i = 0; i < properties.length; i++ ) { %>
+             <% var prop = properties[i]; %>
+             <% if (prop.if_display(book)) { %>
+             <div class="property">
+               <span class="attr"><%= prop.name %>:</span>
+               <span><%= prop.render(book) %></span>
+             </div>
+             <% } %>
+           <% } %>
+
         </div>
       </div>
+      
       <div class="modal-footer">
         <a href="<%= book.prefix_url %>" class="btn btn-default pull-left" role="button" target="_blank"><%= book.librarian.toUpperCase() %>'S LIBRARY</a>
         <button type="button" class="btn btn-default" data-dismiss="modal">CLOSE</button>
       </div>
+      
     </div>
   </div>
 </script>

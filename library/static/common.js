@@ -6,12 +6,14 @@ var common = {
     'templates': {
         'book_permalink':
             _.template($('#book-permalink-tmpl').text().trim()),
-        'book_permalink_navbar_text':
-            _.template($('#book-permalink-navbar-text-tmpl').text().trim()),
+        'book_downloads':
+            _.template($('#book-downloads-tmpl').text().trim()),
         'book_content':
             _.template($('#book-content-tmpl').text().trim()),
         'book_modal':
             _.template($('#book-modal-tmpl').text().trim()),
+        'book_modal_attr_title':
+            _.template($('#book-modal-attr-title-tmpl').text().trim()),
         'import_modal':
             _.template($('#import-modal-tmpl').text().trim())
     },
@@ -22,10 +24,58 @@ var common = {
     'layout': {
         'book-permalink': {
             'properties': [
-                {'name': 'title',     'display_name': 'Title'},
-                {'name': 'authors',   'display_name': 'Authors'},
-                {'name': 'publisher', 'display_name': 'Publisher'},
-                {'name': 'comments',  'display_name': 'About'},
+                {'name': 'Title',
+                 'render': function(book) {return book.title;},
+                 'if_display': function(book) {return true;}},
+                {'name': 'Authors',
+                 'render': function(book) {
+                     return book.authors.join(', ');
+                 },
+                 'if_display': function(book) {return true;}},
+                {'name': 'Publisher',
+                'render': function(book) {return book.publisher;},
+                 'if_display': function(book) {return true;}},
+                {'name': 'Download',
+                 'render': function(book) {
+                     return common.templates.book_downloads({book: book});
+                 },
+                 'if_display': function(book) {
+                     return book.formats[0] != '0';
+                 }},
+                {'name': 'About',
+                 'render': function(book) {return book.comments;},
+                 'if_display': function(book) {
+                     return _.isUndefined(book.comments);
+                 }},
+                ]
+        },
+        'book-modal': {
+            'properties': [
+                {'name': 'Title',
+                 'render': function(book) {
+                     return common.templates.book_modal_attr_title({book: book});
+                 },
+                 'if_display': function(book) {return true;}},
+                {'name': 'Authors',
+                 'render': function(book) {
+                     return book.authors.join(', ');
+                 },
+                 'if_display': function(book) {return true;}},
+                {'name': 'Publisher',
+                'render': function(book) {return book.publisher;},
+                 'if_display': function(book) {return true;}},
+                {'name': 'Download',
+                 'render': function(book) {
+                     return common.templates.book_downloads({book: book});
+                 },
+                 'if_display': function(book) {
+                     return book.formats[0] != '0';
+                 }},
+                {'name': 'About',
+                 'render': function(book) {return book.comments;},
+                 'if_display': function(book) {
+                     return _.isUndefined(book.comments);
+                 }},
                 ]
         }
     },
@@ -33,7 +83,10 @@ var common = {
     //
     // Prepare book data for rendering
     //
-    'gen_book_data': function(book) {
+    'gen_book_data': function(book, target) {
+        if (_.isUndefined(target)) {
+            target = 'book-modal';
+        };
         book.application_id = '';
         var format = book.formats[0];
         var metadata_urls = [
@@ -53,7 +106,7 @@ var common = {
         });
         return {
             'book': book,
-            'properties': this.layout['book-permalink'].properties,
+            'properties': this.layout[target].properties,
             'metadata_urls': encodeURIComponent(metadata_urls.join('__,__'))
         };
     },

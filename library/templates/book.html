@@ -26,8 +26,13 @@
 {% endblock %}
 
 {% block templates %}
-<script type="text/x-template" id="book-permalink-navbar-text-tmpl">
-  <%= book.title %> :: <%= book.authors %>
+<script type="text/x-template" id="book-downloads-tmpl">
+  <% for( var i = 0; i < book.formats.length; i++ ) { %>
+     <% var format = book.formats[i] %>
+     <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>" class="black-link">
+       <%= format.toUpperCase() %>
+     </a>
+   <% } %>
 </script>
 
 <script type="text/x-template" id="book-permalink-tmpl">
@@ -36,28 +41,15 @@
       <div class="col-md-8">
 
         <% for( var i = 0; i < properties.length; i++ ) { %>
-        <div class="row property">
-          <div class="col-md-2">
-            <span class="attr"><%= properties[i].display_name %></span>
-          </div>
-          <div class="col-md-10"><%= book[properties[i].name] %></div>
-        </div>
-        <% } %>
-
-        <% if (book.formats[0] != '0') { %>
-        <div class="row property">
-          <div class="col-md-2">
-            <span class="attr">Download:</span>
-          </div>
-          <div class="col-md-10">
-            <% for( var i = 0; i < book.formats.length; i++ ) { %>
-               <% var format = book.formats[i] %>
-               <a href="<%= book.prefix_url + book.format_metadata[format].file_path %>" class="black-link">
-                 <%= format.toUpperCase() %>
-               </a>
-               <% } %>
-          </div>
-        </div>
+           <% var prop = properties[i]; %>
+           <% if (prop.if_display(book)) { %>
+           <div class="row property">
+             <div class="col-md-2">
+               <span class="attr"><%= prop.name %>:</span>
+             </div>
+             <div class="col-md-10"><%= prop.render(book) %></div>
+           </div>
+           <% } %>
         <% } %>
 
       </div>

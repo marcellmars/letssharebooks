@@ -13,7 +13,7 @@ def get_tunnel_ports(login="tunnel"):
                            for n in subprocess.check_output(['ss', '-4el']).split('\n')
                            if n.find('uid:{} '.format(tunnel_uid)) != -1]
 
-    print("active tunnel ports: {}".format(active_tunnel_ports))
+    # print("active tunnel ports: {}".format(active_tunnel_ports))
     return active_tunnel_ports
 
 

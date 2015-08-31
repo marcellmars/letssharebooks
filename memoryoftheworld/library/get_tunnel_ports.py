@@ -8,7 +8,7 @@ pports = []
 
 
 def check_tunnel_ports(ports):
-    print("socket ports: {}".format(ports))
+    # print("socket ports: {}".format(ports))
     tp = []
     for port in ports:
         try:

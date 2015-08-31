@@ -24,8 +24,8 @@ def check_tunnel_ports(ports):
         except Exception as e:
             print("exception: {}".format(e))
             print("except: {}".format(port))
-            pass
-    print("checked ports: {}".format(tp))
+            time.sleep(0.1)
+    # print("checked ports: {}".format(tp))
     return tp
 
 
@@ -48,7 +48,7 @@ def get_tunnel_ports():
         pports = ports
         try:
             requests.get("http://localhost:4321/ping_autocomplete")
-            print("ping_autocomplete!")
+            # print("ping_autocomplete!")
         except Exception as e:
             print("ping_autocomplete failed!")
     return ports

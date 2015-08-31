@@ -77,7 +77,7 @@ def get_active_tunnels():
     Returns list of active tunnels used by the get_books function
     '''
     try:
-        return pickle.load(open('/tmp/active_tunnel_ports', 'rb'))
+        return pickle.load(open('/tmp/active_tunnel_ports', 'rb'))[0]
     except:
         return []
 
@@ -85,7 +85,7 @@ def get_active_tunnels_mock():
     '''
     Mock for local/test purposes
     '''
-    return [[12345]]
+    return [12345]
 
 def setup_active_tunnels_func():
     '''
@@ -242,7 +242,8 @@ def update_books(db, catalog):
                     'cover_url': gen_cover_url(book, prefix_url)
                     }
              },
-            multi=False, upsert=False)
+            multi=False,
+            upsert=False)
 
 #------------------------------------------------------------------------------
 
@@ -263,17 +264,20 @@ def add_to_library(db, catalog):
         try:
             db.books.update({'uuid': book['uuid']},
                             utils.remove_dots_from_dict(book),
-                            upsert=True, multi=False)
+                            upsert=True,
+                            multi=False)
             # collect (uuid, last_modified) for catalog entry
             books_uuids.append((book['uuid'], book['last_modified']))
             LOG.info('>>> Added book {}'.format(book['uuid']))
         except Exception:
-            LOG.error(
-                'error in book update ({})'.format(book['uuid']), exc_info=True)
+            LOG.error('error in book update ({})'
+                      .format(book['uuid']),
+                      exc_info=True)
     # update catalog metadata collection
     db.catalog.update({'library_uuid': catalog['library_uuid']},
                       {'$pushAll': {'books': books_uuids}},
-                      upsert=True, multi=False)
+                      upsert=True,
+                      multi=False)
 
 #------------------------------------------------------------------------------
 
@@ -287,7 +291,7 @@ def remove_from_library(db, library_uuid, books_uuids):
     '''
     LOG.info('>>> Removing books ({})'.format(len(books_uuids)))
     # remove books
-    [db.books.remove({'uuid':uuid}) for uuid in books_uuids]
+    [db.books.remove({'uuid': uuid}) for uuid in books_uuids]
     # update catalog metadata
     db.catalog.update(
         {'library_uuid': library_uuid},
@@ -301,8 +305,8 @@ def get_catalog(db, uuid):
     Read catalog entry from the database and return json representation
     '''
     return utils.ser2json(db.catalog.find_one(
-            {'library_uuid': uuid},
-            {'books': 1, 'last_modified': 1, '_id' : 0}))
+        {'library_uuid': uuid},
+        {'books': 1, 'last_modified': 1, '_id' : 0}))
 
 #------------------------------------------------------------------------------
 
@@ -311,8 +315,8 @@ def get_catalogs(db):
     for testing purposes
     '''
     return utils.ser2json(db.catalog.find(
-            {},
-            {'library_uuid':1, 'librarian': 1, '_id': 0}))
+        {},
+        {'library_uuid':1, 'librarian': 1, '_id': 0}))
 
 #------------------------------------------------------------------------------
 
@@ -321,7 +325,7 @@ def get_book(db, uuid):
     Returns book with the param uuid
     '''
     return utils.sanitize_html(
-        db.books.find_one({'uuid':uuid}, PUBLIC_SINGLE_BOOK_FIELDS))
+        db.books.find_one({'uuid': uuid}, PUBLIC_SINGLE_BOOK_FIELDS))
 
 #------------------------------------------------------------------------------
 
@@ -331,7 +335,6 @@ def get_books(db, last_id, query={}):
     '''
     # query
     q = {}
-    
     LOG.debug('>>> QUERY: {}, LAST_ID: {}'.format(query, last_id))
 
     # extract search parameters and build query
@@ -356,11 +359,12 @@ def get_books(db, last_id, query={}):
         q['librarian'] = q_librarian.encode('utf-8')
 
     # get all libraries that have active ssh tunnel or reference portables
-    active_tunnels = get_active_tunnels()[0]
+    active_tunnels = get_active_tunnels()
     LOG.debug('>>> Active_tunnels: {}'.format(active_tunnels))
-    active_catalogs = db.catalog.find({'$or': [
-                {'tunnel': {'$in': active_tunnels}},
-                {'portable': True}]})
+    active_catalogs = db.catalog.find(
+        {'$or': [
+            {'tunnel': {'$in': active_tunnels}},
+            {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
     librarians = active_catalogs.distinct('librarian')
 
@@ -379,16 +383,20 @@ def get_books(db, last_id, query={}):
     current_last_id = None
     if books and len(books) == settings.ITEMS_PER_PAGE:
         current_last_id = str(books[len(books) - 1]['_id'])
-        
     return utils.ser2json({'books': books,
                            'last_id': current_last_id,
                            'librarians': librarians,
                            })
 
 #------------------------------------------------------------------------------
+#- get_active_ports() is called after url/get_active_librarians
+#- from calibre plugin when librarian start to share her catalog.
+#- regular pickle is too slow for this
+#------------------------------------------------------------------------------
+
 
 def get_active_ports():
-    data = {'get':'active_tunnel_ports'}
+    data = {'get': 'active_tunnel_ports'}
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('sshd', 3773))
     s.send(json.dumps(data))
@@ -400,19 +408,19 @@ def get_active_ports():
         else:
             break
     s.close()
-    #print(ports[0], get_active_tunnels()[0])
+    print(ports, get_active_tunnels())
     return ports[0]
 
-#------------------------------------------------------------------------------
 
 def get_active_librarians(db):
     time.sleep(0.5)
-    active_catalogs = db.catalog.find({'$or': [
-                {'tunnel': {'$in': [int(p) for p in get_active_ports()]}},
-                {'portable': True}]})
+    active_catalogs = db.catalog.find(
+        {'$or': [
+            {'tunnel': {'$in': [int(p) for p in get_active_ports()]}},
+            {'portable': True}]})
     librarians = active_catalogs.distinct('librarian')
     #print([c['librarian'] for c in active_catalogs], librarians)
-    return utils.ser2json({'librarians' : librarians})
+    return utils.ser2json({'librarians': librarians})
 
 #------------------------------------------------------------------------------
 
@@ -420,11 +428,13 @@ def get_status(db):
     '''
     Return some status info
     '''
-    active_catalogs = db.catalog.find({'$or': [
-                {'tunnel': {'$in': get_active_tunnels()[0]}},
-                {'portable': True}]})
-    books = db.books.find({'library_uuid': {
-                '$in': [i['library_uuid'] for i in active_catalogs]}})
+    active_catalogs = db.catalog.find(
+        {'$or': [
+            {'tunnel': {'$in': get_active_tunnels()}},
+            {'portable': True}]})
+    books = db.books.find(
+        {'library_uuid': {
+            '$in': [i['library_uuid'] for i in active_catalogs]}})
     return {'num_of_books': books.count(),
             'num_of_librarians': len(active_catalogs.distinct('librarian'))}
 
@@ -444,7 +454,7 @@ def calculate_autocomplete(db):
     collection
     '''
     q = {}
-    active_tunnels = get_active_tunnels()[0]
+    active_tunnels = get_active_tunnels()
     active_catalogs = db.catalog.find(
         {'$or': [{'tunnel': {'$in': active_tunnels}},
                  {'portable': True}]})

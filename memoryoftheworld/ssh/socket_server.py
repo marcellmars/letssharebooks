@@ -6,8 +6,13 @@ import SocketServer
 
 
 def get_tunnel_ports(login="tunnel"):
-    tunnel_uid = subprocess.check_output(["grep", "^{0}:".format(login), "/etc/passwd"]).split()[0].split(":")[2]
-    active_tunnel_ports = [n.split(":")[1].split(" ")[0] for n in subprocess.check_output(['ss', '-4el']).split('\n') if n.find('uid:{} '.format(tunnel_uid)) != -1]
+    tunnel_uid = subprocess.check_output(["grep", "^{0}:"
+                                          .format(login),
+                                          "/etc/passwd"]).split()[0].split(":")[2]
+    active_tunnel_ports = [n.split(":")[1].split(" ")[0]
+                           for n in subprocess.check_output(['ss', '-4el']).split('\n')
+                           if n.find('uid:{} '.format(tunnel_uid)) != -1]
+
     print("active tunnel ports: {}".format(active_tunnel_ports))
     return active_tunnel_ports
 
@@ -20,7 +25,6 @@ class MyTCPServerHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         try:
             data = json.loads(self.request.recv(1024).strip())
-            print(data)
             self.request.sendall(json.dumps(get_tunnel_ports()))
             #self.request.sendall(json.dumps([123,345,456]))
         except Exception, e:

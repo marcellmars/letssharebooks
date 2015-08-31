@@ -42,26 +42,27 @@ PUBLIC_BOOK_FIELDS = {
 
 # book fields for book in the modal window
 PUBLIC_SINGLE_BOOK_FIELDS = {
-    'application_id':1,
-    'title':1,
-    'formats':1,
-    'authors':1,
-    'tunnel':1,
-    'uuid':1,
-    'publisher':1,
-    'comments':1,
-    'librarian':1,
+    'application_id': 1,
+    'title': 1,
+    'formats': 1,
+    'authors': 1,
+    'tunnel': 1,
+    'uuid': 1,
+    'publisher': 1,
+    'comments': 1,
+    'librarian': 1,
     'library_uuid': 1,
-    'portable':1,
-    'portable_url':1,
+    'portable': 1,
+    'portable_url': 1,
     'prefix_url': 1,
     'cover_url': 1,
     'card': 1,
-    'format_metadata':1,
+    'format_metadata': 1,
     '_id': 0
     }
 
 #------------------------------------------------------------------------------
+
 
 def init(db):
     '''
@@ -71,7 +72,8 @@ def init(db):
     calculate_autocomplete(db)
 
 #------------------------------------------------------------------------------
-    
+
+
 def get_active_tunnels():
     '''
     Returns list of active tunnels used by the get_books function
@@ -81,11 +83,13 @@ def get_active_tunnels():
     except:
         return []
 
+
 def get_active_tunnels_mock():
     '''
     Mock for local/test purposes
     '''
     return [12345]
+
 
 def setup_active_tunnels_func():
     '''
@@ -96,6 +100,7 @@ def setup_active_tunnels_func():
         get_active_tunnels = get_active_tunnels_mock
 
 #------------------------------------------------------------------------------
+
 
 def handle_uploaded_catalog(db, uploaded_file, zipped=True):
     '''
@@ -128,6 +133,7 @@ def handle_uploaded_catalog(db, uploaded_file, zipped=True):
     return res
 
 #------------------------------------------------------------------------------
+
 
 def import_catalog(db, catalog, portable_url=None):
     '''
@@ -166,6 +172,7 @@ def import_catalog(db, catalog, portable_url=None):
 
 #------------------------------------------------------------------------------
 
+
 def update_catalog(db, catalog):
     '''
     Sets tunnel to 0 if there is a library with the same tunnel from before.
@@ -192,7 +199,8 @@ def update_catalog(db, catalog):
                       upsert=True, multi=False)
 
 #------------------------------------------------------------------------------
-    
+
+
 def update_books(db, catalog):
     '''
     Updates book metadata for all books in the given library when sharing
@@ -232,20 +240,17 @@ def update_books(db, catalog):
         prefix_url = gen_prefix_url(catalog)
         db.books.update(
             {'uuid': book['uuid']},
-            {'$set':
-                 {
-                    'tunnel': catalog['tunnel'],
-                    'librarian': catalog['librarian'],
-                    'portable': catalog['portable'],
-                    'portable_url': catalog['portable_url'],
-                    'prefix_url': prefix_url,
-                    'cover_url': gen_cover_url(book, prefix_url)
-                    }
-             },
+            {'$set': {'tunnel': catalog['tunnel'],
+                      'librarian': catalog['librarian'],
+                      'portable': catalog['portable'],
+                      'portable_url': catalog['portable_url'],
+                      'prefix_url': prefix_url,
+                      'cover_url': gen_cover_url(book, prefix_url)}},
             multi=False,
             upsert=False)
 
 #------------------------------------------------------------------------------
+
 
 def add_to_library(db, catalog):
     '''
@@ -256,7 +261,7 @@ def add_to_library(db, catalog):
     :param catalog: uploaded catalog
     '''
     LOG.info('>>> Adding books ({})'.format(len(catalog['books']['add'])))
-    books_uuids = [] # will hold inserted books' uuids
+    books_uuids = []  # will hold inserted books' uuids
     # add each book to the db.books collection
     for book in catalog['books']['add']:
         # embed library_uuid to every book
@@ -281,6 +286,7 @@ def add_to_library(db, catalog):
 
 #------------------------------------------------------------------------------
 
+
 def remove_from_library(db, library_uuid, books_uuids):
     '''
     Remove books from the library and update catalog
@@ -300,15 +306,19 @@ def remove_from_library(db, library_uuid, books_uuids):
 
 #------------------------------------------------------------------------------
 
+
 def get_catalog(db, uuid):
     '''
     Read catalog entry from the database and return json representation
     '''
     return utils.ser2json(db.catalog.find_one(
         {'library_uuid': uuid},
-        {'books': 1, 'last_modified': 1, '_id' : 0}))
+        {'books': 1,
+         'last_modified': 1,
+         '_id': 0}))
 
 #------------------------------------------------------------------------------
+
 
 def get_catalogs(db):
     '''
@@ -316,9 +326,12 @@ def get_catalogs(db):
     '''
     return utils.ser2json(db.catalog.find(
         {},
-        {'library_uuid':1, 'librarian': 1, '_id': 0}))
+        {'library_uuid': 1,
+         'librarian': 1,
+         '_id': 0}))
 
 #------------------------------------------------------------------------------
+
 
 def get_book(db, uuid):
     '''
@@ -328,6 +341,7 @@ def get_book(db, uuid):
         db.books.find_one({'uuid': uuid}, PUBLIC_SINGLE_BOOK_FIELDS))
 
 #------------------------------------------------------------------------------
+
 
 def get_books(db, last_id, query={}):
     '''
@@ -385,8 +399,7 @@ def get_books(db, last_id, query={}):
         current_last_id = str(books[len(books) - 1]['_id'])
     return utils.ser2json({'books': books,
                            'last_id': current_last_id,
-                           'librarians': librarians,
-                           })
+                           'librarians': librarians})
 
 #------------------------------------------------------------------------------
 #- get_active_ports() is called after url/get_active_librarians
@@ -424,6 +437,7 @@ def get_active_librarians(db):
 
 #------------------------------------------------------------------------------
 
+
 def get_status(db):
     '''
     Return some status info
@@ -440,6 +454,7 @@ def get_status(db):
 
 #------------------------------------------------------------------------------
 
+
 def get_autocomplete(db):
     '''
     Returns pre-computed autocomplete data
@@ -447,6 +462,7 @@ def get_autocomplete(db):
     return utils.ser2json(db.autocomplete.find_one({}, {'_id': 0}))
 
 #------------------------------------------------------------------------------
+
 
 def calculate_autocomplete(db):
     '''
@@ -465,16 +481,16 @@ def calculate_autocomplete(db):
     for book in dbb:
         tags.update(book.get('tags'))
     db.autocomplete.drop()
-    db.autocomplete.insert({
-            'authors': dbb.distinct('authors'),
-            'titles': dbb.distinct('title'),
-            'tags': list(tags),
-            'librarians': active_catalogs.distinct('librarian')
-            })
+    db.autocomplete.insert(
+        {'authors': dbb.distinct('authors'),
+         'titles': dbb.distinct('title'),
+         'tags': list(tags),
+         'librarians': active_catalogs.distinct('librarian')})
 
 #------------------------------------------------------------------------------
 # PORTABLE management
 #------------------------------------------------------------------------------
+
 
 def add_portable(db, portable_url):
     '''
@@ -501,15 +517,19 @@ def add_portable(db, portable_url):
 
 #------------------------------------------------------------------------------
 
+
 def get_portables(db):
     '''
     Returns all registered portable libraries
     '''
     return utils.ser2json(list(db.catalog.find(
-                {'portable': True},
-                {'librarian':1, 'library_uuid':1, '_id': 0})))
+        {'portable': True},
+        {'librarian': 1,
+         'library_uuid': 1,
+         '_id': 0})))
 
 #------------------------------------------------------------------------------
+
 
 def remove_portable(db, url):
     '''

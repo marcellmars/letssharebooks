@@ -9,7 +9,7 @@ import time
 import socket
 import logging
 import settings
-from lxml.html.clean import clean_html, Cleaner
+from lxml.html.clean import Cleaner
 
 #------------------------------------------------------------------------------
 

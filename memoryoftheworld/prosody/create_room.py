@@ -6,6 +6,11 @@ import sys
 import pickle
 import time
 import requests
+import logging
+
+logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger('create_xmpp_room')
+LOG.setLevel(logging.INFO)
 
 time.sleep(4)
 
@@ -36,28 +41,28 @@ class MUCBot(sleekxmpp.ClientXMPP):
             if nicks.ok:
                 nicks = nicks.json()['librarians']
             else:
-                sys.stderr.write("No active librarians?")
+                print("No active librarians?")
 
         except requests.exceptions.RequestException as e:
             nicks = {'librarians': []}
-            sys.stder.write("Web app doesn't work?\nRequestException: {}"
-                            .format(e))
+            LOG.info("Web app doesn't work?\nRequestException: {}"
+                     .format(e))
             self.disconnect()
 
         if nick in nicks and presence['from'].bare == self.room:
             self.send_message(mto=presence['from'].bare,
                               mbody=welcome,
                               mtype='groupchat')
-        sys.stderr.write("{} joined Ask a librarian chat room."
-                         .format(nick.title()))
+        LOG.info("{} joined Ask a librarian chat room."
+                 .format(nick.title()))
 
     def start(self, event):
         self.send_presence()
         self.plugin['xep_0045'].joinMUC(self.room,
                                         self.nick,
                                         wait=True)
-        sys.stderr.write("{} joined Ask a librarian chat room."
-                         .format(self.nick))
+        LOG.info("{} started Ask a librarian chat room."
+                 .format(self.nick))
 
 xmpp = MUCBot("biblibothekar@xmpp.memoryoftheworld.org",
               pickle.load(open("/usr/local/bin/.password", "r")),

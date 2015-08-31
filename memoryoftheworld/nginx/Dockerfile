@@ -4,9 +4,9 @@ MAINTAINER Marcell Mars "https://github.com/marcellmars"
 
 RUN  echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
 
-ADD build_nginx.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/build_nginx.sh
-RUN /usr/local/bin/build_nginx.sh
+RUN apt-get update \
+    && apt-get -y install nginx \
+    && echo "daemon off;" >> /etc/nginx/nginx.conf
 
 ADD nginx.conf /etc/supervisor/conf.d/
 ADD gzip.conf /etc/nginx/conf.d/

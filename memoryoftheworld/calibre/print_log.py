@@ -5,11 +5,13 @@ import sys
 import time
 import os
 
-while True:
-    if os.path.isfile('/tmp/letssharebooks_debug.log'):
-        break
-    time.sleep(0.1)
+LOG_FILE = sys.argv[1]
 
-for line in tailer.follow(open('/tmp/letssharebooks_debug.log')):
+while True:
+    if os.path.isfile(LOG_FILE):
+        break
+    time.sleep(0.5)
+
+for line in tailer.follow(open(LOG_FILE)):
     sys.stderr.write(line+"\n")
     sys.stderr.flush()

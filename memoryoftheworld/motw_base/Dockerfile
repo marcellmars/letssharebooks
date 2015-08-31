@@ -10,10 +10,14 @@ RUN apt-get update
 
 RUN apt-get -y install python-pip dnsmasq \
     && pip install supervisor \
+                   supervisor-stdout \
+                   tailer \
     && echo conf-dir=/etc/dnsmasq.d >> /etc/dnsmasq.conf \
     && echo user=root >> /etc/dnsmasq.conf
 
+ADD print_log.py /usr/local/bin/
+RUN chmod +x /usr/local/bin/print_log.py
 
-ADD supervisord.conf /etc/
+ADD supervisord.conf /etc/ 
 ADD dnsmasq.conf /etc/supervisor/conf.d/
 ADD dnsmasq.local /etc/dnsmasq.d/local

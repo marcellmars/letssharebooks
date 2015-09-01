@@ -13,6 +13,11 @@
 
 -- run_as_root = true
 
+-- custom base domain
+
+-- local base_domain = "memoryoftheworld.org"
+local base_domain = os.getenv("LSB_DOMAIN")
+
 ---------- Server-wide settings ----------
 -- Settings in this section apply to the whole server and are the default settings
 -- for any virtual hosts
@@ -21,7 +26,8 @@
 -- for the server. Note that you must create the accounts separately
 -- (see http://prosody.im/doc/creating_accounts for info)
 -- Example: admins = { "user1@example.com", "user2@example.net" }
-admins = {"biblibothekar@xmpp.memoryoftheworld.org" }
+-- admins = {"biblibothekar@xmpp.memoryoftheworld.org" }
+admins = { "biblibothekar@xmpp."..base_domain }
 --admins = {}
 -- Enable use of libevent for better performance under high load
 -- For more information see: http://prosody.im/doc/libevent
@@ -169,17 +175,17 @@ http_ports = { 	5280 }
 http_paths = { 	bosh = "/http-bind"; 
 		files = "/";}
 http_interfaces = { "*" }
- 
+
 https_ports = { 5281 }
 https_interfaces = { "*" }
-https_ssl = { 
+https_ssl = {
 		certificate = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt";
 		key = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key";
-		} 
-ssl = { 
+		}
+ssl = {
 		certificate = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt";
 		key = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key";
-		} 
+		}
 
 cross_domain_bosh = true;
 consider_bosh_secure = true;
@@ -189,8 +195,8 @@ consider_bosh_secure = true;
 VirtualHost "localhost"
 
 
-VirtualHost "xmpp.memoryoftheworld.org"
-	http_host = "bosh.memoryoftheworld.org";
+VirtualHost ("xmpp."..base_domain)
+	http_host = "bosh."..base_domain;
 	--enabled = false -- Remove this line to enable this host
 	--authentication = "anonymous";
 	--allow_anonymous_s2s = true;
@@ -205,8 +211,8 @@ VirtualHost "xmpp.memoryoftheworld.org"
 		certificate = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt";
 	}
 
-VirtualHost "anon.memoryoftheworld.org"
-	http_host = "bosh.memoryoftheworld.org";
+VirtualHost ("anon."..base_domain)
+	http_host = "bosh."..base_domain;
 	--enabled = false -- Remove this line to enable this host
 	authentication = "anonymous";
 	allow_anonymous_s2s = true;
@@ -227,7 +233,7 @@ VirtualHost "anon.memoryoftheworld.org"
 
 
 ---Set up a MUC (multi-user chat) room server on conference.example.com:
-Component "conference.memoryoftheworld.org" "muc"
+Component ("conference."..base_domain) "muc"
 	restrict_room_creation = true
 	max_history_messages = 0
 

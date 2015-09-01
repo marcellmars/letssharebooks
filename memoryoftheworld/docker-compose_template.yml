@@ -40,6 +40,8 @@ library:
 prosody:
     build: prosody
     entrypoint: /usr/local/bin/supervisord
+    environment:
+        LSB_DOMAIN: "memoryoftheworld.org" 
     ports:
         - "5222:5222"
     expose:

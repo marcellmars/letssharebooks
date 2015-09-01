@@ -7,6 +7,9 @@ RUN  echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf
 RUN locale-gen en_US en_US.UTF-8 \
     && apt-get -y install openssl ssl-cert ca-certificates prosody \
     && pip install sleekxmpp \
+                   dnspython \
+                   pyasn1 \
+                   pyasn1-modules \
     && mkdir -p /var/run/prosody \
     && chown -R prosody.prosody /var/run/prosody \
     && mkdir -p /var/lib/prosody/xmpp%2ememoryoftheworld%2eorg/accounts/ \
@@ -33,7 +36,5 @@ ADD create_room.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/create_room.py
 ADD .password /usr/local/bin/
 ADD create_room.conf /etc/supervisor/conf.d/
-
-RUN echo "127.0.0.1 xmpp.memoryoftheworld.org conference.memoryoftheworld.org" >> /etc/hosts
 
 ADD dnsmasq.local /etc/dnsmasq.d/local

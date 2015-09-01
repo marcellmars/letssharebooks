@@ -14,6 +14,16 @@ LOG.setLevel(logging.INFO)
 
 time.sleep(4)
 
+#------------------------------------------------------------------------------
+#- echo to /etc/hosts in docker doesn't work?!?
+#------------------------------------------------------------------------------
+
+
+with open("/etc/hosts", "a") as f:
+    f.write("127.0.0.1 xmpp.memoryoftheworld.org conference.memoryoftheworld.org\n")
+
+#------------------------------------------------------------------------------
+
 
 class MUCBot(sleekxmpp.ClientXMPP):
     def __init__(self, jid, password, room, nick):
@@ -53,7 +63,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
             self.send_message(mto=presence['from'].bare,
                               mbody=welcome,
                               mtype='groupchat')
-        LOG.info("{} joined Ask a librarian chat room."
+        LOG.info("{} joined 'Ask a librarian' chat room."
                  .format(nick.title()))
 
     def start(self, event):
@@ -61,7 +71,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.plugin['xep_0045'].joinMUC(self.room,
                                         self.nick,
                                         wait=True)
-        LOG.info("{} started Ask a librarian chat room."
+        LOG.info("{} started 'Ask a librarian' chat room."
                  .format(self.nick))
 
 xmpp = MUCBot("biblibothekar@xmpp.memoryoftheworld.org",

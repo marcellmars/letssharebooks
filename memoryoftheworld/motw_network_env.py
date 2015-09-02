@@ -3,10 +3,9 @@
 
 import subprocess
 import sys
-import os
 
 
-LSB_DOMAIN = os.getenv("LSB_DOMAIN", "memoryoftheworld.org")
+LSB_DOMAIN = "memoryoftheworld.org"
 
 #------------------------------------------------------------------------------
 #- public ip address and network mask of the server running the show ----------

@@ -7,13 +7,10 @@ import pickle
 import time
 import requests
 import logging
-import os
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger('create_xmpp_room')
 LOG.setLevel(logging.INFO)
-
-LSB_DOMAIN = os.getenv("LSB_DOMAIN", "memoryoftheworld.org")
 
 time.sleep(4)
 
@@ -23,7 +20,7 @@ time.sleep(4)
 
 
 with open("/etc/hosts", "a") as f:
-    f.write("127.0.0.1 xmpp.{0} conference.{0}\n".format(LSB_DOMAIN))
+    f.write("127.0.0.1 xmpp.memoryoftheworld.org conference.memoryoftheworld.org\n")
 
 #------------------------------------------------------------------------------
 
@@ -31,7 +28,7 @@ with open("/etc/hosts", "a") as f:
 class MUCBot(sleekxmpp.ClientXMPP):
     def __init__(self, jid, password, room, nick):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
-        self.base_url = "https://library.{}".format(LSB_DOMAIN)
+        self.base_url = "https://library.memoryoftheworld.org"
         self.room = room
         self.nick = nick
         self.add_event_handler("session_start", self.start)
@@ -77,9 +74,9 @@ class MUCBot(sleekxmpp.ClientXMPP):
         LOG.info("{} started 'Ask a librarian' chat room."
                  .format(self.nick))
 
-xmpp = MUCBot("biblibothekar@xmpp.{}".format(LSB_DOMAIN),
+xmpp = MUCBot("biblibothekar@xmpp.memoryoftheworld.org",
               pickle.load(open("/usr/local/bin/.password", "r")),
-              "ask_a_librarian@conference.{}".format(LSB_DOMAIN),
+              "ask_a_librarian@conference.memoryoftheworld.org",
               "Bibli Bot Hekar")
 
 xmpp.register_plugin('xep_0045')

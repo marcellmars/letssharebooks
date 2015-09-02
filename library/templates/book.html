@@ -57,7 +57,7 @@
       <div class="col-md-4">
 
         <img class="cover-permalink img-responsive" src="<%= book.cover_url %>" />
-        
+
         <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
         <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import"
            title="import book directly to calibre" target="import">
@@ -68,7 +68,7 @@
         <% } %>
       </div>
     </div>
- 
+
   </div>
 </script>
 {% endblock %}

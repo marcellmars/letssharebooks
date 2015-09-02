@@ -1,5 +1,6 @@
 rsync:
     build: rsync
+    container_name: rsync
     entrypoint: /usr/local/bin/supervisord
     ports:
       - "8733:8733"
@@ -9,6 +10,7 @@ rsync:
 
 sshd:
     build: ssh
+    container_name: sshd
     entrypoint: /usr/local/bin/supervisord
     ports:
         - "722:722"
@@ -18,6 +20,7 @@ sshd:
 
 mongodb:
     image: mongo:latest
+    container_name: mongodb
     #build: mongodb
     #entrypoint: /usr/bin/mongod
     #volumes:
@@ -27,6 +30,7 @@ mongodb:
 
 library:
     build: library
+    container_name: library
     entrypoint: /usr/local/bin/supervisord
     volumes: 
         - ${MOTW_HOME}/letssharebooks/library:/var/www/library
@@ -39,6 +43,7 @@ library:
 
 prosody:
     build: prosody
+    container_name: prosody
     entrypoint: /usr/local/bin/supervisord
     environment:
         LSB_DOMAIN: "memoryoftheworld.org" 
@@ -51,6 +56,7 @@ prosody:
 
 php5:
     build: php5
+    container_name: php5
     entrypoint: /usr/local/bin/supervisord
     volumes: 
         - ${MOTW_WORDPRESS_HOME}/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
@@ -61,6 +67,7 @@ php5:
 
 db:
     image: tutum/mysql:5.5
+    container_name: db
     environment:
         MYSQL_PASS: "12345"
         MYSQL_USER: "wp_admin"
@@ -73,6 +80,7 @@ db:
 
 nginx:
     build: nginx
+    container_name: nginx
     entrypoint: /usr/local/bin/supervisord
     volumes: 
         - ${MOTW_HOME}/letssharebooks/candy:/var/www/candy

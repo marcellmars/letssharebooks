@@ -24,13 +24,13 @@ def get_docker_ips():
                                                     "inspect",
                                                     "-f",
                                                     "'{{ .NetworkSettings.IPAddress }}'",
-                                                    "memoryoftheworld_{}_1".format(dckr[3:])])[1:-2]
+                                                    "{}".format(dckr[3:])])[1:-2]
 
     return docker_ips
 
 def get_docker_ids():
     #------------------------------------------------------------------------------
-    #- getting ip addresses from dockers  -----------------------------------------
+    #- getting id addresses from dockers  -----------------------------------------
 
     docker_ids = {}
     for dckr in DOCKERS:
@@ -38,7 +38,7 @@ def get_docker_ids():
                                                     "inspect",
                                                     "-f",
                                                     "'{{ .Id }}'",
-                                                    "memoryoftheworld_{}_1".format(dckr[3:])])[1:-2]
+                                                    "{}".format(dckr[3:])])[1:-2]
 
     return docker_ids
 

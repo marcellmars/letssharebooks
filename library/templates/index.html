@@ -30,14 +30,14 @@
         <div class="form-group">
           <input  id="text" type="text" class="form-control input-sm" placeholder="type here...">
         </div>
-        
+
         <div class="form-group">
           <select id="librarian" class="form-control input-sm"></select>
         </div>
 
         <button id="search" type="submit" class="btn btn-default btn-sm pull-right">SEARCH</button>
       </form>
-      
+
     </div>
   </div>
 </nav>
@@ -80,7 +80,7 @@
       <h2>
         <a href="#" class="more_about" rel='<%= book.uuid %>'
            title="about this book"><%= book.title %></a>
-        
+
         <div id="authors">
           <% for( var i = 0; i < book.authors.length; i++ ) { %>
              <% var author = book.authors[i]; var author_s = author.replace("'", " "); if (i < book.authors.length -1){ var author = book.authors[i] + ", "};  %>
@@ -88,7 +88,7 @@
              <% } %>
         </div>
       </h2>
-      
+
       <% if (book.formats[0] != '0') { %>
       <span class="download">Download:
         <% for( var i = 0; i < book.formats.length; i++ ) { %>
@@ -97,13 +97,13 @@
            <% } %>
       </span>
       <% } %>
-      
+
       <% if (localCalibre.showImportLinks(book.library_uuid)) { %>
       <a href="http://127.0.0.1:56665/?urls=<%= metadata_urls %>" class="import-to-calibre" data-toggle="tooltip" data-placement="bottom" title="import book directly to calibre" target="import">
         <img class="lodestone" src="/static/lodestone.png" />
       </a>
       <% } %>
-      
+
     </div>
   </div>
 </script>
@@ -149,12 +149,12 @@
 
         </div>
       </div>
-      
+
       <div class="modal-footer">
         <a href="<%= book.prefix_url %>" class="btn btn-default hidden-xs pull-left" role="button" target="_blank"><%= book.librarian.toUpperCase() %>'S LIBRARY</a>
         <button type="button" class="btn btn-default" data-dismiss="modal">CLOSE</button>
       </div>
-      
+
     </div>
   </div>
 </script>

@@ -19,13 +19,13 @@ ADD prosody.conf /etc/supervisor/conf.d/
 ADD prosody.cfg.lua /etc/prosody/prosody.cfg.lua
 RUN chmod +rw /etc/prosody/prosody.cfg.lua
 
-ADD wildcard_memoryoftheworld.org_20130714_combined.crt /etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt
-ADD wildcard_memoryoftheworld.org_20130714.key /etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key 
+ADD lsb_domain.crt /etc/prosody/certs/
+ADD lsb_domain.key /etc/prosody/certs/ 
 
-RUN chown prosody.prosody /etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt \
-    && chown prosody.prosody /etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key \
-    && chmod 600 /etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt \
-    && chmod 600 /etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key
+RUN chown prosody.prosody /etc/prosody/certs/lsb_domain.crt \
+    && chown prosody.prosody /etc/prosody/certs/lsb_domain.key \
+    && chmod 600 /etc/prosody/certs/lsb_domain.crt \
+    && chmod 600 /etc/prosody/certs/lsb_domain.key
 
 ADD biblibothekar.dat /var/lib/prosody/xmpp%2ememoryoftheworld%2eorg/accounts/
 

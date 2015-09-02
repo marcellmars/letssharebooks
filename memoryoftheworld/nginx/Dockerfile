@@ -12,14 +12,8 @@ ADD nginx.conf /etc/supervisor/conf.d/
 ADD gzip.conf /etc/nginx/conf.d/
 ADD ssl.conf /etc/nginx/conf.d/
 
-ADD dhparams.pem /etc/ssl/private/
-
-ADD wildcard_memoryoftheworld.org_20130714_combined.crt /etc/ssl/certs/
-ADD wildcard_memoryoftheworld.org_20130714.key /etc/ssl/private/
-
-ADD otpisane.org.key /etc/ssl/private/
-ADD otpisane.org.crt /etc/ssl/certs/
-ADD woosign_bundle.crt /etc/ssl/private/
+ADD lsb_domain.crt /etc/ssl/certs/lsb_domain.crt
+ADD lsb_domain.key /etc/ssl/private/lsb_domain.key
 
 ADD dnsmasq.local /etc/dnsmasq.d/local
 

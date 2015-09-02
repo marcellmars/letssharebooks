@@ -111,9 +111,9 @@ pidfile = "prosody.pid";
 -- to use SSL/TLS, you may comment or remove this
 
 ssl = {
-		key = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key";
+		key = "/etc/prosody/certs/lsb_domain.key";
 		--certificate = "/etc/prosody/certs/example.com.crt";
-		certificate = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt";
+		certificate = "/etc/prosody/certs/lsb_domain.crt";
 }
 -- Only allow encrypted streams? Encryption is already used when
 -- available. These options will cause Prosody to deny connections that
@@ -165,9 +165,9 @@ log = {
 --bosh_ports = {	port = 5280;
 --		path = "http-bind";
 --	ssl = {
---		key = "/etc/ssl/private/wildcard_memoryoftheworld.org_20130714.key";
+--		key = "/etc/ssl/private/lsb_domain.key";
 --		--certificate = "/etc/prosody/certs/example.com.crt";
---		certificate = "/etc/ssl/certs/wildcard_memoryoftheworld.org_20130714_combined.crt";
+--		certificate = "/etc/ssl/certs/lsb_domain.crt";
 --	}
 --}
 --bosh_ports = {"http-bind"};
@@ -179,12 +179,12 @@ http_interfaces = { "*" }
 https_ports = { 5281 }
 https_interfaces = { "*" }
 https_ssl = {
-		certificate = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt";
-		key = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key";
+		certificate = "/etc/prosody/certs/lsb_domain.crt";
+		key = "/etc/prosody/certs/lsb_domain.key";
 		}
 ssl = {
-		certificate = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt";
-		key = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key";
+		certificate = "/etc/prosody/certs/lsb_domain.crt";
+		key = "/etc/prosody/certs/lsb_domain.key";
 		}
 
 cross_domain_bosh = true;
@@ -206,9 +206,9 @@ VirtualHost ("xmpp."..base_domain)
 	-- use the global one.
 	ssl = {
 		--key = "/etc/prosody/certs/example.com.key";
-		key = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key";
+		key = "/etc/prosody/certs/lsb_domain.key";
 		--certificate = "/etc/prosody/certs/example.com.crt";
-		certificate = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt";
+		certificate = "/etc/prosody/certs/lsb_domain.crt";
 	}
 
 VirtualHost ("anon."..base_domain)
@@ -222,9 +222,9 @@ VirtualHost ("anon."..base_domain)
 	-- use the global one.
 	ssl = {
 		--key = "/etc/prosody/certs/example.com.key";
-		key = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714.key";
+		key = "/etc/prosody/certs/lsb_domain.key";
 		--certificate = "/etc/prosody/certs/example.com.crt";
-		certificate = "/etc/prosody/certs/wildcard_memoryoftheworld.org_20130714_combined.crt";
+		certificate = "/etc/prosody/certs/lsb_domain.crt";
 	}
 ------ Components ------
 -- You can specify components to add hosts that provide special services,

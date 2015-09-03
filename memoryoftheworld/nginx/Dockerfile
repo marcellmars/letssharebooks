@@ -15,6 +15,8 @@ ADD ssl.conf /etc/nginx/conf.d/
 ADD lsb_domain.crt /etc/ssl/certs/lsb_domain.crt
 ADD lsb_domain.key /etc/ssl/private/lsb_domain.key
 
+ADD dhparams.pem /etc/ssl/private/dhparams.pem
+
 ADD dnsmasq.local /etc/dnsmasq.d/local
 
 RUN mkdir -p /var/www/cache

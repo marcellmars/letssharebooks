@@ -96,7 +96,11 @@ first_names = [u'Aristophanes',
                u'Ruiz',
                u'Langdon',
                u'Nadežda',
-               u'Georges']
+               u'Georges',
+               u'Alexandra',
+               u'Aaron',
+               u'Brewster',
+               u'Rick']
 
 last_names = [u'of Byzantium',
               u'Abbot',
@@ -148,4 +152,9 @@ last_names = [u'of Byzantium',
               u'Van Swieten',
               u'Wells',
               u'Krupskaja',
-              u'Bataille']
+              u'Bataille',
+              u'Elbakyan',
+              u'Swartz',
+              u'Kahle',
+              u'Prelinger',
+              u'Bookwarrior']

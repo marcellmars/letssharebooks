@@ -1,9 +1,12 @@
 FROM librarian/motw
 
+MAINTAINER Marcell Mars "https://github.com/marcellmars"
+
+#---- this is convenient setup with cache for local development ---------------
+# RUN echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
+
 ADD run.sh /usr/local/bin/run.sh
 RUN chmod +x /usr/local/bin/run.sh
-
-RUN  echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
 
 ADD build_calibre.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/build_calibre.sh

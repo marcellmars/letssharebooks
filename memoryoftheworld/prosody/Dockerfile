@@ -2,7 +2,8 @@ FROM librarian/motw
 
 MAINTAINER Marcell Mars "https://github.com/marcellmars"
 
-RUN  echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
+#---- this is convenient setup with cache for local development ---------------
+# RUN echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
 
 RUN locale-gen en_US en_US.UTF-8 \
     && apt-get -y install openssl ssl-cert ca-certificates prosody \

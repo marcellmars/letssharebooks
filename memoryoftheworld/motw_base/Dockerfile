@@ -2,13 +2,14 @@ FROM ubuntu:latest
 
 MAINTAINER Marcell Mars "https://github.com/marcellmars"
 
-RUN  echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
+#---- this is convenient setup with cache for local development ---------------
+# RUN echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
 
 RUN locale-gen en_US en_US.UTF-8
 
-RUN apt-get update
-
-RUN apt-get -y install python-pip dnsmasq \
+RUN apt-get update \
+    && apt-get -y install python-pip \
+                       dnsmasq-base \
     && pip install supervisor \
                    supervisor-stdout \
                    tailer \

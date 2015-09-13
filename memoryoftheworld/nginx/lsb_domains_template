@@ -7,7 +7,7 @@ server {
         listen 443 ssl spdy;
         listen [::]:443 ssl spdy;
 
-        server_name   "~^www(?<port>\d{4,5}).memoryoftheworld.org";
+        server_name   "~^www(?<port>\d{4,5}).${LSB_DOMAIN}";
         
         ssl_certificate /etc/ssl/certs/lsb_domain.crt;
         ssl_certificate_key /etc/ssl/private/lsb_domain.key;
@@ -41,7 +41,7 @@ server {
         listen 443 ssl spdy;
         listen [::]:443 ssl spdy;
 
-        server_name   "library.memoryoftheworld.org";
+        server_name   "library.${LSB_DOMAIN}";
 
         ssl_certificate /etc/ssl/certs/lsb_domain.crt;
         ssl_certificate_key /etc/ssl/private/lsb_domain.key;
@@ -72,7 +72,7 @@ server {
         listen 443 ssl spdy;
         listen [::]:443 ssl spdy;
 
-        server_name bosh.memoryoftheworld.org;
+        server_name bosh.${LSB_DOMAIN};
 
         add_header Strict-Transport-Security max-age=31536000;
 
@@ -97,7 +97,7 @@ server {
         listen 443 ssl spdy;
         listen [::]:443 ssl spdy;
 
-        server_name chat.memoryoftheworld.org;
+        server_name chat.${LSB_DOMAIN};
 
         if ($scheme != "https") {
             rewrite ^ https://$server_name$request_uri? redirect;
@@ -109,8 +109,8 @@ server {
         ssl_certificate_key /etc/ssl/private/lsb_domain.key;
 
         root /var/www/candy/;
-        access_log /var/log/nginx/chat.memoryoftheworld.org-access.log;
-        error_log /var/log/nginx/chat.memoryoftheworld.org-error.log;
+        access_log /var/log/nginx/chat.${LSB_DOMAIN}-access.log;
+        error_log /var/log/nginx/chat.${LSB_DOMAIN}-error.log;
 
         location / {
             try_files $uri $uri/ /index.html;
@@ -126,7 +126,7 @@ server {
         listen 443 ssl spdy;
         listen [::]:443 ssl spdy;
 
-        server_name jessica.memoryoftheworld.org;
+        server_name jessica.${LSB_DOMAIN};
 
         if ($scheme != "https") {
             rewrite ^ https://$server_name$request_uri? redirect;
@@ -138,8 +138,8 @@ server {
         ssl_certificate_key /etc/ssl/private/lsb_domain.key;
 
         root /var/www/jessica/;
-        access_log /var/log/nginx/jessica.memoryoftheworld.org-access.log;
-        error_log /var/log/nginx/jessica.memoryoftheworld.org-error.log;
+        access_log /var/log/nginx/jessica.${LSB_DOMAIN}-access.log;
+        error_log /var/log/nginx/jessica.${LSB_DOMAIN}-error.log;
 
         error_page 404 /custom_404.html;
         location = /custom_404.html {
@@ -147,4 +147,3 @@ server {
         }
 
 }
-

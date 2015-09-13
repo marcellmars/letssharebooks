@@ -1,7 +1,7 @@
 import local_env as G
 
 LSBM = '/letssharebooks/memoryoftheworld/'
-for i in ["docker-compose", "motw-compose", "calibre"]:
+for i in ["docker-compose", "motw-compose", "lsb_domains", "calibre"]:
     with open("{}{}{}_template.yml".format(G.MOTW_HOME, LSBM, i)) as f:
         with open("{}{}{}.yml".format(G.MOTW_HOME, LSBM, i), "w") as g:
             g.write(f.read().replace('''${MOTW_HOME}''',
@@ -11,4 +11,6 @@ for i in ["docker-compose", "motw-compose", "calibre"]:
                             .replace('''${MOTW_WORDPRESS_HOME}''',
                                      G.MOTW_WORDPRESS_HOME)
                             .replace('''${RSYNC_DIRECTORY}''',
-                                     G.RSYNC_DIRECTORY))
+                                     G.RSYNC_DIRECTORY)
+                            .replace('''${LSB_DOMAIN}''',
+                                     G.LSB_DOMAIN))

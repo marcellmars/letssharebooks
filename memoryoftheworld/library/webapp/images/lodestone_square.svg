@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   fill-opacity="1"
+   color-rendering="auto"
+   color-interpolation="auto"
+   stroke="black"
+   text-rendering="auto"
+   stroke-linecap="square"
+   stroke-miterlimit="10"
+   stroke-opacity="1"
+   shape-rendering="auto"
+   fill="black"
+   stroke-dasharray="none"
+   font-weight="normal"
+   stroke-width="1"
+   font-family="'Dialog'"
+   font-style="normal"
+   stroke-linejoin="miter"
+   font-size="12"
+   stroke-dashoffset="0"
+   image-rendering="auto"
+   id="svg3052"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   width="100%"
+   height="100%"
+   sodipodi:docname="lodestone.svg"
+   inkscape:export-filename="/home/m/devel/letssharebooks/server_side/libraries/images/lodestone.png"
+   inkscape:export-xdpi="6.9314084"
+   inkscape:export-ydpi="6.9314084">
+  <metadata
+     id="metadata3063">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1366"
+     inkscape:window-height="741"
+     id="namedview3061"
+     showgrid="false"
+     inkscape:zoom="0.51503181"
+     inkscape:cx="27.408335"
+     inkscape:cy="173.18598"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3052"
+     showguides="true"
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       orientation="1,0"
+       position="359.20111,636.85387"
+       id="guide4582" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="-299.01066,198.04602"
+       id="guide4584" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="491.23179,547.539"
+       id="guide4586" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="9.7081382,477.6404"
+       id="guide4600" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="-75.723478,578.60504"
+       id="guide4604" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="-172.80486,636.85387"
+       id="guide4606" />
+  </sodipodi:namedview>
+  <!--Unicode Character 'ALCHEMICAL SYMBOL FOR LODESTONE' (U+1F753)-->
+  <rect
+     style="fill:#ff0000;fill-opacity:1;stroke:none"
+     id="rect4608"
+     width="434.92459"
+     height="438.80786"
+     x="-75.72348"
+     y="415.5083"
+     inkscape:export-filename="/home/m/devel/letssharebooks/server_side/libraries/images/lodestone_modal.png"
+     inkscape:export-xdpi="6.9314084"
+     inkscape:export-ydpi="6.9314084" />
+  <defs
+     id="genericDefs" />
+  <g
+     id="g3055"
+     style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:10;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     transform="matrix(0.64645389,-0.76295306,0.76295306,0.64645389,-17.989581,669.82542)"
+     inkscape:export-filename="/home/m/devel/letssharebooks/server_side/libraries/images/lodestone_modal.png"
+     inkscape:export-xdpi="6.9314084"
+     inkscape:export-ydpi="6.9314084">
+    <g
+       id="g3057"
+       style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:10;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none">
+      <path
+         d="m 225,265.2188 q 0,17.4374 -10.4062,28.9687 -10.6876,11.9531 -27.9844,11.9531 -15.8906,0 -25.1719,-10.6875 -8.8594,-10.125 -8.8594,-26.2969 0,-12.6562 6.3281,-20.6718 4.2188,-5.3438 17.1563,-13.7813 -2.8125,-16.5937 -21.7969,-51.3281 -14.3437,-25.4531 -28.6875,-50.9062 -4.5,0.1406 -12.9375,15.1874 -2.5312,2.5313 -6.8906,8.1563 -2.8125,4.3594 -19.9688,36.1406 -17.4374,32.4844 -17.4374,33.6094 0,1.9687 7.7343,8.1563 8.8594,7.1718 9.7031,8.1562 5.9063,7.5938 5.9063,18.8438 0,15.75 -12.2344,28.7578 -12.2343,13.0078 -27.9843,13.0078 -19.8282,0 -34.1719,-19.8282 -3.2344,-4.5 -3.2344,-15.3281 0,-9.1406 4.8516,-18.7734 4.8515,-9.6328 12.164,-15.2578 2.9531,-2.25 9.4219,-4.2188 5.7656,-1.8281 7.3125,-3.5156 0.5625,-0.5625 5.4844,-8.0859 4.9219,-7.5235 13.7812,-21.4454 L 98.7188,146.25 q 5.625,-9.4219 17.4374,-27.4219 5.3438,-7.4531 11.8126,-7.4531 1.6874,0 2.9531,1.125 3.0937,11.5312 14.7656,29.3906 11.9531,18.5625 15.0469,28.2656 1.8281,6.0469 16.3125,27.5626 12.9375,19.125 19.5469,27.2812 3.9374,4.9219 10.4062,9.7031 8.1562,6.0469 10.4062,8.1563 Q 225,250.0312 225,265.2188 z m -18.2812,6.1874 q 0,-8.0156 -5.2032,-14.8359 -5.2031,-6.8203 -13.0781,-6.8203 -7.7344,0 -13.7813,7.1016 -6.0468,7.1015 -6.0468,14.9765 0,7.4531 5.9062,12.5157 5.9063,5.0624 13.5,5.0624 7.875,0 13.2891,-5.1328 5.4141,-5.1328 5.4141,-12.8672 z M 77.7656,262.2656 q 0,-8.7187 -5.0625,-14.625 -5.0625,-5.9062 -13.6406,-5.9062 -9.5625,0 -18.5625,7.4531 -9.5625,7.7344 -9.5625,17.0156 0,8.1563 7.0313,13.3594 6.3281,4.6406 14.9062,4.6406 10.125,0 17.5078,-5.9765 7.3828,-5.9766 7.3828,-15.961 z"
+         id="path3059"
+         style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:10;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+</svg>

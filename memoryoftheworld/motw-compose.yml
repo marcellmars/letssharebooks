@@ -1,0 +1,101 @@
+rsync:
+  build: rsync
+  container_name: rsync
+  entrypoint: /usr/local/bin/supervisord
+  ports:
+    - "8733:8733"
+  volumes:
+    - /home/m/devel/letssharebooks/memoryoftheworld/rsync/rsync.d/:/etc/rsync.d/
+    - /home/m/devel/letssharebooks/memoryoftheworld/rsync/rzynk/:/var/data/rzynk/
+
+db:
+  image: tutum/mysql:5.5
+  container_name: db
+  environment:
+    MYSQL_PASS: "12345"
+    MYSQL_USER: "wp_admin"
+    #STARTUP_SQL: "/tmp/db/startup.sql"
+  volumes:
+    - /tmp/db/:/tmp/db/
+    - /home/mnt/docker-persistence/mysql/:/var/lib/mysql/
+  expose:
+    - "3306"
+
+php5:
+  build: php5
+  container_name: php5
+  entrypoint: /usr/local/bin/supervisord
+  volumes: 
+      - /home/m/devel/letssharebooks/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
+  expose:
+      - "9000"
+  links:
+      - db
+
+sshd:
+    build: ssh
+    container_name: sshd
+    entrypoint: /usr/local/bin/supervisord
+    ports:
+        - "722:722"
+    expose:
+        - "3773"
+    dns: 127.0.0.1
+
+mongodb:
+    # image: mongo:latest
+    build: mongodb
+    container_name: mongodb
+    entrypoint: /usr/bin/mongod
+    volumes:
+       - /home/mnt/docker-persistence/mongodb/:/data/db/
+    expose:
+        - "27017"
+
+library:
+    build: library
+    container_name: library
+    entrypoint: /usr/local/bin/supervisord
+    volumes: 
+        - /home/m/devel/letssharebooks/library:/var/www/library
+    expose:
+        - "4321"
+    links:
+        - mongodb
+        - sshd
+    dns: 127.0.0.1
+
+prosody:
+    build: prosody
+    container_name: prosody
+    entrypoint: /usr/local/bin/supervisord
+    environment:
+        LSB_DOMAIN: "memoryoftheworld.org" 
+    ports:
+        - "5222:5222"
+    expose:
+        - "5280"
+        - "5281"
+    dns: 127.0.0.1
+
+nginx:
+    build: nginx
+    container_name: nginx
+    entrypoint: /usr/local/bin/supervisord
+    volumes:
+      - /home/m/devel/letssharebooks/cache:/var/www/cache
+      - /home/m/devel/letssharebooks/memoryoftheworld/rsync/rzynk/:/var/www/rzynk/
+      - /home/m/devel/letssharebooks/candy:/var/www/candy
+      - /home/m/devel/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/sites-enabled/
+    volumes_from:
+        - php5
+    ports:
+        - "80:80"
+        - "443:443"
+    links:
+        - sshd
+        - library
+        - prosody
+        - php5
+        - db
+    dns: 127.0.0.1

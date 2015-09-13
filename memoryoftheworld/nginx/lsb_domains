@@ -1,0 +1,150 @@
+#-------------------------------------------------------------------------------
+#- tunnels subdomain pointing to the ports where tunnels are running
+
+server {
+        listen 80;
+        listen [::]:80;
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
+
+        server_name   "~^www(?<port>\d{4,5}).memoryoftheworld.org";
+        
+        ssl_certificate /etc/ssl/certs/lsb_domain.crt;
+        ssl_certificate_key /etc/ssl/private/lsb_domain.key;
+
+        root /var/www/tunnels/;
+        error_page 404 /custom_tunnel.html;
+        error_page 504 /custom_tunnel.html;
+        location = /custom_tunnel.html {
+                internal;
+        }
+
+        location / {
+                resolver          127.0.0.1;
+                proxy_pass        http://sshd:$port;
+                proxy_set_header  X-Real-IP  $remote_addr;
+                proxy_set_header  Host $host;
+                proxy_redirect http:// https://;
+
+                ### used for saving all files requested via library
+                proxy_store /var/www/cache$uri;
+        }
+}
+
+
+#-------------------------------------------------------------------------------
+#- library subdomain main books catalog webapp
+
+server {
+        listen 80;
+        listen [::]:80;
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
+
+        server_name   "library.memoryoftheworld.org";
+
+        ssl_certificate /etc/ssl/certs/lsb_domain.crt;
+        ssl_certificate_key /etc/ssl/private/lsb_domain.key;
+
+        location / {
+                resolver 127.0.0.1;
+                proxy_pass        http://library:4321;
+                
+                proxy_set_header  X-Real-IP  $remote_addr;
+                proxy_set_header  Host $host;
+                proxy_redirect http:// https://;
+                client_max_body_size 20m;
+
+                ### used for saving all files requested via library
+                proxy_store /var/www/cache$uri;
+        }
+
+        error_page 504 /504.html;
+        location = /504.html {}
+}
+
+#-------------------------------------------------------------------------------
+#- bosh subdomain links to docker:prosody
+
+server {
+        listen 80;
+        listen [::]:80;
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
+
+        server_name bosh.memoryoftheworld.org;
+
+        add_header Strict-Transport-Security max-age=31536000;
+
+        ssl_certificate /etc/ssl/certs/lsb_domain.crt;
+        ssl_certificate_key /etc/ssl/private/lsb_domain.key;
+
+        location /http-bind {
+                proxy_pass https://prosody:5281/http-bind;
+                proxy_set_header  X-Real-IP  $remote_addr;
+                proxy_set_header  Host $host;
+                proxy_redirect http:// https://;
+ 
+        }
+}
+
+#-------------------------------------------------------------------------------
+#- candy subdomain runs web chat/xmpp ui
+
+server {
+        listen 80;
+        listen [::]:80;
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
+
+        server_name chat.memoryoftheworld.org;
+
+        if ($scheme != "https") {
+            rewrite ^ https://$server_name$request_uri? redirect;
+        }
+
+        add_header Strict-Transport-Security max-age=31536000;
+
+        ssl_certificate /etc/ssl/certs/lsb_domain.crt;
+        ssl_certificate_key /etc/ssl/private/lsb_domain.key;
+
+        root /var/www/candy/;
+        access_log /var/log/nginx/chat.memoryoftheworld.org-access.log;
+        error_log /var/log/nginx/chat.memoryoftheworld.org-error.log;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+}
+
+#-------------------------------------------------------------------------------
+#- jessica https subdomain used to pass parameters to logan
+
+server {
+        listen 80;
+        listen [::]:80;
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
+
+        server_name jessica.memoryoftheworld.org;
+
+        if ($scheme != "https") {
+            rewrite ^ https://$server_name$request_uri? redirect;
+        }
+
+        add_header Strict-Transport-Security max-age=31536000;
+
+        ssl_certificate /etc/ssl/certs/lsb_domain.crt;
+        ssl_certificate_key /etc/ssl/private/lsb_domain.key;
+
+        root /var/www/jessica/;
+        access_log /var/log/nginx/jessica.memoryoftheworld.org-access.log;
+        error_log /var/log/nginx/jessica.memoryoftheworld.org-error.log;
+
+        error_page 404 /custom_404.html;
+        location = /custom_404.html {
+                internal;
+        }
+
+}
+

@@ -1,0 +1,12 @@
+<style media="screen" type="text/css">
+a {
+color: black;
+font-family: 'BitstreamVeraSansMono',Consolas,monospace;
+line-height: 1.5;
+}
+a:hover {
+text-decoration: underline;
+color: red;
+}
+
+</style>

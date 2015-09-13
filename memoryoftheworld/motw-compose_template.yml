@@ -1,3 +1,37 @@
+rsync:
+  build: rsync
+  container_name: rsync
+  entrypoint: /usr/local/bin/supervisord
+  ports:
+    - "8733:8733"
+  volumes:
+    - ${MOTW_HOME}/letssharebooks/memoryoftheworld/rsync/rsync.d/:/etc/rsync.d/
+    - ${RSYNC_DIRECTORY}/rzynk/:/var/data/rzynk/
+
+db:
+  image: tutum/mysql:5.5
+  container_name: db
+  environment:
+    MYSQL_PASS: "12345"
+    MYSQL_USER: "wp_admin"
+    #STARTUP_SQL: "/tmp/db/startup.sql"
+  volumes:
+    - /tmp/db/:/tmp/db/
+    - ${MOTW_PERSISTENCE}/mysql/:/var/lib/mysql/
+  expose:
+    - "3306"
+
+php5:
+  build: php5
+  container_name: php5
+  entrypoint: /usr/local/bin/supervisord
+  volumes: 
+      - ${MOTW_WORDPRESS_HOME}/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
+  expose:
+      - "9000"
+  links:
+      - db
+
 sshd:
     build: ssh
     container_name: sshd
@@ -48,11 +82,13 @@ nginx:
     build: nginx
     container_name: nginx
     entrypoint: /usr/local/bin/supervisord
-    # volumes: 
-    #     - ${MOTW_HOME}/letssharebooks/static_web:/var/www/
-    #     - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/sites-enabled/
-    # volumes_from:
-    #     - php5
+    volumes:
+      - ${MOTW_HOME}/letssharebooks/cache:/var/www/cache
+      - ${RSYNC_DIRECTORY}/rzynk/:/var/www/rzynk/
+      - ${MOTW_HOME}/letssharebooks/candy:/var/www/candy
+      - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/sites-enabled/
+    volumes_from:
+        - php5
     ports:
         - "80:80"
         - "443:443"
@@ -60,4 +96,6 @@ nginx:
         - sshd
         - library
         - prosody
+        - php5
+        - db
     dns: 127.0.0.1

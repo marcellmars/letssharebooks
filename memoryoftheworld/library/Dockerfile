@@ -22,3 +22,4 @@ ADD get_tunnel_ports.conf /etc/supervisor/conf.d/
 ADD get_tunnel_ports.py /usr/local/bin/
 RUN useradd librarian
 
+ADD webapp/ /var/www/library/

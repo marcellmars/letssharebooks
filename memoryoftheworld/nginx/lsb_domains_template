@@ -31,7 +31,6 @@ server {
         }
 }
 
-
 #-------------------------------------------------------------------------------
 #- library subdomain main books catalog webapp
 

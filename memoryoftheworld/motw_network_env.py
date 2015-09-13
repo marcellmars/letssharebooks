@@ -3,23 +3,21 @@
 
 import subprocess
 import sys
+import local_env as G
 
 
-LSB_DOMAIN = "memoryoftheworld.org"
-
-#------------------------------------------------------------------------------
-#- public ip address and network mask of the server running the show ----------
-MOTW_PUBLIC_IP = '82.221.106.120/32'
-
+LSB_DOMAIN = G.LSB_DOMAIN
+MOTW_PUBLIC_IP = G.MOTW_PUBLIC_IP
 
 DOCKERS = ["01 library",
            "02 mongodb",
            "03 nginx",
            "04 prosody",
-           "05 sshd",
-           "06 php5",
-           "07 db",
-           "08 rsync"]
+           "05 sshd"]
+           # "05 sshd",
+           # "06 php5",
+           # "07 db",
+           # "08 rsync"]
 
 ALIGN = max(map(len, DOCKERS)) - 3
 

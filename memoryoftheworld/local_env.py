@@ -1,3 +1,4 @@
+MOTW_PUBLIC_IP = "82.221.106.120/32"
 MOTW_HOME = "/home/m/devel"
 MOTW_WORDPRESS_HOME = "/home/m/devel/letssharebooks"
 MOTW_PERSISTENCE = "/home/mnt/docker-persistence"

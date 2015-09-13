@@ -6,7 +6,7 @@ MAINTAINER Marcell Mars "https://github.com/marcellmars"
 # RUN echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
 
 RUN apt-get update \
-    && apt-get -y install nginxi
+    && apt-get -y install nginx
 
 ADD nginx.conf /etc/supervisor/conf.d/
 ADD gzip.conf /etc/nginx/conf.d/

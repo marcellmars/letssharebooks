@@ -13,8 +13,8 @@ mongodb:
     build: mongodb
     container_name: mongodb
     entrypoint: /usr/bin/mongod
-    volumes:
-       - ${MOTW_PERSISTENCE}/mongodb/:/data/db/
+    # volumes:
+    #    - ${MOTW_PERSISTENCE}/mongodb/:/data/db/
     expose:
         - "27017"
 

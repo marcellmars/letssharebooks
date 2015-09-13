@@ -85,8 +85,8 @@ nginx:
     volumes:
       - ${MOTW_HOME}/letssharebooks/cache:/var/www/cache
       - ${RSYNC_DIRECTORY}/rzynk/:/var/www/rzynk/
-      - ${MOTW_HOME}/letssharebooks/candy:/var/www/candy
-      - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/sites-enabled/
+      - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/static_web/:/var/www/
+      - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/docker_volumes/
     volumes_from:
         - php5
     ports:

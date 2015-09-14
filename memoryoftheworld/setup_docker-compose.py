@@ -1,4 +1,5 @@
 import shutil
+import os
 import local_env as G
 
 LSBM = '/letssharebooks/memoryoftheworld/'
@@ -32,6 +33,8 @@ for i in FILES:
 #- nginx and prosody needs crt and key for ssl to work ------------------------
 
 for docker in ["nginx", "prosody"]:
+    os.remove("{}/lsb_domain.crt".format(docker))
+    os.remove("{}/lsb_domain.key".format(docker))
     shutil.copy("secrets/{}.crt".format(G.LSB_DOMAIN),
                 "{}/lsb_domain.crt".format(docker))
     shutil.copy("secrets/{}.key".format(G.LSB_DOMAIN),

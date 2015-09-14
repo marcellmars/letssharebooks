@@ -9,12 +9,9 @@ sshd:
     dns: 127.0.0.1
 
 mongodb:
-    # image: mongo:latest
     build: mongodb
     container_name: mongodb
     entrypoint: /usr/bin/mongod
-    # volumes:
-    #    - ${MOTW_PERSISTENCE}/mongodb/:/data/db/
     expose:
         - "27017"
 
@@ -22,8 +19,8 @@ library:
     build: library
     container_name: library
     entrypoint: /usr/local/bin/supervisord
-    # volumes: 
-    #     - ${MOTW_HOME}/letssharebooks/library:/var/www/library
+    environment:
+        LSB_DOMAIN: ${LSB_DOMAIN}
     expose:
         - "4321"
     links:
@@ -36,7 +33,7 @@ prosody:
     container_name: prosody
     entrypoint: /usr/local/bin/supervisord
     environment:
-        LSB_DOMAIN: "memoryoftheworld.org" 
+        LSB_DOMAIN: ${LSB_DOMAIN}
     ports:
         - "5222:5222"
     expose:
@@ -48,11 +45,6 @@ nginx:
     build: nginx
     container_name: nginx
     entrypoint: /usr/local/bin/supervisord
-    # volumes: 
-    #     - ${MOTW_HOME}/letssharebooks/static_web:/var/www/
-    #     - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/sites-enabled/
-    # volumes_from:
-    #     - php5
     ports:
         - "80:80"
         - "443:443"

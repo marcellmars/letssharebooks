@@ -14,7 +14,7 @@ SERVER = {
         'mongo_port': 27017,
         'host': '0.0.0.0',
         'port': 4321,
-        'domain_url': 'memoryoftheworld.org',
+        'domain_url': os.getenv("LSB_DOMAIN") or 'memoryoftheworld.org',
         'dbname': 'letssharebooks',
         },
     'test': {
@@ -22,7 +22,7 @@ SERVER = {
         'mongo_port': 27017,
         'host': '0.0.0.0',
         'port': 4321,
-        'domain_url': 'memoryoftheworld.org',
+        'domain_url': os.getenv("LSB_DOMAIN") or 'memoryoftheworld.org',
         'dbname': 'letssharebooks_test',
         },
     'live': {
@@ -34,11 +34,11 @@ SERVER = {
         'dbname': 'letssharebooks',
         },
     'docker': {
-        'mongo_addr': os.environ.get("MONGODB_PORT_27017_TCP_ADDR"),
+        'mongo_addr': os.getenv("MONGODB_PORT_27017_TCP_ADDR"),
         'mongo_port': 27017,
         'host': '0.0.0.0',
         'port': 4321,
-        'domain_url': 'memoryoftheworld.org',
+        'domain_url': os.getenv("LSB_DOMAIN") or 'memoryoftheworld.org',
         'dbname': 'letssharebooks',
         }
     }

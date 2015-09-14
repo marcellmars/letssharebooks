@@ -7,6 +7,7 @@ import pickle
 import time
 import requests
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger('create_xmpp_room')
@@ -14,13 +15,22 @@ LOG.setLevel(logging.INFO)
 
 time.sleep(4)
 
+LSB_DOMAIN = os.getenv("LSB_DOMAIN") or 'memoryoftheworld.org'
+
 #------------------------------------------------------------------------------
 #- echo to /etc/hosts in docker doesn't work?!?
-#------------------------------------------------------------------------------
 
+hosts = open("/etc/hosts", "r").readlines()
 
-with open("/etc/hosts", "a") as f:
-    f.write("127.0.0.1 xmpp.memoryoftheworld.org conference.memoryoftheworld.org\n")
+hosts_lines = []
+for host in hosts:
+    if LSB_DOMAIN not in host:
+        hosts_lines.append(host)
+    else:
+        hosts_lines.append("127.0.0.1 xmpp.{0} conference.{0}\n"
+                           .format(LSB_DOMAIN))
+
+open("/etc/hosts", "w").writelines(hosts_lines)
 
 #------------------------------------------------------------------------------
 

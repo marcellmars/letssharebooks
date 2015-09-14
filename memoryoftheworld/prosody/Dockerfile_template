@@ -13,7 +13,7 @@ RUN locale-gen en_US en_US.UTF-8 \
                    pyasn1-modules \
     && mkdir -p /var/run/prosody \
     && chown -R prosody.prosody /var/run/prosody \
-    && mkdir -p /var/lib/prosody/xmpp%2ememoryoftheworld%2eorg/accounts/ \
+    && mkdir -p /var/lib/prosody/${LSB_DOMAIN}/accounts/ \
     && chown -R prosody.prosody /var/lib/prosody
 
 ADD prosody.conf /etc/supervisor/conf.d/
@@ -22,18 +22,16 @@ RUN chmod +rw /etc/prosody/prosody.cfg.lua
 
 ADD lsb_domain.crt /etc/prosody/certs/
 ADD lsb_domain.key /etc/prosody/certs/ 
-RUN chmod 600 /etc/prosody/lsb_domain.crt
-RUN chmod 600 /etc/prosody/lsb_domain.key
 
 RUN chown prosody.prosody /etc/prosody/certs/lsb_domain.crt \
     && chown prosody.prosody /etc/prosody/certs/lsb_domain.key \
     && chmod 600 /etc/prosody/certs/lsb_domain.crt \
     && chmod 600 /etc/prosody/certs/lsb_domain.key
 
-ADD biblibothekar.dat /var/lib/prosody/xmpp%2ememoryoftheworld%2eorg/accounts/
+ADD biblibothekar.dat /var/lib/prosody/${LSB_DOMAIN}/accounts/
 
-RUN chown prosody.prosody /var/lib/prosody/xmpp%2ememoryoftheworld%2eorg/accounts/biblibothekar.dat \
-    && chmod -R 640 /var/lib/prosody/xmpp%2ememoryoftheworld%2eorg/accounts/biblibothekar.dat
+RUN chown prosody.prosody /var/lib/prosody/${LSB_DOMAIN}/accounts/biblibothekar.dat \
+    && chmod -R 640 /var/lib/prosody/${LSB_DOMAIN}/accounts/biblibothekar.dat
 
 ADD create_room.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/create_room.py

@@ -30,7 +30,7 @@ SERVER = {
         'mongo_port': 27017,
         'host': '0.0.0.0',
         'port': 4321,
-        'domain_url': 'memoryoftheworld.org',
+        'domain_url': os.getenv("LSB_DOMAIN") or 'memoryoftheworld.org',
         'dbname': 'letssharebooks',
         },
     'docker': {

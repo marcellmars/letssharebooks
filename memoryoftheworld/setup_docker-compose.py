@@ -7,6 +7,7 @@ FILES = [["docker-compose", ".yml"],
          ["calibre_docker", ".yml"],
          ["nginx/lsb_domains", ""]]
 
+
 #------------------------------------------------------------------------------
 #- FILES are templates which should be preprocessed before any deployment -----
 
@@ -40,3 +41,14 @@ for docker in ["nginx", "prosody"]:
 
 shutil.copy("secrets/dhparam.pem",
             "nginx/dhparam.pem")
+
+
+#------------------------------------------------------------------------------
+#- prosody changes dots in the name of directery.. aih ------------------------
+
+with open("prosody/Dockerfile_template", "r") as f:
+    with open("prosody/Dockerfile", "w") as g:
+        d = "xmpp%2e{}%2e{}".format(".".join(G.LSB_DOMAIN.split(".")[:-1]),
+                                    G.LSB_DOMAIN.split(".")[-1])
+        g.write(f.read().replace('''${LSB_DOMAIN}''',
+                                 d))

@@ -26,9 +26,9 @@ hosts_lines = []
 for host in hosts:
     if LSB_DOMAIN not in host:
         hosts_lines.append(host)
-    else:
-        hosts_lines.append("127.0.0.1 xmpp.{0} conference.{0}\n"
-                           .format(LSB_DOMAIN))
+
+hosts_lines.append("127.0.0.1 xmpp.{0} conference.{0} bosh.{0}\n"
+                   .format(LSB_DOMAIN))
 
 open("/etc/hosts", "w").writelines(hosts_lines)
 
@@ -38,7 +38,7 @@ open("/etc/hosts", "w").writelines(hosts_lines)
 class MUCBot(sleekxmpp.ClientXMPP):
     def __init__(self, jid, password, room, nick):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
-        self.base_url = "https://library.memoryoftheworld.org"
+        self.base_url = "https://library.{}".format(LSB_DOMAIN)
         self.room = room
         self.nick = nick
         self.add_event_handler("session_start", self.start)
@@ -84,9 +84,9 @@ class MUCBot(sleekxmpp.ClientXMPP):
         LOG.info("{} started 'Ask a librarian' chat room."
                  .format(self.nick))
 
-xmpp = MUCBot("biblibothekar@xmpp.memoryoftheworld.org",
+xmpp = MUCBot("biblibothekar@xmpp.{}".format(LSB_DOMAIN),
               pickle.load(open("/usr/local/bin/.password", "r")),
-              "ask_a_librarian@conference.memoryoftheworld.org",
+              "ask_a_librarian@conference.{}".format(LSB_DOMAIN),
               "Bibli Bot Hekar")
 
 xmpp.register_plugin('xep_0045')

@@ -5,7 +5,9 @@ LSBM = '/letssharebooks/memoryoftheworld/'
 FILES = [["docker-compose", ".yml"],
          ["motw-compose", ".yml"],
          ["calibre_docker", ".yml"],
-         ["nginx/lsb_domains", ""]]
+         ["nginx/lsb_domains", ""],
+         ["nginx/static_web/candy/index", ".html"],
+         ["nginx/static_web/candy/calibre", ".html"]]
 
 
 #------------------------------------------------------------------------------

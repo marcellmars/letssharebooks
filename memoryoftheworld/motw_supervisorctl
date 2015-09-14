@@ -7,4 +7,4 @@ if [ -z $1 ]
    exit
 fi
 
-docker exec $1 supervisorctl -s http://localhost:9001 $2
+docker exec $1 supervisorctl -s http://localhost:9001 $2 $3

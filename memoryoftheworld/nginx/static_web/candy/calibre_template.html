@@ -23,24 +23,24 @@
 
             var nick = decodeURI(getQueryVariable("nick"));
             $(document).ready(function() {
-                    Candy.init('https://bosh.memoryoftheworld.org/http-bind/', {
+                    Candy.init('https://bosh.${LSB_DOMAIN}/http-bind/', {
                             core: { debug: false ,
-                                    autojoin: ['ask_a_librarian@conference.memoryoftheworld.org']},
+                                    autojoin: ['ask_a_librarian@conference.${LSB_DOMAIN}']},
                             view: { resources: 'res/' }
                             });
 
                         if (nick != false) {
-                            Candy.Core.connect("anon.memoryoftheworld.org", null, nick);
+                            Candy.Core.connect("anon.${LSB_DOMAIN}", null, nick);
                         } else {
-                            Candy.Core.connect("anon.memoryoftheworld.org");
+                            Candy.Core.connect("anon.${LSB_DOMAIN}");
                         }
                         });
 
 	var connect_again = function () {
                         if (nick != false) {
-                            Candy.Core.connect("anon.memoryoftheworld.org", null, nick);
+                            Candy.Core.connect("anon.${LSB_DOMAIN}", null, nick);
                         } else {
-                            Candy.Core.connect("anon.memoryoftheworld.org");
+                            Candy.Core.connect("anon.${LSB_DOMAIN}");
                         }
 
 	}

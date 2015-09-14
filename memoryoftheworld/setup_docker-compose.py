@@ -1,3 +1,4 @@
+import shutil
 import local_env as G
 
 LSBM = '/letssharebooks/memoryoftheworld/'
@@ -5,6 +6,9 @@ FILES = [["docker-compose", ".yml"],
          ["motw-compose", ".yml"],
          ["calibre", ".yml"],
          ["nginx/lsb_domains", ""]]
+
+#------------------------------------------------------------------------------
+#- FILES are templates which should be preprocessed before any deployment -----
 
 for i in FILES:
     with open("{}{}{}_template{}".format(G.MOTW_HOME, LSBM, i[0], i[1])) as f:
@@ -19,3 +23,20 @@ for i in FILES:
                                      G.RSYNC_DIRECTORY)
                             .replace('''${LSB_DOMAIN}''',
                                      G.LSB_DOMAIN))
+
+#------------------------------------------------------------------------------
+#- crt and key file names should be the same as LSB_DOMAIN --------------------
+#- nginx and prosody needs crt and key for ssl to work ------------------------
+
+for docker in ["nginx", "prosody"]:
+    shutil.copy("secrets/{}.crt".format(G.LSB_DOMAIN),
+                "{}/lsb_domain.crt".format(docker))
+    shutil.copy("secrets/{}.key".format(G.LSB_DOMAIN),
+                "{}/lsb_domain.key".format(docker))
+
+
+#------------------------------------------------------------------------------
+#- it is recommended for nginx to have dhparam.pem for better security --------
+
+shutil.copy("secrets/dhparam.pem",
+            "nginx/dhparam.pem")

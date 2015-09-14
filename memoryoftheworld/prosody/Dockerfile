@@ -22,6 +22,8 @@ RUN chmod +rw /etc/prosody/prosody.cfg.lua
 
 ADD lsb_domain.crt /etc/prosody/certs/
 ADD lsb_domain.key /etc/prosody/certs/ 
+RUN chmod 600 /etc/prosody/lsb_domain.crt
+RUN chmod 600 /etc/prosody/lsb_domain.key
 
 RUN chown prosody.prosody /etc/prosody/certs/lsb_domain.crt \
     && chown prosody.prosody /etc/prosody/certs/lsb_domain.key \

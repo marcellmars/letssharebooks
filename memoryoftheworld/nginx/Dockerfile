@@ -18,6 +18,8 @@ ADD lsb_domains /etc/sites-enabled/lsb_domains
 
 ADD lsb_domain.crt /etc/ssl/certs/lsb_domain.crt
 ADD lsb_domain.key /etc/ssl/private/lsb_domain.key
+RUN chmod 600 /etc/ssl/certs/lsb_domain.crt
+RUN chmod 600 /etc/ssl/private/lsb_domain.crt
 
 ADD dhparam.pem /etc/ssl/private/dhparam.pem
 

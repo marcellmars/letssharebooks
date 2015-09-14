@@ -19,7 +19,7 @@ ADD lsb_domains /etc/sites-enabled/lsb_domains
 ADD lsb_domain.crt /etc/ssl/certs/lsb_domain.crt
 ADD lsb_domain.key /etc/ssl/private/lsb_domain.key
 
-ADD dhparams.pem /etc/ssl/private/dhparams.pem
+ADD dhparam.pem /etc/ssl/private/dhparam.pem
 
 ADD dnsmasq.local /etc/dnsmasq.d/local
 

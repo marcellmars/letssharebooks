@@ -43,10 +43,11 @@ sshd:
     dns: 127.0.0.1
 
 mongodb:
-    # image: mongo:latest
     build: mongodb
     container_name: mongodb
     entrypoint: /usr/bin/mongod
+    #--------------------------------------------------------------------------
+    #- in production this will make mongodb permanent at host -----------------
     volumes:
        - ${MOTW_PERSISTENCE}/mongodb/:/data/db/
     expose:
@@ -56,8 +57,12 @@ library:
     build: library
     container_name: library
     entrypoint: /usr/local/bin/supervisord
+    #--------------------------------------------------------------------------
+    #- it might be good to uncomment this volume for webapp development -------
     # volumes: 
     #     - ${MOTW_HOME}/letssharebooks/library:/var/www/library
+    environment:
+        LSB_DOMAIN: ${LSB_DOMAIN}
     expose:
         - "4321"
     links:
@@ -70,7 +75,7 @@ prosody:
     container_name: prosody
     entrypoint: /usr/local/bin/supervisord
     environment:
-        LSB_DOMAIN: "memoryoftheworld.org" 
+        LSB_DOMAIN: ${LSB_DOMAIN}
     ports:
         - "5222:5222"
     expose:
@@ -85,7 +90,6 @@ nginx:
     volumes:
       - ${MOTW_HOME}/letssharebooks/cache:/var/www/cache
       - ${RSYNC_DIRECTORY}/rzynk/:/var/www/rzynk/
-      - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/static_web/:/var/www/
       - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/docker_volumes/
     volumes_from:
         - php5

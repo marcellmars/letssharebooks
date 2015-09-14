@@ -1,9 +1,14 @@
 import local_env as G
 
 LSBM = '/letssharebooks/memoryoftheworld/'
-for i in ["docker-compose", "motw-compose", "lsb_domains", "calibre"]:
-    with open("{}{}{}_template.yml".format(G.MOTW_HOME, LSBM, i)) as f:
-        with open("{}{}{}.yml".format(G.MOTW_HOME, LSBM, i), "w") as g:
+FILES = [["docker-compose", ".yml"],
+         ["motw-compose", ".yml"],
+         ["calibre", ".yml"],
+         ["nginx/lsb_domains", ""]]
+
+for i in FILES:
+    with open("{}{}{}_template{}".format(G.MOTW_HOME, LSBM, i[0], i[1])) as f:
+        with open("{}{}{}{}".format(G.MOTW_HOME, LSBM, i[0], i[1]), "w") as g:
             g.write(f.read().replace('''${MOTW_HOME}''',
                                      G.MOTW_HOME)
                             .replace('''${MOTW_PERSISTENCE}''',

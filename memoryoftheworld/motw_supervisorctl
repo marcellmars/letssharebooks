@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ -z $1 ]
+   then
+   echo "### USAGE:"
+   echo "        \$ $0 DOCKER-NAME help"
+   exit
+fi
+
+docker exec $1 supervisorctl -s http://localhost:9001 $2

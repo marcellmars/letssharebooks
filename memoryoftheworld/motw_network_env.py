@@ -50,7 +50,7 @@ def get_docker_ids():
 
 def status():
     docker_ips = get_docker_ips()
-    docker_ids = get_docker_ids()
+    # docker_ids = get_docker_ids()
 
     dmsq = [l for l in open("/etc/dnsmasq.d/local", "r").readlines()
             if "address=/{}/".format(LSB_DOMAIN) in l]
@@ -61,7 +61,7 @@ def status():
     resolv_conf = [l for l in open("/etc/resolv.conf", "r").readlines()
                    if not "nameserver 127.0.0.1" in l]
 
-    print("- - - - -")
+    print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
     if dmsq and hosts and not resolv_conf:
         print("https://www.{} is set to LOCAL environment."
               .format(LSB_DOMAIN))
@@ -73,24 +73,26 @@ def status():
               .format(LSB_DOMAIN)),
         print("LOCAL nor REMOTE environment. Good luck!")
 
-    print("- - - - -")
-    print("               {1:<{0}}  {2} (ip)"
+    print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
+    print("                                    {1:>{0}} {2} (ip)"
           .format(ALIGN,
                   "host",
                   "172.17.42.1"))
+    print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
     docker_ips = sorted([(key, value) for (key, value) in docker_ips.items()])
     for ip in docker_ips:
         if ip[1] == "":
-            print("               {1:<{0}}  is not running !"
-                  .format(ALIGN,
+            print("!!! {1:>{0}}  is not running !!!"
+                  .format(ALIGN + 4,
                           ip[0][3:]))
             continue
-        print("sudo ./msenter {1:<{0}}  {2} (ip)  docker exec {3} (id)"
+        print("                                    {1:>{0}} {2} (ip)\n./motw_supervisorctl {1} status\ndocker exec -it {1} /bin/bash"
               .format(ALIGN,
                       ip[0][3:],
-                      ip[1],
-                      docker_ids[ip[0]][:8]))
+                      ip[1]))
+                      # docker_ids[ip[0]][:8]))
+        print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
 
 def set_local_env(local=True):
@@ -139,8 +141,8 @@ def set_local_env(local=True):
 
     hosts.append("{} {}\n".format(docker_ips['05 sshd'],
                                   LSB_DOMAIN))
-    hosts.append("{} rsync.{}\n".format(docker_ips['08 rsync'],
-                                        LSB_DOMAIN))
+    # hosts.append("{} rsync.{}\n".format(docker_ips['08 rsync'],
+    #                                     LSB_DOMAIN))
 
     open("/etc/hosts", "w").writelines(hosts)
 

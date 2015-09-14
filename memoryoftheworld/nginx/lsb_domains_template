@@ -15,6 +15,7 @@ server {
         root /var/www/tunnels/;
         error_page 404 /custom_tunnel.html;
         error_page 504 /custom_tunnel.html;
+        error_page 502 /custom_tunnel.html;
         location = /custom_tunnel.html {
                 internal;
         }

@@ -1,5 +1,5 @@
 calibre0:
-    build: calibre
+    build: calibre_docker
     entrypoint: /usr/local/bin/supervisord
     environment:
         DISPLAY: ":0"
@@ -10,7 +10,7 @@ calibre0:
     dns: 127.0.0.1
 
 calibre1:
-    build: calibre
+    build: calibre_docker
     entrypoint: /usr/local/bin/supervisord
     environment:
         DISPLAY: ":0"

@@ -118,6 +118,30 @@ server {
 }
 
 #-------------------------------------------------------------------------------
+#- cacert.pem if domain self-signed 
+
+server {
+        listen 80;
+        listen [::]:80;
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
+
+        server_name cert.${LSB_DOMAIN};
+
+        add_header Strict-Transport-Security max-age=31536000;
+
+        ssl_certificate /etc/ssl/certs/lsb_domain.crt;
+        ssl_certificate_key /etc/ssl/private/lsb_domain.key;
+
+        root /var/www/candy/;
+        access_log /var/log/nginx/cert.${LSB_DOMAIN}-access.log;
+        error_log /var/log/nginx/cert.${LSB_DOMAIN}-error.log;
+
+        rewrite ^(.*)$ /cacert.pem;
+
+}
+
+#-------------------------------------------------------------------------------
 #- jessica https subdomain used to pass parameters to logan
 
 server {

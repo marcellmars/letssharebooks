@@ -4,16 +4,14 @@
 import sleekxmpp
 import sys
 import pickle
-import time
 import requests
 import logging
 import os
+import subprocess
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger('create_xmpp_room')
 LOG.setLevel(logging.INFO)
-
-time.sleep(4)
 
 LSB_DOMAIN = os.getenv("LSB_DOMAIN") or 'memoryoftheworld.org'
 
@@ -31,6 +29,19 @@ hosts_lines.append("127.0.0.1 xmpp.{0} conference.{0} anon.{0}\n"
                    .format(LSB_DOMAIN))
 
 open("/etc/hosts", "w").writelines(hosts_lines)
+
+with open("/etc/dnsmasq.d/local", "w") as f:
+    config = "\n".join(["bind-interfaces",
+                        "listen-address=127.0.0.1",
+                        "server=172.17.42.1",
+                        "server=8.8.8.8",
+                        "address=/xmpp.{}/127.0.0.1".format(LSB_DOMAIN),
+                        "srv-host=_xmpp-client._tcp.xmpp.{0}, xmpp.{0},5222\n"
+                        .format(LSB_DOMAIN)])
+    f.write(config)
+
+d = subprocess.Popen(['supervisorctl', 'restart', 'dnsmasq'])
+d.communicate()
 
 #------------------------------------------------------------------------------
 

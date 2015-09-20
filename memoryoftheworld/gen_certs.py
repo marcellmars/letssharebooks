@@ -219,3 +219,5 @@ yes.kill()
 
 shutil.copyfile('{}/cacert.pem'.format(TEMP_OUTPUT),
                 'nginx/static_web/candy/cacert.pem')
+shutil.copyfile('{}/cacert.pem'.format(TEMP_OUTPUT),
+                '{}/{}_cacert.pem'.format(SECRETS, G.LSB_DOMAIN))

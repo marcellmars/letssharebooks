@@ -16,7 +16,6 @@ RUN pip install cherrypy \
                 jinja2 \
                 https://github.com/mongodb/mongo-python-driver/archive/3.0.1.tar.gz
 
-ADD dnsmasq.local /etc/dnsmasq.d/local
 ADD library.conf /etc/supervisor/conf.d/
 ADD get_tunnel_ports.conf /etc/supervisor/conf.d/
 ADD get_tunnel_ports.py /usr/local/bin/

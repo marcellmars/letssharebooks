@@ -37,5 +37,3 @@ ADD create_room.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/create_room.py
 ADD .password /usr/local/bin/
 ADD create_room.conf /etc/supervisor/conf.d/
-
-ADD dnsmasq.local /etc/dnsmasq.d/local

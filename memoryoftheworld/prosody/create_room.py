@@ -27,7 +27,7 @@ for host in hosts:
     if LSB_DOMAIN not in host:
         hosts_lines.append(host)
 
-hosts_lines.append("127.0.0.1 xmpp.{0} conference.{0}\n"
+hosts_lines.append("127.0.0.1 xmpp.{0} conference.{0} anon.{0}\n"
                    .format(LSB_DOMAIN))
 
 open("/etc/hosts", "w").writelines(hosts_lines)
@@ -38,7 +38,7 @@ open("/etc/hosts", "w").writelines(hosts_lines)
 class MUCBot(sleekxmpp.ClientXMPP):
     def __init__(self, jid, password, room, nick):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
-        self.base_url = "https://library.{}".format(LSB_DOMAIN)
+        self.base_url = "http://library:4321"
         self.room = room
         self.nick = nick
         self.add_event_handler("session_start", self.start)

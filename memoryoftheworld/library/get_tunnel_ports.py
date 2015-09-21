@@ -12,7 +12,6 @@ LSB_DOMAIN = os.getenv("LSB_DOMAIN") or 'memoryoftheworld.org'
 
 
 def check_tunnel_ports(ports):
-    print("socket ports: {}".format(ports))
     tp = []
     reqs = [grequests.get("http://www{}.{}/favicon.ico".format(port,
                                                                LSB_DOMAIN),
@@ -22,6 +21,7 @@ def check_tunnel_ports(ports):
         if i:
             if i.ok:
                 tp.append(ports[n])
+    print("GET TUNNEL ()PORTS CHECKED): {}".format(ports))
     return tp
 
 
@@ -35,7 +35,6 @@ def get_tunnel_ports():
     data = ""
     while True:
         rdata = s.recv(8192)
-        print("rdata: {}".format(rdata))
         if rdata:
             data += rdata
         else:

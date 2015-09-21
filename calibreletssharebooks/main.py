@@ -182,7 +182,6 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def serve_library(self, path):
         path = self.translate_path(path)
-        logger.debug("SERVE_LIBRARY PATH: {}".format(path))
         f = None
         self.gzip_on = None
         if os.path.isdir(path):
@@ -210,7 +209,9 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 tpath = os.path.join(self.server.html.portable_dir, cover_md5)
                 if not os.path.exists(tpath):
                     cover = QPixmap(path)
-                    cover_scaled = cover.scaled(255, 360, Qt.KeepAspectRatio)
+                    cover_scaled = cover.scaled(255, 360,
+                                                Qt.KeepAspectRatio,
+                                                Qt.SmoothTransformation)
                     cover_scaled.save(tpath)
                 path = tpath
 

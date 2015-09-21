@@ -14,7 +14,6 @@ RUN /usr/local/bin/build_calibre.sh
 
 ADD tgz/.config /root/.config/
 ADD calibre.conf /etc/supervisor/conf.d/
-ADD dnsmasq.local /etc/dnsmasq.d/local
 
 RUN pip install tailer
 ADD print_log.py /usr/local/bin/

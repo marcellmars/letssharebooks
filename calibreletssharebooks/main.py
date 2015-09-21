@@ -207,11 +207,13 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 cover_md5 = "{}.jpg".format(hashlib.md5(open(path, 'rb')
                                                         .read())
                                             .hexdigest())
-                path = os.path.join(self.server.html.portable_dir, cover_md5)
-                if not os.path.exists(path):
+                tpath = os.path.join(self.server.html.portable_dir, cover_md5)
+                if not os.path.exists(tpath):
                     cover = QPixmap(path)
                     cover_scaled = cover.scaled(255, 360, Qt.KeepAspectRatio)
-                    cover_scaled.save(path)
+                    cover_scaled.save(tpath)
+                path = tpath
+
             f = open(path, 'rb')
 
         except IOError:

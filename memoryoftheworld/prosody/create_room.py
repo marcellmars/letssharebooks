@@ -49,7 +49,6 @@ d.communicate()
 class MUCBot(sleekxmpp.ClientXMPP):
     def __init__(self, jid, password, room, nick):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
-        self.base_url = "http://library:4321"
         self.room = room
         self.nick = nick
         self.add_event_handler("session_start", self.start)
@@ -62,13 +61,11 @@ class MUCBot(sleekxmpp.ClientXMPP):
         welcome = "Dear {}, welcome to the 'Ask a librarian' chat room.\n"\
             .format(nick.title())
         welcome += "Browse and share your public library collection at:\n"
-        welcome += "{}/#librarian={}".format(self.base_url,
-                                             nick.title().replace(" ", "+"))
+        welcome += "https://library.{}/#librarian={}".format(LSB_DOMAIN,
+                                                             nick.title().replace(" ", "+"))
 
         try:
-            nicks = requests.get("{}/get_active_librarians"
-                                 .format(self.base_url),
-                                 verify=False)
+            nicks = requests.get("http://library:4321/get_active_librarians")
             if nicks.ok:
                 nicks = nicks.json()['librarians']
             else:

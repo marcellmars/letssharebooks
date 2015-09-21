@@ -26,6 +26,7 @@ import mimetypes
 import operator
 import threading
 import cgi
+import hashlib
 
 try:
     from PyQt4 import QtWebKit
@@ -202,7 +203,17 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             # Always read in binary mode. Opening files in text mode may cause
             # newline translations, making the actual size of the content
             # transmitted *less* than the content-length!
+            if path.endswith("cover.jpg"):
+                cover_md5 = "{}.jpg".format(hashlib.md5(open(path, 'rb')
+                                                        .read())
+                                            .hexdigest())
+                path = os.path.join(self.server.html.portable_dir, cover_md5)
+                if not os.path.exists(path):
+                    cover = QPixmap(path)
+                    cover_scaled = cover.scaled(255, 360, Qt.KeepAspectRatio)
+                    cover_scaled.save(path)
             f = open(path, 'rb')
+
         except IOError:
             self.send_error(404, 'File not found')
             self.connection.close()
@@ -1055,6 +1066,7 @@ class LetsShareBooksDialog(QDialog):
         #- and serving the books via ssh tunnel  ------------------------------
         self.import_server = ThreadedServer(56665)
         self.import_server.httpd.html.web_signal.connect(self.http_import)
+        self.import_server.httpd.html.portable_dir = self.us.portable_directory
         self.import_server.start()
 
         #----------------------------------------------------------------------

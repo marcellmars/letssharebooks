@@ -8,10 +8,12 @@ MAINTAINER Marcell Mars "https://github.com/marcellmars"
 RUN apt-get update
 RUN apt-get -y install iproute \
                        build-essential \
-                       python-dev python-lxml
+                       python-dev python-lxml \
+                       git
 
 RUN pip install cherrypy \
                 requests \
+                git+https://github.com/kennethreitz/grequests.git \
                 simplejson \
                 jinja2 \
                 https://github.com/mongodb/mongo-python-driver/archive/3.0.1.tar.gz

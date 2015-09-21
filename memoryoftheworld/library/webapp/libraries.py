@@ -79,7 +79,7 @@ def get_active_tunnels():
     Returns list of active tunnels used by the get_books function
     '''
     try:
-        return pickle.load(open('/tmp/active_tunnel_ports', 'rb'))[0]
+        return pickle.load(open('/tmp/active_tunnel_ports', 'rb'))
     except:
         return []
 
@@ -414,22 +414,30 @@ def get_active_ports():
     s.connect(('sshd', 3773))
     s.send(json.dumps(data))
     ports = []
-    while 1:
+    data = ""
+    while True:
         rdata = s.recv(8192)
+        print("rdata: {}".format(rdata))
         if rdata:
-            ports.append(json.loads(rdata))
+            data += rdata
         else:
+            try:
+                data = json.loads(data)
+                ports = list(data)
+            except Exception as e:
+                print("Exception: {}\ndata, rdata: {}, {}".format(e,
+                                                                  data,
+                                                                  rdata))
             break
     s.close()
-    print(ports, get_active_tunnels())
-    return ports[0]
+    return ports
 
 
 def get_active_librarians(db):
     time.sleep(0.5)
     active_catalogs = db.catalog.find(
         {'$or': [
-            {'tunnel': {'$in': [int(p) for p in get_active_ports()]}},
+            {'tunnel': {'$in': [p for p in get_active_ports()]}},
             {'portable': True}]})
     librarians = active_catalogs.distinct('librarian')
     #print([c['librarian'] for c in active_catalogs], librarians)

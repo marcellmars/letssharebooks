@@ -33,7 +33,8 @@ except:
 try:
     prefs.defaults['librarian']
 except:
-    prefs.defaults['librarian'] = u''
+    prefs.defaults['librarian'] = {'name': u'',
+                                   'saved': False}
 
 
 class ConfigWidget(QWidget):
@@ -68,7 +69,7 @@ class ConfigWidget(QWidget):
         self.lll.addWidget(self.librarian_label)
 
         self.librarian = QLineEdit(self)
-        self.librarian.setText(prefs['librarian'])
+        self.librarian.setText(prefs['librarian']['name'])
         self.lll.addWidget(self.librarian)
         self.librarian_label.setBuddy(self.librarian)
         self.l.addLayout(self.lll)
@@ -86,5 +87,5 @@ class ConfigWidget(QWidget):
     def save_settings(self):
         prefs['lsb_server'] = unicode(self.lsb_server.text())
         prefs['server_prefix'] = unicode(self.server_prefix.text())
-        prefs['librarian'] = unicode(self.librarian.text())
+        prefs['librarian']['name'] = unicode(self.librarian.text())
         prefs['library_uuid'] = prefs['library_uuid']

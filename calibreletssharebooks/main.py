@@ -362,7 +362,7 @@ class MetadataLibThread(QThread):
         self.n_bulk = 37
         self.portable = portable
 
-    def get_book_metadata(self, current_db, librarian):
+    def get_book_metadata(self, current_db):
         self.get_directory_path()
         books = []
         books_ids = current_db.all_book_ids()
@@ -395,7 +395,7 @@ class MetadataLibThread(QThread):
                 mi.set("last_modified", utcnow().isoformat())
                 continue
 
-            b['librarian'] = librarian
+            b['librarian'] = prefs['librarian']['name']
 
             b['uuid'] = encrypt_uid(prefs['library_uuid'],
                                     str(md_fields.uuid))
@@ -473,7 +473,6 @@ class MetadataLibThread(QThread):
             books.append(b)
 
         books.append(set(all_book_ids))
-        books.append(librarian)
         return books
 
     def get_server_list(self, uuid4):
@@ -526,14 +525,14 @@ class MetadataLibThread(QThread):
 
         return removed_books, added_books
 
-    def make_portable(self, books_metadata, librarian):
+    def make_portable(self, books_metadata):
         #----------------------------------------------------------------------
         #- prepare BROWSE_LIBRARY.html for portable library in the root -------
         #- directory of current library ---------------------------------------
         from calibre.utils.date import utcnow
         self.library = {}
         self.library['last_modified'] = utcnow().isoformat()
-        self.library['librarian'] = librarian
+        self.library['librarian'] = prefs['librarian']['name']
 
         if not books_metadata:
             return
@@ -629,8 +628,10 @@ class MetadataLibThread(QThread):
                 self.upload_error.emit()
                 return
 
-    def upload_library(self, books_metadata, removed_books, added_books,
-                       librarian, all_book_ids):
+    def upload_library(self, books_metadata,
+                       removed_books,
+                       added_books,
+                       all_book_ids):
         try:
             import zlib
             mode = zipfile.ZIP_DEFLATED
@@ -663,33 +664,33 @@ class MetadataLibThread(QThread):
             shutil.rmtree(os.path.join(self.us.portable_directory, 'json'))
 
             if again:
-                books_metadata = self.get_book_metadata(self.get_current_db(),
-                                                        self.us.librarian)
-                librarian = books_metadata.pop()
+                books_metadata = self.get_book_metadata(self.get_current_db())
                 all_book_ids = books_metadata.pop()
-                self.make_portable(books_metadata, librarian)
+                self.make_portable(books_metadata)
                 self.start_library = self.directory_path
                 removed_books, added_books = self.intersect(books_metadata)
-                self.upload_library(books_metadata, removed_books, added_books,
-                                    librarian, all_book_ids)
+                self.upload_library(books_metadata,
+                                    removed_books,
+                                    added_books,
+                                    all_book_ids)
             else:
                 self.uploaded.emit()
 
     def run(self):
         #books_metadata = get_lsb_metadata(self.get_directory_path(),
         #                                  prefs['librarian'])
-        books_metadata = self.get_book_metadata(self.get_current_db(),
-                                                self.us.librarian)
-        librarian = books_metadata.pop()
+        books_metadata = self.get_book_metadata(self.get_current_db())
         all_book_ids = books_metadata.pop()
-        self.make_portable(books_metadata, librarian)
+        self.make_portable(books_metadata)
         if self.portable:
             return
 
         self.start_library = self.directory_path
         removed_books, added_books = self.intersect(books_metadata)
-        self.upload_library(books_metadata, removed_books, added_books,
-                            librarian, all_book_ids)
+        self.upload_library(books_metadata,
+                            removed_books,
+                            added_books,
+                            all_book_ids)
         return
 
 #------------------------------------------------------------------------------
@@ -771,11 +772,9 @@ class LetsShareBooksDialog(QDialog):
         self.lsb_url = 'nourl'
 
         #- check if librarian wants to save her name --------------------------
-
-        if prefs['librarian'] == '':
-            self.us.librarian = get_libranon()
-        else:
-            self.us.librarian = prefs['librarian']
+        logger.info("LIBRARIAN_SAVED: {}".format(prefs['librarian']))
+        if not prefs['librarian']['saved']:
+            prefs['librarian']['name'] = get_libranon()
 
         self.metadata_thread = MetadataLibThread(self.us)
         self.check_connection = ConnectionCheck()
@@ -922,7 +921,7 @@ class LetsShareBooksDialog(QDialog):
         self.edit.setObjectName("edit")
         self.edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.edit.setToolTip("Change your librarian name")
-        self.edit.setText(self.us.librarian)
+        self.edit.setText(prefs['librarian']['name'])
 
         self.save_libranon = QPushButton(" Save ")
         self.save_libranon.setSizePolicy(QSizePolicy.Maximum,
@@ -1189,7 +1188,6 @@ class LetsShareBooksDialog(QDialog):
     #--------------------------------------------------------------------------
 
     def sync_metadata(self, what="library_changed", portable=False):
-        self.us.librarian = self.edit.text()
         if self.metadata_thread.isRunning():
             if what == "library_changed":
                 self.metadata_thread.get_directory_path()
@@ -1417,16 +1415,16 @@ class LetsShareBooksDialog(QDialog):
         self.label.setText(prefs['lsb_server'])
 
     def new_librarian(self):
-        prefs['librarian'] = u""
-        self.us.librarian = get_libranon()
-        self.edit.setText(self.us.librarian)
+        prefs['librarian']['saved'] = False
+        prefs['librarian']['name'] = get_libranon()
+        self.edit.setText(prefs['librarian']['name'])
 
     def edit_librarian(self):
         self.edit.selectAll()
 
     def save_librarian(self):
-        prefs['librarian'] = self.edit.text()
-        self.us.librarian = prefs['librarian']
+        prefs['librarian']['name'] = self.edit.text()
+        prefs['librarian']['saved'] = True
 
     def open_url(self, url):
         if type(url) != unicode:

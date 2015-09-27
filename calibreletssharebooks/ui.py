@@ -4,7 +4,6 @@ from __future__ import (unicode_literals, division, absolute_import,
 import urllib2
 import tempfile
 import os
-import sys
 import shutil
 import datetime
 
@@ -21,7 +20,7 @@ except ImportError:
                           QObject,
                           pyqtSignal)
 
-
+from calibre_plugins.letssharebooks.config import prefs
 from calibre.gui2.actions import InterfaceAction
 from calibre_plugins.letssharebooks.main import LetsShareBooksDialog
 from calibre_plugins.letssharebooks.common_utils import set_plugin_icon_resources, get_icon
@@ -32,13 +31,11 @@ __copyright__ = '2013, Marcell Mars <ki.ber@kom.uni.st>'
 __docformat__ = 'restructuredtext en'
 
 if False:
-
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks.ui', disabled=False)
-
+# from calibre_plugins.letssharebooks.my_logger import get_logger
+# logger = get_logger('letssharebooks.ui', disabled=False)
 #-----------------------------------------------------------------------------
 
 
@@ -107,7 +104,8 @@ class LetsShareBooksUI(InterfaceAction):
     name = "[let's share books]"
     action_spec = ("[let's share books]",
                    'images/icon.png',
-                   'Share your library at https://library.memoryoftheworld.org',
+                   'Share your library at https://library.{}'
+                   .format(prefs['lsb_server']),
                    None)
     action_add_menu = True
 
@@ -133,7 +131,6 @@ class LetsShareBooksUI(InterfaceAction):
                                  'portable/bootstrap/fonts'))
 
         for resource in res.keys():
-            logger.debug("RESOURCES: {}".format(resource))
             if resource == "portable/libraries.js":
                 lib_lines = res[resource].split(os.linesep)
                 lib_lines.insert(4, "var PORTABLE = true;{}".format(os.linesep))
@@ -164,7 +161,7 @@ class LetsShareBooksUI(InterfaceAction):
         print("library_change: {}".format(db.library_id))
 
     def apply_settings(self):
-        from calibre_plugins.letssharebooks.config import prefs
+        # logger.info("PREFS: {}".format(prefs))
         prefs
 
     def shutting_down(self):

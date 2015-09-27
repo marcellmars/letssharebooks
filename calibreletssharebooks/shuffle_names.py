@@ -1,20 +1,48 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import (unicode_literals, division, absolute_import,
+                        print_function)
+
 import random
 import string
 import base64
 import uuid
 from calibre_plugins.letssharebooks import pyaes
+from calibre_plugins.letssharebooks import requests
+
+#- set up logging -------------------------------------------------------------
+from calibre_plugins.letssharebooks.my_logger import get_logger
+logger = get_logger('letssharebooks', disabled=False)
 
 
-def get_libranon(middle=False):
-    if middle:
-        return u"{} {} {}".format(string.capwords(random.choice(first_names)),
-                                  string.capwords(random.choice(first_names)),
-                                  string.capwords(random.choice(last_names)))
-    else:
-        return u"{} {}".format(string.capwords(random.choice(first_names)),
-                               string.capwords(random.choice(last_names)))
+def get_libranon(server_prefix, lsb_server, n=0, libranon=False):
+    if not libranon:
+        libranon = u"{} {}".format(string.capwords(random.choice(first_names)),
+                                   string.capwords(random.choice(last_names)))
+    if n > 2:
+        logger.info("LIBRANON + N: {} {}".format(libranon, n))
+        return libranon
+
+    try:
+        r = requests.get("{}://library.{}/get_active_librarians".format(
+            server_prefix,
+            lsb_server),
+                         timeout=2,
+                         verify=False)
+        if r.ok:
+            req = r.json()
+            if 'librarians' in req:
+                logger.info("LIBRANON & ACTIVE LIBRARIANS: {} {}; n={}"
+                            .format(libranon,
+                                    str(req['librarians']),
+                                    n))
+
+                if libranon not in req['librarians']:
+                    return libranon
+
+    except requests.exceptions.RequestException as e:
+        logger.info("EXCEPTION_GET_LIBRANON: {}".format(e))
+    return get_libranon(server_prefix, lsb_server, n+1)
 
 
 def encrypt_uid(uid, key):

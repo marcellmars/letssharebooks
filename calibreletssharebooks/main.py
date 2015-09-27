@@ -87,7 +87,7 @@ except ImportError:
     QT_RUNNING = 5
 
 from calibre_plugins.letssharebooks.common_utils import get_icon
-from calibre_plugins.letssharebooks.config import prefs
+from calibre_plugins.letssharebooks.config import prefs, ConfigWidget
 from calibre_plugins.letssharebooks import requests
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
@@ -759,6 +759,38 @@ class LetsShareBooksDialog(QDialog):
         self.us = us
         logger.info('REDIRECTED DEBUG OUTPUT: \n\ntail -f {}/log/lsb.log\n'
                     .format(self.us.portable_directory))
+
+        if not prefs:
+            #- this is most probably initial run of a plugin ------------------
+            #- or someone deleted .json config file ---------------------------
+            ConfigWidget().save_settings()
+            libranon = get_libranon(prefs['server_prefix'],
+                                    prefs['lsb_server'])
+            logger.info("LIBRANON IN RETURN: {}".format(libranon))
+            prefs['librarian'] = {'name': libranon,
+                                  'saved': False}
+
+        elif 'librarian' in prefs:
+            if 'saved' not in prefs['librarian']:
+                logger.info("SAVED NOT IN PREFS!")
+                #- if config file is from the earlier version -----------------
+                #- of plugin without 'saved' parameter ------------------------
+                if prefs['librarian'] != '':
+                    #- and if librarian name was saved ------------------------
+                    #- by not being empty string ------------------------------
+                    old_librarian = prefs['librarian']
+                    if type(old_librarian) is str:
+                        prefs['librarian'] = {'name': old_librarian,
+                                              'saved': True}
+                else:
+                    prefs['librarian'] = {'name': get_libranon(prefs['server_prefix'],
+                                                               prefs['lsb_server']),
+                                          'saved': False}
+            elif prefs['librarian']['saved'] is False:
+                prefs['librarian'] = {'name': get_libranon(prefs['server_prefix'],
+                                                           prefs['lsb_server']),
+                                      'saved': False}
+
         self.files_size_log = {}
         self.book_imports = {}
         self.threads_pool = []
@@ -770,11 +802,6 @@ class LetsShareBooksDialog(QDialog):
         self.url_label_tooltip = '<<<< Be a librarian.'\
                                  'Click on Start sharing button.<<<<'
         self.lsb_url = 'nourl'
-
-        #- check if librarian wants to save her name --------------------------
-        logger.info("LIBRARIAN_SAVED: {}".format(prefs['librarian']))
-        if not prefs['librarian']['saved']:
-            prefs['librarian']['name'] = get_libranon()
 
         self.metadata_thread = MetadataLibThread(self.us)
         self.check_connection = ConnectionCheck()
@@ -1018,11 +1045,11 @@ class LetsShareBooksDialog(QDialog):
         netaccman = self.webview.page().networkAccessManager()
         netaccman.sslErrors.connect(self.sslErrorHandler)
 
-        config = QSslConfiguration.defaultConfiguration()
-        certs = config.caCertificates()
+        ssl_config = QSslConfiguration.defaultConfiguration()
+        certs = ssl_config.caCertificates()
 
         certs.append(QSslCertificate(QFile("portable/ca-bundle.crt")))
-        config.setCaCertificates(certs)
+        ssl_config.setCaCertificates(certs)
 
         self.ll.addWidget(self.webview)
 
@@ -1119,8 +1146,9 @@ class LetsShareBooksDialog(QDialog):
         self.url_label_clicked = QState()
         self.url_label_clicked.setObjectName("url_label_clicked")
         self.url_label_clicked.entered.connect(
-            lambda: self.open_url("{}://library.{}".format(prefs['server_prefix'],
-                                                           prefs['lsb_server'])))
+            lambda: self.open_url("{}://library.{}"
+                                  .format(prefs['server_prefix'],
+                                          prefs['lsb_server'])))
         self.url_label_clicked.entered.connect(
             lambda: self.log_message("URL_LABEL_CLICKED"))
 
@@ -1188,6 +1216,17 @@ class LetsShareBooksDialog(QDialog):
     #--------------------------------------------------------------------------
 
     def sync_metadata(self, what="library_changed", portable=False):
+        if not portable:
+            librarian = get_libranon(prefs['server_prefix'],
+                                     prefs['lsb_server'],
+                                     libranon=self.edit.text())
+            if librarian == self.edit.text():
+                prefs['librarian']['name'] = self.edit.text()
+            else:
+                self.edit.setText("Please, find the new name.")
+                self.edit_librarian()
+                return
+
         if self.metadata_thread.isRunning():
             if what == "library_changed":
                 self.metadata_thread.get_directory_path()
@@ -1410,21 +1449,31 @@ class LetsShareBooksDialog(QDialog):
                              .format(self.parse_log_counter))
                 parse_log()
 
-    def config(self):
-        self.do_user_config(parent=self)
-        self.label.setText(prefs['lsb_server'])
+    # def config(self):
+    #     logger.info("DOES THIS EVER HAPPEN? CONFIG...")
+    #     self.do_user_config(parent=self)
+    #     self.label.setText(prefs['lsb_server'])
 
     def new_librarian(self):
-        prefs['librarian']['saved'] = False
-        prefs['librarian']['name'] = get_libranon()
+        prefs['librarian'] = {'name': get_libranon(prefs['server_prefix'],
+                                                   prefs['lsb_server']),
+                              'saved': False}
         self.edit.setText(prefs['librarian']['name'])
 
     def edit_librarian(self):
         self.edit.selectAll()
 
     def save_librarian(self):
-        prefs['librarian']['name'] = self.edit.text()
-        prefs['librarian']['saved'] = True
+        librarian = get_libranon(prefs['server_prefix'],
+                                 prefs['lsb_server'],
+                                 libranon=self.edit.text())
+
+        if librarian == self.edit.text():
+            prefs['librarian'] = {'name': librarian,
+                                  'saved': True}
+        else:
+            self.edit.setText("Please, find the new name.")
+            self.edit_librarian()
 
     def open_url(self, url):
         if type(url) != unicode:

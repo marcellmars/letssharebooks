@@ -5,6 +5,7 @@ import local_env as G
 LSBM = '/letssharebooks/memoryoftheworld/'
 FILES = [["docker-compose", ".yml"],
          ["motw-compose", ".yml"],
+         ["motw-wordpress", ".yml"],
          ["calibre_docker", ".yml"],
          ["nginx/lsb_domains", ""],
          ["nginx/static_web/candy/index", ".html"],
@@ -21,6 +22,10 @@ for i in FILES:
                                      G.MOTW_HOME)
                             .replace('''${MOTW_PERSISTENCE}''',
                                      G.MOTW_PERSISTENCE)
+                            .replace('''${MOTW_PASS}''',
+                                     G.MOTW_PASS)
+                            .replace('''${MOTW_USER}''',
+                                     G.MOTW_USER)
                             .replace('''${MOTW_WORDPRESS_HOME}''',
                                      G.MOTW_WORDPRESS_HOME)
                             .replace('''${RSYNC_DIRECTORY}''',

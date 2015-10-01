@@ -22,10 +22,10 @@ for i in FILES:
                                      G.MOTW_HOME)
                             .replace('''${MOTW_PERSISTENCE}''',
                                      G.MOTW_PERSISTENCE)
-                            .replace('''${MOTW_PASS}''',
-                                     G.MOTW_PASS)
-                            .replace('''${MOTW_USER}''',
-                                     G.MOTW_USER)
+                            .replace('''${MYSQL_PASS}''',
+                                     G.MYSQL_PASS)
+                            .replace('''${MYSQL_USER}''',
+                                     G.MYSQL_USER)
                             .replace('''${MOTW_WORDPRESS_HOME}''',
                                      G.MOTW_WORDPRESS_HOME)
                             .replace('''${RSYNC_DIRECTORY}''',

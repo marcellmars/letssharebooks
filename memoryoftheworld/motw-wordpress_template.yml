@@ -4,7 +4,7 @@ db:
   environment:
     MYSQL_PASS: "${MYSQL_PASS}"
     MYSQL_USER: "${MYSQL_USER}"
-    #STARTUP_SQL: "/tmp/db/startup.sql"
+    # STARTUP_SQL: "/tmp/db/startup.sql"
   volumes:
     - /tmp/db/:/tmp/db/
     - ${MOTW_PERSISTENCE}/mysql/:/var/lib/mysql/

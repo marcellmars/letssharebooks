@@ -1236,6 +1236,7 @@ class LetsShareBooksDialog(QDialog):
                 return
         else:
             if portable:
+                prefs['librarian']['name'] = self.edit.text()
                 self.metadata_thread = MetadataLibThread(self.us, True)
             else:
                 self.metadata_thread = MetadataLibThread(self.us)

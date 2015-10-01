@@ -67,16 +67,17 @@ nginx:
       - ${MOTW_HOME}/letssharebooks/cache:/var/www/cache
       - ${RSYNC_DIRECTORY}/rzynk/:/var/www/rzynk/
       - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/docker_volumes/
-    volumes_from:
-        - php5
+      - ${MOTW_WORDPRESS_HOME}/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
     ports:
-        - "80:80"
-        - "443:443"
+      - "80:80"
+      - "443:443"
     links:
-        - sshd
-        - library
-        - prosody
+      - sshd
+      - library
+      - prosody
     external_links:
-        - php5
-        - db
+      - php5
+      - db
+    volumes_from:
+      - php5
     dns: 127.0.0.1

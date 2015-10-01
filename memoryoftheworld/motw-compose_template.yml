@@ -57,6 +57,8 @@ prosody:
     expose:
         - "5280"
         - "5281"
+    links:
+        - library
     dns: 127.0.0.1
 
 nginx:

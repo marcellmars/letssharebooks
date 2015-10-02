@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sqlite3, os
+import sqlite3
+import os
 
 #- set up logging -------------------------------------------------------------
 #from calibre_plugins.letssharebooks.my_logger import get_logger

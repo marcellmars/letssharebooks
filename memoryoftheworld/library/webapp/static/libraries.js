@@ -192,16 +192,28 @@ var ui = {
             ui.render_page();
             nav.push_to_history();
         };
+
         // this event will fire when 'back' button is pressed
         $(window).bind('hashchange', function(e) {
             var state = window.location.hash.substr(1);
             // don't push now to state
             nav.handle_hash_state(state, false);
         });
+        
         // setup autocomplete
         $.getJSON('autocomplete', {}).done(function(data) {
             if (data === null) {return;}
             STATE.autocomplete = data;
+            // populate librarians dropdown
+            if (data['librarians'].length > 1) {
+                $('#librarian').append(['<option value="" selected>',
+                                        String(data['librarians'].length),
+                                        ' librarians online</option>'].join(''));
+            } 
+            $.each(data['librarians'], function(index, item) {
+                $('#librarian').append(['<option value="', item, '">', item, '</option>'].join(''));
+            });
+            self.update_toolbar();
             self.change_autocomplete();
         });
     },
@@ -241,8 +253,6 @@ var ui = {
         } else {
             nav.enable_load_more();
         };
-        // update ui
-        self.update_toolbar(data);
         this.setup_modal();
         if (!is_this_portable()) {
             // mark books that were authored by the one of the authors of the
@@ -281,6 +291,8 @@ var ui = {
             var book_uuid = data['books'][book_index].uuid;
             $('.cover h2 [rel="' + book_uuid  +  '"].more_about').click();
         };
+        // update ui
+        self.update_toolbar();
         // init all tooltips
         $('[data-toggle="tooltip"]').tooltip();
     },
@@ -318,38 +330,26 @@ var ui = {
     },
 
     //
-    // sets up toolbar functionalities
+    // update toolbar data
     //
-    'update_toolbar': function(data) {
+    'update_toolbar': function() {
+        var cached = STATE.autocomplete;
+        if(cached === undefined) {return;}
+        
         // update total number of books in the header
-        $.getJSON('status?callback=?').done(function(data) {
-            if (data.num_of_books > 0) {
-                $('#num-books').text( data.num_of_books + ' books, ' + $('.cover').length + " shown");
-            } else {
-                $('#num-books').text('no books');
-            };
-        });
+        if (cached.num_books > 0) {
+            $('#num-books').text(cached.num_books + ' books, ' + $('.cover').length + ' shown');
+        } else {
+            $('#num-books').text('no books');
+        };
 
-        $('#librarian').empty();
-        if (data['librarians'].length > 1) {
-            $('#librarian').append(['<option value="" selected>',
-                                    String(data['librarians'].length),
-                                    ' librarians online</option>'].join(''));
-        } 
-        $.each(data['librarians'], function(index, item) {
-            $('#librarian').append(['<option value="',
-                                    item,
-                                    '"',
-                                    '>',
-                                    item,
-                                    '</option>'].join('')); 
-        });
+        // populate librarians dropdown 
         if (STATE.query.librarian) {
             $('#librarian').val(STATE.query.librarian);
-        } else if (data['librarians'].length == 1 ) {
+        } else if (cached.librarians.length == 1 ) {
             if (is_this_portable()) {
                 // if single librarian then update dropdown and title page
-                var librarian = data['librarians'][0];
+                var librarian = cached.librarians[0];
                 var sufix = "'s Library";
                 $('#librarian').val(librarian);
                 if ($.inArray(librarian.slice(-1), ['s', 'z']) >= 0) {
@@ -357,7 +357,7 @@ var ui = {
                 };
                 document.title = librarian + sufix;
             } else {
-                $('#librarian').val(data['librarians'][0]);
+                $('#librarian').val(cached.librarians[0]);
             };
         };
     },

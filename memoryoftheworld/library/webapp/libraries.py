@@ -377,10 +377,9 @@ def get_books(db, last_id, query={}):
     LOG.debug('>>> Active_tunnels: {}'.format(active_tunnels))
     active_catalogs = db.catalog.find(
         {'$or': [
-            {'tunnel': {'$in': active_tunnels}},
+            {'tunnel':   {'$in': active_tunnels}},
             {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
-    librarians = active_catalogs.distinct('librarian')
 
     # infinite scroll query part
     if last_id:
@@ -399,7 +398,7 @@ def get_books(db, last_id, query={}):
         current_last_id = str(books[len(books) - 1]['_id'])
     return utils.ser2json({'books': books,
                            'last_id': current_last_id,
-                           'librarians': librarians})
+                           })
 
 #------------------------------------------------------------------------------
 #- get_active_ports() is called after url/get_active_librarians
@@ -489,11 +488,13 @@ def calculate_autocomplete(db):
     for book in dbb:
         tags.update(book.get('tags'))
     db.autocomplete.drop()
-    db.autocomplete.insert(
-        {'authors': dbb.distinct('authors'),
-         'titles': dbb.distinct('title'),
-         'tags': list(tags),
-         'librarians': active_catalogs.distinct('librarian')})
+    db.autocomplete.insert({
+            'authors': dbb.distinct('authors'),
+            'titles': dbb.distinct('title'),
+            'tags': list(tags),
+            'librarians': active_catalogs.distinct('librarian'),
+            'num_books': dbb.count()
+            })
 
 #------------------------------------------------------------------------------
 # PORTABLE management

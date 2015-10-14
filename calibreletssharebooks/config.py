@@ -35,7 +35,7 @@ logger = get_logger('letssharebooks', disabled=False)
 # You should always prefix your config file name with plugins/,
 # so as to ensure you dont accidentally clobber a calibre config file
 
-prefs = JSONConfig('plugins/letssharebooks.conf')
+prefs = JSONConfig('plugins/letssharebooks4.conf')
 
 # Set defaults
 prefs.defaults['server_prefix'] = 'https'

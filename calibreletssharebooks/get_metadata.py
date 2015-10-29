@@ -5,7 +5,7 @@ import os
 
 #- set up logging -------------------------------------------------------------
 #from calibre_plugins.letssharebooks.my_logger import get_logger
-#logger = get_logger('letssharebooks', disabled=False)
+#logger = get_logger('letssharebooks', disabled=True)
 
 #------------------------------------------------------------------------------
 

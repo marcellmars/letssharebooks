@@ -550,7 +550,8 @@ class MetadataLibThread(QThread):
             self.library['portable_url'] = False
             self.library['books'] = {}
             self.library['books']['remove'] = []
-            self.library['books']['add'] = sorted(books_metadata, key=operator.itemgetter('uuid'))
+            self.library['books']['add'] = sorted(books_metadata,
+                                                  key=operator.itemgetter('uuid'))
             json_string = json.dumps(self.library)
             file.write("LIBRARY = {};".format(json_string))
         try:

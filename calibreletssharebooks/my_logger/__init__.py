@@ -4,6 +4,7 @@ from logging import handlers
 
 FORMATTER = '%(asctime)s: %(filename)s >> %(levelname)s - %(message)s'
 
+
 def get_logger(name, level=logging.DEBUG, disabled=True,
                file_prefix='debug', formatter=FORMATTER):
 

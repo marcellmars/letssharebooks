@@ -10,7 +10,7 @@ Great.
 
 If not, you should use Calibre plugin:
 
-> http://www.memoryoftheworld.org/tools
+> https://www.memoryoftheworld.org/blog/cat/tools/
 
 
 Simple (old way)

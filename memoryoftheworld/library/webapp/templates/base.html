@@ -27,6 +27,11 @@
   <script type="text/x-template" id="external-link-tmpl">
     <a href="<%= href %>" target="_blank"><%= text %></a>
   </script>
+  <script type="text/x-template" id="search-properties-tmpl">
+    <% for( var i = 0; i < properties.length; i++ ) { %>
+      <option value="<%= properties[i].field %>"><%= properties[i].text %></option>
+    <% } %>
+  </script>
   {% block templates %}{% endblock %}
   <script type="application/javascript" src="/static/underscore-min.js"></script>
   <script type="application/javascript" src="/static/jquery-1.10.2.min.js"></script>

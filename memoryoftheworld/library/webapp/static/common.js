@@ -19,6 +19,8 @@ var common = {
             _.template($('#import-modal-tmpl').text().trim()),
         'external_link':
             _.template($('#external-link-tmpl').text().trim()),
+        'search_properties':
+            _.template($('#search-properties-tmpl').text().trim()),
     },
 
     //
@@ -33,6 +35,17 @@ var common = {
         'header': {
             'link': {'text': 'MEMORY OF THE WORLD',
                      'href': 'https://www.memoryoftheworld.org'},
+            
+            'search': {
+                'properties': [
+                    {'text': 'Author', 'field': 'authors'},
+                    {'text': 'Title', 'field': 'title'},
+                    {'text': 'Tag', 'field': 'tags'},
+                    {'text': 'Date', 'field': 'pubdate'},
+                    {'text': 'Format', 'field': 'formats'},
+                    {'text': 'All metadata', 'field': 'all'},
+                    ]
+            }
         },
         
         // book permalink page
@@ -115,9 +128,11 @@ var common = {
     //
     'init_custom': function() {
         // external link definition
-        var external_link = common.templates.external_link(
-            common.layout.header.link);
-        $('#external-link').append(external_link);
+        $('#external-link').append(common.templates.external_link(
+            common.layout.header.link));
+        // search
+        $('#search-form #property').append(common.templates.search_properties(
+            common.layout.header.search));
     },
 
     //

@@ -15,6 +15,7 @@ import json
 import time
 import logging
 from bson.objectid import ObjectId
+from datetime import datetime
 
 #------------------------------------------------------------------------------
 
@@ -358,10 +359,24 @@ def get_books(db, last_id, query={}):
     q_text = query.get('text')
     q_property = query.get('property', 'all')
     if q_text:
-        words = q_text.encode('utf-8').split(' ')
-        match_pattern = {'$regex': '.*'.join(words), '$options': 'i'}
+        q_words = q_text.encode('utf-8').split(' ')
+        match_pattern = {'$regex': '.*'.join(q_words), '$options': 'i'}
+
         if q_property in ['authors', 'title', 'tags']:
             q[q_property] = match_pattern
+
+        elif q_property == 'pubdate':
+            # validate entered date, but query as string
+            try:
+                _date = datetime.strptime(q_text, '%Y-%m-%d')
+                q[q_property] = {'$regex': '^{}.*'.format(q_text),
+                                 '$options': 'i'}
+            except Exception as e:
+                LOG.error('invalid date: {}'.format(q_text))
+
+        elif q_property == 'formats':
+            q[q_property] = {'$all': [i.upper() for i in q_words]}
+
         else:
             q = {"$or": [{'title': match_pattern},
                          {'authors': match_pattern},

@@ -499,19 +499,24 @@ def calculate_autocomplete(db):
         {'$or': [{'tunnel': {'$in': active_tunnels}},
                  {'portable': True}]})
     q['library_uuid'] = {'$in': [i['library_uuid'] for i in active_catalogs]}
-    dbb = db.books.find(q, {'authors': 1, 'title': 1, 'tags': 1})
-    # calculate books' tags
+    dbb = db.books.find(
+        q, {'authors': 1, 'title': 1, 'tags': 1, 'formats': 1})
+    # calculate books' tags and formats
     tags = set()
+    formats = set()
     for book in dbb:
-        tags.update(book.get('tags'))
+        tags.update(book.get('tags', set()))
+        formats.update(book.get('formats', set()))
+    # update db
     db.autocomplete.drop()
     db.autocomplete.insert({
-            'authors': dbb.distinct('authors'),
-            'titles': dbb.distinct('title'),
-            'tags': list(tags),
-            'librarians': active_catalogs.distinct('librarian'),
-            'num_books': dbb.count()
-            })
+        'authors': dbb.distinct('authors'),
+        'titles': dbb.distinct('title'),
+        'tags': list(tags),
+        'formats': list(formats),
+        'librarians': active_catalogs.distinct('librarian'),
+        'num_books': dbb.count()
+    })
 
 #------------------------------------------------------------------------------
 # PORTABLE management

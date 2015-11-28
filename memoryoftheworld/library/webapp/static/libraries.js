@@ -323,6 +323,8 @@ var ui = {
             source = STATE.autocomplete.titles;
         } else if (property == 'tags') {
             source = STATE.autocomplete.tags;
+        } else if (property == 'formats') {
+            source = STATE.autocomplete.formats;
         };
         $('#text').typeahead('destroy').typeahead(
             {minLength: 2, highlight: false, hint: false},

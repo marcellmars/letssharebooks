@@ -72,6 +72,9 @@ var nav = {
         $("#property").change(function () {
             ui.change_autocomplete();
         });
+        var external_link = common.templates.external_link(
+            common.layout.header.link);
+        $('#external-link').append(external_link);
     },
 
     //

@@ -3,6 +3,7 @@ var common = {
     //
     // Initialize js/html templates
     //
+    
     'templates': {
         'book_permalink':
             _.template($('#book-permalink-tmpl').text().trim()),
@@ -15,13 +16,25 @@ var common = {
         'book_modal_attr_title':
             _.template($('#book-modal-attr-title-tmpl').text().trim()),
         'import_modal':
-            _.template($('#import-modal-tmpl').text().trim())
+            _.template($('#import-modal-tmpl').text().trim()),
+        'external_link':
+            _.template($('#external-link-tmpl').text().trim()),
     },
 
     //
-    // Select which book properties will be rendered
+    // Customization for different libraries
     //
+    // * define external link in the header
+    // * select which book properties will be rendered
+    //
+    
     'layout': {
+        
+        'header': {
+            'link': {'text': 'MEMORY OF THE WORLD',
+                     'href': 'https://www.memoryoftheworld.org'},
+        },
+        
         // book permalink page
         'book-permalink': {
             'properties': [
@@ -57,6 +70,7 @@ var common = {
                  }},
             ]
         },
+        
         // book modal (and default)
         'book-modal': {
             'properties': [

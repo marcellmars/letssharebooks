@@ -337,8 +337,10 @@ def get_book(db, uuid):
     '''
     Returns book with the param uuid
     '''
-    return utils.sanitize_html(
-        db.books.find_one({'uuid': uuid}, PUBLIC_SINGLE_BOOK_FIELDS))
+    book = db.books.find_one({'uuid': uuid}, PUBLIC_SINGLE_BOOK_FIELDS)
+    if book:
+        return utils.sanitize_html(book)
+    return None
 
 #------------------------------------------------------------------------------
 

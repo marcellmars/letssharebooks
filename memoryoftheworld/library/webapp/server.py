@@ -22,26 +22,36 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ENVIRONMENT = Environment(loader=FileSystemLoader(
     '{}/templates'.format(CURRENT_DIR)))
 
-CONF = {'/': {'tools.gzip.on': True},
-        '/static': {'tools.staticdir.on': True,
-                    'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'static'),
-                    'tools.staticdir.content_types': {'js': 'application/javascript',
-                                                      'css': 'text/css',
-                                                      'gif': 'image/gif'
-                                                      }
-                    },
-        '/images': {'tools.staticdir.on': True,
-                    'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'images'),
-                    'tools.staticdir.content_types': {'svg': 'image/svg+xml',
-                                                      'png': 'image/png',
-                                                      'gif': 'image/gif'
-                                                      }
-                    },
-        '/favicon.ico': {'tools.staticfile.on': True,
-                         'tools.staticfile.filename': os.path.join(CURRENT_DIR,
-                                                                   'static/connected.ico')
-                         }
+#------------------------------------------------------------------------------
+
+CONF = {
+    '/': {
+        'tools.gzip.on': True
+    },
+    '/static': {
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'static'),
+        'tools.staticdir.content_types': {
+            'js': 'application/javascript',
+            'css': 'text/css',
+            'gif': 'image/gif'
         }
+    },
+    '/images': {
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': os.path.join(CURRENT_DIR, 'images'),
+        'tools.staticdir.content_types': {
+            'svg': 'image/svg+xml',
+            'png': 'image/png',
+            'gif': 'image/gif'
+        }
+    },
+    '/favicon.ico': {
+        'tools.staticfile.on': True,
+        'tools.staticfile.filename': os.path.join(CURRENT_DIR,
+                                                  'static/connected.ico')
+    }
+}
 
 #------------------------------------------------------------------------------
 # Exposed resources
@@ -79,7 +89,7 @@ class Root(object):
                 )
         else:
             tmpl = ENVIRONMENT.get_template('404.html')
-            return tmpl.render()
+            return tmpl.render(msg='no such book')
 
     #--------------------------------------------------------------------------
     # API

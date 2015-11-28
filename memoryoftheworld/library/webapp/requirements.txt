@@ -2,4 +2,4 @@ Jinja2>=2.6
 requests>=0.13.0
 CherryPy>=3.2.2
 pymongo>=2.5
-lxml>=3.4.4
+simplejson

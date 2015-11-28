@@ -57,10 +57,6 @@
 
 {% block templates %}
 
-<script type="text/x-template" id="external-link-tmpl">
-  <a href="<%= href %>" target="_blank"><%= text %></a>
-</script>
-
 <script type="text/x-template" id="book-downloads-tmpl">
   <% for( var i = 0; i < book.formats.length; i++ ) { %>
      <% var format = book.formats[i] %>

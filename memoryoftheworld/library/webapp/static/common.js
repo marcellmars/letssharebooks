@@ -111,6 +111,16 @@ var common = {
     },
 
     //
+    // Do basic customizations
+    //
+    'init_custom': function() {
+        // external link definition
+        var external_link = common.templates.external_link(
+            common.layout.header.link);
+        $('#external-link').append(external_link);
+    },
+
+    //
     // Prepare book data for rendering
     //
     'gen_book_data': function(book, target) {
@@ -176,3 +186,4 @@ var common = {
 };
 
 common.detect_mobile();
+common.init_custom();

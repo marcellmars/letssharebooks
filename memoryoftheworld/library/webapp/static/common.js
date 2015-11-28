@@ -37,14 +37,35 @@ var common = {
                      'href': 'https://www.memoryoftheworld.org'},
             
             'search': {
-                'properties': [
-                    {'text': 'Author', 'field': 'authors'},
-                    {'text': 'Title', 'field': 'title'},
-                    {'text': 'Tag', 'field': 'tags'},
-                    {'text': 'Date', 'field': 'pubdate'},
-                    {'text': 'Format', 'field': 'formats'},
-                    {'text': 'All metadata', 'field': 'all'},
-                    ]
+                'properties_order': [
+                    'authors', 'title', 'tags', 'pubdate', 'formats', 'all'
+                ],
+                'properties': {
+                    'authors': {
+                        'text': 'Author',
+                        'placeholder': 'type here...'
+                    },
+                    'title': {
+                        'text': 'Title',
+                        'placeholder': 'type here...'
+                    },
+                    'tags': {
+                        'text': 'Tag',
+                        'placeholder': 'type here...'
+                    },
+                    'pubdate': {
+                        'text': 'Date',
+                        'placeholder': 'e.g. "2013-12-22"'
+                    },
+                    'formats': {
+                        'text': 'Format',
+                        'placeholder': 'e.g. "pdf"'
+                    },
+                    'all': {
+                        'text': 'All metadata',
+                        'placeholder': 'type here...'
+                    },
+                }
             }
         },
         
@@ -133,6 +154,13 @@ var common = {
         // search
         $('#search-form #property').append(common.templates.search_properties(
             common.layout.header.search));
+        // property typeahead
+        $("#search-form #property").change(function () {
+            var props = common.layout.header.search.properties;
+            var property = $(this).val();
+            $('#text').attr('placeholder',
+                            props[property].placeholder);
+        });
     },
 
     //

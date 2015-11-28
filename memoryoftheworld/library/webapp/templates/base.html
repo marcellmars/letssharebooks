@@ -28,8 +28,8 @@
     <a href="<%= href %>" target="_blank"><%= text %></a>
   </script>
   <script type="text/x-template" id="search-properties-tmpl">
-    <% for( var i = 0; i < properties.length; i++ ) { %>
-      <option value="<%= properties[i].field %>"><%= properties[i].text %></option>
+    <% for( var i = 0; i < properties_order.length; i++ ) { %>
+      <option value="<%= properties_order[i] %>"><%= properties[properties_order[i]].text %></option>
     <% } %>
   </script>
   {% block templates %}{% endblock %}

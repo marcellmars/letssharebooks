@@ -4,6 +4,8 @@
 
 $(document).ready(function () {
 
+    window.PORTABLE = true;
+
     // external dependency: var LIBRARY (data.js)
     var BOOKS = LIBRARY.books.add;
 
@@ -48,10 +50,9 @@ $(document).ready(function () {
             'books': [],
             'total': 0,
             'last_id': null,
-            'librarians': [LIBRARY.librarian]
         };
         var books = BOOKS;
-        if (params.query.text !== '' || params.query.librarian !== '') {
+        if (params.query.text !== '' || params.query.dvalue !== '') {
             books = search(params.query, books);
         };
         // calculate page to show depending on the params.last_id
@@ -89,10 +90,14 @@ $(document).ready(function () {
     // this mocks search functionality
     //
     var search = function(q, books) {
-        // select books by given librarian
-        if (q.librarian !== '') {
+        // select books by given dropdown property
+        var _prop = common.layout.header.dropdown.field;
+        if (q.dvalue !== '') {
             books = books.filter(function(book, i) {
-                return q.librarian == book.librarian;
+                if (_prop == 'librarians') {
+                    return q.dvalue == book.librarian;
+                };
+                return false;
             });
         };
         // set default property to 'all', if not specified

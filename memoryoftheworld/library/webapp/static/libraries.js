@@ -358,17 +358,19 @@ var ui = {
             $('#dropdown').val(STATE.query.dvalue);
         }
         else if (cached[_prop].length == 1 ) {
+            var first_item = cached[_prop][0];
+            var suffix = '';
+            $('#dropdown').val(first_item);
             if (is_this_portable()) {
-                // if single item then update dropdown and title page
-                var first_item = cached[_prop][0];
-                var sufix = "'s Library";
-                $('#dropdown').val(librarian);
-                if ($.inArray(librarian.slice(-1), ['s', 'z']) >= 0) {
-                    sufix = "' Library";
-                };
-                document.title = first_item + sufix;
-            } else {
-                $('#dropdown').val(cached[_prop][0]);
+                $('#dropdown').prop('disabled', 'disabled');
+                // if single item then update title page
+                if (_prop == 'librarians') {
+                    suffix = "'s library";
+                    if ($.inArray(first_item.slice(-1), ['s', 'z']) >= 0) {
+                        suffix = "' library";
+                    };
+                }
+                document.title = first_item + suffix;
             };
         };
     },

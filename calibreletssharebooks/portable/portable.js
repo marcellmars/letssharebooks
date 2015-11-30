@@ -96,7 +96,8 @@ $(document).ready(function () {
             });
         };
         // set default property to 'all', if not specified
-        if (!_.contains(['authors', 'title', 'tags', 'all'], q.property)) {
+        if (!_.contains(['authors', 'title', 'formats', 'pubdate', 'tags', 'all'],
+                        q.property)) {
             q.property = 'all';
         };
         // perform search
@@ -116,6 +117,16 @@ $(document).ready(function () {
             } else if (q.property == 'tags') {
                 books = books.filter(function(book, i) {
                     return regex.test(book.tags.join(' '));
+                });
+            // search formats
+            } else if (q.property == 'formats') {
+                books = books.filter(function(book, i) {
+                    return regex.test(book.formats.join(' '));
+                });
+            // search pubdate
+            } else if (q.property == 'pubdate') {
+                books = books.filter(function(book, i) {
+                    return regex.test(book.pubdate);
                 });
             // search all metadata
             } else {
@@ -146,6 +157,9 @@ $(document).ready(function () {
             'authors': [],
             'titles': [],
             'tags': [],
+            'formats': [],
+            'librarians': [],
+            'num_books': books.length,
         };
         $.each(books, function(i, book) {
             var authors = book.authors;
@@ -156,7 +170,12 @@ $(document).ready(function () {
             $.each(tags, function(j, tag) {
                 sadd(metadata['tags'], tag);
             });
+            var formats = book.formats;
+            $.each(formats, function(j, format) {
+                sadd(metadata['formats'], format);
+            });
             sadd(metadata['titles'], book.title);
+            sadd(metadata['librarians'], book.librarian);
         });
         return metadata;
     };

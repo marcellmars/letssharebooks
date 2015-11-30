@@ -208,10 +208,12 @@ var ui = {
             if (data['librarians'].length > 1) {
                 $('#librarian').append(['<option value="" selected>',
                                         String(data['librarians'].length),
-                                        ' librarians online</option>'].join(''));
+                                        ' librarians online',
+                                        '</option>'].join(''));
             } 
             $.each(data['librarians'], function(index, item) {
-                $('#librarian').append(['<option value="', item, '">', item, '</option>'].join(''));
+                $('#librarian').append(
+                    ['<option value="', item, '">', item, '</option>'].join(''));
             });
             self.update_toolbar();
             self.change_autocomplete();

@@ -154,7 +154,7 @@ var common = {
         // search
         $('#search-form #property').append(common.templates.search_properties(
             common.layout.header.search));
-        // property typeahead
+        // property placeholder
         $("#search-form #property").change(function () {
             var props = common.layout.header.search.properties;
             var property = $(this).val();

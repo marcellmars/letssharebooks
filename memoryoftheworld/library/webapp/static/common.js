@@ -33,8 +33,15 @@ var common = {
     'layout': {
         
         'header': {
-            'link': {'text': 'MEMORY OF THE WORLD',
-                     'href': 'https://www.memoryoftheworld.org'},
+
+            'link': {
+                'text': 'MEMORY OF THE WORLD',
+                'href': 'https://www.memoryoftheworld.org'
+            },
+
+            'dropdown': {
+                'field': 'librarians',
+            },
             
             'search': {
                 'properties_order': [

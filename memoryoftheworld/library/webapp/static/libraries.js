@@ -10,7 +10,8 @@ var STATE = {
     query: {
         'text': '',
         'property': '',
-        'librarian': ''
+        'dvalue': '',
+        'dproperty': common.layout.header.dropdown.field,
     }
 };
 
@@ -21,7 +22,7 @@ var STATE = {
  */
 
 var is_this_portable = function() {
-    return !_.isUndefined(window.PORTABLE); 
+    return !_.isUndefined(window.PORTABLE);
 };
 
 /* --------------------------------------------------------------------------
@@ -36,7 +37,7 @@ var nav = {
     'state_field_mapping': {
         'text'     : '#text',
         'property' : '#property',
-        'librarian': '#librarian'
+        'dvalue' : '#dropdown',
     },
 
     //
@@ -204,15 +205,18 @@ var ui = {
         $.getJSON('autocomplete', {}).done(function(data) {
             if (data === null) {return;}
             STATE.autocomplete = data;
-            // populate librarians dropdown
-            if (data['librarians'].length > 1) {
-                $('#librarian').append(['<option value="" selected>',
-                                        String(data['librarians'].length),
-                                        ' librarians online',
-                                        '</option>'].join(''));
-            } 
-            $.each(data['librarians'], function(index, item) {
-                $('#librarian').append(
+            // populate dropdown
+            var _prop = common.layout.header.dropdown.field;
+            if (data[_prop].length > 1) {
+                $('#dropdown').append(['<option value="" selected>',
+                                       String(data[_prop].length),
+                                       ' ',
+                                       _prop,
+                                       ' online',
+                                       '</option>'].join(''));
+            }
+            $.each(data[_prop], function(index, item) {
+                $('#dropdown').append(
                     ['<option value="', item, '">', item, '</option>'].join(''));
             });
             self.update_toolbar();
@@ -342,26 +346,29 @@ var ui = {
         
         // update total number of books in the header
         if (cached.num_books > 0) {
-            $('#num-books').text(cached.num_books + ' books, ' + $('.cover').length + ' shown');
+            $('#num-books').text(
+                cached.num_books + ' books, ' + $('.cover').length + ' shown');
         } else {
             $('#num-books').text('no books');
         };
 
-        // populate librarians dropdown 
-        if (STATE.query.librarian) {
-            $('#librarian').val(STATE.query.librarian);
-        } else if (cached.librarians.length == 1 ) {
+        // populate dropdown
+        var _prop = common.layout.header.dropdown.field;
+        if (STATE.query.dvalue) {
+            $('#dropdown').val(STATE.query.dvalue);
+        }
+        else if (cached[_prop].length == 1 ) {
             if (is_this_portable()) {
-                // if single librarian then update dropdown and title page
-                var librarian = cached.librarians[0];
+                // if single item then update dropdown and title page
+                var first_item = cached[_prop][0];
                 var sufix = "'s Library";
-                $('#librarian').val(librarian);
+                $('#dropdown').val(librarian);
                 if ($.inArray(librarian.slice(-1), ['s', 'z']) >= 0) {
                     sufix = "' Library";
                 };
-                document.title = librarian + sufix;
+                document.title = first_item + sufix;
             } else {
-                $('#librarian').val(cached.librarians[0]);
+                $('#dropdown').val(cached[_prop][0]);
             };
         };
     },
@@ -447,7 +454,7 @@ var search = {
         // fill STATE
         STATE.query.text = $('#text').val();
         STATE.query.property = $('#property').val();
-        STATE.query.librarian = $('#librarian').val();
+        STATE.query.dvalue = $('#dropdown').val();
         // if user initiated action (e.g. click for search)
         if (push_state) {
             nav.push_to_history();

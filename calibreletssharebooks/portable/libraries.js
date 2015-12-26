@@ -10,7 +10,8 @@ var STATE = {
     query: {
         'text': '',
         'property': '',
-        'librarian': ''
+        'dvalue': '',
+        'dproperty': common.layout.header.dropdown.field,
     }
 };
 
@@ -21,7 +22,7 @@ var STATE = {
  */
 
 var is_this_portable = function() {
-    return !_.isUndefined(window.PORTABLE); 
+    return !_.isUndefined(window.PORTABLE);
 };
 
 /* --------------------------------------------------------------------------
@@ -36,7 +37,7 @@ var nav = {
     'state_field_mapping': {
         'text'     : '#text',
         'property' : '#property',
-        'librarian': '#librarian'
+        'dvalue' : '#dropdown',
     },
 
     //
@@ -192,16 +193,33 @@ var ui = {
             ui.render_page();
             nav.push_to_history();
         };
+
         // this event will fire when 'back' button is pressed
         $(window).bind('hashchange', function(e) {
             var state = window.location.hash.substr(1);
             // don't push now to state
             nav.handle_hash_state(state, false);
         });
+        
         // setup autocomplete
         $.getJSON('autocomplete', {}).done(function(data) {
             if (data === null) {return;}
             STATE.autocomplete = data;
+            // populate dropdown
+            var _prop = common.layout.header.dropdown.field;
+            if (data[_prop].length > 1) {
+                $('#dropdown').append(['<option value="" selected>',
+                                       String(data[_prop].length),
+                                       ' ',
+                                       _prop,
+                                       ' online',
+                                       '</option>'].join(''));
+            }
+            $.each(data[_prop], function(index, item) {
+                $('#dropdown').append(
+                    ['<option value="', item, '">', item, '</option>'].join(''));
+            });
+            self.update_toolbar();
             self.change_autocomplete();
         });
     },
@@ -241,8 +259,6 @@ var ui = {
         } else {
             nav.enable_load_more();
         };
-        // update ui
-        self.update_toolbar(data);
         this.setup_modal();
         if (!is_this_portable()) {
             // mark books that were authored by the one of the authors of the
@@ -281,6 +297,8 @@ var ui = {
             var book_uuid = data['books'][book_index].uuid;
             $('.cover h2 [rel="' + book_uuid  +  '"].more_about').click();
         };
+        // update ui
+        self.update_toolbar();
         // init all tooltips
         $('[data-toggle="tooltip"]').tooltip();
     },
@@ -311,6 +329,8 @@ var ui = {
             source = STATE.autocomplete.titles;
         } else if (property == 'tags') {
             source = STATE.autocomplete.tags;
+        } else if (property == 'formats') {
+            source = STATE.autocomplete.formats;
         };
         $('#text').typeahead('destroy').typeahead(
             {minLength: 2, highlight: false, hint: false},
@@ -318,46 +338,39 @@ var ui = {
     },
 
     //
-    // sets up toolbar functionalities
+    // update toolbar data
     //
-    'update_toolbar': function(data) {
+    'update_toolbar': function() {
+        var cached = STATE.autocomplete;
+        if(cached === undefined) {return;}
+        
         // update total number of books in the header
-        $.getJSON('status?callback=?').done(function(data) {
-            if (data.num_of_books > 0) {
-                $('#num-books').text( data.num_of_books + ' books, ' + $('.cover').length + " shown");
-            } else {
-                $('#num-books').text('no books');
-            };
-        });
+        if (cached.num_books > 0) {
+            $('#num-books').text(
+                cached.num_books + ' books, ' + $('.cover').length + ' shown');
+        } else {
+            $('#num-books').text('no books');
+        };
 
-        $('#librarian').empty();
-        if (data['librarians'].length > 1) {
-            $('#librarian').append(['<option value="" selected>',
-                                    String(data['librarians'].length),
-                                    ' librarians online</option>'].join(''));
-        } 
-        $.each(data['librarians'], function(index, item) {
-            $('#librarian').append(['<option value="',
-                                    item,
-                                    '"',
-                                    '>',
-                                    item,
-                                    '</option>'].join('')); 
-        });
-        if (STATE.query.librarian) {
-            $('#librarian').val(STATE.query.librarian);
-        } else if (data['librarians'].length == 1 ) {
+        // populate dropdown
+        var _prop = common.layout.header.dropdown.field;
+        if (STATE.query.dvalue) {
+            $('#dropdown').val(STATE.query.dvalue);
+        }
+        else if (cached[_prop].length == 1 ) {
+            var first_item = cached[_prop][0];
+            var suffix = '';
+            $('#dropdown').val(first_item);
             if (is_this_portable()) {
-                // if single librarian then update dropdown and title page
-                var librarian = data['librarians'][0];
-                var sufix = "'s Library";
-                $('#librarian').val(librarian);
-                if ($.inArray(librarian.slice(-1), ['s', 'z']) >= 0) {
-                    sufix = "' Library";
-                };
-                document.title = librarian + sufix;
-            } else {
-                $('#librarian').val(data['librarians'][0]);
+                $('#dropdown').prop('disabled', 'disabled');
+                // if single item then update title page
+                if (_prop == 'librarians') {
+                    suffix = "'s library";
+                    if ($.inArray(first_item.slice(-1), ['s', 'z']) >= 0) {
+                        suffix = "' library";
+                    };
+                }
+                document.title = first_item + suffix;
             };
         };
     },
@@ -443,7 +456,7 @@ var search = {
         // fill STATE
         STATE.query.text = $('#text').val();
         STATE.query.property = $('#property').val();
-        STATE.query.librarian = $('#librarian').val();
+        STATE.query.dvalue = $('#dropdown').val();
         // if user initiated action (e.g. click for search)
         if (push_state) {
             nav.push_to_history();

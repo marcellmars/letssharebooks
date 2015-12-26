@@ -33,8 +33,15 @@ var common = {
     'layout': {
         
         'header': {
-            'link': {'text': 'MEMORY OF THE WORLD',
-                     'href': 'https://www.memoryoftheworld.org'},
+
+            'link': {
+                'text': 'MEMORY OF THE WORLD',
+                'href': 'https://www.memoryoftheworld.org'
+            },
+
+            'dropdown': {
+                'field': 'librarians',
+            },
             
             'search': {
                 'properties_order': [
@@ -154,7 +161,7 @@ var common = {
         // search
         $('#search-form #property').append(common.templates.search_properties(
             common.layout.header.search));
-        // property typeahead
+        // property placeholder
         $("#search-form #property").change(function () {
             var props = common.layout.header.search.properties;
             var property = $(this).val();

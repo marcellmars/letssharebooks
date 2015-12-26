@@ -352,6 +352,7 @@ def get_books(db, last_id, query={}):
     '''
     # query
     q = {}
+    LOG.debug('>'*30)
     LOG.debug('>>> QUERY: {}, LAST_ID: {}'.format(query, last_id))
 
     # extract search parameters and build query
@@ -384,10 +385,17 @@ def get_books(db, last_id, query={}):
                          {'tags': match_pattern},
                          {'publisher': match_pattern},
                          {'identifiers': match_pattern}]}
-    # librarian
-    q_librarian = query.get('librarian')
-    if q_librarian:
-        q['librarian'] = q_librarian.encode('utf-8')
+
+    # dropdown value + property
+    q_dproperty = query.get('dproperty')
+    q_dvalue = query.get('dvalue')
+    if q_dvalue:
+        if q_dproperty == 'librarians':
+            q['librarian'] = q_dvalue.encode('utf-8')
+        elif q_dproperty == 'collections':
+            q['collection'] = q_dvalue.encode('utf-8')
+        else:
+            LOG.error('unsupported dropdown property: {}'.format(q_dproperty))
 
     # get all libraries that have active ssh tunnel or reference portables
     active_tunnels = get_active_tunnels()
@@ -405,17 +413,19 @@ def get_books(db, last_id, query={}):
     # fetch final cursor
     LOG.debug('>>> FINAL QUERY: {}'.format(q))
     dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('_id', -1)
-    #dbb = db.books.find(q, PUBLIC_BOOK_FIELDS)
 
     # do infinite loading
     books = list(dbb.limit(settings.ITEMS_PER_PAGE))
+    
     # calculate last_id
     current_last_id = None
     if books and len(books) == settings.ITEMS_PER_PAGE:
         current_last_id = str(books[len(books) - 1]['_id'])
-    return utils.ser2json({'books': books,
-                           'last_id': current_last_id,
-                           })
+
+    return utils.ser2json({
+        'books': books,
+        'last_id': current_last_id,
+    })
 
 #------------------------------------------------------------------------------
 #- get_active_ports() is called after url/get_active_librarians

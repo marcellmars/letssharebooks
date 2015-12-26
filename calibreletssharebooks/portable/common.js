@@ -3,6 +3,7 @@ var common = {
     //
     // Initialize js/html templates
     //
+    
     'templates': {
         'book_permalink':
             _.template($('#book-permalink-tmpl').text().trim()),
@@ -15,13 +16,66 @@ var common = {
         'book_modal_attr_title':
             _.template($('#book-modal-attr-title-tmpl').text().trim()),
         'import_modal':
-            _.template($('#import-modal-tmpl').text().trim())
+            _.template($('#import-modal-tmpl').text().trim()),
+        'external_link':
+            _.template($('#external-link-tmpl').text().trim()),
+        'search_properties':
+            _.template($('#search-properties-tmpl').text().trim()),
     },
 
     //
-    // Select which book properties will be rendered
+    // Customization for different libraries
     //
+    // * define external link in the header
+    // * select which book properties will be rendered
+    //
+    
     'layout': {
+        
+        'header': {
+
+            'link': {
+                'text': 'MEMORY OF THE WORLD',
+                'href': 'https://www.memoryoftheworld.org'
+            },
+
+            'dropdown': {
+                'field': 'librarians',
+            },
+            
+            'search': {
+                'properties_order': [
+                    'authors', 'title', 'tags', 'pubdate', 'formats', 'all'
+                ],
+                'properties': {
+                    'authors': {
+                        'text': 'Author',
+                        'placeholder': 'type here...'
+                    },
+                    'title': {
+                        'text': 'Title',
+                        'placeholder': 'type here...'
+                    },
+                    'tags': {
+                        'text': 'Tag',
+                        'placeholder': 'type here...'
+                    },
+                    'pubdate': {
+                        'text': 'Date',
+                        'placeholder': 'e.g. "2013-12-22"'
+                    },
+                    'formats': {
+                        'text': 'Format',
+                        'placeholder': 'e.g. "pdf"'
+                    },
+                    'all': {
+                        'text': 'All metadata',
+                        'placeholder': 'type here...'
+                    },
+                }
+            }
+        },
+        
         // book permalink page
         'book-permalink': {
             'properties': [
@@ -57,6 +111,7 @@ var common = {
                  }},
             ]
         },
+        
         // book modal (and default)
         'book-modal': {
             'properties': [
@@ -94,6 +149,25 @@ var common = {
                  }},
             ]
         }
+    },
+
+    //
+    // Do basic customizations
+    //
+    'init_custom': function() {
+        // external link definition
+        $('#external-link').append(common.templates.external_link(
+            common.layout.header.link));
+        // search
+        $('#search-form #property').append(common.templates.search_properties(
+            common.layout.header.search));
+        // property placeholder
+        $("#search-form #property").change(function () {
+            var props = common.layout.header.search.properties;
+            var property = $(this).val();
+            $('#text').attr('placeholder',
+                            props[property].placeholder);
+        });
     },
 
     //
@@ -162,3 +236,4 @@ var common = {
 };
 
 common.detect_mobile();
+common.init_custom();

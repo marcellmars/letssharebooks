@@ -34,8 +34,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging ------------------------------------------------------------
-# from calibre_plugins.letssharebooks.my_logger import get_logger
-# logger = get_logger('letssharebooks.ui', disabled=True)
+# logger = MyLogger(file_name="/tmp/letssharebooks_ui.log",
+#                   enabled=False)
 #-----------------------------------------------------------------------------
 
 
@@ -64,7 +64,7 @@ PORTABLE_RESOURCES = [
     'portable/favicon.svg',
     'portable/motw.ico',
     'portable/lodestone.png',
-    'portable/lodestone_modal.png'
+    'portable/lodestone_modal.png',
     # fonts
     'portable/bootstrap/fonts/glyphicons-halflings-regular.eot',
     'portable/bootstrap/fonts/glyphicons-halflings-regular.svg',
@@ -84,6 +84,7 @@ class UnitedStates(QObject):
         QObject.__init__(self)
         self.edit_stamp = datetime.datetime(2013, 1, 11, 0, 0, 0, 0)
         self.portable_directory = tempfile.mkdtemp()
+        # self.portable_directory = "/tmp/lsb/"
         self.plugin_url = ('https://github.com/marcellmars/'
                            'letssharebooks/raw/master/calibreletssharebooks/'
                            'letssharebooks_calibre.zip')

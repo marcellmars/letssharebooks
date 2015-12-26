@@ -2,11 +2,13 @@
 
 import sqlite3
 import os
+import re
+import cgi
+# from calibre_plugins.letssharebooks.my_logger import MyLogger
 
 #- set up logging -------------------------------------------------------------
-#from calibre_plugins.letssharebooks.my_logger import get_logger
-#logger = get_logger('letssharebooks', disabled=True)
-
+# logger = MyLogger(file_name="/tmp/letssharebooks_metadata.log",
+#                   enabled=False)
 #------------------------------------------------------------------------------
 
 
@@ -55,6 +57,13 @@ def get_lsb_metadata(directory_path, librarian):
             comments = ("",)
         b['comments'] = comments[0]
 
+        # twitter/facebook cards
+        card = {}
+        tag_re = re.compile(ur'(<!--.*?-->|<[^>]*>)', re.UNICODE)
+        no_tags = tag_re.sub(u'', b['comments'])
+        card['description'] = cgi.escape(no_tags)[:250].replace('"', "")
+        b['card'] = card
+
         #publishers
         publishers = cur.execute("""SELECT PUBLISHERS.NAME
                                     FROM BOOKS,
@@ -65,7 +74,7 @@ def get_lsb_metadata(directory_path, librarian):
                                           PUBLISHERS.ID = BOOKS_PUBLISHERS_LINK.PUBLISHER;""".format(book=book[0])).fetchone()
         if not publishers:
             publishers = ("Unknown",)
-        b['publishers'] = publishers[0]
+        b['publisher'] = publishers[0]
 
         #formats
         formats = cur.execute("""SELECT DATA.NAME,
@@ -78,21 +87,34 @@ def get_lsb_metadata(directory_path, librarian):
         bkf = {}
         bk = []
         for frmat in formats:
-            bkf[frmat[1]] = {'path' :  "{}/{}/{}.{}".format(directory_path,
-                                                        book[9],
-                                                        frmat[0],
-                                                        frmat[1].lower()),
-                                    'size' : frmat[2]}
+            file_path = "{}/{}.{}".format(book[9],
+                                          frmat[0],
+                                          frmat[1].lower())
+            # file_path = os.path.join(*file_path)
+            file_name = "{}.{}".format(frmat[0], frmat[1].lower())
+            dir_path = "{}/".format(book[9])
+            # dir_path = os.path.join(*dir_path)
+
+            bkf[frmat[1]] = {'file_path': "{}".format(file_path),
+                             'file_name': "{}".format(file_name),
+                             'dir_path': "{}".format(dir_path),
+                             'size': frmat[2]}
             bk.append(frmat[1])
+
+        b['cover_url'] = "{}cover.jpg".format(dir_path)
+
         if not bkf:
-            bkf['FOO'] = {'path' :  "{}/{}/{}.{}".format(directory_path,
-                                                    book[9],
-                                                    "FOO",
-                                                    "BRR"),
+            bkf['0'] = {'file_path': "{}/{}.{}".format(dir_path,
+                                                       ".",
+                                                       "."),
+                        'file_name': "...",
+                        'dir_path': "{}" .format(dir_path),
                         'size': 0}
+
         b['format_metadata'] = bkf
+
         if not bk:
-            bk = ['BRR']
+            bk = ['0']
         b['formats'] = bk
 
         #identifiers

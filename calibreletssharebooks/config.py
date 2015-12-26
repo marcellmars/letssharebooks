@@ -25,8 +25,8 @@ except ImportError:
 from calibre.utils.config import JSONConfig
 
 #- set up logging -------------------------------------------------------------
-from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=True)
+# from calibre_plugins.letssharebooks.my_logger import get_logger
+# logger = get_logger('letssharebooks', disabled=True)
 
 
 # This is where all preferences for this plugin will be stored

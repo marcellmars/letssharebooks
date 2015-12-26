@@ -92,6 +92,8 @@ from calibre_plugins.letssharebooks import requests
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
 from calibre_plugins.letssharebooks.shuffle_names import encrypt_uid
+from calibre_plugins.letssharebooks.my_logger import MyLogger
+from calibre_plugins.letssharebooks.get_metadata import get_lsb_metadata
 
 
 __license__   = 'GPL v3'
@@ -102,8 +104,7 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging -------------------------------------------------------------
-from calibre_plugins.letssharebooks.my_logger import get_logger
-logger = get_logger('letssharebooks', disabled=True)
+logger = MyLogger(enabled=True)
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------
@@ -362,6 +363,17 @@ class MetadataLibThread(QThread):
         self.n_bulk = 37
         self.portable = portable
 
+    #--------------------------------------------------------------------------
+    #- this will use sqlite3 directly. it is not meant to be ------------------
+    #- used for "live" so all_books_ids are mocked here. ----------------------
+    #- when needed uncomment this and MOCK the one below ----------------------
+    # def get_book_metadata(self, current_db):
+    #     self.get_directory_path()
+    #     books = get_lsb_metadata(self.directory_path,
+    #                              prefs['librarian']['name'])
+    #     books.append(set([0]))
+    #     return books
+
     def get_book_metadata(self, current_db):
         self.get_directory_path()
         books = []
@@ -412,11 +424,13 @@ class MetadataLibThread(QThread):
             for author in md_fields.authors:
                 b['authors'].append(author)
 
-            b['comments'] = md_fields.comments
+            b['comments'] = u""
+            if md_fields.comments:
+                b['comments'] = md_fields.comments
 
             card = {}
-            tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
-            no_tags = tag_re.sub('', str(b['comments']))
+            tag_re = re.compile(ur'(<!--.*?-->|<[^>]*>)', re.UNICODE)
+            no_tags = tag_re.sub(u'', b['comments'])
             card['description'] = cgi.escape(no_tags)[:250].replace('"', "")
             b['card'] = card
 
@@ -429,6 +443,7 @@ class MetadataLibThread(QThread):
             try:
                 if md_fields.format_metadata:
                     for frmat in md_fields.format_metadata.iteritems():
+                        logger.debug("FRMAT: {}".format(frmat))
                         file_path = frmat[1]["path"].split(os.path.sep)[-3:]
                         file_path = os.path.join(*file_path)
                         file_name = frmat[1]["path"].split(os.path.sep)[-1]
@@ -761,6 +776,7 @@ class LetsShareBooksDialog(QDialog):
         logger.info('REDIRECTED DEBUG OUTPUT: \n\ntail -f {}/log/lsb.log\n'
                     .format(self.us.portable_directory))
 
+
         if not prefs:
             #- this is most probably initial run of a plugin ------------------
             #- or someone deleted .json config file ---------------------------
@@ -770,7 +786,6 @@ class LetsShareBooksDialog(QDialog):
             logger.info("LIBRANON IN RETURN: {}".format(libranon))
             prefs['librarian'] = {'name': libranon,
                                   'saved': False}
-
         elif 'librarian' in prefs:
             if 'saved' not in prefs['librarian']:
                 logger.info("SAVED NOT IN PREFS!")

@@ -40,6 +40,7 @@ prosody:
         LSB_DOMAIN: ${LSB_DOMAIN}
     ports:
         - "5222:5222"
+        - "5269:5269"
     expose:
         - "5280"
         - "5281"

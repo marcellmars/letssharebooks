@@ -9,11 +9,12 @@ import base64
 import uuid
 from calibre_plugins.letssharebooks import pyaes
 from calibre_plugins.letssharebooks import requests
-from calibre_plugins.letssharebooks.my_logger import MyLogger
+from calibre_plugins.letssharebooks.my_logger import MyLogger, Om
 
 #- set up logging -------------------------------------------------------------
-logger = MyLogger(file_name="/tmp/letssharebooks_librarians.log",
-                  enabled=False)
+# logger = MyLogger(file_name="/tmp/letssharebooks_librarians.log")
+logger = Om()
+
 
 def get_libranon(server_prefix, lsb_server, n=0, libranon=False):
     if not libranon:

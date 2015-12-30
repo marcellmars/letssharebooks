@@ -2,23 +2,20 @@ import time
 import inspect
 
 
-def om(*args, **kwargs):
-    return
+class Om:
+    def __getattr__(self, name):
+        def catch_all(*args, **kwargs):
+            pass
+        return catch_all
 
 
 class MyLogger:
     def __init__(self,
                  file_name="/tmp/letssharebooks_debug.log",
                  inspekt_global=None,
-                 inspekt_depth=2,
-                 enabled=True):
+                 inspekt_depth=2):
 
-        if enabled:
-            self.f = open(file_name, "w")
-        else:
-            self.debug = om
-            self.info = om
-            self.warning = om
+        self.f = open(file_name, "w")
         self.inspect_global = inspekt_global
         self.inspect_depth = inspekt_depth
 

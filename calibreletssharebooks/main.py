@@ -92,7 +92,7 @@ from calibre_plugins.letssharebooks import requests
 from calibre_plugins.letssharebooks import LetsShareBooks as lsb
 from calibre_plugins.letssharebooks.shuffle_names import get_libranon
 from calibre_plugins.letssharebooks.shuffle_names import encrypt_uid
-from calibre_plugins.letssharebooks.my_logger import MyLogger
+from calibre_plugins.letssharebooks.my_logger import MyLogger, Om
 from calibre_plugins.letssharebooks.get_metadata import get_lsb_metadata
 
 
@@ -104,7 +104,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging -------------------------------------------------------------
-logger = MyLogger(enabled=True)
+logger = MyLogger()
+# logger = Om() # for silent logger
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------
@@ -443,7 +444,7 @@ class MetadataLibThread(QThread):
             try:
                 if md_fields.format_metadata:
                     for frmat in md_fields.format_metadata.iteritems():
-                        logger.debug("FRMAT: {}".format(frmat))
+                        # logger.debug("FRMAT: {}".format(frmat))
                         file_path = frmat[1]["path"].split(os.path.sep)[-3:]
                         file_path = os.path.join(*file_path)
                         file_name = frmat[1]["path"].split(os.path.sep)[-1]

@@ -381,6 +381,7 @@ class MetadataLibThread(QThread):
         books_ids = current_db.all_book_ids()
         all_book_ids = []
         for book in books_ids:
+            logger.debug("BOOK_ID BEFORE: {}".format(book))
             b = {}
             #md_fields = current_db.get_proxy_metadata(book)
             md_fields = current_db.get_metadata(book)
@@ -417,6 +418,7 @@ class MetadataLibThread(QThread):
             if not md_fields.title:
                 md_fields.title = "Unknown"
             b['title'] = md_fields.title.replace('"', "'")
+            logger.debug("BOOK_ID: {}, TITLE: {}".format(book, b['title']))
             if not md_fields.title_sort:
                 md_fields.title_sort = "Unknown"
             b['title_sort'] = md_fields.title_sort
@@ -486,6 +488,7 @@ class MetadataLibThread(QThread):
 
             b['identifiers'] = ids
             all_book_ids.append(b['uuid'])
+            logger.debug("BOOK_ID FINISHED: {}".format(book))
             books.append(b)
 
         books.append(set(all_book_ids))

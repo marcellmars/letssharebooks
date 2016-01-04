@@ -697,6 +697,7 @@ class MetadataLibThread(QThread):
                 self.uploaded.emit()
 
     def run(self):
+        logger.debug("METADATA THREAD STARTED!")
         #books_metadata = get_lsb_metadata(self.get_directory_path(),
         #                                  prefs['librarian'])
         books_metadata = self.get_book_metadata(self.get_current_db())

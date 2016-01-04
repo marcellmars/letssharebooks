@@ -230,16 +230,18 @@ var ui = {
     //
     'render_page': function (empty) {
         var self = this;
+        $('body').addClass('loading');
         $.ajax({type: 'POST',
                 url: 'get_books',
                 contentType: 'application/json',
                 processData: false,
-                data: JSON.stringify(STATE),
+                data: JSON.stringify({'last_id': STATE.last_id, 'query': STATE.query}),
                 dataType: 'json',
                 success: function (data) {
+                    $('body').removeClass('loading');
                     self.parse_response(data, empty);
                 }
-         });
+               });
     },
 
     //
@@ -483,12 +485,6 @@ var init_page = function () {
 /* --------------------------------------------------------------------------*/
 
 $(document).ready(function () {
-    $(document).ajaxStart(function () { 
-        $('body').addClass('loading'); 
-    });
-    $(document).ajaxStop(function () { 
-        $('body').removeClass('loading'); 
-    });
     localCalibre.done(function(success) {
         ui.init();
     });

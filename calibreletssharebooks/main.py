@@ -557,7 +557,7 @@ class MetadataLibThread(QThread):
             return
 
         with open(os.path.join(self.us.portable_directory,
-                               'portable/data.js'), 'wb') as file:
+                               'portable/data.js'), 'wb') as f:
             library_id = self.sql_db.library_id
             self.library['library_uuid'] = "p::{}::p".format(library_id)
             self.library['last_modified'] = str(sorted(
@@ -572,7 +572,7 @@ class MetadataLibThread(QThread):
             self.library['books']['add'] = sorted(books_metadata,
                                                   key=operator.itemgetter('uuid'))
             json_string = json.dumps(self.library)
-            file.write("LIBRARY = {};".format(json_string))
+            f.write("LIBRARY = {};".format(json_string))
         try:
             shutil.rmtree(os.path.join(self.directory_path, 'static'))
         except Exception as e:
@@ -607,7 +607,7 @@ class MetadataLibThread(QThread):
             with open(os.path.join(self.us.portable_directory,
                                    'json',
                                    'library.json'),
-                      'wb') as file:
+                      'wb') as f:
                 self.library['library_uuid'] = str(self.sql_db.library_id)
                 self.library['tunnel'] = int(self.us.port)
                 self.library['books'] = {}
@@ -615,7 +615,7 @@ class MetadataLibThread(QThread):
                 self.library['books']['remove'] = list(removed_books)
                 self.library['books']['add'] = list(added_books)
                 json_string = json.dumps(self.library)
-                file.write(json_string)
+                f.write(json_string)
             zif.write(os.path.join(self.us.portable_directory,
                                    'json',
                                    'library.json'),
@@ -625,13 +625,13 @@ class MetadataLibThread(QThread):
     def upload_zip(self, n_total, b_total, mode):
         with open(os.path.join(self.us.portable_directory,
                                'json',
-                               'library.json.zip'), 'rb') as file:
+                               'library.json.zip'), 'rb') as f:
             try:
                 r = requests.post(
                     "{}://library.{}/upload_catalog".format(
                         prefs['server_prefix'],
                         prefs['lsb_server']),
-                    files={'uploaded_file': file}, verify=False)
+                    files={'uploaded_file': f}, verify=False)
                 if r.ok:
                     um = "{} books' metadata are uploading{}".format(
                         n_total,
@@ -780,7 +780,6 @@ class LetsShareBooksDialog(QDialog):
         self.us = us
         logger.info('REDIRECTED DEBUG OUTPUT: \n\ntail -f {}/log/lsb.log\n'
                     .format(self.us.portable_directory))
-
 
         if not prefs:
             #- this is most probably initial run of a plugin ------------------
@@ -1060,8 +1059,8 @@ class LetsShareBooksDialog(QDialog):
         self.webview.setSizePolicy(QSizePolicy.Expanding,
                                    QSizePolicy.Expanding)
         self.webview.load(QUrl.fromLocalFile(
-                          os.path.join(self.us.portable_directory,
-                                       "portable/favicon.html")))
+            os.path.join(self.us.portable_directory,
+                         "portable/favicon.html")))
 
         netaccman = self.webview.page().networkAccessManager()
         netaccman.sslErrors.connect(self.sslErrorHandler)

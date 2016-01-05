@@ -1066,11 +1066,11 @@ class LetsShareBooksDialog(QDialog):
         netaccman = self.webview.page().networkAccessManager()
         netaccman.sslErrors.connect(self.sslErrorHandler)
 
-        ssl_config = QSslConfiguration.defaultConfiguration()
-        certs = ssl_config.caCertificates()
+        # ssl_config = QSslConfiguration.defaultConfiguration()
+        # certs = ssl_config.caCertificates()
 
-        certs.append(QSslCertificate(QFile("portable/ca-bundle.crt")))
-        ssl_config.setCaCertificates(certs)
+        # certs.append(QSslCertificate(QFile("portable/ca-bundle.crt")))
+        # ssl_config.setCaCertificates(certs)
 
         self.ll.addWidget(self.webview)
 

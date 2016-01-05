@@ -72,7 +72,7 @@ PORTABLE_RESOURCES = [
     'portable/bootstrap/fonts/glyphicons-halflings-regular.woff',
     'portable/bootstrap/fonts/glyphicons-halflings-regular.woff2',
     # other
-    'portable/ca-bundle.crt',
+    # 'portable/ca-bundle.crt',
     'portable/lsbtunnel.exe',
 ]
 

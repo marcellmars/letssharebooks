@@ -1459,7 +1459,7 @@ class LetsShareBooksDialog(QDialog):
                                     gotcha = True
                                     return
                     finally:
-                        if not gotcha and self.parse_log_counter < 30:
+                        if not gotcha and self.parse_log_counter < 300:
                             #- it recursively calls itself every 500 ms -------
                             #- until it catches the string from server --------
                             QTimer.singleShot(500, parse_log)

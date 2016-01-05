@@ -1376,19 +1376,19 @@ class LetsShareBooksDialog(QDialog):
 
     def establish_ssh_server(self):
         self.us.port = str(int(random.random()*48000+1024))
-        self.calibre_server_port_mock = "56665"
+        calibre_server_port_mock = "56665"
         if sys.platform == "win32":
-            self.lsbtunnel = os.path.join(self.us.portable_directory,
+            lsbtunnel = os.path.join(self.us.portable_directory,
                                           'portable',
                                           'lsbtunnel.exe')
             #- `echo y` accept any host while connecting through plink.exe
             self.ssh_proc = subprocess.Popen(
                 'echo y|{0} -N -T tunnel@{1} -R {2}:localhost:{3} -P 722'
-                .format(self.lsbtunnel,
+                .format(lsbtunnel,
                         prefs['lsb_server'],
                         self.us.port,
                         #self.calibre_server_port),
-                        self.calibre_server_port_mock),
+                        calibre_server_port_mock),
                 shell=True)
             self.lsb_url = "{}://www{}.{}".format(prefs['server_prefix'],
                                                   self.us.port,
@@ -1416,7 +1416,7 @@ class LetsShareBooksDialog(QDialog):
                 '-l', 'tunnel', '-R', '{}:localhost:{}'.format(
                     self.us.port,
                     #self.calibre_server_port),
-                    self.calibre_server_port_mock),
+                    calibre_server_port_mock),
                 '-p', '722'])
             if self.ssh_proc:
                 self.parse_log_counter = 0
@@ -1541,8 +1541,8 @@ class LetsShareBooksDialog(QDialog):
     def update_download_state(self):
         logger.info("FILES_SIZE_LOG: {}".format(self.files_size_log))
         book_s = "books"
-        self.tn_books = len(self.book_imports)
-        if self.tn_books == 1:
+        tn_books = len(self.book_imports)
+        if tn_books == 1:
             book_s = "book"
         self.tn_files = 0
 
@@ -1571,13 +1571,13 @@ class LetsShareBooksDialog(QDialog):
             t_length += self.files_size_log[k][1]
             td_length += self.files_size_log[k][0]
 
-        self.rst = t_length - td_length
+        rst = t_length - td_length
 
         info_text = "{} {} in {} files. {:>3.2f} MB to be downloaded"\
-                    .format(self.tn_books,
+                    .format(tn_books,
                             book_s,
                             self.tn_files,
-                            self.rst/1000000.)
+                            rst/1000000.)
         self.books.setText(info_text)
         logger.info("DOWNLOADING: {}".format(info_text))
 
@@ -1688,10 +1688,10 @@ class LetsShareBooksDialog(QDialog):
     def cancel_download(self):
         pass
 
-    def sslErrorHandler(self, reply, errorList):
-            reply.ignoreSslErrors()
-            logger.debug("SSL ERRORS: {}".format(errorList))
-            return
+    def sslErrorHandler(self, reply, error_list):
+        reply.ignoreSslErrors()
+        logger.debug("SSL ERRORS: {}".format(error_list))
+        return
 
     def update_progress_bar(self, t_books):
         if self.progress_bar.isHidden():

@@ -6,5 +6,6 @@ mock_calibre_library_1/static*
 mock_calibre_library_1/metadata*
 /memoryoftheworld/nginx/lsb_domain.crt
 /memoryofthewworld/secrets/
+/memoryofthewworld/local_env.py
 /.hosts.reg
 /.ipynb_checkpoints/PortableLSB-checkpoint.ipynb

@@ -7,7 +7,7 @@ calibre0:
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix
         - ${MOTW_HOME}/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/
-    dns: 127.0.0.1
+    dns: ["127.0.0.1"]
 
 calibre1:
     build: calibre_docker
@@ -18,5 +18,4 @@ calibre1:
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix
         - ${MOTW_HOME}/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/
-    dns: 127.0.0.1
-
+    dns: ["127.0.0.1"]

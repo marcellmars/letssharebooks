@@ -16,7 +16,7 @@ sshd:
         - "722:722"
     expose:
         - "3773"
-    dns: 127.0.0.1
+    dns: ["127.0.0.1"]
 
 mongodb:
     build: mongodb
@@ -44,7 +44,7 @@ library:
     links:
         - mongodb
         - sshd
-    dns: 127.0.0.1
+    dns: ["127.0.0.1"]
 
 prosody:
     build: prosody
@@ -54,12 +54,13 @@ prosody:
         LSB_DOMAIN: ${LSB_DOMAIN}
     ports:
         - "5222:5222"
+        - "5269:5269"
     expose:
         - "5280"
         - "5281"
     links:
         - library
-    dns: 127.0.0.1
+    dns: ["127.0.0.1"]
 
 nginx:
     build: nginx
@@ -82,4 +83,4 @@ nginx:
       - db
     volumes_from:
       - php5
-    dns: 127.0.0.1
+    dns: ["127.0.0.1"]

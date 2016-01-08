@@ -6,7 +6,7 @@ sshd:
         - "722:722"
     expose:
         - "3773"
-    dns: 127.0.0.1
+    dns: ["127.0.0.1"]
 
 mongodb:
     build: mongodb
@@ -30,7 +30,7 @@ library:
     links:
         - mongodb
         - sshd
-    dns: 127.0.0.1
+    dns: ["127.0.0.1"]
 
 prosody:
     build: prosody
@@ -44,7 +44,7 @@ prosody:
     expose:
         - "5280"
         - "5281"
-    dns: 127.0.0.1
+    dns: ["127.0.0.1"]
 
 nginx:
     build: nginx
@@ -57,4 +57,4 @@ nginx:
         - sshd
         - library
         - prosody
-    dns: 127.0.0.1
+    dns: ["127.0.0.1"]

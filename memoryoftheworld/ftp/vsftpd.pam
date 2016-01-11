@@ -1,0 +1,3 @@
+# Virtual user
+auth required pam_pwdfile.so pwdfile /etc/vsftpd/vuser.passwd
+account required pam_permit.so

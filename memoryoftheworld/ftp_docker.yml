@@ -1,0 +1,11 @@
+ftp:
+    build: ftp
+    entrypoint: /usr/local/bin/supervisord
+    ports:
+      - "20:20"
+      - "21:21"
+    volumes:
+        - /tmp/gugu/:/home/ubu/
+        # - /tmp/anon_ftp:/tmp/anonymous/
+        # htpasswd -bcd ftp/vsftpd/vuser.passwd user pass
+        - ftp/vsftpd/:/etc/vsftpd/

@@ -51,6 +51,12 @@ CONF = {
         'tools.staticfile.filename': os.path.join(CURRENT_DIR,
                                                   'static/connected.ico')
     }
+    '/robots.txt': {
+        'tools.staticfile.on': True,
+        'tools.staticfile.filename': os.path.join(CURRENT_DIR,
+                                                  'static/robots.txt')
+    }
+
 }
 
 #------------------------------------------------------------------------------

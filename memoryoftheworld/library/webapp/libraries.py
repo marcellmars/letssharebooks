@@ -542,7 +542,8 @@ def add_portable(db, portable_url):
     '''
     LOG.info('>>> Registering portable {}'.format(portable_url))
     try:
-        libjs = requests.get(portable_url + '/static/data.js').text
+        libjs = requests.get(portable_url + '/static/data.js').text.strip()
+        # remove javascript wrapper around json
         libjson = libjs[libjs.find('{'):-1]
         catalog = simplejson.loads(libjson)
         res, err = import_catalog(db, catalog, portable_url)

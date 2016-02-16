@@ -104,7 +104,7 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging -------------------------------------------------------------
-logger = MyLogger()
+logger = MyLogger("/tmp/letssharebooks_windows.log")
 # logger = Om() # for silent logger
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
@@ -381,11 +381,12 @@ class MetadataLibThread(QThread):
         books_ids = current_db.all_book_ids()
         all_book_ids = []
         for book in books_ids:
-            logger.debug("BOOK_ID BEFORE: {}".format(book))
+            # logger.debug("BOOK_ID BEFORE: {}".format(book))
             b = {}
             #md_fields = current_db.get_proxy_metadata(book)
             md_fields = current_db.get_metadata(book)
-
+            logger.debug("CURRENT_DB PATH: {}".format(current_db._field_for('path', book).replace('/', os.sep)))
+            # logger.debug("BOOK METADATA: {}".format(md_fields.__dict__))
             b['timestamp'] = md_fields.timestamp.isoformat()
             b['pubdate'] = md_fields.pubdate.isoformat()
 
@@ -418,7 +419,7 @@ class MetadataLibThread(QThread):
             if not md_fields.title:
                 md_fields.title = "Unknown"
             b['title'] = md_fields.title.replace('"', "'")
-            logger.debug("BOOK_ID: {}, TITLE: {}".format(book, b['title']))
+            # logger.debug("BOOK_ID: {}, TITLE: {}".format(book, b['title']))
             if not md_fields.title_sort:
                 md_fields.title_sort = "Unknown"
             b['title_sort'] = md_fields.title_sort
@@ -443,22 +444,22 @@ class MetadataLibThread(QThread):
             bk = []
 
             b['cover_url'] = ""
+            dir_path = current_db._field_for('path', book)
+            b['cover_url'] = "{}/cover.jpg".format(dir_path)
             try:
                 if md_fields.format_metadata:
                     for frmat in md_fields.format_metadata.iteritems():
-                        # logger.debug("FRMAT: {}".format(frmat))
+                        logger.debug("FRMAT: {}".format(frmat))
                         file_path = frmat[1]["path"].split(os.path.sep)[-3:]
                         file_path = os.path.join(*file_path)
                         file_name = frmat[1]["path"].split(os.path.sep)[-1]
-                        dir_path = frmat[1]["path"].split(os.path.sep)[-3:-1]
-                        dir_path = os.path.join(*dir_path)
-
+                        # dir_path = frmat[1]["path"].split(os.path.sep)[-3:-1]
+                        # dir_path = os.path.join(*dir_path)
                         bkf[frmat[0]] = {'file_path': "{}".format(file_path),
                                          'file_name': "{}".format(file_name),
                                          'dir_path': "{}/".format(dir_path),
                                          'size': frmat[1]["size"]}
                         bk.append(frmat[0])
-                    b['cover_url'] = "{}/cover.jpg".format(dir_path)
             except Exception as e:
                 #- most probably calibre needs [Fix missing formats] ----------
                 #- maybe send some info to the user about this ----------------
@@ -468,12 +469,9 @@ class MetadataLibThread(QThread):
 
             if not bkf:
                 bkf['0'] = {'file_path': "{}/{}.{}"
-                            .format(current_db.field_for('path', book),
-                                    ".",
-                                    "."),
+                            .format(dir_path, ".", "."),
                             'file_name': "...",
-                            'dir_path': "{}"
-                            .format(current_db.field_for('path', book)),
+                            'dir_path': "{}".format(dir_path),
                             'size': 0}
 
             b['format_metadata'] = bkf
@@ -488,7 +486,7 @@ class MetadataLibThread(QThread):
 
             b['identifiers'] = ids
             all_book_ids.append(b['uuid'])
-            logger.debug("BOOK_ID FINISHED: {}".format(book))
+            # logger.debug("BOOK_ID FINISHED: {}".format(book))
             books.append(b)
 
         books.append(set(all_book_ids))
@@ -736,6 +734,11 @@ class ConnectionCheck(QThread):
             time.sleep(5)
         time.sleep(5)
         try:
+            lsb_url = "{}://library.{}".format(prefs['server_prefix'],
+                                               prefs['lsb_server'])
+            requests.get('{}/ping_autocomplete'.format(lsb_url),
+                         verify=False,
+                         timeout=3)
             while self.gotcha:
                 for url in self.urls:
                     url = "{}/static/favicon.svg".format(url)
@@ -1459,7 +1462,7 @@ class LetsShareBooksDialog(QDialog):
                                     gotcha = True
                                     return
                     finally:
-                        if not gotcha and self.parse_log_counter < 300:
+                        if not gotcha and self.parse_log_counter < 60:
                             #- it recursively calls itself every 500 ms -------
                             #- until it catches the string from server --------
                             QTimer.singleShot(500, parse_log)

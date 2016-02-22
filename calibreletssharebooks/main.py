@@ -104,8 +104,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging -------------------------------------------------------------
-logger = MyLogger("/tmp/letssharebooks_windows.log")
-# logger = Om() # for silent logger
+# logger = MyLogger("/tmp/letssharebooks_windows.log")
+logger = Om() # for silent logger
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------

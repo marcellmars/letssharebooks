@@ -1,15 +1,15 @@
 server {
         listen 80;
         listen [::]:80;
-        # listen 443 ssl spdy;
-        # listen [::]:443 ssl spdy;
+        listen 443 ssl spdy;
+        listen [::]:443 ssl spdy;
 
         server_name couchdb.javnaknjiznica.org;
 
-         # add_header Strict-Transport-Security max-age=31536000;
+        add_header Strict-Transport-Security max-age=31536000;
 
-        # ssl_certificate /etc/ssl/certs/lsb_domain.crt;
-        # ssl_certificate_key /etc/ssl/private/lsb_domain.key;
+        ssl_certificate /etc/ssl/certs/lsb_domain.crt;
+        ssl_certificate_key /etc/ssl/private/lsb_domain.key;
 
         location /db/ {
               proxy_hide_header Access-Control-Allow-Origin;

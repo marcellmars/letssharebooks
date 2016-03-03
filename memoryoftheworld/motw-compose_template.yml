@@ -1,3 +1,11 @@
+couchdb:
+  build: couchdb
+  container_name: couchdb
+  entrypoint: /usr/local/bin/supervisord
+  expose:
+    - "5984"
+  dns: ["127.0.0.1"]
+
 rsync:
   build: rsync
   container_name: rsync
@@ -71,6 +79,7 @@ nginx:
       - ${RSYNC_DIRECTORY}/rzynk/:/var/www/rzynk/
       - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/docker_volumes/
       - ${MOTW_WORDPRESS_HOME}/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
+      - $(MOTW_MEDIAWIKI_HOME)/mediawiki:/var/www/mediawiki/
     ports:
       - "80:80"
       - "443:443"
@@ -78,6 +87,7 @@ nginx:
       - sshd
       - library
       - prosody
+      - couchdb
     external_links:
       - php5
       - db

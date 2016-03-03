@@ -79,7 +79,7 @@ nginx:
       - ${RSYNC_DIRECTORY}/rzynk/:/var/www/rzynk/
       - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/docker_volumes/
       - ${MOTW_WORDPRESS_HOME}/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
-      - $(MOTW_MEDIAWIKI_HOME)/mediawiki:/var/www/mediawiki/
+      - $(MOTW_MEDIAWIKI_HOME)/mediawiki/:/var/www/mediawiki/
     ports:
       - "80:80"
       - "443:443"

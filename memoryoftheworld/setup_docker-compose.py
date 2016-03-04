@@ -28,6 +28,8 @@ for i in FILES:
                                      G.MYSQL_USER)
                             .replace('''${MOTW_WORDPRESS_HOME}''',
                                      G.MOTW_WORDPRESS_HOME)
+                            .replace('''${MOTW_MEDIAWIKI_HOME}''',
+                                     G.MOTW_MEDIAWIKI_HOME)
                             .replace('''${RSYNC_DIRECTORY}''',
                                      G.RSYNC_DIRECTORY)
                             .replace('''${LSB_DOMAIN}''',

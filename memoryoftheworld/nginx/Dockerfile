@@ -5,8 +5,13 @@ MAINTAINER Marcell Mars "https://github.com/marcellmars"
 #---- this is convenient setup with cache for local development ---------------
 # RUN echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
 
-RUN apt-get update \
-    && apt-get -y install nginx
+RUN apt-get update &&\
+    apt-get install -y software-properties-common
+
+RUN add-apt-repository ppa:nginx/stable -y
+
+RUN apt-get update
+RUN apt-get install -y nginx
 
 ADD nginx.conf /etc/supervisor/conf.d/
 ADD gzip.conf /etc/nginx/conf.d/

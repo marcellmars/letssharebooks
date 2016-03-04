@@ -1,4 +1,5 @@
 bind-interfaces
 listen-address=127.0.0.1
+server=172.17.0.1
 server=8.8.8.8
 address=/memoryoftheworld.org/127.0.0.1

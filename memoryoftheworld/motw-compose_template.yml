@@ -1,3 +1,28 @@
+db:
+  image: tutum/mysql:5.5
+  container_name: db
+  environment:
+    MYSQL_PASS: "${MYSQL_PASS}"
+    MYSQL_USER: "${MYSQL_USER}"
+    # STARTUP_SQL: "/tmp/db/startup.sql"
+  volumes:
+    - /tmp/db/:/tmp/db/
+    - ${MOTW_PERSISTENCE}/mysql/:/var/lib/mysql/
+  expose:
+    - "3306"
+
+php5:
+  build: php5
+  container_name: php5
+  entrypoint: /usr/local/bin/supervisord
+  volumes: 
+      - ${MOTW_WORDPRESS_HOME}/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
+      - ${MOTW_MEDIAWIKI_HOME}/mediawiki/:/var/www/mediawiki
+  expose:
+      - "9000"
+  links:
+      - db
+
 couchdb:
   build: couchdb
   container_name: couchdb
@@ -78,8 +103,8 @@ nginx:
       - ${MOTW_HOME}/letssharebooks/cache:/var/www/cache
       - ${RSYNC_DIRECTORY}/rzynk/:/var/www/rzynk/
       - ${MOTW_HOME}/letssharebooks/memoryoftheworld/nginx/sites-enabled/:/etc/nginx/docker_volumes/
-      - ${MOTW_WORDPRESS_HOME}/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
-      - $(MOTW_MEDIAWIKI_HOME)/mediawiki/:/var/www/mediawiki/
+      # - ${MOTW_WORDPRESS_HOME}/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
+      # - ${MOTW_MEDIAWIKI_HOME}/mediawiki/:/var/www/mediawiki/
     ports:
       - "80:80"
       - "443:443"
@@ -88,7 +113,6 @@ nginx:
       - library
       - prosody
       - couchdb
-    external_links:
       - php5
       - db
     volumes_from:

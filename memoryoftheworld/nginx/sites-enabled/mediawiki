@@ -1,10 +1,10 @@
 server {
         listen 80;
         listen [::]:80;
-        listen 443 default ssl spdy;
+        listen 443 ssl spdy;
         listen [::]:443 ssl spdy;
 
-        server_name wiki.javnaknjiznica.org javnaknjiznica.org;
+        server_name wiki.javnaknjiznica.org;
 
         if ($scheme != "https") {
            rewrite ^ https://$server_name$request_uri? redirect;
@@ -18,17 +18,13 @@ server {
         root /var/www/mediawiki/;
         index index.php;
         access_log /var/log/nginx/wiki.javnaknjiznica.org-access.log;
-        error_log /var/log/nginx/wiki.javnaknjiznia.org-error.log;
+        error_log /var/log/nginx/wiki.javnaknjiznica.org-error.log;
 
         if (!-e $request_filename) {
             rewrite /wp-admin$ $scheme://$host$uri/ permanent;
             rewrite ^(/[^/]+)?(/wp-.*) $2 last;
             rewrite ^(/[^/]+)?(/.*\.php) $2 last;
         }
-
-        # location / {
-        #     try_files $uri $uri/ /index.php?$args ;
-        # }
 
         location / {
             try_files $uri $uri/ @rewrite;
@@ -47,6 +43,7 @@ server {
             fastcgi_split_path_info ^(.+\.php)(/.+)$;
             fastcgi_pass php5:9000;
             fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; 
             include fastcgi_params;
         }
 

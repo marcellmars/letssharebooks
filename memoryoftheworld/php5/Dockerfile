@@ -35,3 +35,4 @@ RUN sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" /etc
     && rm /etc/php5/mods-available/snmp.ini
 
 ADD php5.conf /etc/supervisor/conf.d/
+ADD dnsmasq.local /etc/dnsmasq.d/local

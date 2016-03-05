@@ -10,6 +10,7 @@ RUN apt-get update \
                           php5-gd \
                           php5-intl \
                           php-pear \
+                          php-mail \
                           php5-imagick \
                           php5-imap \
                           php5-mcrypt \

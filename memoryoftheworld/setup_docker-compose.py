@@ -5,7 +5,6 @@ import local_env as G
 LSBM = '/letssharebooks/memoryoftheworld/'
 FILES = [["docker-compose", ".yml"],
          ["motw-compose", ".yml"],
-         ["motw-wordpress", ".yml"],
          ["calibre_docker", ".yml"],
          ["nginx/lsb_domains", ""],
          ["nginx/static_web/candy/index", ".html"],

@@ -33,14 +33,12 @@ open("/etc/hosts", "w").writelines(hosts_lines)
 with open("/etc/dnsmasq.d/local", "w") as f:
     config = "\n".join(["bind-interfaces",
                         "listen-address=127.0.0.1",
-                        "server=172.17.42.1",
-                        "server=8.8.8.8",
                         "address=/xmpp.{}/127.0.0.1".format(LSB_DOMAIN),
                         "srv-host=_xmpp-client._tcp.xmpp.{0}, xmpp.{0},5222\n"
                         .format(LSB_DOMAIN)])
     f.write(config)
 
-d = subprocess.Popen(['supervisorctl', 'restart', 'dnsmasq'])
+d = subprocess.Popen(['supervisorctl', '-s', 'http://localhost:9001', 'restart', 'dnsmasq'])
 d.communicate()
 
 #------------------------------------------------------------------------------

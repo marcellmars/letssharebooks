@@ -4,7 +4,7 @@ server {
         listen 443 ssl spdy;
         listen [::]:443 ssl spdy;
 
-        server_name couchdb.javnaknjiznica.org;
+        server_name couchdb.motw.dev;
 
         add_header Strict-Transport-Security max-age=31536000;
 
@@ -45,6 +45,6 @@ server {
 }
 
 
-        access_log /var/log/nginx/couchdb.javnaknjiznica.org-access.log;
-        error_log /var/log/nginx/couchdb.javnaknjiznica.org-error.log;
+        access_log /var/log/nginx/couchdb.motw.dev-access.log;
+        error_log /var/log/nginx/couchdb.motw.dev-error.log;
 }

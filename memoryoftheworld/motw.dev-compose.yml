@@ -1,3 +1,23 @@
+dnsdev:
+  build: dnsdev
+  container_name: dnsdev
+  entrypoint: /usr/local/bin/supervisord
+  ports:
+    - "53:53"
+  links:
+      - sshd
+      - library
+      - prosody
+      - couchdb
+      - nginx
+
+couchdb:
+  build: couchdb
+  container_name: couchdb
+  entrypoint: /usr/local/bin/supervisord
+  expose:
+    - "5984"
+
 sshd:
     build: ssh
     container_name: sshd
@@ -6,12 +26,15 @@ sshd:
         - "722:722"
     expose:
         - "3773"
-    dns: ["127.0.0.1"]
 
 mongodb:
     build: mongodb
     container_name: mongodb
     entrypoint: /usr/bin/mongod
+    #--------------------------------------------------------------------------
+    #- in production this will make mongodb permanent at host -----------------
+    volumes:
+       - /home/mnt/docker-persistence/mongodb/:/data/db/
     expose:
         - "27017"
 
@@ -22,39 +45,45 @@ library:
     #--------------------------------------------------------------------------
     #- it might be good to uncomment this volume for webapp development -------
     # volumes: 
-    #     - ${MOTW_HOME}/letssharebooks/library:/var/www/library
+    #     - /home/m/devel/letssharebooks/library:/var/www/library
     environment:
-        LSB_DOMAIN: ${LSB_DOMAIN}
+        LSB_DOMAIN: motw.dev
     expose:
         - "4321"
     links:
         - mongodb
         - sshd
-    dns: ["127.0.0.1"]
 
 prosody:
     build: prosody
     container_name: prosody
     entrypoint: /usr/local/bin/supervisord
     environment:
-        LSB_DOMAIN: ${LSB_DOMAIN}
+        LSB_DOMAIN: motw.dev
     ports:
         - "5222:5222"
         - "5269:5269"
     expose:
         - "5280"
         - "5281"
+    links:
+        - library
     dns: ["127.0.0.1"]
 
 nginx:
     build: nginx
     container_name: nginx
     entrypoint: /usr/local/bin/supervisord
+    volumes:
+      # - ./cache:/var/www/cache
+      - ./rsync/rzynk/:/var/www/rzynk/
+      - ./nginx/sites-enabled/:/etc/nginx/docker_volumes/
     ports:
-        - "80:80"
-        - "443:443"
+      - "80:80"
+      # - "53:53"
+      - "443:443"
     links:
-        - sshd
-        - library
-        - prosody
-    dns: ["127.0.0.1"]
+      - sshd
+      - library
+      - prosody
+      - couchdb

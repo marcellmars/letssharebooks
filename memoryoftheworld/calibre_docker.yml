@@ -6,7 +6,7 @@ calibre0:
         MCL: "0"
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix
-        - ${MOTW_HOME}/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/
+        - ../calibreletssharebooks/:/tmp/letssharebooks/
     dns: ["127.0.0.1"]
 
 calibre1:
@@ -17,5 +17,5 @@ calibre1:
         MCL: "1"
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix
-        - ${MOTW_HOME}/letssharebooks/calibreletssharebooks/:/tmp/letssharebooks/
+        - ../calibreletssharebooks/:/tmp/letssharebooks/
     dns: ["127.0.0.1"]

@@ -451,7 +451,7 @@ class MetadataLibThread(QThread):
                     for frmat in md_fields.format_metadata.iteritems():
                         logger.debug("FRMAT: {}".format(frmat))
                         file_path = frmat[1]["path"].split(os.path.sep)[-3:]
-                        file_path = os.path.join(*file_path)
+                        file_path = posixpath.join(*file_path)
                         file_name = frmat[1]["path"].split(os.path.sep)[-1]
                         # dir_path = frmat[1]["path"].split(os.path.sep)[-3:-1]
                         # dir_path = os.path.join(*dir_path)

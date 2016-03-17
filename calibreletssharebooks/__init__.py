@@ -14,7 +14,7 @@ class LetsShareBooks(InterfaceActionBase):
     description         = 'Share your Calibre library at http://www.memoryoftheworld.org'
     supported_platforms = ['windows', 'osx', 'linux']
     author              = 'Marcell Mars'
-    version             = (4, 0, 3)
+    version             = (4, 0, 4)
     minimum_calibre_version = (0, 9, 30)
     actual_plugin       = 'calibre_plugins.letssharebooks.ui:LetsShareBooksUI'
 

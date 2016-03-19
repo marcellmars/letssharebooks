@@ -1,7 +1,7 @@
 dnsdev:
   build: dnsdev
   container_name: dnsdev
-  entrypoint: /usr/local/bin/supervisord
+  entrypoint: /sbin/my_int
   ports:
     - "53:53"
   links:
@@ -76,7 +76,7 @@ nginx:
     entrypoint: /usr/local/bin/supervisord
     volumes:
       # - ./cache:/var/www/cache
-      - ./rsync/rzynk/:/var/www/rzynk/
+      # - ./rsync/rzynk/:/var/www/rzynk/
       - ./nginx/sites-enabled/:/etc/nginx/docker_volumes/
     ports:
       - "80:80"

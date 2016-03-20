@@ -1602,11 +1602,7 @@ class LetsShareBooksDialog(QDialog):
     def http_import(self, r):
         logger.debug("DOWNLOAD URLS REQUEST: {}".format(r))
         self.books_container.show()
-        if QT_RUNNING == 5:
-            request_data = QByteArray.fromPercentEncoding(r).data()
-        else:
-            request_data = QByteArray.fromPercentEncoding(r.toUtf8()).data()
-
+        request_data = urllib.unquote(r).decode('utf8')
         req_seq = request_data[7:].split('__,__')
 
         book = {}

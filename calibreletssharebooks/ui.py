@@ -60,6 +60,7 @@ PORTABLE_RESOURCES = [
     # css
     'portable/bootstrap/css/bootstrap.min.css',
     'portable/style.css',
+    'portable/favicon.css',
     # images
     'portable/favicon.svg',
     'portable/motw.ico',

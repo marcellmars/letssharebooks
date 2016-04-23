@@ -784,6 +784,9 @@ class LetsShareBooksDialog(QDialog):
         logger.info('REDIRECTED DEBUG OUTPUT: \n\ntail -f {}/log/lsb.log\n'
                     .format(self.us.portable_directory))
 
+        logger.info('UPLOAD LOG FILE TO ETHERPAD: \n\ncurl -X POST -d @{}/log/lsb.log https://pad.memoryoftheworld.org/post\n'
+                    .format(self.us.portable_directory))
+
         if not prefs:
             #- this is most probably initial run of a plugin ------------------
             #- or someone deleted .json config file ---------------------------

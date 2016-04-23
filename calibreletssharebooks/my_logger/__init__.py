@@ -11,7 +11,7 @@ class Om:
 
 class MyLogger:
     def __init__(self,
-                 file_name="/tmp/letssharebooks_debug.log",
+                 file_name="letssharebooks_debug.log",
                  inspekt_global=None,
                  inspekt_depth=2):
 

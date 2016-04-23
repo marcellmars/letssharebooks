@@ -129,7 +129,8 @@ first_names = [u'Aristophanes',
                u'Alexandra',
                u'Aaron',
                u'Brewster',
-               u'Rick']
+               u'Rick',
+               u'William']
 
 last_names = [u'of Byzantium',
               u'Abbot',
@@ -186,4 +187,5 @@ last_names = [u'of Byzantium',
               u'Swartz',
               u'Kahle',
               u'Prelinger',
-              u'Bookwarrior']
+              u'Bookwarrior',
+              u'Goudy']

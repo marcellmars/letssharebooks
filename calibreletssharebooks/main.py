@@ -104,7 +104,7 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging -------------------------------------------------------------
-# logger = MyLogger("/tmp/letssharebooks_windows.log")
+# logger = MyLogger("letssharebooks_log.log")
 logger = Om() # for silent logger
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
@@ -414,7 +414,7 @@ class MetadataLibThread(QThread):
 
             b['uuid'] = encrypt_uid(prefs['library_uuid'],
                                     str(md_fields.uuid))
-            b['library_uuid'] = "p::{}::p".format(current_db.library_id)
+            b['library_uuid'] = "p::{}::p".format(current_db.library_aes_id)
             b['application_id'] = md_fields.id
             if not md_fields.title:
                 md_fields.title = "Unknown"
@@ -510,11 +510,12 @@ class MetadataLibThread(QThread):
 
     def get_current_db(self):
         from calibre.gui2.ui import get_gui
+        # self.sql_db = get_gui().current_db.new_api
         self.sql_db = get_gui().current_db.new_api
         library_aes_id = encrypt_uid(prefs['library_uuid'],
-                                     get_gui().current_db.library_id)
+                                     self.sql_db.library_id)
 
-        self.sql_db.library_id = library_aes_id
+        self.sql_db.library_aes_id = library_aes_id
         return self.sql_db
 
     def get_directory_path(self):
@@ -529,7 +530,7 @@ class MetadataLibThread(QThread):
     def intersect(self, books_metadata):
         local_list = set([(book['uuid'], book['last_modified'])
                           for book in books_metadata])
-        server_list = set(self.get_server_list(self.sql_db.library_id))
+        server_list = set(self.get_server_list(self.sql_db.library_aes_id))
 
         edited_list = local_list - server_list
         added_books_ids = [book[0] for book in edited_list]
@@ -556,8 +557,8 @@ class MetadataLibThread(QThread):
 
         with open(os.path.join(self.us.portable_directory,
                                'portable/data.js'), 'wb') as f:
-            library_id = self.sql_db.library_id
-            self.library['library_uuid'] = "p::{}::p".format(library_id)
+            library_aes_id = self.sql_db.library_aes_id
+            self.library['library_uuid'] = "p::{}::p".format(library_aes_id)
             self.library['last_modified'] = str(sorted(
                 [book['last_modified'] for book in books_metadata])[-1])
             #- make portable port distinctive -1337 so it can be registered ---
@@ -606,7 +607,7 @@ class MetadataLibThread(QThread):
                                    'json',
                                    'library.json'),
                       'wb') as f:
-                self.library['library_uuid'] = str(self.sql_db.library_id)
+                self.library['library_uuid'] = str(self.sql_db.library_aes_id)
                 self.library['tunnel'] = int(self.us.port)
                 self.library['books'] = {}
 

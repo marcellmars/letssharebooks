@@ -84,7 +84,10 @@ class UnitedStates(QObject):
     def __init__(self):
         QObject.__init__(self)
         self.edit_stamp = datetime.datetime(2013, 1, 11, 0, 0, 0, 0)
-        self.portable_directory = tempfile.mkdtemp()
+        tmp_lsb = os.path.join(tempfile.gettempdir(), "lsb")
+        if os.path.exists(tmp_lsb):
+            shutil.rmtree(tmp_lsb, ignore_errors=True)
+        self.portable_directory = tmp_lsb
         # self.portable_directory = "windows_logs"
         self.plugin_url = ('https://github.com/marcellmars/'
                            'letssharebooks/raw/master/calibreletssharebooks/'

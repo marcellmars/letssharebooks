@@ -109,8 +109,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging -------------------------------------------------------------
-logger = MyLogger("/tmp/letssharebooks_log.log")
-# logger = Om() # for silent logger
+# logger = MyLogger("/tmp/letssharebooks_log.log")
+logger = Om() # for silent logger
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------
@@ -1426,7 +1426,7 @@ class LetsShareBooksDialog(QDialog):
                 #- like memoryoftheworld.org but on pede.rs it listens --------
                 #- on port 443 (usually left opened on firewall ---------------
                 #- because of https) ------------------------------------------
-                '-o', 'ProxyCommand ssh -W %h:%p tunnel@ssh.pede.rs -p 443',
+                # '-o', 'ProxyCommand ssh -W %h:%p tunnel@ssh.pede.rs -p 443',
                 prefs['lsb_server'],
                 '-l', 'tunnel', '-R', '{}:localhost:{}'.format(
                     self.us.port,

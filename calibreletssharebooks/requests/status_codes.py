@@ -18,7 +18,8 @@ _codes = {
     205: ('reset_content', 'reset'),
     206: ('partial_content', 'partial'),
     207: ('multi_status', 'multiple_status', 'multi_stati', 'multiple_stati'),
-    208: ('im_used',),
+    208: ('already_reported',),
+    226: ('im_used',),
 
     # Redirection.
     300: ('multiple_choices',),
@@ -29,7 +30,8 @@ _codes = {
     305: ('use_proxy',),
     306: ('switch_proxy',),
     307: ('temporary_redirect', 'temporary_moved', 'temporary'),
-    308: ('resume_incomplete', 'resume'),
+    308: ('permanent_redirect',
+          'resume_incomplete', 'resume',),  # These 2 to be removed in 3.0
 
     # Client Error.
     400: ('bad_request', 'bad'),
@@ -51,6 +53,7 @@ _codes = {
     416: ('requested_range_not_satisfiable', 'requested_range', 'range_not_satisfiable'),
     417: ('expectation_failed',),
     418: ('im_a_teapot', 'teapot', 'i_am_a_teapot'),
+    421: ('misdirected_request',),
     422: ('unprocessable_entity', 'unprocessable'),
     423: ('locked',),
     424: ('failed_dependency', 'dependency'),
@@ -62,6 +65,7 @@ _codes = {
     444: ('no_response', 'none'),
     449: ('retry_with', 'retry'),
     450: ('blocked_by_windows_parental_controls', 'parental_controls'),
+    451: ('unavailable_for_legal_reasons', 'legal_reasons'),
     499: ('client_closed_request',),
 
     # Server Error.
@@ -75,12 +79,13 @@ _codes = {
     507: ('insufficient_storage',),
     509: ('bandwidth_limit_exceeded', 'bandwidth'),
     510: ('not_extended',),
+    511: ('network_authentication_required', 'network_auth', 'network_authentication'),
 }
 
 codes = LookupDict(name='status_codes')
 
-for (code, titles) in list(_codes.items()):
+for code, titles in _codes.items():
     for title in titles:
         setattr(codes, title, code)
-        if not title.startswith('\\'):
+        if not title.startswith(('\\', '/')):
             setattr(codes, title.upper(), code)

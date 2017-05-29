@@ -86,6 +86,11 @@ except ImportError:
                         QLabel)
     QT_RUNNING = 5
 
+from calibre_plugins.letssharebooks import urllib3 as urllib3
+from calibre_plugins.letssharebooks import chardet as chardet
+from calibre_plugins.letssharebooks import certifi as certifi
+
+
 from calibre_plugins.letssharebooks.common_utils import get_icon
 from calibre_plugins.letssharebooks.config import prefs, ConfigWidget
 from calibre_plugins.letssharebooks import requests
@@ -104,8 +109,8 @@ if False:
     get_icons = get_resources = None
 
 #- set up logging -------------------------------------------------------------
-# logger = MyLogger("letssharebooks_log.log")
-logger = Om() # for silent logger
+logger = MyLogger("/tmp/letssharebooks_log.log")
+# logger = Om() # for silent logger
 logger.debug("QT_RUNNING: {}".format(QT_RUNNING))
 
 #------------------------------------------------------------------------------
@@ -137,7 +142,7 @@ class Downloader(QThread):
         with open(self.dl_file, "wb") as f:
             total_length = None
             try:
-                response = requests.get(self.url, stream=True, verify=False)
+                response = requests.get(self.url, stream=True, verify=False, timeout=10)
                 #response = requests.get(self.url, verify=False)
                 total_length = response.headers.get('content-length')
             except Exception as e:
@@ -498,7 +503,8 @@ class MetadataLibThread(QThread):
                              .format(prefs['server_prefix'],
                                      prefs['lsb_server']),
                              params={'uuid': uuid4},
-                             verify=False)
+                             verify=False,
+                             timeout=10)
             catalog = r.json()
         except:
             catalog = None
@@ -630,7 +636,9 @@ class MetadataLibThread(QThread):
                     "{}://library.{}/upload_catalog".format(
                         prefs['server_prefix'],
                         prefs['lsb_server']),
-                    files={'uploaded_file': f}, verify=False)
+                    files={'uploaded_file': f},
+                    verify=False,
+                    timeout=10)
                 if r.ok:
                     um = "{} books' metadata are uploading{}".format(
                         n_total,
@@ -739,12 +747,12 @@ class ConnectionCheck(QThread):
                                                prefs['lsb_server'])
             requests.get('{}/ping_autocomplete'.format(lsb_url),
                          verify=False,
-                         timeout=3)
+                         timeout=10)
             while self.gotcha:
                 for url in self.urls:
                     url = "{}/static/favicon.svg".format(url)
                     logger.info("{} CHECKED!".format(url))
-                    if not requests.get(url, verify=False, timeout=(5)).ok:
+                    if not requests.get(url, verify=False, timeout=(10)).ok:
                         self.lost_connection.emit()
                         self.gotcha = False
                         return
@@ -1092,7 +1100,7 @@ class LetsShareBooksDialog(QDialog):
                 'https://raw.github.com/marcellmars/letssharebooks/master/'
                 'calibreletssharebooks/_version',
                 verify=False,
-                timeout=3)
+                timeout=10)
             self.latest_version = r.text[:-1]
         except:
             self.latest_version = "0.0.0"
@@ -1418,7 +1426,7 @@ class LetsShareBooksDialog(QDialog):
                 #- like memoryoftheworld.org but on pede.rs it listens --------
                 #- on port 443 (usually left opened on firewall ---------------
                 #- because of https) ------------------------------------------
-                #'-o', 'ProxyCommand ssh -W %h:%p tunnel@ssh.pede.rs -p 443',
+                '-o', 'ProxyCommand ssh -W %h:%p tunnel@ssh.pede.rs -p 443',
                 prefs['lsb_server'],
                 '-l', 'tunnel', '-R', '{}:localhost:{}'.format(
                     self.us.port,

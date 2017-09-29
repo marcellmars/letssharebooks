@@ -33,9 +33,9 @@ books = {
         # 'field': 'id'
     # },
     # below will exclude library_uuid field from list after GET request
-    'datasource': {
-        'projection': {'library_uuid': 0}
-    },
+    # 'datasource': {
+    #     'projection': {'library_uuid': 0}
+    # },
     # Schema definition, based on Cerberus grammar. Check the Cerberus project
     # (https://github.com/pyeve/cerberus) for details.
     'schema': {
@@ -46,7 +46,7 @@ books = {
         },
         'timestamp': {'type': 'datetime'},
         'comments': {'type': 'string'},
-        'application_id': {'type': 'int'},
+        'application_id': {'type': 'integer'},
         'last_modified': {'type': 'datetime'},
         'cover_url': {'type': 'string'},
         'publisher': {'type': 'string'},
@@ -56,37 +56,35 @@ books = {
                                    'format': {'type': 'string'},
                                    'dir_path': {'type': 'string'},
                                    'file_name': {'type': 'string'},
-                                   'size': {'type': 'int'}
+                                   'size': {'type': 'integer'}
                                }
                     }
          },
         'pubdate': {'type': 'datetime'},
-        'librarian': {'type': 'string'},
         'identifiers': {'type': 'list',
-                        'schema': {
-                            'type': 'dict',
-                            'schema': {
-                                'identifier': {'type': 'string'},
-                                'value': {'type': 'string'}
-                            }
+                        'schema': {'type': 'dict',
+                                   'schema': {
+                                       'scheme': {'type': 'string'},
+                                       'code': {'type': 'string'}
+                                   }
                         }
         },
-        'librarian': {'type': 'objectid',
+        'librarian': {'type': 'string',
                       'required': True,
                       'data_relation': {
-                          'resource': 'collection',
+                          'resource': 'collections',
                           'field': 'librarian',
                           'embeddable': True
-                      },
-        'library_uuid': {'type': 'objectid',
+                      }
+        },
+        'library_uuid': {'type': 'string',
                          'required': True,
                          'data_relation': {
-                             'resource': 'collection',
+                             'resource': 'collections',
                              'field': 'library_uuid'
                          }
         },
         'motw_uuid': {'type': 'string'}}
-    }
 }
 
 collections = {
@@ -100,13 +98,17 @@ collections = {
 
     'schema': {
         'books': {'type': 'list',
-                  'schema': {
-                      'type': 'objectid',
-                      'required': True,
-                      'data_relation': {
-                          'resource': 'books',
-                          'field': 'motw_uuid'
-                      }
+                  'schema': {'type': 'dict',
+                             'schema': {
+                                 'motw_uuid': {
+                                     'type': 'string',
+                                     'data_relation': {
+                                         'resource': 'books',
+                                         'field': 'motw_uuid',
+                                         'embeddable': True
+                                     }
+                                 }
+                             }
                   }},
         'librarian': {
             'type': 'string',
@@ -124,5 +126,5 @@ collections = {
 # be accessible to the API consumer.
 DOMAIN = {
     'books': books,
-    'librarians': collections,
+    'collections': collections,
 }

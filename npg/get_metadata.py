@@ -19,29 +19,42 @@ dc = {
 }
 
 
-def add_new(resource, payload, base_url=dc['base_url']):
+def add_item(resource, payload, base_url=dc['base_url']):
     headers = {'Content-Type': 'application/json'}
-    r = requests.post(base_url + resource, payload, headers=headers)
-    print("posted @{} with status code: {}\nand content: {}".format(resource,
+    r = requests.post("{}{}".format(base_url, resource), payload, headers=headers)
+    print("POSTed @{} with status code: {}\nand content: {}".format(resource,
                                                                     r.status_code,
                                                                     r.content))
 
     sccs = []
     if r.status_code == 201:
         response = r.json()
-        if response['_status'] == 'OK':
+        if response['_status'] == 'OK' and '_items' in response:
             for res in response['_items']:
                 if res['_status'] == "OK":
                     sccs.append(res['_id'])
     return sccs
 
 
-def delete_item(resource, item, base_url=dc['base_url']):
-    r = requests.delete("{}{}/{}".format(base_url, resource, item))
+def edit_item(resource, payload, item, base_url=dc['base_url']):
+    headers = {'Content-Type': 'application/json'}
+    r = requests.patch("{}{}/{}".format(base_url, resource, item), payload, headers=headers)
+    print("PATCHed @{} with status code: {}\nand content: {}".format(resource,
+                                                                     r.status_code,
+                                                                     r.content))
+    return r
+
+
+def delete_item(resource, payload, item, base_url=dc['base_url']):
+    headers = {'Content-Type': 'application/json',
+               'LIBRARY_UUID': payload['library_uuid'],
+               'LIBRARY_SECRET': payload['library_secret']}
+    r = requests.delete("{}{}/{}".format(base_url, resource, item), headers=headers)
     print("deleted {} @{} with status code: {}\nand content: {}".format(item,
                                                                         resource,
                                                                         r.status_code,
                                                                         r.content))
+    return r
 
 
 def calibre_to_json(directory_path, librarian, library_uuid, library_secret, db_file='metadata.db'):
@@ -176,15 +189,26 @@ def save_file(dc):
 
 
 def add_catalog(dc):
-    r = add_new('catalogs',
-                json.dumps({
-                    "librarian": dc['librarian'],
-                    "library_uuid": dc['library_uuid'],
-                    "library_secret": dc['library_secret']
-                }))
+    r = add_item('catalogs',
+                 json.dumps([{
+                     "librarian": dc['librarian'],
+                     "library_uuid": dc['library_uuid'],
+                     "library_secret": dc['library_secret']
+                 }]))
     print("add_catalog() response content: {}".format(r))
 
 
 def add_books(dc):
-    r = add_new('books', open("{}{}".format(dc['jsonpath'], dc['jsonname'])))
+    r = add_item('books', open("{}{}".format(dc['jsonpath'], dc['jsonname'])))
     print("add_books() response content: {}".format(r))
+
+
+def edit_catalog(dc, item):
+    r = edit_item('catalogs',
+                  json.dumps({
+                      "librarian": dc['librarian'],
+                      "library_uuid": dc['library_uuid'],
+                      "library_secret": dc['library_secret']
+                  }),
+                  item)
+    print("add_catalog() response content: {}".format(r))

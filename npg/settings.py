@@ -2,8 +2,6 @@
 
 import os
 
-# We want to seamlessy run our API both locally and on Heroku. If running on
-# Heroku, sensible DB connection settings are stored in environment variables.
 MONGO_HOST = os.environ.get('MONGO_HOST', 'ds153494.mlab.com')
 MONGO_PORT = os.environ.get('MONGO_PORT', 53494)
 MONGO_USERNAME = os.environ.get('MONGO_USERNAME', 'admin')
@@ -77,7 +75,8 @@ books = {
             'required': True,
             'data_relation': {
                 'resource': 'catalogs',
-                'field': 'library_uuid'
+                'field': 'library_uuid',
+                'embeddable': True
             },
         },
         'library_secret': {
@@ -98,9 +97,11 @@ catalogs = {
         'librarian': {
             'type': 'string',
             'required': True,
+            'unique': True
         },
         'library_uuid': {
             'type': 'string',
+            'required': True,
             'unique': True
         },
         'library_secret': {

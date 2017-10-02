@@ -17,6 +17,7 @@
 
 import os
 from eve import Eve
+from flask import current_app as app
 
 # Heroku support: bind to PORT if defined, otherwise default to 5000.
 if 'PORT' in os.environ:
@@ -33,7 +34,10 @@ app = Eve()
 
 def check_catalog(items):
     print("ITEMS: {}".format(items))
-    items[0]['library_secret'] = "JOJ"
+    catalogs_secrets = app.data.driver.db['catalogs_secrets']
+    c = catalogs_secrets.insert_one({items[0]['library_uuid']: items[0]['library_secret']}).inserted_id
+    print(c)
+    del items[0]['library_secret']
     return items
 
 

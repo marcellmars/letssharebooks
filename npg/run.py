@@ -31,5 +31,18 @@ else:
 app = Eve()
 
 
+def check_catalog(items):
+    print("ITEMS: {}".format(items))
+    items[0]['library_secret'] = "JOJ"
+    return items
+
+
+def check_books(items):
+    print("ITEMS: {}".format(items))
+
+
+app.on_insert_catalogs += check_catalog
+app.on_insert_books += check_books
+
 if __name__ == '__main__':
     app.run(host=host, port=port, debug=True)

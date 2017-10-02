@@ -13,6 +13,7 @@ dc = {
     'calibre_path': "/home/m/CalibreLibraries/FooBar/",
     'librarian': 'Ezra Abbot',
     'library_uuid': 'e3b641c4-86ed-465a-9440-36a4fdd512a7',
+    'library_secret': '690e7981-08b8-4e73-a2cd-dff864a902e1',
     'jsonpath': '/tmp/',
     'jsonname': 'books.json'
 }
@@ -43,7 +44,7 @@ def delete_item(resource, item, base_url=dc['base_url']):
                                                                         r.content))
 
 
-def calibre_to_json(directory_path, librarian, library_uuid, db_file='metadata.db'):
+def calibre_to_json(directory_path, librarian, library_uuid, library_secret, db_file='metadata.db'):
     conn = sqlite3.connect(os.path.join(directory_path, db_file), sqlite3.PARSE_DECLTYPES)
     cur = conn.cursor()
     books = [book for book in cur.execute("SELECT * FROM BOOKS")]
@@ -51,6 +52,7 @@ def calibre_to_json(directory_path, librarian, library_uuid, db_file='metadata.d
     for book in books:
         b = {}
         b['library_uuid'] = library_uuid
+        b['library_secret'] = library_secret
         b['librarian'] = librarian
         b['motw_uuid'] = book[11]
         b['application_id'] = book[0]
@@ -164,7 +166,13 @@ def calibre_to_json(directory_path, librarian, library_uuid, db_file='metadata.d
 
 def save_file(dc):
     with open("{}{}".format(dc['jsonpath'], dc['jsonname']), "w") as f:
-        json.dump(calibre_to_json(dc['calibre_path'], dc['librarian'], dc['library_uuid']), f)
+        json.dump(
+            calibre_to_json(dc['calibre_path'],
+                            dc['librarian'],
+                            dc['library_uuid'],
+                            dc['library_secret']),
+            f
+        )
 
 
 def add_catalog(dc):

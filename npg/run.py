@@ -1,10 +1,33 @@
 # -*- coding: utf-8 -*-
 
 import os
+from uuid import UUID
+
 from eve import Eve
+from eve.io.base import BaseJSONEncoder
+from eve.io.mongo import Validator
+
 from flask import current_app as app
 from flask import abort
 from flask import request
+
+
+class UUIDValidator(Validator):
+    def _validate_type_uuid(self, key, value):
+        print(key, value)
+        try:
+            UUID(value)
+        except ValueError:
+            pass
+
+
+class UUIDEncoder(BaseJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            return str(obj)
+        else:
+            return super(UUIDEncoder, self).default(obj)
+
 
 if 'PORT' in os.environ:
     port = int(os.environ.get('PORT'))
@@ -14,19 +37,19 @@ else:
     host = '127.0.0.1'
 
 
-app = Eve()
+app = Eve(json_encoder=UUIDEncoder, validator=UUIDValidator)
 
 
-def check_catalogs_secrets(library_uuid, library_secret):
-    catalogs_secrets = app.data.driver.db['catalogs_secrets']
-    c = catalogs_secrets.find_one({library_uuid: library_secret})
+def check_libraries_secrets(library_uuid, library_secret):
+    libraries_secrets = app.data.driver.db['libraries_secrets']
+    c = libraries_secrets.find_one({library_uuid: library_secret})
     return c
 
 
 def check_insert_books(items):
-    if 'library_uuid' and 'library_secret' in items[0]:
-        if check_catalogs_secrets(items[0]['library_uuid'], items[0]['library_secret']):
-            del items[0]['library_secret']
+    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+        if check_libraries_secrets(request.headers['Library-Uuid'], request.headers['Library-Secret']):
+            print("@INSERT books secret passed the test...")
         else:
             abort(403)
     else:
@@ -36,8 +59,8 @@ def check_insert_books(items):
 def check_delete_item_books(item):
     print("@DELETE arg#item {}".format(item))
     print("@DELETE headers {}".format(request.headers))
-    if 'LIBRARY_UUID' and 'LIBRARY_SECRET' in request.headers:
-        if check_catalogs_secrets(request.headers['LIBRARY_UUID'], request.headers['LIBRARY_SECRET']):
+    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+        if check_libraries_secrets(request.headers['Library-Uuid'], request.headers['Library-Secret']):
             print("@DELETE {}".format(item))
         else:
             abort(403)
@@ -45,45 +68,46 @@ def check_delete_item_books(item):
         abort(403)
 
 
-def check_insert_catalogs(items):
-    print("@INSERT catalogs arg#items: {}".format(items))
-    catalogs_secrets = app.data.driver.db['catalogs_secrets']
-    if 'library_uuid' and 'library_secret' in items[0]:
-        c = catalogs_secrets.insert_one({items[0]['library_uuid']: items[0]['library_secret']}).inserted_id
+def check_insert_libraries(items):
+    print("@INSERT libraries arg#items: {}".format(items))
+    libraries_secrets = app.data.driver.db['libraries_secrets']
+    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+        c = libraries_secrets.insert_one({request.headers['Library-Uuid']: request.headers['Library-Secret']}).inserted_id
         print("inserted_id: {}".format(c))
-        del items[0]['library_secret']
     else:
         abort(403)
 
 
-def check_delete_item_catalogs(item):
+def check_delete_item_libraries(item):
     print("@DELETE arg#item {}".format(item))
     print("@DELETE headers {}".format(request.headers))
-    if 'LIBRARY_UUID' and 'LIBRARY_SECRET' in request.headers:
-        c = check_catalogs_secrets(request.headers['LIBRARY_UUID'], request.headers['LIBRARY_SECRET'])
+    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+        c = check_libraries_secrets(request.headers['Library-Uuid'], request.headers['Library-Secret'])
         if c:
-            catalogs_secrets = app.data.driver.db['catalogs_secrets']
-            catalogs_secrets.remove({request.headers['LIBRARY_UUID']: request.headers['LIBRARY_SECRET']})
+            libraries_secrets = app.data.driver.db['libraries_secrets']
+            libraries_secrets.remove({request.headers['Library-Uuid']: request.headers['Library-Secret']})
             print("@DELETE {}".format(item))
         else:
             abort(403)
     else:
         abort(403)
+
 
 def check_update(updates, original):
     print("@UPDATE arg#updates: {}, arg#original: {}".format(updates, original))
-    if 'library_uuid' and 'library_secret' in updates:
-        if check_catalogs_secrets(updates['library_uuid'], updates['library_secret']):
-            del items[0]['library_secret']
+    print("@UPDATE headers {}".format(request.headers))
+    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+        if check_libraries_secrets(request.headers['Library-Uuid'], request.headers['Library-Secret']):
+            print("@UPDATE secret passed the test...")
         else:
             abort(403)
     else:
         abort(403)
 
 
-app.on_insert_catalogs += check_insert_catalogs
-app.on_update_catalogs += check_update
-app.on_delete_item_catalogs += check_delete_item_catalogs
+app.on_insert_libraries += check_insert_libraries
+app.on_update_libraries += check_update
+app.on_delete_item_libraries += check_delete_item_libraries
 
 app.on_insert_books += check_insert_books
 app.on_update_books += check_update

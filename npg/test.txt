@@ -1,0 +1,21 @@
+>>> from pymongo import MongoClient
+>>> mc = MongoClient("localhost", 27017)
+>>> db = mc['letssharebooks']
+>>> db.libraries.drop()
+>>> db.libraries_secrets.drop()
+>>> db.books.drop()
+>>> db.collection_names()
+[]
+>>> from get_metadata import *
+>>> add_library(dc)
+POSTed @libraries with status code: 201
+>>> delete_item('libraries', dc['_id'], dc)
+deleted @libraries with status code: 204
+>>> add_library(dc)
+POSTed @libraries with status code: 201
+>>> edit_item('libraries', dc['_id'], {'librarian':'Henriette Davidson Avram'}, dc)
+PATCHed @libraries with status code: 200
+>>> dc['librarian'] = 'Henriette Davidson Avram'
+>>> save_file(dc)
+>>> add_books(dc)
+POSTed @books with status code: 201

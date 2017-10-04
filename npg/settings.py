@@ -2,22 +2,25 @@
 
 import os
 
-MONGO_HOST = os.environ.get('MONGO_HOST', 'ds153494.mlab.com')
-MONGO_PORT = os.environ.get('MONGO_PORT', 53494)
-MONGO_USERNAME = os.environ.get('MONGO_USERNAME', 'admin')
-MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD', 'letssharebooks')
+MONGO_HOST = os.environ.get('MONGO_HOST', 'localhost')
+
+# MONGO_HOST = os.environ.get('MONGO_HOST', 'ds153494.mlab.com')
+# MONGO_PORT = os.environ.get('MONGO_PORT', 53494)
+# MONGO_USERNAME = os.environ.get('MONGO_USERNAME', 'admin')
+# MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD', 'letssharebooks')
 MONGO_DBNAME = os.environ.get('MONGO_DBNAME', 'letssharebooks')
 
 RESOURCE_METHODS = ['GET', 'POST']
 
 ITEM_METHODS = ['GET', 'PATCH', 'DELETE']
-
+ITEM_URL = 'regex("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}")'
 CACHE_CONTROL = 'max-age=20'
 CACHE_EXPIRES = 20
 IF_MATCH = False
 
 books = {
     'schema': {
+        '_id': {'type': 'uuid'},
         'title': {'type': 'string'},
         'title_sort': {'type': 'string'},
         'authors': {
@@ -65,7 +68,7 @@ books = {
             'type': 'string',
             'required': True,
             'data_relation': {
-                'resource': 'catalogs',
+                'resource': 'libraries',
                 'field': 'librarian',
                 'embeddable': True
             }
@@ -74,32 +77,22 @@ books = {
             'type': 'string',
             'required': True,
             'data_relation': {
-                'resource': 'catalogs',
-                'field': 'library_uuid',
+                'resource': 'libraries',
+                'field': '_id',
                 'embeddable': True
             },
-        },
-        'library_secret': {
-            'type': 'string'
-        },
-        'motw_uuid': {
-            'unique': True,
-            'type': 'string'
         }
     }
 }
 
-catalogs = {
-    'datasource': {'projection': {'library_uuid': 0}},
+libraries = {
+    # 'datasource': {'projection': {'library_uuid': 0}},
+    'item_title': 'library',
     'cache_control': 'max-age=10,must-revalidate',
     'cache_expires': 10,
     'schema': {
+        '_id': {'type': 'uuid'},
         'librarian': {
-            'type': 'string',
-            'required': True,
-            'unique': True
-        },
-        'library_uuid': {
             'type': 'string',
             'required': True,
             'unique': True
@@ -113,25 +106,37 @@ catalogs = {
 }
 
 librarians_books = {
+    'item_methods': ['GET'], 
+    'schema': books['schema'],
+    'item_title': "librarian's books",
+    'datasource': {'source': 'books'},
+    'url': "librarians/<regex('.*'):librarian>/books",
+    'field': 'librarian'
+}
+
+librarian_by_name = {
+    'item_methods': ['GET'], 
+    'schema': libraries['schema'],
+    'item_title': 'librarian by name',
+    'datasource': {'source': 'libraries'},
+    'url': 'librarian/<regex(".*"):librarian>',
+    'field': 'librarian'
+}
+
+libraries_books = {
+    'item_methods': ['GET'], 
     'schema': books['schema'],
     'datasource': {'source': 'books'},
-    'url': "librarians/<regex('.*'):library_uuid>/books",
+    'url': "libraries/<regex('.*'):library_uuid>/books",
     'field': 'library_uuid'
 }
 
-librarians = {
-    'schema': catalogs['schema'],
-    'datasource': {'source': 'catalogs',
-                   'projection': {'library_uuid': 0}},
-    'additional_lookup': {
-        'url': 'regex("[\w]+")',
-        'field': 'library_uuid'
-    }
-}
 
 DOMAIN = {
     'books': books,
-    'catalogs': catalogs,
+    'libraries': libraries,
     'librarians_books': librarians_books,
-    'librarians': librarians
+    'librarians': librarian_by_name,
+    'libraries_books': libraries_books,
+
 }

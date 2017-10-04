@@ -12,7 +12,7 @@ dc = {
     'base_url': "http://localhost:5000/",
     'calibre_path': "/home/m/CalibreLibraries/FooBar/",
     'librarian': 'Ezra Abbot',
-    'library_uuid': 'e3b641c4-86ed-465a-9440-36a4fdd512a7',
+    '_id': 'e3b641c4-86ed-465a-9440-36a4fdd512a7',
     'library_secret': '690e7981-08b8-4e73-a2cd-dff864a902e1',
     'jsonpath': '/tmp/',
     'jsonname': 'books.json'
@@ -20,54 +20,43 @@ dc = {
 
 
 def add_item(resource, payload, base_url=dc['base_url']):
-    headers = {'Content-Type': 'application/json'}
-    r = requests.post("{}{}".format(base_url, resource), payload, headers=headers)
-    print("POSTed @{} with status code: {}\nand content: {}".format(resource,
-                                                                    r.status_code,
-                                                                    r.content))
-
-    sccs = []
-    if r.status_code == 201:
-        response = r.json()
-        if response['_status'] == 'OK' and '_items' in response:
-            for res in response['_items']:
-                if res['_status'] == "OK":
-                    sccs.append(res['_id'])
-    return sccs
-
-
-def edit_item(resource, payload, item, base_url=dc['base_url']):
-    headers = {'Content-Type': 'application/json'}
-    r = requests.patch("{}{}/{}".format(base_url, resource, item), payload, headers=headers)
-    print("PATCHed @{} with status code: {}\nand content: {}".format(resource,
-                                                                     r.status_code,
-                                                                     r.content))
-    return r
-
-
-def delete_item(resource, payload, item, base_url=dc['base_url']):
     headers = {'Content-Type': 'application/json',
-               'LIBRARY_UUID': payload['library_uuid'],
-               'LIBRARY_SECRET': payload['library_secret']}
+               'Library-Uuid': payload[0]['_id'],
+               'Library-Secret': payload[0]['library_secret']}
+    r = requests.post("{}{}".format(base_url, resource), json.dumps(payload[1]), headers=headers)
+    print("POSTed @{} with status code: {}".format(resource,
+                                                   r.status_code))
+
+
+def edit_item(resource, item, updated, dc, base_url=dc['base_url']):
+    headers = {'Content-Type': 'application/json',
+               'Library-Uuid': dc['_id'],
+               'Library-Secret': dc['library_secret']}
+    r = requests.patch("{}{}/{}".format(base_url, resource, item), json.dumps(updated), headers=headers)
+    print("PATCHed @{} with status code: {}".format(resource,
+                                                    r.status_code))
+
+
+def delete_item(resource, item, dc, base_url=dc['base_url']):
+    headers = {'Content-Type': 'application/json',
+               'Library-Uuid': dc['_id'],
+               'Library-Secret': dc['library_secret']}
     r = requests.delete("{}{}/{}".format(base_url, resource, item), headers=headers)
-    print("deleted {} @{} with status code: {}\nand content: {}".format(item,
-                                                                        resource,
-                                                                        r.status_code,
-                                                                        r.content))
-    return r
+    print("deleted @{} with status code: {}".format(resource,
+                                                    r.status_code))
 
 
-def calibre_to_json(directory_path, librarian, library_uuid, library_secret, db_file='metadata.db'):
-    conn = sqlite3.connect(os.path.join(directory_path, db_file), sqlite3.PARSE_DECLTYPES)
+def calibre_to_json(dc, db_file='metadata.db'):
+    conn = sqlite3.connect(os.path.join(dc['calibre_path'], db_file), sqlite3.PARSE_DECLTYPES)
     cur = conn.cursor()
     books = [book for book in cur.execute("SELECT * FROM BOOKS")]
     bookz = []
     for book in books:
         b = {}
-        b['library_uuid'] = library_uuid
-        b['library_secret'] = library_secret
-        b['librarian'] = librarian
-        b['motw_uuid'] = book[11]
+        b['library_uuid'] = dc['_id']
+        # b['library_secret'] = dc['library_secret']
+        b['librarian'] = dc['librarian']
+        b['_id'] = book[11]
         b['application_id'] = book[0]
         if not book[1]:
             book[1] = "Unknown"
@@ -180,35 +169,24 @@ def calibre_to_json(directory_path, librarian, library_uuid, library_secret, db_
 def save_file(dc):
     with open("{}{}".format(dc['jsonpath'], dc['jsonname']), "w") as f:
         json.dump(
-            calibre_to_json(dc['calibre_path'],
-                            dc['librarian'],
-                            dc['library_uuid'],
-                            dc['library_secret']),
+            calibre_to_json(dc),
             f
         )
 
 
-def add_catalog(dc):
-    r = add_item('catalogs',
-                 json.dumps([{
-                     "librarian": dc['librarian'],
-                     "library_uuid": dc['library_uuid'],
-                     "library_secret": dc['library_secret']
-                 }]))
-    print("add_catalog() response content: {}".format(r))
+def add_library(dc):
+    add_item('libraries',
+             [{"_id": dc['_id'],
+               "library_secret": dc['library_secret']},
+              {"librarian": dc['librarian'],
+               "_id": dc['_id']}]
+    )
 
 
 def add_books(dc):
-    r = add_item('books', open("{}{}".format(dc['jsonpath'], dc['jsonname'])))
-    print("add_books() response content: {}".format(r))
-
-
-def edit_catalog(dc, item):
-    r = edit_item('catalogs',
-                  json.dumps({
-                      "librarian": dc['librarian'],
-                      "library_uuid": dc['library_uuid'],
-                      "library_secret": dc['library_secret']
-                  }),
-                  item)
-    print("add_catalog() response content: {}".format(r))
+    bkz = [{
+        '_id': dc['_id'],
+        'library_secret': dc['library_secret']
+    }]
+    bkz.append(json.load(open("{}{}".format(dc['jsonpath'], dc['jsonname']))))
+    add_item('books', bkz)

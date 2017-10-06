@@ -10,10 +10,10 @@ import requests
 
 dc = {
     'base_url': "http://localhost:5000/",
-    'calibre_path': "/home/m/CalibreLibraries/FooBar/",
-    'librarian': 'Ezra Abbot',
-    '_id': 'e3b641c4-86ed-465a-9440-36a4fdd512a7',
-    'library_secret': '690e7981-08b8-4e73-a2cd-dff864a902e1',
+    'calibre_path': "/home/m/CalibreLibraries/biopolitics/",
+    'librarian': 'Ezra Abbout',
+    '_id': '800fe078-9aea-4327-a4a3-eaf8cd63491f',
+    'library_secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3',
     'jsonpath': '/tmp/',
     'jsonname': 'books.json'
 }

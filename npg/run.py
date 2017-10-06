@@ -7,6 +7,9 @@ from eve import Eve
 from eve.io.base import BaseJSONEncoder
 from eve.io.mongo import Validator
 
+from eve_swagger import swagger
+from eve_swagger import add_documentation
+
 from flask import current_app as app
 from flask import abort
 from flask import request
@@ -38,6 +41,24 @@ else:
 
 
 app = Eve(json_encoder=UUIDEncoder, validator=UUIDValidator)
+
+app.register_blueprint(swagger)
+
+app.config['SWAGGER_INFO'] = {
+    'title': 'Memory of the World REST API',
+    'version': '1.0',
+    'description': "let's share books",
+    'termsOfService': 'play nice',
+    'contact': {
+        'name': 'ki.ber@kom.uni.st',
+        'url': 'http://www.memoryoftheworld.org'
+    },
+    'license': {
+        'name': 'GPL',
+        'url': 'https://github.com/pyeve/eve-swagger/blob/master/LICENSE',
+    },
+    'schemes': ['http', 'https'],
+}
 
 
 def check_libraries_secrets(library_uuid, library_secret):

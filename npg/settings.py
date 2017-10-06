@@ -17,6 +17,8 @@ ITEM_URL = 'regex("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a
 CACHE_CONTROL = 'max-age=20'
 CACHE_EXPIRES = 20
 IF_MATCH = False
+PAGINATION_DEFAULT = 16
+X_DOMAINS = '*'
 
 books = {
     'schema': {
@@ -86,8 +88,7 @@ books = {
 }
 
 libraries = {
-    # 'datasource': {'projection': {'library_uuid': 0}},
-    'item_title': 'library',
+    'item_title': 'Library',
     'cache_control': 'max-age=10,must-revalidate',
     'cache_expires': 10,
     'schema': {
@@ -106,29 +107,19 @@ libraries = {
 }
 
 librarians_books = {
-    'item_methods': ['GET'], 
+    'item_title': "Librarian's books",
+    'item_methods': ['GET'],
     'schema': books['schema'],
-    'item_title': "librarian's books",
     'datasource': {'source': 'books'},
-    'url': "librarians/<regex('.*'):librarian>/books",
-    'field': 'librarian'
+    'url': "librarians/<regex('.*'):librarian>/books"
 }
 
-librarian_by_name = {
-    'item_methods': ['GET'], 
+librarians_by_name = {
+    'item_title': 'Librarian by name',
+    'item_methods': ['GET'],
     'schema': libraries['schema'],
-    'item_title': 'librarian by name',
     'datasource': {'source': 'libraries'},
-    'url': 'librarian/<regex(".*"):librarian>',
-    'field': 'librarian'
-}
-
-libraries_books = {
-    'item_methods': ['GET'], 
-    'schema': books['schema'],
-    'datasource': {'source': 'books'},
-    'url': "libraries/<regex('.*'):library_uuid>/books",
-    'field': 'library_uuid'
+    'url': 'librarians/<regex(".*"):librarian>'
 }
 
 
@@ -136,7 +127,5 @@ DOMAIN = {
     'books': books,
     'libraries': libraries,
     'librarians_books': librarians_books,
-    'librarians': librarian_by_name,
-    'libraries_books': libraries_books,
-
+    'librarians': librarians_by_name
 }

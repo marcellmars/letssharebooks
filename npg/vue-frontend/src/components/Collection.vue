@@ -1,6 +1,8 @@
 <template>
   <b-container fluid>
-    <b-button pill @click="fetchBooks">{{ name }}.vue</b-button>
+    <b-button pill v-if="links.prev" @click="fetchBooks(links.prev.href)">prev page</b-button>
+    <b-button pill @click="fetchBooks()">fetch books</b-button>
+    <b-button pill v-if="links.next" @click="fetchBooks(links.next.href)">next page</b-button>
     <b-card-group>
       <item :message="collectionMessage" @fromItem="processMessage($event)" v-for="book in books" :book="book"></item>
     </b-card-group>
@@ -19,7 +21,9 @@ export default {
             itemMessage: 'still nothing...',
             // books: LIBRARY.books.add
             books: [],
-            links: {},
+            links: {'next': false,
+                    'prev': false
+                   },
             meta: {}
         }
     },
@@ -28,9 +32,9 @@ export default {
             this.itemMessage = e;
             this.counter++;
         },
-        fetchBooks() {
+        fetchBooks(nl = 'books') {
             // this.$http.get('static/data.js')
-            this.$http.get('http://localhost:5000/books')
+            this.$http.get('http://localhost:5000/' + nl)
                 .then(response => {
                     return response.json()})
                 .then(data => {

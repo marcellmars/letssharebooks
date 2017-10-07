@@ -6,7 +6,7 @@
       text-variant="white"
       :title="book.title"
       :sub-title="getAuthors(book.authors)">
-      <span class="card-text" v-for="f in book.formats">{{ f.format.toUpperCase() }}</span>
+      <div class="card-text" v-html="getFormats(book.formats)"></div>
     </b-card>
   </div>
 </template>
@@ -15,6 +15,14 @@
     export default {
         props: ['book'],
         methods: {
+            getFormats(formats) {
+                let f = "Download: ";
+                for (var frm of formats) {
+                    var download_stripe = '<a href="' + frm.dir_path + frm.file_name + '">' + frm.format.toUpperCase() + '</a>, '; 
+                    f += download_stripe;
+                }
+                return f.slice(0,-3)
+            },
             getAuthors(authors) {
                 return authors.join(", ");
             }

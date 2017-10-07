@@ -68,7 +68,7 @@ def check_libraries_secrets(library_uuid, library_secret):
 
 
 def check_insert_books(items):
-    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
         if check_libraries_secrets(request.headers['Library-Uuid'], request.headers['Library-Secret']):
             print("@INSERT books secret passed the test...")
         else:
@@ -80,7 +80,7 @@ def check_insert_books(items):
 def check_delete_item_books(item):
     print("@DELETE arg#item {}".format(item))
     print("@DELETE headers {}".format(request.headers))
-    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
         if check_libraries_secrets(request.headers['Library-Uuid'], request.headers['Library-Secret']):
             print("@DELETE {}".format(item))
         else:
@@ -92,7 +92,7 @@ def check_delete_item_books(item):
 def check_insert_libraries(items):
     print("@INSERT libraries arg#items: {}".format(items))
     libraries_secrets = app.data.driver.db['libraries_secrets']
-    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
         c = libraries_secrets.insert_one({request.headers['Library-Uuid']: request.headers['Library-Secret']}).inserted_id
         print("inserted_id: {}".format(c))
     else:
@@ -102,7 +102,7 @@ def check_insert_libraries(items):
 def check_delete_item_libraries(item):
     print("@DELETE arg#item {}".format(item))
     print("@DELETE headers {}".format(request.headers))
-    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
         c = check_libraries_secrets(request.headers['Library-Uuid'], request.headers['Library-Secret'])
         if c:
             libraries_secrets = app.data.driver.db['libraries_secrets']
@@ -117,7 +117,7 @@ def check_delete_item_libraries(item):
 def check_update(updates, original):
     print("@UPDATE arg#updates: {}, arg#original: {}".format(updates, original))
     print("@UPDATE headers {}".format(request.headers))
-    if 'Library-Uuid' and 'Library-Secret' in request.headers:
+    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
         if check_libraries_secrets(request.headers['Library-Uuid'], request.headers['Library-Secret']):
             print("@UPDATE secret passed the test...")
         else:

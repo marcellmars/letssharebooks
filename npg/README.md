@@ -28,3 +28,4 @@
 
  * `$ npm install --save vue`  
  * `$ npm install --save bootstrap-vue`
+ * `$ npm install --save vuejs-auto-complete`

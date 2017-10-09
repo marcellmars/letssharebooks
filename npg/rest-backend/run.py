@@ -7,8 +7,6 @@ from eve import Eve
 from eve.io.base import BaseJSONEncoder
 from eve.io.mongo import Validator
 
-from eve_swagger import swagger
-
 from flask import current_app as app
 from flask import abort
 from flask import request
@@ -41,49 +39,55 @@ else:
 
 app = Eve(json_encoder=UUIDEncoder, validator=UUIDValidator)
 
-app.register_blueprint(swagger)
 
-app.config['SWAGGER_INFO'] = {
-    'title': 'Memory of the World REST API',
-    'version': '1.0',
-    'description': "let's share books",
-    'termsOfService': 'fair play',
-    'contact': {
-        'name': 'ki.ber@kom.uni.st',
-        'url': 'http://www.memoryoftheworld.org'
-    },
-    'license': {
-        'name': 'GPL',
-        'url': 'https://github.com/pyeve/eve-swagger/blob/master/LICENSE',
-    },
-    'schemes': ['http', 'https'],
-}
+# def make_ngrams(word, min_size=4):
+#     word += " "
+#     length = len(word)
+#     size_range = range(4, min(length, 5) + 1)
+#     return list(set(
+#         word[i:i + size]
+#         for size in size_range
+#         for i in range(0, max(0, length - size) + 1)
+#     ))
 
 
-def make_ngrams(word, min_size=4):
-    word += " "
-    length = len(word)
-    size_range = range(4, min(length, 4) + 1)
-    return list(set(
-        word[i:i + size]
-        for size in size_range
-        for i in range(0, max(0, length - size) + 1)
-    ))
-
-
-def add_ngrams(books):
+# def add_ngrams(books):
+#     authors_ngrams = app.data.driver.db['authors_ngrams']
+#     for book in books:
+#         for author in book['authors']:
+#             for word in author.split(" "):
+#                 if len(word) < 3:
+#                     continue
+#                 ngrams = make_ngrams(word.lower())
+#                 for ngr in ngrams:
+#                     r = authors_ngrams.update_many({'ngram': ngr},
+#                                                    {'$addToSet': {'authors': author}},
+#                                                    upsert=True)
+#                     print("NGRAMS UPDATE_MANY: {}".format(r))
+def add_4grams(books):
     authors_ngrams = app.data.driver.db['authors_ngrams']
+    titles_ngrams = app.data.driver.db['titles_ngrams']
     for book in books:
+        for word in book['title'].split(" "):
+            if len(word) < 3:
+                continue
+            elif len(word) == 3:
+                word += " "
+            r = titles_ngrams.update_many({'ngram': word[:4].lower()},
+                                          {'$addToSet': {'titles': book['title']}},
+                                          upsert=True)
+
         for author in book['authors']:
             for word in author.split(" "):
                 if len(word) < 3:
                     continue
-                ngrams = make_ngrams(word.lower())
-                for ngr in ngrams:
-                    r = authors_ngrams.update_many({'ngram': ngr},
-                                                  {'$addToSet': {'authors': author}},
-                                                  upsert=True)
-                    print("NGRAMS UPDATE_MANY: {}".format(r))
+                elif len(word) == 3:
+                    word += " "
+                r = authors_ngrams.update_many({'ngram': word[:4].lower()},
+                                               {'$addToSet': {'authors': author}},
+                                               upsert=True)
+                # print("AUTHORS 4GRAMS UPDATE_MANY: {}".format(r))
+    print("FINISHED 4GRAMS!")
 
 
 def check_libraries_secrets(library_uuid, library_secret):
@@ -158,7 +162,7 @@ app.on_delete_item_libraries += check_delete_item_libraries
 app.on_insert_books += check_insert_books
 app.on_update_books += check_update
 app.on_delete_item_books += check_delete_item_books
-app.on_inserted_books += add_ngrams
+app.on_inserted_books += add_4grams
 
 if __name__ == '__main__':
     ## before running it in production check threaded=True and how to run it with uwsgi

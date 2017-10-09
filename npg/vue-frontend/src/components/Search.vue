@@ -23,17 +23,17 @@ export default {
     },
     methods: {
         getOptions(search, loading) {
-            if (search.length < 4 || search.length > 5) {
+            if (search.length != 4) {
                 loading(false)
                 return
             }
             loading(true)
-            this.$http.get('http://localhost:5000/authors_ngrams?where=ngram==' + search.toLowerCase())
+            this.$http.get('http://localhost:5000/titles_ngrams/' + search.toLowerCase())
                 .then(response => {
                     return response.json()})
                 .then(data => {
                     let s = new Set(this.options)
-                    for (var d of data["_items"][0]["authors"]) {
+                    for (var d of data["titles"]) {
                         s.add(d)
                     }
                     this.options = Array.from(s);

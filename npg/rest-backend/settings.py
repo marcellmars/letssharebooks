@@ -20,6 +20,7 @@ IF_MATCH = False
 PAGINATION_DEFAULT = 16
 X_DOMAINS = '*'
 BANDWIDTH_SAVER = True
+SCHEMA_ENDPOINT = "schema"
 
 books = {
     'schema': {
@@ -126,21 +127,53 @@ librarians_by_name = {
 authors_ngrams = {
     'item_title': 'Ngram',
     'item_methods': ['GET'],
-    'item_url': 'regex("[a-f0-9]{24}")',
+    'item_lookup_field': 'ngram',
     'additional_lookup': {
         'url': 'regex(".*")',
         'field': 'ngram'
     },
     'datasource': {
-        'projection': {'authors':1}
+        'projection': {'authors': 1}
     },
     'schema': {
         '_id': {'type': 'objectid'},
-        'ngram': {'type': 'string',
-                  'minlength': 4,
-                  'maxlength': 4},
-        'authors': {'type': 'list',
-                    'schema': {'type': 'string'}
+        'ngram': {
+            'type': 'string',
+            'minlength': 4,
+            'maxlength': 4
+        },
+        'authors': {
+            'type': 'list',
+            'schema': {
+                'type': 'string'
+            }
+        }
+    }
+}
+
+titles_ngrams = {
+    'item_title': 'Ngram',
+    'item_methods': ['GET'],
+    'item_lookup_field': 'ngram',
+    'additional_lookup': {
+        'url': 'regex(".*")',
+        'field': 'ngram'
+    },
+    'datasource': {
+        'projection': {'titles': 1}
+    },
+    'schema': {
+        '_id': {'type': 'objectid'},
+        'ngram': {
+            'type': 'string',
+            'minlength': 4,
+            'maxlength': 4
+        },
+        'titles': {
+            'type': 'list',
+            'schema': {
+                'type': 'string'
+            }
         }
     }
 }
@@ -150,5 +183,6 @@ DOMAIN = {
     'libraries': libraries,
     'librarians_books': librarians_books,
     'librarians': librarians_by_name,
-    'authors_ngrams': authors_ngrams
+    'authors_ngrams': authors_ngrams,
+    'titles_ngrams': titles_ngrams
 }

@@ -19,6 +19,7 @@ CACHE_EXPIRES = 20
 IF_MATCH = False
 PAGINATION_DEFAULT = 16
 X_DOMAINS = '*'
+BANDWIDTH_SAVER = True
 
 books = {
     'schema': {
@@ -122,10 +123,32 @@ librarians_by_name = {
     'url': 'librarians/<regex(".*"):librarian>'
 }
 
+authors_ngrams = {
+    'item_title': 'Ngram',
+    'item_methods': ['GET'],
+    'item_url': 'regex("[a-f0-9]{24}")',
+    'additional_lookup': {
+        'url': 'regex(".*")',
+        'field': 'ngram'
+    },
+    'datasource': {
+        'projection': {'authors':1}
+    },
+    'schema': {
+        '_id': {'type': 'objectid'},
+        'ngram': {'type': 'string',
+                  'minlength': 4,
+                  'maxlength': 4},
+        'authors': {'type': 'list',
+                    'schema': {'type': 'string'}
+        }
+    }
+}
 
 DOMAIN = {
     'books': books,
     'libraries': libraries,
     'librarians_books': librarians_books,
-    'librarians': librarians_by_name
+    'librarians': librarians_by_name,
+    'authors_ngrams': authors_ngrams
 }

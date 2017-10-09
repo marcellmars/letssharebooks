@@ -29,3 +29,7 @@
  * `$ npm install --save vue`  
  * `$ npm install --save bootstrap-vue`
  * `$ npm install --save vuejs-auto-complete`
+
+## Mongodb notes
+> this will sort ngrams with largest number of candidates/authors:
+ * db.authors_ngrams.aggregate([{$project: {count: {$size:"$authors"}}}, {$sort: {'count':-1}}])

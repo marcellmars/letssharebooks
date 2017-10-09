@@ -1,5 +1,11 @@
 <template>
   <b-container fluid>
+    <search
+      source="http://localhost:5000/authors_ngrams"
+      placeholder="placeholder"
+      filter-key="authors"
+      :start-at="3">
+    </search>
     <b-button pill v-if="links.prev" @click="fetchBooks(links.prev.href)">prev page</b-button>
     <b-button pill @click="fetchBooks()">fetch books</b-button>
     <b-button pill v-if="links.next" @click="fetchBooks(links.next.href)">next page</b-button>
@@ -11,6 +17,7 @@
 
 <script>
 import Item from './Item.vue'
+import Search from './Search.vue'
 
 export default {
     data: function() {
@@ -45,7 +52,8 @@ export default {
         }
     },
     components: {
-        'item': Item
+        'item': Item,
+        'search': Search
     }
 }
 </script>

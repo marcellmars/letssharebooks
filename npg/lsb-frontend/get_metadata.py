@@ -10,7 +10,7 @@ import requests
 
 dc = {
     'base_url': "http://localhost:5000/",
-    'calibre_path': "/home/m/CalibreLibraries/biopolitics/",
+    'calibre_path': "/home/m/CalibreLibraries/MarcellMarsBooks/",
     'librarian': 'Ezra Abbout',
     '_id': '800fe078-9aea-4327-a4a3-eaf8cd63491f',
     'library_secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3',

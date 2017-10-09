@@ -4,6 +4,7 @@
 >>> db.libraries.drop()
 >>> db.libraries_secrets.drop()
 >>> db.books.drop()
+>>> db.authors_ngrams.drop()
 >>> db.collection_names()
 []
 >>> from get_metadata import *

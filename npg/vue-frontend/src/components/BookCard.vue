@@ -12,13 +12,14 @@
 </template>
 
 <script>
+    import 'font-awesome/css/font-awesome.css'
     export default {
         props: ['book'],
         methods: {
             getFormats(formats) {
-                let f = "Download: ";
+                let f = '';
                 for (var frm of formats) {
-                    var download_stripe = '<a href="' + frm.dir_path + frm.file_name + '">' + frm.format.toUpperCase() + '</a>, '; 
+                    var download_stripe = '<a href="' + frm.dir_path + frm.file_name + '"><i class="fa fa-download"></i><i>' + frm.format.toUpperCase() + '</i></a>, '; 
                     f += download_stripe;
                 }
                 return f.slice(0,-3)
@@ -26,7 +27,7 @@
             getAuthors(authors) {
                 return authors.join(", ");
             }
-        }
+        },
     }
 </script>
 
@@ -43,9 +44,12 @@
 }
 
 .card-text, .card-title, .card-subtitle {
-    font-size: 1.2em;
+    font-size: 1.0em;
     background: black;
     margin:0px;
+    padding-top: 6px;
+    padding-right: 3px;
+    padding-left: 6px;
 }
 
 .card-text {

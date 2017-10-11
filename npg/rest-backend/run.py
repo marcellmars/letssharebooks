@@ -166,4 +166,4 @@ app.on_inserted_books += add_4grams
 
 if __name__ == '__main__':
     ## before running it in production check threaded=True and how to run it with uwsgi
-    app.run(host=host, port=port, threaded=True)
+    app.run(host=host, port=port, threaded=True, debug=True)

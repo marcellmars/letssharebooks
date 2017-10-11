@@ -17,7 +17,8 @@ deleted @libraries with status code: 204
 POSTed @libraries with status code: 201
 >>> edit_item('libraries', dc['_id'], {'librarian':'Henriette Davidson Avram'}, dc)
 PATCHed @libraries with status code: 200
->>> dc['librarian'] = 'Henriette Davidson Avram'
+>>> edit_item('libraries', dc['_id'], {'librarian':'Ezra Abbot'}, dc)
+PATCHed @libraries with status code: 200
 >>> save_file(dc)
 >>> add_books(dc)
 POSTed @books with status code: 201

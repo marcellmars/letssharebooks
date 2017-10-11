@@ -11,14 +11,14 @@
 </template>
 
 <script>
-import vSelect from "vue-select"
+import vSelect from "vue-select";
 
 export default {
-    components: {vSelect},
-    name: "search",
     data() {
 	      return {
 		        options: [],
+            endpoint: 'titles_ngrams/',
+            label: 'titles'
 	      }
     },
     methods: {
@@ -28,12 +28,12 @@ export default {
                 return
             }
             loading(true)
-            this.$http.get('http://localhost:5000/titles_ngrams/' + search.toLowerCase())
+            this.$http.get(this.endpoint + search.toLowerCase())
                 .then(response => {
                     return response.json()})
                 .then(data => {
                     let s = new Set(this.options)
-                    for (var d of data["titles"]) {
+                    for (var d of data[this.label]) {
                         s.add(d)
                     }
                     this.options = Array.from(s);
@@ -43,6 +43,9 @@ export default {
                     loading(false)
                 });
         }
+    },
+    components: {
+        vSelect
     }
 }
 

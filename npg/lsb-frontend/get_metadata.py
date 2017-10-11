@@ -7,15 +7,18 @@ import html
 import json
 import dateutil.parser
 import requests
+import hmac
+import uuid
+from shuffle_names import libranom
+
 
 dc = {
     'base_url': "http://localhost:5000/",
-    'calibre_path': "/home/m/CalibreLibraries/MarcellMarsBooks/",
-    'librarian': 'Ezra Abbout',
+    'calibre_path': "/home/m/CalibreLibraries/FooBar/",
+    'librarian': 'Ezra Abbot',
     '_id': '800fe078-9aea-4327-a4a3-eaf8cd63491f',
     'library_secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3',
-    'jsonpath': '/tmp/',
-    'jsonname': 'books.json'
+    'jsonfile': '/tmp/books_{}.json'.format('EzraAbbot'),
 }
 
 
@@ -56,7 +59,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
         b['library_uuid'] = dc['_id']
         # b['library_secret'] = dc['library_secret']
         b['librarian'] = dc['librarian']
-        b['_id'] = book[11]
+        b['_id'] = str(uuid.UUID(hmac.new(dc['library_secret'].encode('utf-8'), book[11].encode('utf-8')).hexdigest()))
         b['application_id'] = book[0]
         if not book[1]:
             book[1] = "Unknown"
@@ -167,7 +170,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
 
 
 def save_file(dc):
-    with open("{}{}".format(dc['jsonpath'], dc['jsonname']), "w") as f:
+    with open(dc['jsonfile'], "w") as f:
         json.dump(
             calibre_to_json(dc),
             f
@@ -188,5 +191,5 @@ def add_books(dc):
         '_id': dc['_id'],
         'library_secret': dc['library_secret']
     }]
-    bkz.append(json.load(open("{}{}".format(dc['jsonpath'], dc['jsonname']))))
+    bkz.append(json.load(open(dc['jsonfile'])))
     add_item('books', bkz)

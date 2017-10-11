@@ -4,7 +4,7 @@ import BootstrapVue from "bootstrap-vue";
 import VueResource from "vue-resource";
 
 import App from "./components/App.vue";
-import Collection from "./components/Collection.vue";
+import LibraryCovers from "./components/LibraryCovers.vue";
 
 Vue.use(VueResource);
 Vue.use(BootstrapVue);
@@ -12,8 +12,9 @@ Vue.use(BootstrapVue);
 import "bootstrap-vue/dist/bootstrap-vue.css";
 import "bootstrap/dist/css/bootstrap.css";
 
+Vue.component('library-covers', LibraryCovers);
 
-Vue.component("collection", Collection);
+Vue.http.options.root = 'http://localhost:5000';
 
 new Vue({
     el: "#app",

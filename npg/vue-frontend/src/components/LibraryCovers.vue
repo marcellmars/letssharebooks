@@ -1,31 +1,22 @@
 <template>
   <b-container fluid>
-    <search
-      source="http://localhost:5000/authors_ngrams"
-      placeholder="placeholder"
-      filter-key="authors"
-      :start-at="3">
-    </search>
+    <search-bar></search-bar>
     <b-button pill v-if="links.prev" @click="fetchBooks(links.prev.href)">prev page</b-button>
     <b-button pill @click="fetchBooks()">fetch books</b-button>
     <b-button pill v-if="links.next" @click="fetchBooks(links.next.href)">next page</b-button>
     <b-card-group>
-      <item :message="collectionMessage" @fromItem="processMessage($event)" v-for="book in books" :book="book"></item>
+      <book-card v-for="book in books" :book="book"></book-card>
     </b-card-group>
   </b-container>
 </template>
 
 <script>
-import Item from './Item.vue'
-import Search from './Search.vue'
+import BookCard from './BookCard.vue'
+import SearchBar from './SearchBar.vue'
 
 export default {
     data: function() {
         return {
-            name: 'Collection',
-            counter: 0,
-            collectionMessage: 'edit me',
-            itemMessage: 'still nothing...',
             // books: LIBRARY.books.add
             books: [],
             links: {'next': false,
@@ -35,13 +26,9 @@ export default {
         }
     },
     methods: {
-        processMessage(e) {
-            this.itemMessage = e;
-            this.counter++;
-        },
-        fetchBooks(nl = 'books') {
+        fetchBooks(endpoint = 'books') {
             // this.$http.get('static/data.js')
-            this.$http.get('http://localhost:5000/' + nl)
+            this.$http.get(endpoint)
                 .then(response => {
                     return response.json()})
                 .then(data => {
@@ -52,8 +39,8 @@ export default {
         }
     },
     components: {
-        'item': Item,
-        'search': Search
+        BookCard,
+        SearchBar
     }
 }
 </script>

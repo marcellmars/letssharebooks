@@ -12,7 +12,7 @@ MONGO_DBNAME = os.environ.get('MONGO_DBNAME', 'letssharebooks')
 
 RESOURCE_METHODS = ['GET', 'POST']
 
-ITEM_METHODS = ['GET', 'PATCH', 'DELETE']
+ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 ITEM_URL = 'regex("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}")'
 CACHE_CONTROL = 'max-age=20'
 CACHE_EXPIRES = 20
@@ -21,8 +21,10 @@ PAGINATION_DEFAULT = 16
 X_DOMAINS = '*'
 BANDWIDTH_SAVER = True
 SCHEMA_ENDPOINT = "schema"
+XML = False
 
 books = {
+    'item_title': 'Books',
     'schema': {
         '_id': {'type': 'uuid'},
         'title': {'type': 'string'},
@@ -91,8 +93,6 @@ books = {
 
 libraries = {
     'item_title': 'Library',
-    'cache_control': 'max-age=10,must-revalidate',
-    'cache_expires': 10,
     'schema': {
         '_id': {'type': 'uuid'},
         'librarian': {
@@ -108,6 +108,32 @@ libraries = {
     }
 }
 
+libraries_books_ids = {
+    'item_title': "Books from library",
+    'item_methods': ['GET'],
+    'pagination': False,
+    'hateoas': False,
+    'schema': {
+        '_id': {
+            'type': 'uuid',
+            'data_relation': {
+                'resource': 'books',
+                'field': '_id'}
+        },
+        'library_uuid': {
+            'type': 'uuid',
+            'data_relation': {
+                'resource': 'books',
+                'field': 'library_uuid'
+            }
+        }
+    },
+    'datasource': {'source': 'books',
+                   'projection': {'_id': 1}
+    },
+    'url': "libraries/<regex('.*'):library_uuid>/books/_ids"
+}
+
 librarians_books = {
     'item_title': "Librarian's books",
     'item_methods': ['GET'],
@@ -119,6 +145,8 @@ librarians_books = {
 librarians_by_name = {
     'item_title': 'Librarian by name',
     'item_methods': ['GET'],
+    'hateoas': False,
+    'pagination': False,
     'schema': libraries['schema'],
     'datasource': {'source': 'libraries'},
     'url': 'librarians/<regex(".*"):librarian>'
@@ -181,6 +209,7 @@ titles_ngrams = {
 DOMAIN = {
     'books': books,
     'libraries': libraries,
+    'libraries_books_ids': libraries_books_ids,
     'librarians_books': librarians_books,
     'librarians': librarians_by_name,
     'authors_ngrams': authors_ngrams,

@@ -59,7 +59,14 @@ def calibre_to_json(dc, db_file='metadata.db'):
         b['library_uuid'] = dc['_id']
         # b['library_secret'] = dc['library_secret']
         b['librarian'] = dc['librarian']
-        b['_id'] = str(uuid.UUID(hmac.new(dc['library_secret'].encode('utf-8'), book[11].encode('utf-8')).hexdigest()))
+        b['_id'] = str(
+            uuid.UUID(
+                    hmac.new(dc['library_secret'].encode(),
+                             book[11].encode())
+                    .hexdigest(),
+                version=4)
+        )
+        # b['_id'] = book[11]
         b['application_id'] = book[0]
         if not book[1]:
             book[1] = "Unknown"

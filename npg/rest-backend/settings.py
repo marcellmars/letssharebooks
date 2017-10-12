@@ -15,6 +15,7 @@ RESOURCE_METHODS = ['GET', 'POST']
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 ITEM_URL = 'regex("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}")'
 CACHE_CONTROL = 'max-age=20'
+CACHE_CONTROL = ''
 CACHE_EXPIRES = 20
 IF_MATCH = False
 PAGINATION_DEFAULT = 16
@@ -24,7 +25,7 @@ SCHEMA_ENDPOINT = "schema"
 XML = False
 
 books = {
-    'item_title': 'Books',
+    'item_title': 'Book',
     'schema': {
         '_id': {'type': 'uuid'},
         'title': {'type': 'string'},
@@ -131,7 +132,7 @@ libraries_books_ids = {
     'datasource': {'source': 'books',
                    'projection': {'_id': 1}
     },
-    'url': "libraries/<regex('.*'):library_uuid>/books/_ids"
+    'url': "libraries/<regex('.*'):library_uuid>/ids"
 }
 
 librarians_books = {

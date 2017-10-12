@@ -11,6 +11,8 @@ from flask import current_app as app
 from flask import abort
 from flask import request
 
+from bson import ObjectId
+
 
 class UUIDValidator(Validator):
     def _validate_type_uuid(self, key, value):
@@ -24,9 +26,10 @@ class UUIDEncoder(BaseJSONEncoder):
     def default(self, obj):
         if isinstance(obj, UUID):
             return str(obj)
-        else:
-            # return super(UUIDEncoder, self).default(obj)
+        elif isinstance(obj, ObjectId):
             return str(obj)
+        else:
+            return super(UUIDEncoder, self).default(obj)
 
 
 if 'PORT' in os.environ:

@@ -12,56 +12,80 @@ import uuid
 from shuffle_names import libranom
 
 
+API_ROOT = "http://localhost:5000/"
+
 dc = {
-    'base_url': "http://localhost:5000/",
-    'calibre_path': "/home/m/CalibreLibraries/FooBar/",
-    'librarian': 'Ezra Abbot',
-    '_id': '800fe078-9aea-4327-a4a3-eaf8cd63491f',
-    'library_secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3',
-    'jsonfile': '/tmp/books_{}.json'.format('EzraAbbot'),
+        'local_files': {
+            'calibre_path': "/home/m/CalibreLibraries/FooBar/",
+            'jsonfile': '/tmp/books_{}.json'.format('EzraAbbot'),
+        },
+        'eve_payload': {
+            'librarian': 'Ezra Abbot',
+            '_id': '800fe078-9aea-4327-a4a3-eaf8cd63491f',
+            'library_secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'
+        }
+}
+
+dc2 = {
+        'local_files': {
+            'calibre_path': "/home/m/CalibreLibraries/Economics/",
+            'jsonfile': '/tmp/books_{}.json'.format('AndrewElbakyan'),
+        },
+        'eve_payload': {
+            'librarian': 'Andrew Elbakyan',
+            '_id': 'dde67a22-8076-4906-b277-564652f90717',
+            'library_secret': '0f4c02a4-b95a-48cb-9fc2-04e850cb620a',
+            'presence': 'off'
+        }
 }
 
 
-def add_item(resource, payload, base_url=dc['base_url']):
+def add_item(resource, headers, payload, base_url=API_ROOT):
     headers = {'Content-Type': 'application/json',
-               'Library-Uuid': payload[0]['_id'],
-               'Library-Secret': payload[0]['library_secret']}
-    r = requests.post("{}{}".format(base_url, resource), json.dumps(payload[1]), headers=headers)
+               'Library-Uuid': headers['library_uuid'],
+               'Library-Secret': headers['library_secret']}
+    r = requests.post("{}{}".format(base_url, resource),
+                      json.dumps(payload),
+                      headers=headers)
     print("POSTed @{} with status code: {}".format(resource,
                                                    r.status_code))
 
 
-def edit_item(resource, item, updated, dc, base_url=dc['base_url']):
+def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):
     headers = {'Content-Type': 'application/json',
-               'Library-Uuid': dc['_id'],
-               'Library-Secret': dc['library_secret']}
-    r = requests.patch("{}{}/{}".format(base_url, resource, item), json.dumps(updated), headers=headers)
+               'Library-Uuid': headers['library_uuid'],
+               'Library-Secret': headers['library_secret']}
+    r = requests.patch("{}{}/{}".format(base_url, resource, item),
+                       json.dumps(item_updated),
+                       headers=headers)
     print("PATCHed @{} with status code: {}".format(resource,
                                                     r.status_code))
 
 
-def delete_item(resource, item, dc, base_url=dc['base_url']):
+def delete_item(resource, headers, item, base_url=API_ROOT):
     headers = {'Content-Type': 'application/json',
-               'Library-Uuid': dc['_id'],
-               'Library-Secret': dc['library_secret']}
-    r = requests.delete("{}{}/{}".format(base_url, resource, item), headers=headers)
+               'Library-Uuid': headers['library_uuid'],
+               'Library-Secret': headers['library_secret']}
+    r = requests.delete("{}{}/{}".format(base_url, resource, item),
+                        headers=headers)
     print("deleted @{} with status code: {}".format(resource,
                                                     r.status_code))
 
 
 def calibre_to_json(dc, db_file='metadata.db'):
-    conn = sqlite3.connect(os.path.join(dc['calibre_path'], db_file), sqlite3.PARSE_DECLTYPES)
+    conn = sqlite3.connect(os.path.join(dc['local_files']['calibre_path'], db_file),
+                           sqlite3.PARSE_DECLTYPES)
     cur = conn.cursor()
     books = [book for book in cur.execute("SELECT * FROM BOOKS")]
     bookz = []
     for book in books:
         b = {}
-        b['library_uuid'] = dc['_id']
+        b['library_uuid'] = dc['eve_payload']['_id']
         # b['library_secret'] = dc['library_secret']
-        b['librarian'] = dc['librarian']
+        b['librarian'] = dc['eve_payload']['librarian']
         b['_id'] = str(
             uuid.UUID(
-                    hmac.new(dc['library_secret'].encode(),
+                    hmac.new(dc['eve_payload']['library_secret'].encode(),
                              book[11].encode())
                     .hexdigest(),
                 version=4)
@@ -177,7 +201,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
 
 
 def save_file(dc):
-    with open(dc['jsonfile'], "w") as f:
+    with open(dc['local_files']['jsonfile'], "w") as f:
         json.dump(
             calibre_to_json(dc),
             f
@@ -185,18 +209,28 @@ def save_file(dc):
 
 
 def add_library(dc):
-    add_item('libraries',
-             [{"_id": dc['_id'],
-               "library_secret": dc['library_secret']},
-              {"librarian": dc['librarian'],
-               "_id": dc['_id']}]
-    )
+    headers = {'library_uuid': dc['eve_payload']['_id'],
+               'library_secret': dc['eve_payload']['library_secret']}
+    add_item('libraries', headers, dc['eve_payload'])
 
 
 def add_books(dc):
-    bkz = [{
-        '_id': dc['_id'],
-        'library_secret': dc['library_secret']
-    }]
-    bkz.append(json.load(open(dc['jsonfile'])))
-    add_item('books', bkz)
+    headers = {'library_uuid': dc['eve_payload']['_id'],
+               'library_secret': dc['eve_payload']['library_secret']}
+    add_item('books', headers, json.load(open(dc['local_files']['jsonfile'])))
+
+
+def edit_library(item_updated, dc):
+    headers = {'library_uuid': dc['eve_payload']['_id'],
+               'library_secret': dc['eve_payload']['library_secret']}
+    edit_item('libraries', headers, dc['eve_payload']['_id'], item_updated)
+
+
+def delete_library(dc):
+    headers = {'library_uuid': dc['eve_payload']['_id'],
+               'library_secret': dc['eve_payload']['library_secret']}
+    delete_item('libraries', headers, dc['eve_payload']['_id'])
+
+# def delete_item(resource, headers, item, base_url=API_ROOT):
+# def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):
+# def add_item(resource, headers, payload):

@@ -11,14 +11,19 @@
 >>> from get_metadata import *
 >>> add_library(dc)
 POSTed @libraries with status code: 201
->>> delete_item('libraries', dc['_id'], dc)
+>>> delete_library(dc)
 deleted @libraries with status code: 204
 >>> add_library(dc)
 POSTed @libraries with status code: 201
->>> edit_item('libraries', dc['_id'], {'librarian':'Henriette Davidson Avram'}, dc)
+>>> edit_library({'librarian':'Henriette Davidson Avram'}, dc)
 PATCHed @libraries with status code: 200
->>> edit_item('libraries', dc['_id'], {'librarian':'Ezra Abbot'}, dc)
+>>> edit_library({'librarian':'Ezra Abbot'}, dc)
 PATCHed @libraries with status code: 200
 >>> save_file(dc)
 >>> add_books(dc)
+POSTed @books with status code: 201
+>>> add_library(dc2)
+POSTed @libraries with status code: 201
+>>> save_file(dc2)
+>>> add_books(dc2)
 POSTed @books with status code: 201

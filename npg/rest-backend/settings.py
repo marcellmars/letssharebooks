@@ -81,13 +81,21 @@ books = {
             }
         },
         'library_uuid': {
-            'type': 'string',
+            'type': 'uuid',
             'required': True,
             'data_relation': {
                 'resource': 'libraries',
                 'field': '_id',
                 'embeddable': True
             },
+        },
+        'presence': {
+            'type': 'string',
+            'data_relation': {
+                'resource': 'libraries',
+                'field': 'presence',
+                'embeddable': True
+            }
         }
     }
 }
@@ -104,8 +112,10 @@ libraries = {
         'library_secret': {
             'type': 'string'
         },
-        'last_modified': {'type': 'string'},
-        'portable_url': {'type': 'string'}
+        'last_modified': {'type': 'datetime'},
+        'library_url': {'type': 'string'},
+        'presence': {'type': 'string',
+                     'allowed': {'on', 'off'}}
     }
 }
 
@@ -142,6 +152,15 @@ librarians_books = {
     'datasource': {'source': 'books'},
     'url': "librarians/<regex('.*'):librarian>/books"
 }
+
+libraries_presence = {
+    'item_title': "Libraries' presence",
+    'item_methods': ['GET'],
+    'schema': books['schema'],
+    'datasource': {'source': 'books'},
+    'url': "books/<regex('.*'):presence>"
+}
+
 
 librarians_by_name = {
     'item_title': 'Librarian by name',
@@ -210,6 +229,7 @@ titles_ngrams = {
 DOMAIN = {
     'books': books,
     'libraries': libraries,
+    'libraries_presence': libraries_presence,
     'libraries_books_ids': libraries_books_ids,
     'librarians_books': librarians_books,
     'librarians': librarians_by_name,

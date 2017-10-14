@@ -23,6 +23,7 @@ X_DOMAINS = '*'
 BANDWIDTH_SAVER = True
 SCHEMA_ENDPOINT = "schema"
 XML = False
+EMBEDDED = True
 
 books = {
     'item_title': 'Book',
@@ -71,15 +72,15 @@ books = {
                            'code': {'type': 'string'}
                        }}
         },
-        'librarian': {
-            'type': 'string',
-            'required': True,
-            'data_relation': {
-                'resource': 'libraries',
-                'field': 'librarian',
-                'embeddable': True
-            }
-        },
+        # 'librarian': {
+        #     'type': 'string',
+        #     'required': True,
+        #     'data_relation': {
+        #         'resource': 'libraries',
+        #         'field': 'librarian',
+        #         'embeddable': True
+        #     }
+        # },
         'library_uuid': {
             'type': 'uuid',
             'required': True,
@@ -94,7 +95,7 @@ books = {
             'data_relation': {
                 'resource': 'libraries',
                 'field': 'presence',
-                'embeddable': True
+                # 'embeddable': True
             }
         }
     }
@@ -102,6 +103,7 @@ books = {
 
 libraries = {
     'item_title': 'Library',
+    'datasource': {'projection': {'library_secret': 0}},
     'schema': {
         '_id': {'type': 'uuid'},
         'librarian': {
@@ -109,9 +111,9 @@ libraries = {
             'required': True,
             'unique': True
         },
-        'library_secret': {
-            'type': 'string'
-        },
+        # 'library_secret': {
+        #     'type': 'string'
+        # },
         'last_modified': {'type': 'datetime'},
         'library_url': {'type': 'string'},
         'presence': {'type': 'string',
@@ -155,6 +157,14 @@ librarians_books = {
 
 libraries_presence = {
     'item_title': "Libraries' presence",
+    'item_methods': ['GET'],
+    'schema': books['schema'],
+    'datasource': {'source': 'books'},
+    'url': "libraries/<regex('.*'):presence>/books"
+}
+
+books_presence = {
+    'item_title': "Books' presence",
     'item_methods': ['GET'],
     'schema': books['schema'],
     'datasource': {'source': 'books'},
@@ -230,6 +240,7 @@ DOMAIN = {
     'books': books,
     'libraries': libraries,
     'libraries_presence': libraries_presence,
+    'books_presence': books_presence,
     'libraries_books_ids': libraries_books_ids,
     'librarians_books': librarians_books,
     'librarians': librarians_by_name,

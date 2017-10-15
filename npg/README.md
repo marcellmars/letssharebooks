@@ -1,4 +1,10 @@
 # Dev notes
+## Getting started with development
+
+  * docker run -d -p 27017:27017 mongo
+  * rest-backend/
+    * python3 run.py
+    
 ## Development Vue
 
   * `$ vue init webpack vue-frontend` 
@@ -22,13 +28,8 @@
      cd vue-frontend
      npm install
      npm run dev
-   
-   Documentation can be found at https://vuejs-templates.github.io/webpack
-</pre>
 
- * `$ npm install --save vue`  
- * `$ npm install --save bootstrap-vue`
- * `$ npm install --save vuejs-auto-complete`
+ **check package.json for dependencies**
 
 ## Mongodb notes
 > this will sort ngrams with largest number of candidates/authors:

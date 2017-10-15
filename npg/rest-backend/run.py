@@ -47,54 +47,41 @@ else:
 app = Eve(json_encoder=UUIDEncoder, validator=UUIDValidator)
 
 
-# def make_ngrams(word, min_size=4):
-#     word += " "
-#     length = len(word)
-#     size_range = range(4, min(length, 5) + 1)
-#     return list(set(
-#         word[i:i + size]
-#         for size in size_range
-#         for i in range(0, max(0, length - size) + 1)
-#     ))
-
-
-# def add_ngrams(books):
-#     authors_ngrams = app.data.driver.db['authors_ngrams']
-#     for book in books:
-#         for author in book['authors']:
-#             for word in author.split(" "):
-#                 if len(word) < 3:
-#                     continue
-#                 ngrams = make_ngrams(word.lower())
-#                 for ngr in ngrams:
-#                     r = authors_ngrams.update_many({'ngram': ngr},
-#                                                    {'$addToSet': {'authors': author}},
-#                                                    upsert=True)
-#                     print("NGRAMS UPDATE_MANY: {}".format(r))
 def add_4grams(books):
     authors_ngrams = app.data.driver.db['authors_ngrams']
     titles_ngrams = app.data.driver.db['titles_ngrams']
+    tags_ngrams = app.data.driver.db['tags_ngrams']
+
+    ac_authors = []
+    ac_titles = []
+    ac_tags = []
     for book in books:
-        for word in book['title'].split(" "):
+        for word in book['title'].split():
             if len(word) < 3:
                 continue
             elif len(word) == 3:
                 word += " "
-            r = titles_ngrams.update_many({'ngram': word[:4].lower()},
-                                          {'$addToSet': {'titles': book['title']}},
-                                          upsert=True)
-            print("@ADD_4GRAMS modified {} items in titles_ngrams.".format(r.modified_count))
+            ac_titles.append({'ngram': word[:4].lower(), 'val': book['title']})
 
         for author in book['authors']:
-            for word in author.split(" "):
+            for word in author.split():
                 if len(word) < 3:
                     continue
                 elif len(word) == 3:
                     word += " "
-                r = authors_ngrams.update_many({'ngram': word[:4].lower()},
-                                               {'$addToSet': {'authors': author}},
-                                               upsert=True)
-                print("@ADD_4GRAMS modified {} items in authors_ngrams.".format(r.modified_count))
+            ac_authors.append({'ngram': word[:4].lower(), 'val': author})
+
+        for tag in book['tags']:
+            for word in tag.split():
+                if len(word) < 3:
+                    continue
+                elif len(word) == 3:
+                    word += " "
+            ac_tags.append({'ngram': word[:4].lower(), 'val': tag})
+
+    authors_ngrams.insert_many(list(ac_authors))
+    titles_ngrams.insert_many(list(ac_titles))
+    tags_ngrams.insert_many(list(ac_tags))
     print("FINISHED 4GRAMS!")
 
 
@@ -156,7 +143,7 @@ def check_delete_item_libraries(item):
             print("@DELETE_ITEM_LIBRARIES {}".format(item))
 
             books = app.data.driver.db['books']
-            print(books.count())
+            
             if books.count():
                 r = books.remove({'library_uuid': item['library_uuid']})
                 print("@DELETE_ITEM_LIBRARIES delete related books... {}".format(r.raw_result))
@@ -190,8 +177,7 @@ def update_books_on_updated(updates, original):
             if 'presence' in updates:
                 books = app.data.driver.db['books']
                 r = books.update_many({'library_uuid': original['_id']},
-                                      {"$set": {'presence': updates['presence']}},
-                                      upsert=True)
+                                      {"$set": {'presence': updates['presence']}})
                 print("@UPDATE_BOOKS_ON_UPDATED set new presence in books {}".format(r.raw_result))
         else:
             abort(403)
@@ -199,27 +185,26 @@ def update_books_on_updated(updates, original):
         abort(403)
 
 
-def update_books_on_inserted(items):
-    print("@UPDATE_BOOKS_ON_INSERTED arg#items: {}".format(items))
-    print("@UPDATE_BOOKS_ON_INSERTED headers {}".format(request.headers))
-    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
-        if check_libraries_secrets(request.headers['Library-Uuid'],
-                                   request.headers['Library-Secret']):
-            print("@UPDATE_BOOKS_ON_INSERTED secret passed the test...")
-            if 'presence' in items:
-                books = app.data.driver.db['books']
-                r = books.update_many({'library_uuid': items['_id']},
-                                      {"$set": {'presence': items['presence']}},
-                                      upsert=True)
-                print("@UPDATE_BOOKS_ON_INSERTED set new presence in books {}".format(r.raw_result))
-        else:
-            abort(403)
-    else:
-        abort(403)
+# def update_books_on_inserted(items):
+#     print("@UPDATE_BOOKS_ON_INSERTED arg#items: {}".format(items))
+#     print("@UPDATE_BOOKS_ON_INSERTED headers {}".format(request.headers))
+#     if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
+#         if check_libraries_secrets(request.headers['Library-Uuid'],
+#                                    request.headers['Library-Secret']):
+#             print("@UPDATE_BOOKS_ON_INSERTED secret passed the test...")
+#             if 'presence' in items:
+#                 books = app.data.driver.db['books']
+#                 r = books.update_many({'library_uuid': items['_id']},
+#                                       {"$set": {'presence': items['presence']}})
+#                 print("@UPDATE_BOOKS_ON_INSERTED set new presence in books {}".format(r.raw_result))
+#         else:
+#             abort(403)
+#     else:
+#         abort(403)
 
 
 app.on_insert_libraries += check_insert_libraries
-app.on_inserted_libraries += update_books_on_inserted
+# app.on_inserted_libraries += update_books_on_inserted
 app.on_update_libraries += check_update
 app.on_updated_libraries += update_books_on_updated
 app.on_delete_item_libraries += check_delete_item_libraries

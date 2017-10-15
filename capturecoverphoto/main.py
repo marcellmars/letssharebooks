@@ -35,9 +35,11 @@ if False:
 
 #-----------------------------------------------------------------------------
 #- logging -------------------------------------------------------------------
-from calibre_plugins.capturecover.my_logger import get_logger
-logger = get_logger('capturecover', disabled=True)
+# from calibre_plugins.capturecover.my_logger import get_logger
+from calibre_plugins.capturephoto.my_logger import MyLogger, Om
 
+logger = MyLogger("/tmp/capturephoto_log.log")
+logger.debug("CAPTURE PHOTO!")
 
 #-----------------------------------------------------------------------------
 #- CapturePhotoCover is the main class of plugin ---------------------------------

@@ -19,6 +19,7 @@ CACHE_CONTROL = ''
 CACHE_EXPIRES = 20
 IF_MATCH = False
 PAGINATION_DEFAULT = 16
+PAGINATION_LIMIT = 1000
 X_DOMAINS = '*'
 BANDWIDTH_SAVER = True
 SCHEMA_ENDPOINT = "schema"
@@ -95,7 +96,6 @@ books = {
             'data_relation': {
                 'resource': 'libraries',
                 'field': 'presence',
-                # 'embeddable': True
             }
         }
     }
@@ -111,12 +111,10 @@ libraries = {
             'required': True,
             'unique': True
         },
-        # 'library_secret': {
-        #     'type': 'string'
-        # },
         'last_modified': {'type': 'datetime'},
         'library_url': {'type': 'string'},
         'presence': {'type': 'string',
+                     'default': 'off',
                      'allowed': {'on', 'off'}}
     }
 }
@@ -185,13 +183,11 @@ librarians_by_name = {
 authors_ngrams = {
     'item_title': 'Ngram',
     'item_methods': ['GET'],
-    'item_lookup_field': 'ngram',
-    'additional_lookup': {
-        'url': 'regex(".*")',
-        'field': 'ngram'
-    },
+    'url': 'autocomplete/authors/<regex(".*"):ngram>',
+    # 'hateoas': False,
+    # 'pagination': False,
     'datasource': {
-        'projection': {'authors': 1}
+        'projection': {'val': 1}
     },
     'schema': {
         '_id': {'type': 'objectid'},
@@ -200,25 +196,19 @@ authors_ngrams = {
             'minlength': 4,
             'maxlength': 4
         },
-        'authors': {
-            'type': 'list',
-            'schema': {
-                'type': 'string'
-            }
-        }
+        'val': {'type': 'string'}
     }
 }
 
 titles_ngrams = {
     'item_title': 'Ngram',
     'item_methods': ['GET'],
-    'item_lookup_field': 'ngram',
-    'additional_lookup': {
-        'url': 'regex(".*")',
-        'field': 'ngram'
-    },
+    'max_results': 100,
+    'url': 'autocomplete/titles/<regex(".*"):ngram>',
+    # 'hateoas': False,
+    # 'pagination': False,
     'datasource': {
-        'projection': {'titles': 1}
+        'projection': {'val': 1}
     },
     'schema': {
         '_id': {'type': 'objectid'},
@@ -227,14 +217,10 @@ titles_ngrams = {
             'minlength': 4,
             'maxlength': 4
         },
-        'titles': {
-            'type': 'list',
-            'schema': {
-                'type': 'string'
-            }
-        }
+        'val': {'type': 'string'}
     }
 }
+
 
 DOMAIN = {
     'books': books,

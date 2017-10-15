@@ -1,41 +1,54 @@
-import sys
-import logging
-from logging import handlers
-
-FORMATTER = '%(asctime)s: %(filename)s >> %(levelname)s - %(message)s'
+import time
+import inspect
 
 
-def get_logger(name, level=logging.DEBUG, disabled=True,
-               file_prefix='debug', formatter=FORMATTER):
+class Om:
+    def __getattr__(self, name):
+        def catch_all(*args, **kwargs):
+            pass
+        return catch_all
 
-    logger = logging.getLogger(name)
 
-    if disabled:
-        handler = logging.StreamHandler(sys.stdout)
-        logger.addHandler(handler)
-        logger.disabled = disabled
-        return logger
+class MyLogger:
+    def __init__(self,
+                 file_name="letssharebooks_debug.log",
+                 inspekt_global=None,
+                 inspekt_depth=2):
 
-    if logger.handlers:
-        return logger
+        self.f = open(file_name, "w")
+        self.inspect_global = inspekt_global
+        self.inspect_depth = inspekt_depth
 
-    formatter = logging.Formatter(formatter)
+    def print_log(self, message):
+        timestamp = time.strftime("%d.%m.%Y %H:%M:%S".format(time.gmtime()))
+        self.f.write("{}: {}\n".format(timestamp, message))
+        self.f.flush()
 
-    if sys.platform == "win32":
-        logging_handler = handlers.TimedRotatingFileHandler(
-            "{}_{}_win.log".format(name, file_prefix),
-            when='h',
-            interval=1,
-            backupCount=1)
-    else:
-        logging_handler = handlers.TimedRotatingFileHandler(
-            "{}_{}.log".format(name, file_prefix),
-            when='h',
-            interval=1,
-            backupCount=1)
+    def debug(self, message, inspekt=None):
+        if inspekt or self.inspect_global:
+            # https://gist.github.com/techtonik/2151727
+            stack = inspect.stack()
+            start = 0 + self.inspect_depth
+            if len(stack) < start + 1:
+                return ''
+            parentframe = stack[start][0]
 
-    logging_handler.setFormatter(formatter)
-    logger.addHandler(logging_handler)
-    logger.setLevel(level)
-    logger.info("{} LOGGING ON...".format(name))
-    return logger
+            name = []
+            module = inspect.getmodule(parentframe)
+            if module:
+                name.append(module.__name__)
+            if 'self' in parentframe.f_locals:
+                name.append(parentframe.f_locals['self'].__class__.__name__)
+            codename = parentframe.f_code.co_name
+            if codename != '<module>':
+                name.append(codename)
+            del parentframe
+            self.print_log("INSPECT_{}: {}".format(".".join(name), message))
+        else:
+            self.print_log("{}{}".format("DEBUG: ", message))
+
+    def info(self, message):
+        self.print_log("{}{}".format("INFO: ", message))
+
+    def warning(self, message):
+        self.print_log("{}{}".format("WARNING: ", message))

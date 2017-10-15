@@ -32,9 +32,9 @@ export default {
                 .then(response => {
                     return response.json()})
                 .then(data => {
-                    this.books = data["_items"];
-                    this.meta = data["_meta"];
-                    this.links = data["_links"];
+                    this.books = data._items;
+                    this.meta = data._meta;
+                    this.links = data._links;
                     });
         }
     },

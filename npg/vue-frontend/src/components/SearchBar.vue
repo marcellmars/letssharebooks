@@ -1,6 +1,5 @@
 <template>
 <v-select
-  @search:blur="loading(false)"
 	:debounce="250"
 	:on-search="getOptions"
 	:options="options"
@@ -17,8 +16,9 @@ export default {
     data() {
 	      return {
 		        options: [],
-            endpoint: 'titles_ngrams/',
-            label: 'titles'
+            endpoint: 'autocomplete/titles/',
+            xargs: '?max_results=500',
+            label: 'val'
 	      }
     },
     methods: {
@@ -28,18 +28,18 @@ export default {
                 return
             }
             loading(true)
-            this.$http.get(this.endpoint + search.toLowerCase())
+            this.$http.get(this.endpoint + search.toLowerCase() + this.xargs)
                 .then(response => {
                     return response.json()})
                 .then(data => {
                     let s = new Set(this.options)
-                    for (var d of data[this.label]) {
-                        s.add(d)
+                    for (var d of data._items) {
+                        s.add(d[this.label])
                     }
                     this.options = Array.from(s);
                     s.clear()
-                    this.meta = data["_meta"];
-                    this.links = data["_links"];
+                    this.meta = data._meta;
+                    this.links = data._links;
                     loading(false)
                 });
         }

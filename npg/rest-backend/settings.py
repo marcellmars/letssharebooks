@@ -93,6 +93,7 @@ books = {
         },
         'presence': {
             'type': 'string',
+            'default': 'off',
             'data_relation': {
                 'resource': 'libraries',
                 'field': 'presence',

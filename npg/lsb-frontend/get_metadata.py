@@ -42,7 +42,6 @@ dc2 = {
 
 def add_item(resource, headers, payload, base_url=API_ROOT):
     headers = {'Content-Type': 'application/json',
-               'Library-Uuid': headers['library_uuid'],
                'Library-Secret': headers['library_secret']}
     r = requests.post("{}{}".format(base_url, resource),
                       json.dumps(payload),
@@ -54,7 +53,6 @@ def add_item(resource, headers, payload, base_url=API_ROOT):
 
 def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):
     headers = {'Content-Type': 'application/json',
-               'Library-Uuid': headers['library_uuid'],
                'Library-Secret': headers['library_secret']}
     r = requests.patch("{}{}/{}".format(base_url, resource, item),
                        json.dumps(item_updated),
@@ -66,7 +64,6 @@ def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):
 
 def delete_item(resource, headers, item, base_url=API_ROOT):
     headers = {'Content-Type': 'application/json',
-               'Library-Uuid': headers['library_uuid'],
                'Library-Secret': headers['library_secret']}
     r = requests.delete("{}{}/{}".format(base_url, resource, item),
                         headers=headers)
@@ -84,8 +81,6 @@ def calibre_to_json(dc, db_file='metadata.db'):
     for book in books:
         b = {}
         b['library_uuid'] = dc['eve_payload']['_id']
-        # b['library_secret'] = dc['library_secret']
-        # b['librarian'] = dc['eve_payload']['librarian']
         b['_id'] = str(
             uuid.UUID(
                     hmac.new(dc['local_files']['library_secret'].encode(),
@@ -108,8 +103,6 @@ def calibre_to_json(dc, db_file='metadata.db'):
             b['last_modified'] = b['timestamp']
         else:
             b['last_modified'] = dateutil.parser.parse(book[13]).strftime("%a, %d %b %04Y %H:%M:%S GMT")
-
-        # b['last_modified'] = book[13]
 
         # authors
         authors = cur.execute("""SELECT AUTHORS.NAME
@@ -212,30 +205,22 @@ def save_file(dc):
 
 
 def add_library(dc):
-    headers = {'library_uuid': dc['eve_payload']['_id'],
-               'library_secret': dc['local_files']['library_secret']}
+    headers = {'library_secret': dc['local_files']['library_secret']}
     return add_item('libraries', headers, dc['eve_payload'])
 
 
 def add_books(dc):
-    headers = {'library_uuid': dc['eve_payload']['_id'],
-               'library_secret': dc['local_files']['library_secret']}
+    headers = {'library_secret': dc['local_files']['library_secret']}
     return add_item(
         'books', headers, json.load(open(dc['local_files']['jsonfile'])))
 
 
 def edit_library(item_updated, dc):
-    headers = {'library_uuid': dc['eve_payload']['_id'],
-               'library_secret': dc['local_files']['library_secret']}
+    headers = {'library_secret': dc['local_files']['library_secret']}
     return edit_item(
         'libraries', headers, dc['eve_payload']['_id'], item_updated)
 
 
 def delete_library(dc):
-    headers = {'library_uuid': dc['eve_payload']['_id'],
-               'library_secret': dc['local_files']['library_secret']}
+    headers = {'library_secret': dc['local_files']['library_secret']}
     return delete_item('libraries', headers, dc['eve_payload']['_id'])
-
-# def delete_item(resource, headers, item, base_url=API_ROOT):
-# def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):
-# def add_item(resource, headers, payload):

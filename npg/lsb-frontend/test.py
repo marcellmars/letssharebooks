@@ -1,5 +1,14 @@
 from pymongo import MongoClient
-from get_metadata import *
+
+from get_metadata import add_library
+from get_metadata import edit_library
+from get_metadata import delete_library
+
+from get_metadata import save_file
+from get_metadata import add_books
+
+from get_metadata import dc
+from get_metadata import dc2
 
 
 def clear_db(db):
@@ -8,14 +17,18 @@ def clear_db(db):
     db.books.drop()
     db.authors_ngrams.drop()
     db.titles_ngrams.drop()
+    db.tags_ngrams.drop()
+    db.authors_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
+    db.titles_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
+    db.tags_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
 
 
 def main():
     mc = MongoClient("localhost", 27017)
     db = mc['letssharebooks']
     clear_db(db)
-
-    assert len(db.collection_names()) <= 1
+    print(db.collection_names())
+    assert len(db.collection_names()) <= 4
 
     # test add and delete
     assert add_library(dc) == ('libraries', 201)

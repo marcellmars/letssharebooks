@@ -7,7 +7,6 @@ from eve import Eve
 from eve.io.base import BaseJSONEncoder
 from eve.io.mongo import Validator
 
-from flask import current_app as app
 from flask import abort
 from flask import request
 
@@ -46,6 +45,11 @@ else:
 
 app = Eve(json_encoder=UUIDEncoder, validator=UUIDValidator)
 
+with app.app_context():
+    app.data.driver.db.authors_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
+    app.data.driver.db.titles_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
+    app.data.driver.db.tags_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
+
 
 def add_4grams(books):
     authors_ngrams = app.data.driver.db['authors_ngrams']
@@ -69,7 +73,7 @@ def add_4grams(books):
                     continue
                 elif len(word) == 3:
                     word += " "
-            ac_authors.append({'ngram': word[:4].lower(), 'val': author})
+                ac_authors.append({'ngram': word[:4].lower(), 'val': author})
 
         for tag in book['tags']:
             for word in tag.split():
@@ -77,11 +81,20 @@ def add_4grams(books):
                     continue
                 elif len(word) == 3:
                     word += " "
-            ac_tags.append({'ngram': word[:4].lower(), 'val': tag})
+                ac_tags.append({'ngram': word[:4].lower(), 'val': tag})
 
-    authors_ngrams.insert_many(list(ac_authors))
-    titles_ngrams.insert_many(list(ac_titles))
-    tags_ngrams.insert_many(list(ac_tags))
+    ngrams_list = [
+        (authors_ngrams, ac_authors),
+        (titles_ngrams, ac_titles),
+        (tags_ngrams, ac_tags)
+    ]
+
+    for coll, lst in ngrams_list:
+        try:
+            coll.insert_many(list(lst), ordered=False)
+        except Exception as e:
+            print(e)
+
     print("FINISHED 4GRAMS!")
 
 
@@ -94,8 +107,8 @@ def check_libraries_secrets(library_uuid, library_secret):
 
 
 def check_insert_books(items):
-    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
-        if check_libraries_secrets(request.headers['Library-Uuid'],
+    if 'Library-Secret' in request.headers:
+        if check_libraries_secrets(items[0]['library_uuid'],
                                    request.headers['Library-Secret']):
             print("@INSERT books secret passed the test...")
         else:
@@ -107,8 +120,8 @@ def check_insert_books(items):
 def check_delete_item_books(item):
     print("@DELETE arg#item {}".format(item))
     print("@DELETE headers {}".format(request.headers))
-    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
-        if check_libraries_secrets(request.headers['Library-Uuid'],
+    if 'Library-Secret' in request.headers:
+        if check_libraries_secrets(item['library_uuid'],
                                    request.headers['Library-Secret']):
             print("@DELETE {}".format(item))
         else:
@@ -120,11 +133,11 @@ def check_delete_item_books(item):
 def check_insert_libraries(items):
     print("@INSERT_LIBRARIES arg#items: {}".format(items))
     libraries_secrets = app.data.driver.db['libraries_secrets']
-    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
+    if 'Library-Secret' in request.headers:
         c = libraries_secrets.insert_one({
-            request.headers['Library-Uuid']: request.headers['Library-Secret']
+            items[0]['_id']: request.headers['Library-Secret']
         })
-        print("@INSERT_LIBRARIES: {}".format(c))
+        print("@INSERT_LIBRARIES: {}".format(c.inserted_id))
     else:
         abort(403)
 
@@ -132,20 +145,20 @@ def check_insert_libraries(items):
 def check_delete_item_libraries(item):
     print("@DELETE_ITEM_LIBRARIES arg#item {}".format(item))
     print("@DELETE_ITEM_LIBRARIES headers {}".format(request.headers))
-    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
-        c = check_libraries_secrets(request.headers['Library-Uuid'],
+    if 'Library-Secret' in request.headers:
+        c = check_libraries_secrets(item['_id'],
                                     request.headers['Library-Secret'])
         if c:
             libraries_secrets = app.data.driver.db['libraries_secrets']
             libraries_secrets.remove({
-                request.headers['Library-Uuid']: request.headers['Library-Secret']
+                item['_id']: request.headers['Library-Secret']
             })
             print("@DELETE_ITEM_LIBRARIES {}".format(item))
 
             books = app.data.driver.db['books']
-            
+
             if books.count():
-                r = books.remove({'library_uuid': item['library_uuid']})
+                r = books.remove({'library_uuid': item['_id']})
                 print("@DELETE_ITEM_LIBRARIES delete related books... {}".format(r.raw_result))
 
         else:
@@ -154,11 +167,24 @@ def check_delete_item_libraries(item):
         abort(403)
 
 
-def check_update(updates, original):
-    print("@UPDATE arg#updates: {}, arg#original: {}".format(updates, original))
-    print("@UPDATE headers {}".format(request.headers))
-    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
-        if check_libraries_secrets(request.headers['Library-Uuid'],
+def check_update_libraries(updates, original):
+    print("@UPDATE_LIBRARIES arg#updates: {}, arg#original: {}".format(updates, original))
+    print("@UPDATE_LIBRARIES headers {}".format(request.headers))
+    if 'Library-Secret' in request.headers:
+        if check_libraries_secrets(original['_id'],
+                                   request.headers['Library-Secret']):
+            print("@UPDATE secret passed the test...")
+        else:
+            abort(403)
+    else:
+        abort(403)
+
+
+def check_update_books(updates, original):
+    print("@UPDATE_BOOKS arg#updates: {}, arg#original: {}".format(updates, original))
+    print("@UPDATE_BOOKS headers {}".format(request.headers))
+    if 'Library-Secret' in request.headers:
+        if check_libraries_secrets(original['library_uuid'],
                                    request.headers['Library-Secret']):
             print("@UPDATE secret passed the test...")
         else:
@@ -168,49 +194,38 @@ def check_update(updates, original):
 
 
 def update_books_on_updated(updates, original):
-    print("@UPDATE_BOOKS_ON_UPDATED arg#updates: {}, arg#original: {}".format(updates, original))
-    print("@UPDATE_BOOKS_ON_UPDATED headers {}".format(request.headers))
-    if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
-        if check_libraries_secrets(request.headers['Library-Uuid'],
+    print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES arg#updates: {}, arg#original: {}".format(updates, original))
+    print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES headers {}".format(request.headers))
+    if 'Library-Secret' in request.headers:
+        if check_libraries_secrets(original['_id'],
                                    request.headers['Library-Secret']):
             print("@UPDATE_BOOKS_ON_UPDATED secret passed the test...")
             if 'presence' in updates:
                 books = app.data.driver.db['books']
                 r = books.update_many({'library_uuid': original['_id']},
                                       {"$set": {'presence': updates['presence']}})
-                print("@UPDATE_BOOKS_ON_UPDATED set new presence in books {}".format(r.raw_result))
+                print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES set new presence in books {}".format(r.raw_result))
+                if updates['presence'] == 'off':
+                    titles_off = [(book['title'], book['presence'])
+                                  for book in books.find({'library_uuid': original['_id']})]
+                    titles_on = [(book['title'], book['presence'])
+                                 for book in books.find({'library_uuid': {'$nin': [original['_id']]},
+                                                         'presence': 'on'})]
+                    print("TITLES OFF: {}".format(titles_off))
+                    print("TITLES ON: {}".format(titles_on))
         else:
             abort(403)
     else:
         abort(403)
 
 
-# def update_books_on_inserted(items):
-#     print("@UPDATE_BOOKS_ON_INSERTED arg#items: {}".format(items))
-#     print("@UPDATE_BOOKS_ON_INSERTED headers {}".format(request.headers))
-#     if 'Library-Uuid' in request.headers and 'Library-Secret' in request.headers:
-#         if check_libraries_secrets(request.headers['Library-Uuid'],
-#                                    request.headers['Library-Secret']):
-#             print("@UPDATE_BOOKS_ON_INSERTED secret passed the test...")
-#             if 'presence' in items:
-#                 books = app.data.driver.db['books']
-#                 r = books.update_many({'library_uuid': items['_id']},
-#                                       {"$set": {'presence': items['presence']}})
-#                 print("@UPDATE_BOOKS_ON_INSERTED set new presence in books {}".format(r.raw_result))
-#         else:
-#             abort(403)
-#     else:
-#         abort(403)
-
-
 app.on_insert_libraries += check_insert_libraries
-# app.on_inserted_libraries += update_books_on_inserted
-app.on_update_libraries += check_update
+app.on_update_libraries += check_update_libraries
 app.on_updated_libraries += update_books_on_updated
 app.on_delete_item_libraries += check_delete_item_libraries
 
 app.on_insert_books += check_insert_books
-app.on_update_books += check_update
+app.on_update_books += check_update_books
 app.on_delete_item_books += check_delete_item_books
 app.on_inserted_books += add_4grams
 

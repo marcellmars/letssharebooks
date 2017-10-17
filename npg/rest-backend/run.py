@@ -2,6 +2,7 @@
 
 import os
 from uuid import UUID
+import itertools
 
 from eve import Eve
 from eve.io.base import BaseJSONEncoder
@@ -51,7 +52,7 @@ with app.app_context():
     app.data.driver.db.tags_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
 
 
-def add_4grams(books):
+def get_4grams(books):
     authors_ngrams = app.data.driver.db['authors_ngrams']
     titles_ngrams = app.data.driver.db['titles_ngrams']
     tags_ngrams = app.data.driver.db['tags_ngrams']
@@ -83,19 +84,75 @@ def add_4grams(books):
                     word += " "
                 ac_tags.append({'ngram': word[:4].lower(), 'val': tag})
 
-    ngrams_list = [
+    return [
         (authors_ngrams, ac_authors),
         (titles_ngrams, ac_titles),
         (tags_ngrams, ac_tags)
     ]
 
-    for coll, lst in ngrams_list:
+
+def del_4grams(library_uuid):
+    books = app.data.driver.db['books']
+    # titles
+    titles_off = {book['title']
+                  for book in books.find({'library_uuid': library_uuid})}
+    titles_on = {book['title']
+                 for book in books.find({'library_uuid': {'$nin': [library_uuid]},
+                                         'presence': 'on'})}
+    titles = titles_off - titles_on
+    # authors
+    authors_off = [book['authors']
+                   for book in books.find({'library_uuid': library_uuid})]
+    authors_off = (list(itertools.chain.from_iterable(authors_off)))
+    authors_off = {b for b in authors_off}
+
+    authors_on = [book['authors']
+                  for book in books.find({'library_uuid':
+                                          {'$nin': [library_uuid]},
+                                          'presence': 'on'})]
+    authors_on = (list(itertools.chain.from_iterable(authors_on)))
+    authors_on = {b for b in authors_on}
+    authors = authors_off - authors_on
+
+    # tags
+    tags_off = [book['tags']
+                for book in books.find({'library_uuid': library_uuid})]
+
+    tags_off = (list(itertools.chain.from_iterable(tags_off)))
+    tags_off = {t for t in tags_off}
+
+    tags_on = [book['tags']
+               for book in books.find({'library_uuid': {'$nin': [library_uuid]},
+                                       'presence': 'on'})]
+    tags_on = (list(itertools.chain.from_iterable(tags_on)))
+    tags_on = {t for t in tags_on}
+    tags = tags_off - tags_on
+
+    books = []
+    books.append({'title': '', 'authors': list(authors), 'tags': list(tags)})
+    for title in titles:
+        books.append({'title': title, 'authors': [], 'tags': []})
+
+    for coll, lst in get_4grams(books):
         try:
-            coll.insert_many(list(lst), ordered=False)
+            for l in lst:
+                r = coll.delete_one(l)
+                print("@DELETE 4 GRAMS: {}, {}".format(l, r.raw_result))
         except Exception as e:
             print(e)
+    print("FINISHED DELETING 4GRAMS!")
 
-    print("FINISHED 4GRAMS!")
+
+def add_4grams(library_uuid):
+    books = app.data.driver.db['books']
+    b = books.find({'library_uuid': library_uuid})
+    for coll, lst in get_4grams(b):
+        try:
+            r = coll.insert_many(list(lst), ordered=False)
+            print("@ADDING 4 GRAMS: {}, {}".format(lst, r.raw_result))
+        except Exception as e:
+            print(e)
+    print("FINISHED ADDING 4GRAMS!")
 
 
 def check_libraries_secrets(library_uuid, library_secret):
@@ -159,6 +216,7 @@ def check_delete_item_libraries(item):
 
             if books.count():
                 r = books.remove({'library_uuid': item['_id']})
+                del_4grams(item['_id'])
                 print("@DELETE_ITEM_LIBRARIES delete related books... {}".format(r.raw_result))
 
         else:
@@ -206,13 +264,11 @@ def update_books_on_updated(updates, original):
                                       {"$set": {'presence': updates['presence']}})
                 print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES set new presence in books {}".format(r.raw_result))
                 if updates['presence'] == 'off':
-                    titles_off = [(book['title'], book['presence'])
-                                  for book in books.find({'library_uuid': original['_id']})]
-                    titles_on = [(book['title'], book['presence'])
-                                 for book in books.find({'library_uuid': {'$nin': [original['_id']]},
-                                                         'presence': 'on'})]
-                    print("TITLES OFF: {}".format(titles_off))
-                    print("TITLES ON: {}".format(titles_on))
+                    del_4grams(original['_id'])
+                    print("@UPDATE_BOOKS_ON_UPDATED delete 'off' 4grams ...")
+                elif updates['presence'] == 'on':
+                    add_4grams(original['_id'])
+                    print("@UPDATE_BOOKS_ON_UPDATED add 'on' 4grams ...")
         else:
             abort(403)
     else:
@@ -227,7 +283,7 @@ app.on_delete_item_libraries += check_delete_item_libraries
 app.on_insert_books += check_insert_books
 app.on_update_books += check_update_books
 app.on_delete_item_books += check_delete_item_books
-app.on_inserted_books += add_4grams
+# app.on_inserted_books += add_4grams
 
 if __name__ == '__main__':
     # before running it in production check threaded=True and how to run it with uwsgi

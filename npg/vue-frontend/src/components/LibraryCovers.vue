@@ -26,7 +26,7 @@ export default {
         }
     },
     methods: {
-        fetchBooks(endpoint = 'books') {
+        fetchBooks(endpoint = 'books/on') {
             // this.$http.get('static/data.js')
             this.$http.get(endpoint)
                 .then(response => {

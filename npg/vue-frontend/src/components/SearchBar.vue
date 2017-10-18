@@ -1,9 +1,9 @@
 <template>
     <b-button-toolbar justify>
         <b-dropdown variant="danger" right :text="in_search" >
-            <b-dropdown-item @click="in_search='Authors' ">Authors</b-dropdown-item>
-            <b-dropdown-item @click="in_search='Titles' ">Titles</b-dropdown-item>
-            <b-dropdown-item @click="in_search='Tags' ">Tags</b-dropdown-item>
+            <b-dropdown-item @click="in_search='Authors'">Authors</b-dropdown-item>
+            <b-dropdown-item @click="in_search='Titles'">Titles</b-dropdown-item>
+            <b-dropdown-item @click="in_search='Tags'">Tags</b-dropdown-item>
         </b-dropdown>
         <b-col>
             <v-select
@@ -63,20 +63,10 @@
 </script>
 
 <style scoped>
- .btn, .fa-border {
-     border-radius:0;
- }
-
-.form-control, .dropdown-toggle {
-    border-radius:0;
- }
-
-.col, .v-select {
+ .col, .v-select {
     display:block;
     width:100%;
     padding-right:0px;
     padding-left:0px;
-    border-radius:0;
  }
-
 </style>

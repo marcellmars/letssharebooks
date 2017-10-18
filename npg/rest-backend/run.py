@@ -52,7 +52,7 @@ with app.app_context():
     app.data.driver.db.tags_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
 
 
-def get_4grams(books):
+def generate_4grams(books):
     authors_ngrams = app.data.driver.db['authors_ngrams']
     titles_ngrams = app.data.driver.db['titles_ngrams']
     tags_ngrams = app.data.driver.db['tags_ngrams']
@@ -91,7 +91,7 @@ def get_4grams(books):
     ]
 
 
-def del_4grams(library_uuid):
+def delete_4grams(library_uuid):
     books = app.data.driver.db['books']
     # titles
     titles_off = {book['title']
@@ -133,7 +133,7 @@ def del_4grams(library_uuid):
     for title in titles:
         books.append({'title': title, 'authors': [], 'tags': []})
 
-    for coll, lst in get_4grams(books):
+    for coll, lst in generate_4grams(books):
         try:
             for l in lst:
                 r = coll.delete_one(l)
@@ -146,7 +146,7 @@ def del_4grams(library_uuid):
 def add_4grams(library_uuid):
     books = app.data.driver.db['books']
     b = books.find({'library_uuid': library_uuid})
-    for coll, lst in get_4grams(b):
+    for coll, lst in generate_4grams(b):
         try:
             r = coll.insert_many(list(lst), ordered=False)
             print("@ADDING 4 GRAMS: {}, {}".format(lst, r.raw_result))
@@ -216,7 +216,7 @@ def check_delete_item_libraries(item):
 
             if books.count():
                 r = books.remove({'library_uuid': item['_id']})
-                del_4grams(item['_id'])
+                delete_4grams(item['_id'])
                 print("@DELETE_ITEM_LIBRARIES delete related books... {}".format(r.raw_result))
 
         else:
@@ -264,7 +264,7 @@ def update_books_on_updated(updates, original):
                                       {"$set": {'presence': updates['presence']}})
                 print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES set new presence in books {}".format(r.raw_result))
                 if updates['presence'] == 'off':
-                    del_4grams(original['_id'])
+                    delete_4grams(original['_id'])
                     print("@UPDATE_BOOKS_ON_UPDATED delete 'off' 4grams ...")
                 elif updates['presence'] == 'on':
                     add_4grams(original['_id'])

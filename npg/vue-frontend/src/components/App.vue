@@ -13,7 +13,7 @@
 
 <style>
     * {
-        border-radius: 0;
+        border-radius: 0 !important;
     }
 
     #app {

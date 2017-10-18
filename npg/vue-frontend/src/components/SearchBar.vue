@@ -1,55 +1,82 @@
 <template>
-<v-select
-	:debounce="250"
-	:on-search="getOptions"
-	:options="options"
-  maxHeight="18em"
-	placeholder="Search MotW Authors"
->
-</v-select>
+    <b-button-toolbar justify>
+        <b-dropdown variant="danger" right :text="in_search" >
+            <b-dropdown-item @click="in_search='Authors' ">Authors</b-dropdown-item>
+            <b-dropdown-item @click="in_search='Titles' ">Titles</b-dropdown-item>
+            <b-dropdown-item @click="in_search='Tags' ">Tags</b-dropdown-item>
+        </b-dropdown>
+        <b-col>
+            <v-select
+            class="vselect"
+            :debounce="250"
+            :on-search="getOptions"
+            :options="options"
+            maxHeight="18em"
+            placeholder="Search MotW"
+            ></v-select>
+        </b-col>
+        <b-button variant="danger">seaarch</b-button>
+    </b-button-toolbar>
 </template>
 
 <script>
-import vSelect from "vue-select";
+    import vSelect from "vue-select";
 
-export default {
-    data() {
-	      return {
-		        options: [],
-            endpoint: 'autocomplete/titles/',
-            xargs: '?max_results=500',
-            label: 'val'
-	      }
-    },
-    methods: {
-        getOptions(search, loading) {
-            if (search.length != 4) {
-                loading(false)
-                return
+    export default {
+        data() {
+            return {
+                options: [],
+                endpoint: 'autocomplete/titles/',
+                xargs: '?max_results=500',
+                label: 'val',
+                in_search: "Authors"
             }
-            loading(true)
-            this.$http.get(this.endpoint + search.toLowerCase() + this.xargs)
-                .then(response => {
-                    return response.json()})
-                .then(data => {
-                    let s = new Set(this.options)
-                    for (var d of data._items) {
-                        s.add(d[this.label])
-                    }
-                    this.options = Array.from(s);
-                    s.clear()
-                    this.meta = data._meta;
-                    this.links = data._links;
+        },
+        methods: {
+            getOptions(search, loading) {
+                if (search.length != 4) {
                     loading(false)
-                });
+                    return
+                }
+                loading(true)
+                this.$http.get(this.endpoint + search.toLowerCase() + this.xargs)
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(data => {
+                        let s = new Set(this.options)
+                        for (var d of data._items) {
+                            s.add(d[this.label])
+                        }
+                        this.options = Array.from(s);
+                        s.clear()
+                        this.meta = data._meta;
+                        this.links = data._links;
+                        loading(false)
+                    });
+            }
+        },
+        components: {
+            vSelect
         }
-    },
-    components: {
-        vSelect
     }
-}
-
 </script>
 
-<style>
+<style scoped>
+ .btn, .fa-border {
+     border-radius:0;
+ }
+
+.form-control, .dropdown-toggle {
+    border-radius:0;
+ }
+
+.col, .v-select {
+    display:block;
+    width:100%;
+    padding-right:0px;
+    padding-left:0px;
+    border-radius:0;
+ }
+
 </style>

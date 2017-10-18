@@ -2,6 +2,11 @@
 ## Getting started with development
 
   * docker run -d -p 27017:27017 mongo
+    * clean up docker clutter:
+    `docker rmi $(docker images -a -q)`
+    `docker rm $(docker ps -a -q)`
+    `docker volume rm $(docker volume ls -f dangling=true -q)`
+    
   * rest-backend/
     * python3 run.py
     

@@ -10,6 +10,8 @@ from get_metadata import add_books
 from get_metadata import dc
 from get_metadata import dc2
 
+from get_metadata import test_invalid_secret
+
 
 def clear_db(db):
     db.libraries.drop()
@@ -79,6 +81,9 @@ def main():
     assert db.authors_ngrams.count() == 66
     assert db.titles_ngrams.count() == 192
     assert db.tags_ngrams.count() == 11
+
+    # test invalid secret
+    assert test_invalid_secret(dc) == ('libraries', 403)
 
 if __name__ == '__main__':
     main()

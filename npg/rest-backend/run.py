@@ -52,6 +52,18 @@ with app.app_context():
     app.data.driver.db.tags_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
 
 
+def check_library_secret(library_uuid, request):
+    library_secret = request.headers.get('Library-Secret')
+    if library_secret:
+        if library_secret == MASTER_SECRET:
+            return True
+        libraries_secrets = app.data.driver.db['libraries_secrets']
+        c = libraries_secrets.find_one({library_uuid: library_secret})
+        if c:
+            return c
+    abort(403)
+
+
 def generate_4grams(books):
     authors_ngrams = app.data.driver.db['authors_ngrams']
     titles_ngrams = app.data.driver.db['titles_ngrams']
@@ -155,36 +167,16 @@ def add_4grams(library_uuid):
     print("FINISHED ADDING 4GRAMS!")
 
 
-def check_libraries_secrets(library_uuid, library_secret):
-    if library_secret == MASTER_SECRET:
-        return True
-    libraries_secrets = app.data.driver.db['libraries_secrets']
-    c = libraries_secrets.find_one({library_uuid: library_secret})
-    return c
-
-
 def check_insert_books(items):
-    if 'Library-Secret' in request.headers:
-        if check_libraries_secrets(items[0]['library_uuid'],
-                                   request.headers['Library-Secret']):
-            print("@INSERT books secret passed the test...")
-        else:
-            abort(403)
-    else:
-        abort(403)
+    check_library_secret(items[0]['library_uuid'], request)
+    print("@INSERT books secret passed the test...")
 
 
 def check_delete_item_books(item):
     print("@DELETE arg#item {}".format(item))
     print("@DELETE headers {}".format(request.headers))
-    if 'Library-Secret' in request.headers:
-        if check_libraries_secrets(item['library_uuid'],
-                                   request.headers['Library-Secret']):
-            print("@DELETE {}".format(item))
-        else:
-            abort(403)
-    else:
-        abort(403)
+    check_library_secret(item['library_uuid'], request)
+    print("@DELETE {}".format(item))
 
 
 def check_insert_libraries(items):
@@ -202,77 +194,52 @@ def check_insert_libraries(items):
 def check_delete_item_libraries(item):
     print("@DELETE_ITEM_LIBRARIES arg#item {}".format(item))
     print("@DELETE_ITEM_LIBRARIES headers {}".format(request.headers))
-    if 'Library-Secret' in request.headers:
-        c = check_libraries_secrets(item['_id'],
-                                    request.headers['Library-Secret'])
-        if c:
-            libraries_secrets = app.data.driver.db['libraries_secrets']
-            libraries_secrets.remove({
-                item['_id']: request.headers['Library-Secret']
-            })
-            print("@DELETE_ITEM_LIBRARIES {}".format(item))
-
-            books = app.data.driver.db['books']
-
-            if books.count():
-                r = books.remove({'library_uuid': item['_id']})
-                delete_4grams(item['_id'])
-                print("@DELETE_ITEM_LIBRARIES delete related books... {}".format(r.raw_result))
-
-        else:
-            abort(403)
-    else:
-        abort(403)
+    c = check_library_secret(item['_id'], request)
+    libraries_secrets = app.data.driver.db['libraries_secrets']
+    libraries_secrets.remove({
+        item['_id']: request.headers['Library-Secret']
+    })
+    print("@DELETE_ITEM_LIBRARIES {}".format(item))
+    books = app.data.driver.db['books']
+    if books.count():
+        r = books.remove({'library_uuid': item['_id']})
+        delete_4grams(item['_id'])
+        print("@DELETE_ITEM_LIBRARIES delete related books... {}".format(
+            r.raw_result))
 
 
 def check_update_libraries(updates, original):
-    print("@UPDATE_LIBRARIES arg#updates: {}, arg#original: {}".format(updates, original))
+    print("@UPDATE_LIBRARIES arg#updates: {}, arg#original: {}".format(
+        updates, original))
     print("@UPDATE_LIBRARIES headers {}".format(request.headers))
-    if 'Library-Secret' in request.headers:
-        if check_libraries_secrets(original['_id'],
-                                   request.headers['Library-Secret']):
-            print("@UPDATE secret passed the test...")
-        else:
-            abort(403)
-    else:
-        abort(403)
+    check_library_secret(original['_id'], request)
+    print("@UPDATE secret passed the test...")
 
 
 def check_update_books(updates, original):
-    print("@UPDATE_BOOKS arg#updates: {}, arg#original: {}".format(updates, original))
+    print("@UPDATE_BOOKS arg#updates: {}, arg#original: {}".format(
+        updates, original))
     print("@UPDATE_BOOKS headers {}".format(request.headers))
-    if 'Library-Secret' in request.headers:
-        if check_libraries_secrets(original['library_uuid'],
-                                   request.headers['Library-Secret']):
-            print("@UPDATE secret passed the test...")
-        else:
-            abort(403)
-    else:
-        abort(403)
+    check_library_secret(original['library_uuid'], request)
+    print("@UPDATE secret passed the test...")
 
 
 def update_books_on_updated(updates, original):
     print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES arg#updates: {}, arg#original: {}".format(updates, original))
     print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES headers {}".format(request.headers))
-    if 'Library-Secret' in request.headers:
-        if check_libraries_secrets(original['_id'],
-                                   request.headers['Library-Secret']):
-            print("@UPDATE_BOOKS_ON_UPDATED secret passed the test...")
-            if 'presence' in updates:
-                books = app.data.driver.db['books']
-                r = books.update_many({'library_uuid': original['_id']},
-                                      {"$set": {'presence': updates['presence']}})
-                print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES set new presence in books {}".format(r.raw_result))
-                if updates['presence'] == 'off':
-                    delete_4grams(original['_id'])
-                    print("@UPDATE_BOOKS_ON_UPDATED delete 'off' 4grams ...")
-                elif updates['presence'] == 'on':
-                    add_4grams(original['_id'])
-                    print("@UPDATE_BOOKS_ON_UPDATED add 'on' 4grams ...")
-        else:
-            abort(403)
-    else:
-        abort(403)
+    check_library_secret(original['_id'], request)
+    print("@UPDATE_BOOKS_ON_UPDATED secret passed the test...")
+    if 'presence' in updates:
+        books = app.data.driver.db['books']
+        r = books.update_many({'library_uuid': original['_id']},
+                              {"$set": {'presence': updates['presence']}})
+        print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES set new presence in books {}".format(r.raw_result))
+        if updates['presence'] == 'off':
+            delete_4grams(original['_id'])
+            print("@UPDATE_BOOKS_ON_UPDATED delete 'off' 4grams ...")
+        elif updates['presence'] == 'on':
+            add_4grams(original['_id'])
+            print("@UPDATE_BOOKS_ON_UPDATED add 'on' 4grams ...")
 
 
 app.on_insert_libraries += check_insert_libraries
@@ -284,6 +251,7 @@ app.on_insert_books += check_insert_books
 app.on_update_books += check_update_books
 app.on_delete_item_books += check_delete_item_books
 # app.on_inserted_books += add_4grams
+
 
 if __name__ == '__main__':
     # before running it in production check threaded=True and how to run it with uwsgi

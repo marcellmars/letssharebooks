@@ -224,3 +224,8 @@ def edit_library(item_updated, dc):
 def delete_library(dc):
     headers = {'library_secret': dc['local_files']['library_secret']}
     return delete_item('libraries', headers, dc['eve_payload']['_id'])
+
+
+def test_invalid_secret(dc):
+    headers = {'library_secret': '123'}
+    return delete_item('libraries', headers, dc['eve_payload']['_id'])

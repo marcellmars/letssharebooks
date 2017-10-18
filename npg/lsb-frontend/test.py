@@ -57,30 +57,37 @@ def main():
     assert db.authors_ngrams.count() == 35
     assert db.titles_ngrams.count() == 68
     assert db.tags_ngrams.count() == 11
+    assert db.books.find({'presence': 'on'}).count() == 17
 
     assert edit_library(off, dc) == ('libraries', 200)
     assert db.authors_ngrams.count() == 0
     assert db.titles_ngrams.count() == 0
     assert db.tags_ngrams.count() == 0
+    assert db.books.find({'presence': 'on'}).count() == 0
 
     assert edit_library(on, dc2) == ('libraries', 200)
     assert db.authors_ngrams.count() == 39
     assert db.titles_ngrams.count() == 146
     assert db.tags_ngrams.count() == 1
+    assert db.books.find({'presence': 'on'}).count() == 24
+    
 
     assert edit_library(off, dc2) == ('libraries', 200)
     assert db.authors_ngrams.count() == 0
     assert db.titles_ngrams.count() == 0
     assert db.tags_ngrams.count() == 0
+    assert db.books.find({'presence': 'on'}).count() == 0
 
     assert edit_library(on, dc) == ('libraries', 200)
     assert db.authors_ngrams.count() == 35
     assert db.titles_ngrams.count() == 68
     assert db.tags_ngrams.count() == 11
+    
     assert edit_library(on, dc2) == ('libraries', 200)
     assert db.authors_ngrams.count() == 66
     assert db.titles_ngrams.count() == 192
     assert db.tags_ngrams.count() == 11
+    assert db.books.find({'presence': 'on'}).count() == 41
 
     # test invalid secret
     assert test_invalid_secret(dc) == ('libraries', 403)

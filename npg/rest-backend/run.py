@@ -47,12 +47,15 @@ else:
 app = Eve(json_encoder=UUIDEncoder, validator=UUIDValidator)
 
 with app.app_context():
-    app.data.driver.db.authors_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
-    app.data.driver.db.titles_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
-    app.data.driver.db.tags_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
+    app.data.driver.db.authors_ngrams.create_index(
+        [('ngram', 1), ('val', 1)], unique=True)
+    app.data.driver.db.titles_ngrams.create_index(
+        [('ngram', 1), ('val', 1)], unique=True)
+    app.data.driver.db.tags_ngrams.create_index(
+        [('ngram', 1), ('val', 1)], unique=True)
 
 
-def check_library_secret(library_uuid, request):
+def check_library_secret(library_uuid):
     library_secret = request.headers.get('Library-Secret')
     if library_secret:
         if library_secret == MASTER_SECRET:
@@ -168,14 +171,14 @@ def add_4grams(library_uuid):
 
 
 def check_insert_books(items):
-    check_library_secret(items[0]['library_uuid'], request)
+    check_library_secret(items[0]['library_uuid'])
     print("@INSERT books secret passed the test...")
 
 
 def check_delete_item_books(item):
     print("@DELETE arg#item {}".format(item))
     print("@DELETE headers {}".format(request.headers))
-    check_library_secret(item['library_uuid'], request)
+    check_library_secret(item['library_uuid'])
     print("@DELETE {}".format(item))
 
 
@@ -194,7 +197,7 @@ def check_insert_libraries(items):
 def check_delete_item_libraries(item):
     print("@DELETE_ITEM_LIBRARIES arg#item {}".format(item))
     print("@DELETE_ITEM_LIBRARIES headers {}".format(request.headers))
-    c = check_library_secret(item['_id'], request)
+    c = check_library_secret(item['_id'])
     libraries_secrets = app.data.driver.db['libraries_secrets']
     libraries_secrets.remove({
         item['_id']: request.headers['Library-Secret']
@@ -212,7 +215,7 @@ def check_update_libraries(updates, original):
     print("@UPDATE_LIBRARIES arg#updates: {}, arg#original: {}".format(
         updates, original))
     print("@UPDATE_LIBRARIES headers {}".format(request.headers))
-    check_library_secret(original['_id'], request)
+    check_library_secret(original['_id'])
     print("@UPDATE secret passed the test...")
 
 
@@ -220,14 +223,14 @@ def check_update_books(updates, original):
     print("@UPDATE_BOOKS arg#updates: {}, arg#original: {}".format(
         updates, original))
     print("@UPDATE_BOOKS headers {}".format(request.headers))
-    check_library_secret(original['library_uuid'], request)
+    check_library_secret(original['library_uuid'])
     print("@UPDATE secret passed the test...")
 
 
 def update_books_on_updated(updates, original):
     print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES arg#updates: {}, arg#original: {}".format(updates, original))
     print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES headers {}".format(request.headers))
-    check_library_secret(original['_id'], request)
+    check_library_secret(original['_id'])
     print("@UPDATE_BOOKS_ON_UPDATED secret passed the test...")
     if 'presence' in updates:
         books = app.data.driver.db['books']

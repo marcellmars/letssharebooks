@@ -176,9 +176,18 @@ def check_insert_books(items):
 
 
 def check_delete_item_books(item):
-    print("@DELETE arg#item {}".format(item))
-    print("@DELETE headers {}".format(request.headers))
+    print("@DELETE_ITEM_BOOKS arg#item {}".format(item))
+    print("@DELETE_ITEM_BOOKS headers {}".format(request.headers))
     check_library_secret(item['library_uuid'])
+    for coll, lst in generate_4grams([item]):
+        try:
+            for l in lst:
+                r = coll.delete_one(l)
+                print("@DELETE 4 GRAMS: {}, {}".format(l, r.raw_result))
+        except Exception as e:
+            print(e)
+    print("FINISHED DELETING 4GRAMS!")
+
     print("@DELETE {}".format(item))
 
 
@@ -221,7 +230,7 @@ def check_update_libraries(updates, original):
 
 def check_update_books(updates, original):
     print("@UPDATE_BOOKS arg#updates: {}, arg#original: {}".format(
-        updates, original))
+    updates, original))
     print("@UPDATE_BOOKS headers {}".format(request.headers))
     check_library_secret(original['library_uuid'])
     print("@UPDATE secret passed the test...")

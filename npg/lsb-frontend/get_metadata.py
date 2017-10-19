@@ -18,7 +18,7 @@ dc = {
         'local_files': {
             'calibre_path': os.path.expanduser("~/CalibreLibraries/FooBar/"),
             'jsonfile': '/tmp/books_{}.json'.format('EzraAbbot'),
-            'library_secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'
+            'Library-Secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'
         },
         'eve_payload': {
             'librarian': 'Ezra Abbot',
@@ -30,7 +30,7 @@ dc2 = {
         'local_files': {
             'calibre_path': os.path.expanduser("~/CalibreLibraries/Economics/"),
             'jsonfile': '/tmp/books_{}.json'.format('AndrewElbakyan'),
-            'library_secret': '0f4c02a4-b95a-48cb-9fc2-04e850cb620a'
+            'Library-Secret': '0f4c02a4-b95a-48cb-9fc2-04e850cb620a'
         },
         'eve_payload': {
             'librarian': 'Andrew Elbakyan',
@@ -41,8 +41,7 @@ dc2 = {
 
 
 def add_item(resource, headers, payload, base_url=API_ROOT):
-    headers = {'Content-Type': 'application/json',
-               'Library-Secret': headers['library_secret']}
+    headers['Content-Type'] = 'application/json'
     r = requests.post("{}{}".format(base_url, resource),
                       json.dumps(payload),
                       headers=headers)
@@ -52,8 +51,7 @@ def add_item(resource, headers, payload, base_url=API_ROOT):
 
 
 def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):
-    headers = {'Content-Type': 'application/json',
-               'Library-Secret': headers['library_secret']}
+    headers['Content-Type'] = 'application/json'
     r = requests.patch("{}{}/{}".format(base_url, resource, item),
                        json.dumps(item_updated),
                        headers=headers)
@@ -63,8 +61,7 @@ def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):
 
 
 def delete_item(resource, headers, item, base_url=API_ROOT):
-    headers = {'Content-Type': 'application/json',
-               'Library-Secret': headers['library_secret']}
+    headers['Content-Type'] = 'application/json'
     r = requests.delete("{}{}/{}".format(base_url, resource, item),
                         headers=headers)
     print("deleted @{} with status code: {}".format(resource,
@@ -83,7 +80,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
         b['library_uuid'] = dc['eve_payload']['_id']
         b['_id'] = str(
             uuid.UUID(
-                    hmac.new(dc['local_files']['library_secret'].encode(),
+                    hmac.new(dc['local_files']['Library-Secret'].encode(),
                              book[11].encode())
                     .hexdigest(),
                 version=4)
@@ -205,27 +202,27 @@ def save_file(dc):
 
 
 def add_library(dc):
-    headers = {'library_secret': dc['local_files']['library_secret']}
+    headers = {'Library-Secret': dc['local_files']['Library-Secret']}
     return add_item('libraries', headers, dc['eve_payload'])
 
 
 def add_books(dc):
-    headers = {'library_secret': dc['local_files']['library_secret']}
+    headers = {'Library-Secret': dc['local_files']['Library-Secret']}
     return add_item(
         'books', headers, json.load(open(dc['local_files']['jsonfile'])))
 
 
 def edit_library(item_updated, dc):
-    headers = {'library_secret': dc['local_files']['library_secret']}
+    headers = {'Library-Secret': dc['local_files']['Library-Secret']}
     return edit_item(
         'libraries', headers, dc['eve_payload']['_id'], item_updated)
 
 
 def delete_library(dc):
-    headers = {'library_secret': dc['local_files']['library_secret']}
+    headers = {'Library-Secret': dc['local_files']['Library-Secret']}
     return delete_item('libraries', headers, dc['eve_payload']['_id'])
 
 
 def test_invalid_secret(dc):
-    headers = {'library_secret': '123'}
+    headers = {'Library-Secret': '123'}
     return delete_item('libraries', headers, dc['eve_payload']['_id'])

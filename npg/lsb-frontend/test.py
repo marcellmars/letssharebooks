@@ -7,6 +7,8 @@ from get_metadata import delete_library
 from get_metadata import save_file
 from get_metadata import add_books
 
+from get_metadata import delete_item
+
 from get_metadata import dc
 from get_metadata import dc2
 
@@ -70,7 +72,6 @@ def main():
     assert db.titles_ngrams.count() == 146
     assert db.tags_ngrams.count() == 1
     assert db.books.find({'presence': 'on'}).count() == 24
-    
 
     assert edit_library(off, dc2) == ('libraries', 200)
     assert db.authors_ngrams.count() == 0
@@ -82,7 +83,7 @@ def main():
     assert db.authors_ngrams.count() == 35
     assert db.titles_ngrams.count() == 68
     assert db.tags_ngrams.count() == 11
-    
+
     assert edit_library(on, dc2) == ('libraries', 200)
     assert db.authors_ngrams.count() == 66
     assert db.titles_ngrams.count() == 192
@@ -91,6 +92,13 @@ def main():
 
     # test invalid secret
     assert test_invalid_secret(dc) == ('libraries', 403)
+
+    # delete 'Art Power' book
+    art_power = db.books.find_one({'title': 'Art Power'})['_id']
+    headers = {'Library-Secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'}
+    delete_item('books', headers, art_power)
+    assert db.books.find({'presence': 'on'}).count() == 40
+
 
 if __name__ == '__main__':
     main()

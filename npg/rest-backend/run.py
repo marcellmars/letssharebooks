@@ -206,7 +206,8 @@ def check_insert_libraries(items):
 def check_delete_item_libraries(item):
     print("@DELETE_ITEM_LIBRARIES arg#item {}".format(item))
     print("@DELETE_ITEM_LIBRARIES headers {}".format(request.headers))
-    c = check_library_secret(item['_id'])
+    check_library_secret(item['_id'])
+
     libraries_secrets = app.data.driver.db['libraries_secrets']
     libraries_secrets.remove({
         item['_id']: request.headers['Library-Secret']
@@ -229,8 +230,7 @@ def check_update_libraries(updates, original):
 
 
 def check_update_books(updates, original):
-    print("@UPDATE_BOOKS arg#updates: {}, arg#original: {}".format(
-    updates, original))
+    print("@UPDATE_BOOKS arg#updates: {}, arg#original: {}".format(updates, original))
     print("@UPDATE_BOOKS headers {}".format(request.headers))
     check_library_secret(original['library_uuid'])
     print("@UPDATE secret passed the test...")
@@ -241,8 +241,8 @@ def update_books_on_updated(updates, original):
     print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES headers {}".format(request.headers))
     check_library_secret(original['_id'])
     print("@UPDATE_BOOKS_ON_UPDATED secret passed the test...")
+    books = app.data.driver.db['books']
     if 'presence' in updates:
-        books = app.data.driver.db['books']
         r = books.update_many({'library_uuid': original['_id']},
                               {"$set": {'presence': updates['presence']}})
         print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES set new presence in books {}".format(r.raw_result))
@@ -252,6 +252,11 @@ def update_books_on_updated(updates, original):
         elif updates['presence'] == 'on':
             add_4grams(original['_id'])
             print("@UPDATE_BOOKS_ON_UPDATED add 'on' 4grams ...")
+
+    for l in ['librarian', 'library_url']:
+        if l in updates:
+            r = books.update_many({'library_uuid': original['_id']},
+                                  {"$set": {l: updates[l]}})
 
 
 app.on_insert_libraries += check_insert_libraries

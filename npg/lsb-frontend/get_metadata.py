@@ -15,7 +15,7 @@ from shuffle_names import libranom
 API_ROOT = "http://localhost:5000/"
 
 dc = {
-        'local_files': {
+        'local_config': {
             'calibre_path': os.path.expanduser("~/CalibreLibraries/FooBar/"),
             'jsonfile': '/tmp/books_{}.json'.format('EzraAbbot'),
             'Library-Secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'
@@ -23,11 +23,12 @@ dc = {
         'eve_payload': {
             'librarian': 'Ezra Abbot',
             '_id': '800fe078-9aea-4327-a4a3-eaf8cd63491f',
+            'library_url': 'http://localhost:2017/'
         }
 }
 
 dc2 = {
-        'local_files': {
+        'local_config': {
             'calibre_path': os.path.expanduser("~/CalibreLibraries/Economics/"),
             'jsonfile': '/tmp/books_{}.json'.format('AndrewElbakyan'),
             'Library-Secret': '0f4c02a4-b95a-48cb-9fc2-04e850cb620a'
@@ -35,6 +36,7 @@ dc2 = {
         'eve_payload': {
             'librarian': 'Andrew Elbakyan',
             '_id': 'dde67a22-8076-4906-b277-564652f90717',
+            'library_url': 'http://localhost:2018/',
             'presence': 'off'
         }
 }
@@ -70,7 +72,7 @@ def delete_item(resource, headers, item, base_url=API_ROOT):
 
 
 def calibre_to_json(dc, db_file='metadata.db'):
-    conn = sqlite3.connect(os.path.join(dc['local_files']['calibre_path'], db_file),
+    conn = sqlite3.connect(os.path.join(dc['local_config']['calibre_path'], db_file),
                            sqlite3.PARSE_DECLTYPES)
     cur = conn.cursor()
     books = [book for book in cur.execute("SELECT * FROM BOOKS")]
@@ -78,9 +80,10 @@ def calibre_to_json(dc, db_file='metadata.db'):
     for book in books:
         b = {}
         b['library_uuid'] = dc['eve_payload']['_id']
+        b['library_url'] = dc['eve_payload']['library_url']
         b['_id'] = str(
             uuid.UUID(
-                    hmac.new(dc['local_files']['Library-Secret'].encode(),
+                    hmac.new(dc['local_config']['Library-Secret'].encode(),
                              book[11].encode())
                     .hexdigest(),
                 version=4)
@@ -194,7 +197,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
 
 
 def save_file(dc):
-    with open(dc['local_files']['jsonfile'], "w") as f:
+    with open(dc['local_config']['jsonfile'], "w") as f:
         json.dump(
             calibre_to_json(dc),
             f
@@ -202,24 +205,24 @@ def save_file(dc):
 
 
 def add_library(dc):
-    headers = {'Library-Secret': dc['local_files']['Library-Secret']}
+    headers = {'Library-Secret': dc['local_config']['Library-Secret']}
     return add_item('libraries', headers, dc['eve_payload'])
 
 
 def add_books(dc):
-    headers = {'Library-Secret': dc['local_files']['Library-Secret']}
+    headers = {'Library-Secret': dc['local_config']['Library-Secret']}
     return add_item(
-        'books', headers, json.load(open(dc['local_files']['jsonfile'])))
+        'books', headers, json.load(open(dc['local_config']['jsonfile'])))
 
 
 def edit_library(item_updated, dc):
-    headers = {'Library-Secret': dc['local_files']['Library-Secret']}
+    headers = {'Library-Secret': dc['local_config']['Library-Secret']}
     return edit_item(
         'libraries', headers, dc['eve_payload']['_id'], item_updated)
 
 
 def delete_library(dc):
-    headers = {'Library-Secret': dc['local_files']['Library-Secret']}
+    headers = {'Library-Secret': dc['local_config']['Library-Secret']}
     return delete_item('libraries', headers, dc['eve_payload']['_id'])
 
 

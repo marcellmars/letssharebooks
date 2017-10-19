@@ -24,4 +24,9 @@
         -moz-osx-font-smoothing: grayscale;
         color: #2c3e50;
     }
+ a {
+     color:white !important;
+     font-weight: bold;
+     text-decoration: none;
+ }
 </style>

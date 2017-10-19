@@ -18,7 +18,7 @@ CACHE_CONTROL = 'max-age=20'
 CACHE_CONTROL = ''
 CACHE_EXPIRES = 20
 IF_MATCH = False
-PAGINATION_DEFAULT = 16
+PAGINATION_DEFAULT = 12
 PAGINATION_LIMIT = 1000
 X_DOMAINS = '*'
 BANDWIDTH_SAVER = True
@@ -98,6 +98,14 @@ books = {
                 'resource': 'libraries',
                 'field': 'presence',
             }
+        },
+        'library_url': {
+            'type': 'string',
+            'default': 'off',
+            'data_relation': {
+                'resource': 'libraries',
+                'field': 'library_url',
+            }
         }
     }
 }
@@ -116,7 +124,7 @@ libraries = {
         'library_url': {'type': 'string'},
         'presence': {'type': 'string',
                      'default': 'off',
-                     'allowed': {'on', 'off'}}
+                     'allowed': {'on', 'off', 'check'}}
     }
 }
 

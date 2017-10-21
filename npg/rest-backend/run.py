@@ -69,13 +69,14 @@ def check_library_secret(library_uuid):
 
 def generate_4grams(books):
 
-    def __add_kgrams(text):
-        for w in text.lower().split():
-            if len(w) < 3:
-                continue
-            elif len(w) == 3:
-                w += ' '
-            yield {'ngram': w[:4], 'val': text}
+    def __add_kgrams(texts):
+        for text in texts:
+            for w in text.lower().split():
+                if len(w) < 3:
+                    continue
+                elif len(w) == 3:
+                    w += ' '
+                yield {'ngram': w[:4], 'val': text}
     
     authors_ngrams = app.data.driver.db['authors_ngrams']
     titles_ngrams = app.data.driver.db['titles_ngrams']
@@ -85,11 +86,9 @@ def generate_4grams(books):
     ac_titles = []
     ac_tags = []
     for book in books:
-        ac_titles.extend(__add_kgrams(book['title']))
-        for author in book['authors']:
-            ac_authors.extend(__add_kgrams(author))
-        for tag in book['tags']:
-            ac_tags.extend(__add_kgrams(tag))
+        ac_titles.extend(__add_kgrams([book['title']]))
+        ac_authors.extend(__add_kgrams(book['authors']))
+        ac_tags.extend(__add_kgrams(book['tags']))
 
     return [
         (authors_ngrams, ac_authors),

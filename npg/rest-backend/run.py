@@ -68,6 +68,15 @@ def check_library_secret(library_uuid):
 
 
 def generate_4grams(books):
+
+    def __add_kgrams(text):
+        for w in text.lower().split():
+            if len(w) < 3:
+                continue
+            elif len(w) == 3:
+                w += ' '
+            yield {'ngram': w[:4], 'val': text}
+    
     authors_ngrams = app.data.driver.db['authors_ngrams']
     titles_ngrams = app.data.driver.db['titles_ngrams']
     tags_ngrams = app.data.driver.db['tags_ngrams']
@@ -76,28 +85,11 @@ def generate_4grams(books):
     ac_titles = []
     ac_tags = []
     for book in books:
-        for word in book['title'].split():
-            if len(word) < 3:
-                continue
-            elif len(word) == 3:
-                word += " "
-            ac_titles.append({'ngram': word[:4].lower(), 'val': book['title']})
-
+        ac_titles.extend(__add_kgrams(book['title']))
         for author in book['authors']:
-            for word in author.split():
-                if len(word) < 3:
-                    continue
-                elif len(word) == 3:
-                    word += " "
-                ac_authors.append({'ngram': word[:4].lower(), 'val': author})
-
+            ac_authors.extend(__add_kgrams(author))
         for tag in book['tags']:
-            for word in tag.split():
-                if len(word) < 3:
-                    continue
-                elif len(word) == 3:
-                    word += " "
-                ac_tags.append({'ngram': word[:4].lower(), 'val': tag})
+            ac_tags.extend(__add_kgrams(tag))
 
     return [
         (authors_ngrams, ac_authors),

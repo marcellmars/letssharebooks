@@ -99,6 +99,7 @@ def generate_4grams(books):
 
 def delete_4grams(library_uuid):
     books = app.data.driver.db['books']
+
     # titles
     titles_off = {book['title']
                   for book in books.find({'library_uuid': library_uuid})}
@@ -106,36 +107,32 @@ def delete_4grams(library_uuid):
                  for book in books.find({'library_uuid': {'$nin': [library_uuid]},
                                          'presence': 'on'})}
     titles = titles_off - titles_on
-    # authors
-    authors_off = [book['authors']
-                   for book in books.find({'library_uuid': library_uuid})]
-    authors_off = (list(itertools.chain.from_iterable(authors_off)))
-    authors_off = {b for b in authors_off}
 
-    authors_on = [book['authors']
+    # authors
+    authors_off = (book['authors']
+                   for book in books.find({'library_uuid': library_uuid}))
+    authors_off = set(itertools.chain.from_iterable(authors_off))
+
+    authors_on = (book['authors']
                   for book in books.find({'library_uuid':
                                           {'$nin': [library_uuid]},
-                                          'presence': 'on'})]
-    authors_on = (list(itertools.chain.from_iterable(authors_on)))
-    authors_on = {b for b in authors_on}
+                                          'presence': 'on'}))
+    authors_on = set(itertools.chain.from_iterable(authors_on))
     authors = authors_off - authors_on
 
     # tags
-    tags_off = [book['tags']
-                for book in books.find({'library_uuid': library_uuid})]
-
-    tags_off = (list(itertools.chain.from_iterable(tags_off)))
-    tags_off = {t for t in tags_off}
-
-    tags_on = [book['tags']
+    tags_off = (book['tags']
+                for book in books.find({'library_uuid': library_uuid}))
+    tags_off = set(itertools.chain.from_iterable(tags_off))
+    
+    tags_on = (book['tags']
                for book in books.find({'library_uuid': {'$nin': [library_uuid]},
-                                       'presence': 'on'})]
-    tags_on = (list(itertools.chain.from_iterable(tags_on)))
-    tags_on = {t for t in tags_on}
+                                       'presence': 'on'}))
+    tags_on = set(itertools.chain.from_iterable(tags_on))
     tags = tags_off - tags_on
 
     books = []
-    books.append({'title': '', 'authors': list(authors), 'tags': list(tags)})
+    books.append({'title': '', 'authors': authors, 'tags': tags})
     for title in titles:
         books.append({'title': title, 'authors': [], 'tags': []})
 

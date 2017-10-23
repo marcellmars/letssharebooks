@@ -151,7 +151,7 @@ def add_4grams(library_uuid):
     b = books.find({'library_uuid': library_uuid})
     for coll, lst in generate_4grams(b):
         try:
-            r = coll.insert_many(list(lst), ordered=False)
+            r = coll.insert_many(lst, ordered=False)
             print("@ADDING 4 GRAMS: {}, {}".format(lst, r.raw_result))
         except Exception as e:
             print(e)

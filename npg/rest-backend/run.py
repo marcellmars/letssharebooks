@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 from uuid import UUID
 import itertools
 
@@ -67,16 +68,17 @@ def check_library_secret(library_uuid):
     abort(403)
 
 
+
+# 4-letter words OR 3-letter words followed by space (unless at the
+# end of the string)
+NGRAM_RE = re.compile('\w{4,}|\w{3}\s+|\w{3}$')
+
 def generate_4grams(books):
 
     def __add_kgrams(texts):
         for text in texts:
-            for w in text.lower().split():
-                if len(w) < 3:
-                    continue
-                elif len(w) == 3:
-                    w += ' '
-                yield {'ngram': w[:4], 'val': text}
+            for w in NGRAM_RE.findall(text):
+                yield {'ngram': w[:4].lower(), 'val': text}
     
     authors_ngrams = app.data.driver.db['authors_ngrams']
     titles_ngrams = app.data.driver.db['titles_ngrams']

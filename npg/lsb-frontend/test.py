@@ -57,7 +57,7 @@ def main():
     off = {'presence': 'off'}
     assert edit_library(on, dc) == ('libraries', 200)
     assert db.authors_ngrams.count() == 35
-    assert db.titles_ngrams.count() == 68
+    assert db.titles_ngrams.count() == 69
     assert db.tags_ngrams.count() == 11
     assert db.books.find({'presence': 'on'}).count() == 17
 
@@ -81,12 +81,12 @@ def main():
 
     assert edit_library(on, dc) == ('libraries', 200)
     assert db.authors_ngrams.count() == 35
-    assert db.titles_ngrams.count() == 68
+    assert db.titles_ngrams.count() == 69
     assert db.tags_ngrams.count() == 11
 
     assert edit_library(on, dc2) == ('libraries', 200)
     assert db.authors_ngrams.count() == 66
-    assert db.titles_ngrams.count() == 192
+    assert db.titles_ngrams.count() == 193
     assert db.tags_ngrams.count() == 11
     assert db.books.find({'presence': 'on'}).count() == 41
 

@@ -71,7 +71,7 @@ def check_library_secret(library_uuid):
 
 # 4-letter words OR 3-letter words followed by space (unless at the
 # end of the string)
-NGRAM_RE = re.compile('\w{4,}|\w{3}\s+|\w{3}$')
+NGRAM_RE = re.compile('\w{4,}|\w{3}\s|\w{3}$')
 
 def generate_4grams(books):
 

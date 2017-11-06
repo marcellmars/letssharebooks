@@ -15,7 +15,7 @@
             placeholder="Search MotW"
             ></v-select>
         </b-col>
-        <b-button variant="danger">seaarch</b-button>
+        <b-button variant="danger">Search</b-button>
     </b-button-toolbar>
 </template>
 
@@ -63,10 +63,17 @@
 </script>
 
 <style scoped>
- .col, .v-select {
+.col, .v-select {
     display:block;
     width:100%;
     padding-right:0px;
     padding-left:0px;
- }
+}
+
+a {
+    color:black;
+    font-weight: bold;
+    text-decoration: none;
+}
+
 </style>

@@ -72,7 +72,8 @@ def delete_item(resource, headers, item, base_url=API_ROOT):
 
 
 def calibre_to_json(dc, db_file='metadata.db'):
-    conn = sqlite3.connect(os.path.join(dc['local_config']['calibre_path'], db_file),
+    conn = sqlite3.connect(os.path.join(dc['local_config']['calibre_path'],
+                                        db_file),
                            sqlite3.PARSE_DECLTYPES)
     cur = conn.cursor()
     books = [book for book in cur.execute("SELECT * FROM BOOKS")]
@@ -83,9 +84,9 @@ def calibre_to_json(dc, db_file='metadata.db'):
         b['library_url'] = dc['eve_payload']['library_url']
         b['_id'] = str(
             uuid.UUID(
-                    hmac.new(dc['local_config']['Library-Secret'].encode(),
-                             book[11].encode())
-                    .hexdigest(),
+                hmac.new(dc['local_config']['Library-Secret'].encode(),
+                         book[11].encode())
+                .hexdigest(),
                 version=4)
         )
         # b['_id'] = book[11]

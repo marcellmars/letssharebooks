@@ -24,9 +24,16 @@
         -moz-osx-font-smoothing: grayscale;
         color: #2c3e50;
     }
- a {
-     color:white !important;
-     font-weight: bold;
-     text-decoration: none;
- }
+
+    .motw_download,
+    .motw_download:hover,
+    .motw_download:visited {
+        color: white;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .motw_download:hover {
+        text-decoration: underline;
+    }
 </style>

@@ -68,10 +68,10 @@ def check_library_secret(library_uuid):
     abort(403)
 
 
-
 # 4-letter words OR 3-letter words followed by space (unless at the
 # end of the string)
 NGRAM_RE = re.compile('\w{4,}|\w{3}\s|\w{3}$')
+
 
 def generate_4grams(books):
 
@@ -79,7 +79,7 @@ def generate_4grams(books):
         for text in texts:
             for w in NGRAM_RE.findall(text):
                 yield {'ngram': w[:4].lower(), 'val': text}
-    
+
     authors_ngrams = app.data.driver.db['authors_ngrams']
     titles_ngrams = app.data.driver.db['titles_ngrams']
     tags_ngrams = app.data.driver.db['tags_ngrams']
@@ -126,7 +126,7 @@ def delete_4grams(library_uuid):
     tags_off = (book['tags']
                 for book in books.find({'library_uuid': library_uuid}))
     tags_off = set(itertools.chain.from_iterable(tags_off))
-    
+
     tags_on = (book['tags']
                for book in books.find({'library_uuid': {'$nin': [library_uuid]},
                                        'presence': 'on'}))

@@ -3,13 +3,15 @@
     <b-card overlay
       class="h-100"
       :img-src="getCover(book)"
-      img-alt="Card Image"
+      :img-alt="book.title"
       text-variant="white"
-      :title="book.title"
-      :sub-title="getAuthors(book.authors)">
+      :title="book.title">
+        <b-card-body class="card-subtitle" >
+            <span v-for="author in book.authors" @click="searchQuery(author)"> {{ author }}, </span>
+        </b-card-body>
       <div class="card-text" v-html="getFormats(book)"></div>
     </b-card>
-  </div>
+    </div>
 </template>
 
 <script>
@@ -17,18 +19,18 @@
     export default {
         props: ['book'],
         methods: {
+            searchQuery(author) {
+                var sq = 'books/on?where=authors=="' + author + '"'
+                this.$emit('reloadSearch', sq)
+            },
             getFormats(book) {
                 let f = '';
                 for (var frm of book['formats']) {
                     var book_url = book.library_url + frm.dir_path + frm.file_name
-                    console.log(book_url)
                     var download_stripe = '<a class="motw_download" href="' + book_url + '"><i class="fa fa-download"></i><i>' + frm.format.toUpperCase() + '</i></a>, ';
                     f += download_stripe;
                 }
                 return f.slice(0, -3)
-            },
-            getAuthors(authors) {
-                return authors.join(", ");
             },
             getCover(book) {
                 return book.library_url + book.cover_url
@@ -59,6 +61,14 @@
         padding-top: 6px;
         padding-right: 3px;
         padding-left: 6px;
+    }
+
+    .card-title {
+        font-size: 1.2em;
+    }
+
+    .card-subtitle {
+        font-style: italic;
     }
 
     .card-text {

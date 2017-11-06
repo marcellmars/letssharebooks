@@ -7,13 +7,13 @@
         </b-dropdown>
         <b-col>
             <v-select
-            class="vselect"
-            :debounce="250"
-            :on-search="getOptions"
-            :options="options"
-            maxHeight="18em"
-            placeholder="Search MotW"
-            ></v-select>
+                class="vselect"
+                :debounce="250"
+                on-search="getOptions"
+                options="options"
+                maxHeight="18em"
+                placeholder="Search MotW" > 
+            </v-select>
         </b-col>
         <b-button variant="danger">Search</b-button>
     </b-button-toolbar>
@@ -63,17 +63,17 @@
 </script>
 
 <style scoped>
-.col, .v-select {
-    display:block;
-    width:100%;
-    padding-right:0px;
-    padding-left:0px;
-}
+    .col,
+    .v-select {
+        display: block;
+        width: 100%;
+        padding-right: 0px;
+        padding-left: 0px;
+    }
 
-a {
-    color:black;
-    font-weight: bold;
-    text-decoration: none;
-}
-
+    a {
+        color: black;
+        font-weight: bold;
+        text-decoration: none;
+    }
 </style>

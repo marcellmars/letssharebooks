@@ -1,23 +1,26 @@
 <template>
     <div>
-        <b-button-toolbar justify>
-                <b-button class="col" variant="info" pill v-if="links.prev" @click="fetchBooks(links.prev.href)">prev page</b-button>
-                <b-button disabled class="col" variant="warning" pill> {{ bookresults * (meta.page - 1) }}-{{ Math.min(meta.page * bookresults, meta.total) }} of {{ meta.total }} (page:{{ meta.page }})</b-button>
-                <b-button class="col" variant="info" pill v-if="links.next" @click="fetchBooks(links.next.href)">next page</b-button>
-        </b-button-toolbar>
+        <nav-bar :links="links"
+                 :bookresults="bookresults"
+                 :meta="meta"
+                 @fetchBooks="fetchBooks($event)">
+        </nav-bar>
+
         <b-card-group>
-          <book-card v-for="book in books" :book="book"></book-card>
+          <book-card @reloadSearch="fetchBooks($event)" v-for="book in books" :book="book"></book-card>
         </b-card-group>
-        <b-button-toolbar justify>
-                <b-button class="col" variant="info" pill v-if="links.prev" @click="fetchBooks(links.prev.href)">prev page</b-button>
-                <b-button disabled class="col" variant="warning" pill> {{ bookresults * (meta.page - 1) }}-{{ Math.min(meta.page * bookresults, meta.total) }} of {{ meta.total }} (page:{{ meta.page }})</b-button>
-                <b-button class="col" variant="info" pill v-if="links.next" @click="fetchBooks(links.next.href)">next page</b-button>
-        </b-button-toolbar>
+
+        <nav-bar :links="links"
+                 :bookresults="bookresults"
+                 :meta="meta"
+                 @fetchBooks="fetchBooks($event)">
+        </nav-bar>
     </div>
 </template>
 
 <script>
     import BookCard from './BookCard.vue'
+    import NavBar from './NavBar.vue'
 
     export default {
         data: function() {
@@ -33,7 +36,7 @@
             }
         },
         methods: {
-            fetchBooks(endpoint = 'books/on') {
+            fetchBooks(endpoint) {
                 // this.$http.get('static/data.js')
                 this.$http.get(endpoint)
                     .then(response => {
@@ -47,10 +50,11 @@
             },
         },
         mounted: function() {
-            this.fetchBooks()
+            this.fetchBooks('books/on/')
         },
         components: {
             BookCard,
+            NavBar
         }
     }
 </script>

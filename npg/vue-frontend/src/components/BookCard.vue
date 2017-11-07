@@ -7,7 +7,7 @@
       text-variant="white"
       :title="book.title">
         <b-card-body class="card-subtitle" >
-            <span v-for="author in book.authors" @click="searchQuery(author)"> {{ author }}, </span>
+            <span v-for="author in book.authors" @click="searchQuery(author)" v-text="getEndComma(author)"></span>
         </b-card-body>
       <div class="card-text" v-html="getFormats(book)"></div>
     </b-card>
@@ -19,6 +19,12 @@
     export default {
         props: ['book'],
         methods: {
+            getEndComma(author) {
+                if (author === this.book.authors[this.book.authors.length - 1]) {
+                    return author
+                } else {
+                    return author + ", "}
+            },
             searchQuery(author) {
                 var sq = 'books/on?where=authors=="' + author + '"'
                 this.$emit('reloadSearch', sq)

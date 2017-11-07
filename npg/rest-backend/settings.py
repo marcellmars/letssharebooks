@@ -73,15 +73,13 @@ books = {
                            'code': {'type': 'string'}
                        }}
         },
-        # 'librarian': {
-        #     'type': 'string',
-        #     'required': True,
-        #     'data_relation': {
-        #         'resource': 'libraries',
-        #         'field': 'librarian',
-        #         'embeddable': True
-        #     }
-        # },
+        'librarian': {
+            'type': 'string',
+            'data_relation': {
+                'resource': 'libraries',
+                'field': 'librarian',
+            }
+        },
         'library_uuid': {
             'type': 'uuid',
             'required': True,

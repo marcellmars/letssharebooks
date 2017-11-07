@@ -17,23 +17,23 @@
     }
 
     #app {
-        /* font-family: 'Avenir', Helvetica, Arial, sans-serif; */
-        font-family: BitstreamVeraSansMono, Consolas, monospace;
+        font-family: 'Avenir', Helvetica, Arial, sans-serif;
+        /* font-family: BitstreamVeraSansMono, Consolas, monospace; */
         font-weight: bold;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         color: #2c3e50;
     }
 
-    .motw_download,
-    .motw_download:hover,
-    .motw_download:visited {
+    .motw_link,
+    .motw_link:hover,
+    .motw_link:visited {
         color: white;
         font-weight: bold;
         text-decoration: none;
     }
 
-    .motw_download:hover {
+    .motw_link:hover {
         text-decoration: underline;
     }
 </style>

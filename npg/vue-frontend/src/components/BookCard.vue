@@ -6,13 +6,18 @@
       :img-alt="book.title"
       text-variant="white">
         <b-card-body class="card-title">
-            <span @click="show_modal = !show_modal">{{ book.title }}</span>
+            <a href="#"
+               @click="show_modal = !show_modal"
+               class="motw_link"
+            >{{ book.title }}</a>
         </b-card-body>
         <b-card-body class="card-subtitle">
-            <span v-for="author in book.authors"
-                  @click="searchQuery(author)"
-                  v-text="getEndComma(author)">
-            </span>
+            <a href="#"
+               class="motw_link"
+               v-for="author in book.authors"
+               @click="searchByAuthor(author)"
+               v-text="getEndComma(author)">
+            </a>
         </b-card-body>
         <div class="card-text"
              v-html="getFormats(book)">
@@ -30,7 +35,11 @@
         <div v-html="book.comments"></div>
         <div slot="modal-footer"
              class="w-100">
-            <p class="float-left">catalogued by {{ book.library_uuid }}</p>
+            <a href="#"
+               class="float-left motw_link"
+               @click="searchByLibrarian(book.librarian)" >
+               catalogued by {{ book.librarian }}
+            </a>
         </div>
     </b-modal>
   </div>
@@ -50,18 +59,22 @@
                 if (author === this.book.authors[this.book.authors.length - 1]) {
                     return author
                 } else {
-                    return author + ", "
+                    return `${author}, `
                 }
             },
-            searchQuery(author) {
-                var sq = 'books/on?where=authors=="' + author + '"'
+            searchByAuthor(author) {
+                let sq = `books/on?where=authors=="${author}"`
+                this.$emit('reloadSearch', sq)
+            },
+            searchByLibrarian(librarian) {
+                let sq = `librarians/${librarian}/books`
                 this.$emit('reloadSearch', sq)
             },
             getFormats(book) {
                 let f = '';
-                for (var frm of book['formats']) {
-                    var book_url = book.library_url + frm.dir_path + frm.file_name
-                    var download_stripe = '<a class="motw_download" href="' + book_url + '"><i class="fa fa-download"></i><i>' + frm.format.toUpperCase() + '</i></a>, ';
+                for (let frm of book['formats']) {
+                    let book_url = book.library_url + frm.dir_path + frm.file_name
+                    let download_stripe = `<a class="motw_link" href="${book_url}"><i class="fa fa-download"></i><i>${frm.format.toUpperCase()}</i></a>, `;
                     f += download_stripe;
                 }
                 return f.slice(0, -3)

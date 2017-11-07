@@ -9,10 +9,10 @@
             <v-select
                 class="vselect"
                 :debounce="250"
-                on-search="getOptions"
-                options="options"
+                :on-search="getOptions"
+                :options="options"
                 maxHeight="18em"
-                placeholder="Search MotW" > 
+                placeholder="Search MotW"> 
             </v-select>
         </b-col>
         <b-button variant="danger">Search</b-button>

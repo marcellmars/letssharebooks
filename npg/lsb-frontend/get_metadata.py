@@ -82,6 +82,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
         b = {}
         b['library_uuid'] = dc['eve_payload']['_id']
         b['library_url'] = dc['eve_payload']['library_url']
+        b['librarian'] = dc['eve_payload']['librarian']
         b['_id'] = str(
             uuid.UUID(
                 hmac.new(dc['local_config']['Library-Secret'].encode(),

@@ -7,7 +7,10 @@
         </nav-bar>
 
         <b-card-group>
-          <book-card @reloadSearch="fetchBooks($event)" v-for="book in books" :book="book"></book-card>
+          <book-card @reloadSearch="fetchBooks($event)"
+                     v-for="book in books"
+                     :book="book"
+                     :key="title"></book-card>
         </b-card-group>
 
         <nav-bar :links="links"

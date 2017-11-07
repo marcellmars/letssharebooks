@@ -10,7 +10,8 @@
           <book-card @reloadSearch="fetchBooks($event)"
                      v-for="book in books"
                      :book="book"
-                     :key="title"></book-card>
+                     :key="title">
+          </book-card>
         </b-card-group>
 
         <nav-bar :links="links"
@@ -39,7 +40,9 @@
             }
         },
         methods: {
-            fetchBooks(endpoint) {
+            fetchBooks(a) {
+                let endpoint = a['endpoint']
+                let status = a['status']
                 // this.$http.get('static/data.js')
                 this.$http.get(endpoint)
                     .then(response => {
@@ -49,11 +52,15 @@
                         this.books = data._items;
                         this.meta = data._meta;
                         this.links = data._links;
+                        this.meta['status'] = status
                     });
             },
         },
         mounted: function() {
-            this.fetchBooks('books/on/')
+            this.fetchBooks({
+                'endpoint': 'books/on/',
+                'status': 'all books'
+            })
         },
         components: {
             BookCard,

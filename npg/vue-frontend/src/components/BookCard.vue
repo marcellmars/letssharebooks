@@ -8,8 +8,9 @@
         <b-card-body class="card-title">
             <a href="#"
                @click="show_modal = !show_modal"
-               class="motw_link"
-            >{{ book.title }}</a>
+               class="motw_link">
+                {{ book.title }}
+            </a>
         </b-card-body>
         <b-card-body class="card-subtitle">
             <a href="#"
@@ -31,7 +32,10 @@
              footer-bg-variant="danger"
              header-text-variant="white"
              footer-text-variant="white">
-        <img :src="getCover(book)" class="float-right" width="33%"></img>
+        <img :src="getCover(book)"
+             class="float-right"
+             width="33%">
+        </img>
         <div v-html="book.comments"></div>
         <div slot="modal-footer"
              class="w-100">
@@ -63,12 +67,17 @@
                 }
             },
             searchByAuthor(author) {
-                let sq = `books/on?where=authors=="${author}"`
-                this.$emit('reloadSearch', sq)
+                this.$emit('reloadSearch', {
+                    'endpoint': `books/on?where=authors=="${author}"`,
+                    'status': `author: ${author}`
+                })
             },
             searchByLibrarian(librarian) {
-                let sq = `librarians/${librarian}/books`
-                this.$emit('reloadSearch', sq)
+                this.$emit('reloadSearch', {
+                    'endpoint': `librarians/${librarian}/books`,
+                    'status': `librarian: ${librarian}`
+                })
+                this.show_modal = false
             },
             getFormats(book) {
                 let f = '';

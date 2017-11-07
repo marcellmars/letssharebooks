@@ -4,7 +4,7 @@
                       variant="info"
                       pill
                       v-if="links.prev"
-                      @click="fetchBooks(links.prev.href)">
+                      @click="fetchBooks({'endpoint': links.prev.href, 'status': meta.status})">
                 &lt;&lt; prev
             </b-button>
 
@@ -14,14 +14,14 @@
                       pill>
                 {{ bookresults * (meta.page - 1) }}-
                 {{ Math.min(meta.page * bookresults, meta.total) }} of {{ meta.total }}
-                (page:{{ meta.page }})
+                ({{ meta.status }})
             </b-button>
 
             <b-button class="col right-arrow"
                       variant="info"
                       pill
                       v-if="links.next"
-                      @click="fetchBooks(links.next.href)">
+                      @click="fetchBooks({'endpoint': links.next.href, 'status': meta.status})">
                 next &gt;&gt;
             </b-button>
         </b-button-toolbar>
@@ -30,10 +30,9 @@
 <script>
     export default {
         props: ['links',
-            'bookresults',
-            'meta'
+                'bookresults',
+                'meta'
         ],
-
         methods: {
             fetchBooks(l) {
                 this.$emit('fetchBooks', l);

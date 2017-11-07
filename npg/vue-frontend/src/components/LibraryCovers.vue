@@ -10,7 +10,7 @@
           <book-card @reloadSearch="fetchBooks($event)"
                      v-for="book in books"
                      :book="book"
-                     :key="title">
+                     :key="book.title">
           </book-card>
         </b-card-group>
 

@@ -4,26 +4,54 @@
       class="h-100"
       :img-src="getCover(book)"
       :img-alt="book.title"
-      text-variant="white"
-      :title="book.title">
-        <b-card-body class="card-subtitle" >
-            <span v-for="author in book.authors" @click="searchQuery(author)" v-text="getEndComma(author)"></span>
+      text-variant="white">
+        <b-card-body class="card-title">
+            <span @click="show_modal = !show_modal">{{ book.title }}</span>
         </b-card-body>
-      <div class="card-text" v-html="getFormats(book)"></div>
+        <b-card-body class="card-subtitle">
+            <span v-for="author in book.authors"
+                  @click="searchQuery(author)"
+                  v-text="getEndComma(author)">
+            </span>
+        </b-card-body>
+        <div class="card-text"
+             v-html="getFormats(book)">
+        </div>
     </b-card>
-    </div>
+    <b-modal v-model="show_modal"
+             size="lg"
+             no-fade
+             :title="book.title"
+             header-bg-variant="danger"
+             footer-bg-variant="danger"
+             header-text-variant="white"
+             footer-text-variant="white">
+        <img :src="getCover(book)" class="float-right" width="33%"></img>
+        <div v-html="book.comments"></div>
+        <div slot="modal-footer"
+             class="w-100">
+            <p class="float-left">catalogued by {{ book.library_uuid }}</p>
+        </div>
+    </b-modal>
+  </div>
 </template>
 
 <script>
     import 'font-awesome/css/font-awesome.css'
     export default {
         props: ['book'],
+        data() {
+            return {
+                show_modal: false,
+            }
+        },
         methods: {
             getEndComma(author) {
                 if (author === this.book.authors[this.book.authors.length - 1]) {
                     return author
                 } else {
-                    return author + ", "}
+                    return author + ", "
+                }
             },
             searchQuery(author) {
                 var sq = 'books/on?where=authors=="' + author + '"'

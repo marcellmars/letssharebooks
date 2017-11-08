@@ -98,6 +98,8 @@ def main():
     headers = {'Library-Secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'}
     delete_item('books', headers, art_power)
     assert db.books.find({'presence': 'on'}).count() == 40
+    assert db.titles_ngrams.find({'val': 'Art Power'}).count() == 0
+    assert db.authors_ngrams.find({'val': 'Boris Groys'}).count() == 2
 
 
 if __name__ == '__main__':

@@ -93,9 +93,9 @@ def generate_4grams(books):
         ac_tags.extend(__add_kgrams(book['tags']))
 
     return [
-        (authors_ngrams, ac_authors),
-        (titles_ngrams, ac_titles),
-        (tags_ngrams, ac_tags)
+        ('authors', authors_ngrams, ac_authors),
+        ('title', titles_ngrams, ac_titles),
+        ('tags', tags_ngrams, ac_tags)
     ]
 
 
@@ -138,7 +138,7 @@ def delete_4grams(library_uuid):
     for title in titles:
         books.append({'title': title, 'authors': [], 'tags': []})
 
-    for coll, lst in generate_4grams(books):
+    for _, coll, lst in generate_4grams(books):
         try:
             for l in lst:
                 r = coll.delete_one(l)
@@ -151,7 +151,7 @@ def delete_4grams(library_uuid):
 def add_4grams(library_uuid):
     books = app.data.driver.db['books']
     b = books.find({'library_uuid': library_uuid})
-    for coll, lst in generate_4grams(b):
+    for _, coll, lst in generate_4grams(b):
         try:
             r = coll.insert_many(lst, ordered=False)
             print("@ADDING 4 GRAMS: {}, {}".format(lst, r.raw_result))
@@ -169,13 +169,35 @@ def check_delete_item_books(item):
     print("@DELETE_ITEM_BOOKS arg#item {}".format(item))
     print("@DELETE_ITEM_BOOKS headers {}".format(request.headers))
     check_library_secret(item['library_uuid'])
-    for coll, lst in generate_4grams([item]):
-        try:
-            for l in lst:
-                r = coll.delete_one(l)
-                print("@DELETE 4 GRAMS: {}, {}".format(l, r.raw_result))
-        except Exception as e:
-            print(e)
+
+    books = app.data.driver.db['books']
+    for attr_name, coll, lst in generate_4grams([item]):
+        # set of items to delete
+        items_del = set((i['val'] for i in lst))
+
+        # select all values for corresponding ngrams
+        q = [{attr_name: i['val']} for i in lst]
+
+        # take all existing values for corresponding attribute
+        if attr_name == 'titles':
+            items_existing = set((b['title'] for b in books.find(
+                {'presence': 'on', '$or': q})))
+        elif attr_name == 'authors':
+            items_existing = set((a for b in books.find(
+                {'presence': 'on', '$or': q}) for a in b['authors']))
+        elif attr_name == 'tags':
+            items_existing = set((a for b in books.find(
+                {'presence': 'on', '$or': q}) for a in b['tags']))
+            
+        # remove only those that are not currently active
+        to_del = items_del - items_existing
+        for i in lst:
+            if i['val'] in to_del:
+                try:
+                    coll.delete_one(i)
+                except Exception as e:
+                    print(e)
+
     print("FINISHED DELETING 4GRAMS!")
 
     print("@DELETE {}".format(item))
@@ -256,7 +278,7 @@ app.on_delete_item_libraries += check_delete_item_libraries
 
 app.on_insert_books += check_insert_books
 app.on_update_books += check_update_books
-app.on_delete_item_books += check_delete_item_books
+app.on_deleted_item_books += check_delete_item_books
 # app.on_inserted_books += add_4grams
 
 

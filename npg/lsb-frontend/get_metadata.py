@@ -2,8 +2,7 @@
 
 import sqlite3
 import os
-import re
-import html
+import bleach
 import json
 import dateutil.parser
 import requests
@@ -126,13 +125,17 @@ def calibre_to_json(dc, db_file='metadata.db'):
                                         BOOKS.ID = COMMENTS.BOOK;""".format(book=book[0])).fetchone()
         if not comments:
             comments = ("",)
-        b['comments'] = comments[0]
+
+        # bleach.sanitizer.ALLOWED_TAGS:
+        # ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i',
+        #  'li', 'ol', 'strong', 'ul']
+
+        tags = bleach.sanitizer.ALLOWED_TAGS + ['p', 'div', 'br', 'pre']
+        b['comments'] = bleach.clean(comments[0], strip=True, tags=tags)
 
         # twitter/facebook cards
         card = {}
-        tag_re = re.compile('(<!--.*?-->|<[^>]*>)', re.UNICODE)
-        no_tags = tag_re.sub(u'', b['comments'])
-        card['description'] = html.escape(no_tags)[:250].replace('"', "")
+        card['description'] = b['comments'][:250]
         b['card'] = card
 
         # publishers

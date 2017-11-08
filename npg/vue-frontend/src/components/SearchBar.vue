@@ -57,7 +57,7 @@
                     })
                     .then(data => {
                         let s = new Set(this.options)
-                        for (var d of data._items) {
+                        for (let d of data._items) {
                             s.add(d[this.label])
                         }
                         this.options = Array.from(s);

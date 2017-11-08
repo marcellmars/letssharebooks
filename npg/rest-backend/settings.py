@@ -228,6 +228,26 @@ titles_ngrams = {
     }
 }
 
+tags_ngrams = {
+    'item_title': 'Ngram',
+    'item_methods': ['GET'],
+    'max_results': 100,
+    'url': 'autocomplete/tags/<regex(".*"):ngram>',
+    # 'hateoas': False,
+    # 'pagination': False,
+    'datasource': {
+        'projection': {'val': 1}
+    },
+    'schema': {
+        '_id': {'type': 'objectid'},
+        'ngram': {
+            'type': 'string',
+            'minlength': 4,
+            'maxlength': 4
+        },
+        'val': {'type': 'string'}
+    }
+}
 
 DOMAIN = {
     'books': books,
@@ -238,5 +258,6 @@ DOMAIN = {
     'librarians_books': librarians_books,
     'librarians': librarians_by_name,
     'authors_ngrams': authors_ngrams,
-    'titles_ngrams': titles_ngrams
+    'titles_ngrams': titles_ngrams,
+    'tags_ngrams': tags_ngrams
 }

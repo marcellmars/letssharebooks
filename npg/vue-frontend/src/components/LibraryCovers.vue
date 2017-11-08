@@ -27,6 +27,7 @@
     import NavBar from './NavBar.vue'
 
     export default {
+        props: ['reloadSearch'],
         data: function() {
             return {
                 // books: LIBRARY.books.add
@@ -61,6 +62,11 @@
                 'endpoint': 'books/on/',
                 'status': 'all books'
             })
+        },
+        watch: {
+            reloadSearch: function(val, oldVal) {
+                this.fetchBooks(val)
+            }
         },
         components: {
             BookCard,

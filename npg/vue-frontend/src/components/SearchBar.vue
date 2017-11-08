@@ -8,11 +8,12 @@
         <b-col>
             <v-select
                 class="vselect"
+                @input="atInput($event)"
                 :debounce="250"
                 :on-search="getOptions"
                 :options="options"
                 maxHeight="18em"
-                placeholder="Search MotW"> 
+                placeholder="Search MotW">
             </v-select>
         </b-col>
         <b-button variant="danger">Search</b-button>
@@ -26,20 +27,31 @@
         data() {
             return {
                 options: [],
-                endpoint: 'autocomplete/titles/',
                 xargs: '?max_results=500',
                 label: 'val',
-                in_search: "Authors"
+                in_search: "Authors",
             }
         },
         methods: {
+            atInput(e) {
+                if (this.in_search === "Titles") {
+                    this.in_search = "Title"
+                }
+                let sq = {
+                    'endpoint': `books/on?where=${this.in_search.toLowerCase()}=="${e}"`,
+                    'status': `${this.in_search.toLowerCase()}: ${e}`
+                }
+                this.$emit('atInput', sq)
+            },
             getOptions(search, loading) {
                 if (search.length != 4) {
                     loading(false)
                     return
                 }
                 loading(true)
-                this.$http.get(this.endpoint + search.toLowerCase() + this.xargs)
+                this.$http.get(
+                    `autocomplete/${this.in_search.toLowerCase()}/${search.toLowerCase()}${this.xargs}`
+                )
                     .then(response => {
                         return response.json()
                     })

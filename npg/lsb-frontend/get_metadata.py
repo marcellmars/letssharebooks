@@ -8,21 +8,24 @@ import dateutil.parser
 import requests
 import hmac
 import uuid
+import zlib
 from shuffle_names import libranom
 
 
-API_ROOT = "http://localhost:5000/"
+API_ROOT = "http://motw.local/"
 
 dc = {
         'local_config': {
-            'calibre_path': os.path.expanduser("~/CalibreLibraries/FooBar/"),
+            'calibre_path': os.path.expanduser("~/CalibreLibraries/slowrotation/"),
+            # 'calibre_path': os.path.expanduser("~/CalibreLibraries/FooBar/"),
             'jsonfile': '/tmp/books_{}.json'.format('EzraAbbot'),
             'Library-Secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'
         },
         'eve_payload': {
             'librarian': 'Ezra Abbot',
             '_id': '800fe078-9aea-4327-a4a3-eaf8cd63491f',
-            'library_url': 'http://localhost:2017/'
+            'library_url': 'http://slowrotation.memoryoftheworld.org/'
+            # 'library_url': 'http://localhost:2017/'
         }
 }
 
@@ -41,14 +44,34 @@ dc2 = {
 }
 
 
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+
 def add_item(resource, headers, payload, base_url=API_ROOT):
     headers['Content-Type'] = 'application/json'
-    r = requests.post("{}{}".format(base_url, resource),
-                      json.dumps(payload),
-                      headers=headers)
-    print("POSTed @{} with status code: {}".format(resource,
-                                                   r.status_code))
-    return resource, r.status_code
+    headers['Library-Encoding'] = 'zlib'
+
+    def _post_request(resource, headers, payload, base_url):
+        payload = json.dumps(payload)
+        zpayload = zlib.compress(payload.encode('utf-8'))
+        print("{} - {} = {}".format(len(payload),
+                                    len(zpayload),
+                                    len(payload) - len(zpayload)))
+        r = requests.post("{}{}".format(base_url, resource),
+                          data=zpayload,
+                          headers=headers)
+        print("POSTed @{} with status code: {}".format(resource,
+                                                       r.status_code))
+        return resource, r.status_code
+
+    if isinstance(payload, list):
+        for pl in chunks(payload, 1000):
+            resource, status_code = _post_request(resource, headers, pl, base_url)
+        return resource, status_code
+    else:
+        return _post_request(resource, headers, payload, base_url)
 
 
 def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):

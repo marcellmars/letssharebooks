@@ -1,40 +1,40 @@
 <template>
-  <div class="col col-xl-2 col-lg-3 col-md-4 col-sm-6 cols-12">
-    <b-card overlay
-      class="h-100"
-      :img-src="getCover(book)"
-      :img-alt="book.title"
-      text-variant="white">
-        <b-card-body class="card-title">
-            <a href="#"
-               @click="show_modal = !show_modal"
-               class="motw_link">
-                {{ book.title }}
-            </a>
-        </b-card-body>
-        <b-card-body class="card-subtitle">
-            <a href="#"
-               class="motw_link"
-               v-for="author in book.authors"
-               @click="searchByAuthor(author)"
-               v-text="getEndComma(author)">
-            </a>
-        </b-card-body>
-        <div class="card-text"
-             v-html="getFormats(book)">
-        </div>
-    </b-card>
-    <b-modal v-model="show_modal"
-             size="lg"
-             no-fade
-             :title="book.title"
-             header-bg-variant="danger"
-             footer-bg-variant="danger"
-             header-text-variant="white"
-             footer-text-variant="white">
-        <img :src="getCover(book)"
-             class="float-right"
-             width="33%">
+    <div class="col col-xl-2 col-lg-3 col-md-4 col-sm-6 cols-12">
+        <b-card overlay
+                class="h-100"
+                :img-src="getCover(book)"
+                :img-alt="book.title"
+                text-variant="white">
+            <b-card-body class="card-title">
+                <a href="#"
+                   @click="show_modal = !show_modal"
+                   class="motw_link">
+                    {{ book.title }}
+                </a>
+            </b-card-body>
+            <b-card-body class="card-subtitle">
+                <a href="#"
+                   class="motw_link"
+                   v-for="author in book.authors"
+                   @click="searchByAuthor(author)"
+                   v-text="getEndComma(author)">
+                </a>
+            </b-card-body>
+            <div class="card-text"
+                 v-html="getFormats(book)">
+            </div>
+        </b-card>
+        <b-modal v-model="show_modal"
+                 size="lg"
+                 no-fade
+                 :title="book.title"
+                 header-bg-variant="danger"
+                 footer-bg-variant="danger"
+                 header-text-variant="white"
+                 footer-text-variant="white">
+            <img :src="getCover(book)"
+                 class="float-right"
+                 width="33%">
         </img>
         <div v-html="book.comments"></div>
         <div slot="modal-footer"
@@ -42,11 +42,11 @@
             <a href="#"
                class="float-left motw_link"
                @click="searchByLibrarian(book.librarian)" >
-               catalogued by {{ book.librarian }}
+                catalogued by {{ book.librarian }}
             </a>
         </div>
-    </b-modal>
-  </div>
+        </b-modal>
+    </div>
 </template>
 
 <script>

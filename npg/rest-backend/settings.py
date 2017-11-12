@@ -26,6 +26,7 @@ SCHEMA_ENDPOINT = "schema"
 XML = False
 EMBEDDED = True
 
+
 books = {
     'item_title': 'Book',
     'schema': {

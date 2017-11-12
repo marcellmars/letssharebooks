@@ -74,7 +74,6 @@ NGRAM_RE = re.compile('\w{4,}|\w{3}\s|\w{3}$')
 
 
 def generate_4grams(books):
-
     def __add_kgrams(texts):
         for text in texts:
             for w in NGRAM_RE.findall(text):
@@ -188,7 +187,7 @@ def check_delete_item_books(item):
         elif attr_name == 'tags':
             items_existing = set((a for b in books.find(
                 {'presence': 'on', '$or': q}) for a in b['tags']))
-            
+
         # remove only those that are not currently active
         to_del = items_del - items_existing
         for i in lst:
@@ -271,6 +270,15 @@ def update_books_on_updated(updates, original):
                                   {"$set": {l: updates[l]}})
 
 
+def pre_req(res, req):
+    if request.headers.get('Library-Encoding') == 'zlib':
+        import zlib
+        request.data = zlib.decompress(req.data).decode('utf-8')
+        request._cached_data = request.data
+
+
+app.on_pre_POST += pre_req
+
 app.on_insert_libraries += check_insert_libraries
 app.on_update_libraries += check_update_libraries
 app.on_updated_libraries += update_books_on_updated
@@ -279,7 +287,7 @@ app.on_delete_item_libraries += check_delete_item_libraries
 app.on_insert_books += check_insert_books
 app.on_update_books += check_update_books
 app.on_deleted_item_books += check_delete_item_books
-# app.on_inserted_books += add_4grams
+app.on_inserted_books += add_4grams
 
 
 if __name__ == '__main__':

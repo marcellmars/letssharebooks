@@ -26,7 +26,6 @@ SCHEMA_ENDPOINT = "schema"
 XML = False
 EMBEDDED = True
 
-
 books = {
     'item_title': 'Book',
     'schema': {
@@ -37,10 +36,9 @@ books = {
             'type': 'list',
             'schema': {'type': 'string'},
         },
-        'timestamp': {'type': 'datetime'},
+        'timestamp': {'type': 'string'},
         'comments': {'type': 'string'},
-        'application_id': {'type': 'integer'},
-        'last_modified': {'type': 'datetime'},
+        'last_modified': {'type': 'string'},
         'cover_url': {'type': 'string'},
         'publisher': {'type': 'string'},
         'formats': {
@@ -59,13 +57,7 @@ books = {
             'type': 'list',
             'schema': {'type': 'string'}
         },
-        'card': {
-            'type': 'dict',
-            'schema': {
-                'description': {'type': 'string'}
-            }
-        },
-        'pubdate': {'type': 'datetime'},
+        'pubdate': {'type': 'string'},
         'identifiers': {
             'type': 'list',
             'schema': {'type': 'dict',
@@ -74,6 +66,11 @@ books = {
                            'code': {'type': 'string'}
                        }}
         },
+        'languages': {
+            'type': 'list',
+            'schema': {'type': 'string'}
+        },
+        'series_index': {'type': 'float'},
         'librarian': {
             'type': 'string',
             'data_relation': {
@@ -119,7 +116,7 @@ libraries = {
             'required': True,
             'unique': True
         },
-        'last_modified': {'type': 'datetime'},
+        'last_modified': {'type': 'string'},
         'library_url': {'type': 'string'},
         'presence': {'type': 'string',
                      'default': 'off',

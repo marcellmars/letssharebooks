@@ -46,7 +46,7 @@ def main():
     assert edit_library(lib2, dc) == ('libraries', 200)
 
     # test books adding
-    save_file(dc)
+    # save_file(dc)
     assert add_books(dc) == ('books', 201)
     assert add_library(dc2) == ('libraries', 201)
     save_file(dc2)

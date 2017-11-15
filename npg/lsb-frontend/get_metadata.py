@@ -147,7 +147,6 @@ def calibre_to_json(dc, db_file='metadata.db'):
     conn = sqlite3.connect(
         os.path.join(dc['local_config']['calibre_path'],
                      db_file))
-        # sqlite3.PARSE_DECLTYPES)
     cur = conn.cursor()
     sql_books = (book for book in cur.execute(bid))
 
@@ -181,6 +180,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
         'identifiers',
         'languages'
     ]
+
     _ = [
         books.update(
             {
@@ -257,9 +257,9 @@ def calibre_to_json(dc, db_file='metadata.db'):
      for language in sql_languages]
 
     books_list = []
-    remove_keys = ['application_id', 'isbn', 'iccn', 'card',
-                   'path', 'flags', 'has_cover', 'uuid', 'author_sort']
-    modify_keys = ['timestamp', 'pubdate', 'last_modified']
+    remove_keys = ['application_id', 'isbn', 'iccn', 'card', 'path',
+                   'flags', 'has_cover', 'uuid', 'author_sort']
+    # modify_keys = ['timestamp', 'pubdate', 'last_modified']
     for book in list(books.values()):
         for k in remove_keys:
             book.pop(k, None)
@@ -269,7 +269,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
     return books_list
 
 
-def post_items(dc, db_file='metadata.db'):
+def post_items(dc):
 
     def __temp(books):
         headers = {'Library-Secret': dc['local_config']['Library-Secret']}

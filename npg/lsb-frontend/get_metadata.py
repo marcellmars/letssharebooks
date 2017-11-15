@@ -7,9 +7,13 @@ import requests
 import hmac
 import uuid
 import zlib
+
+from uploader import Uploader
 from shuffle_names import libranom
 
-API_ROOT = "http://motw.local/"
+
+API_ROOT = "http://localhost:5000/"
+
 
 dc = {
     'local_config': {
@@ -61,13 +65,7 @@ def add_item(resource, headers, payload, base_url=API_ROOT):
                                                        r.status_code))
         return resource, r.status_code
 
-    if isinstance(payload, list):
-        for pl in chunks(payload, 1000):
-            resource, status_code = _post_request(resource, headers, pl,
-                                                  base_url)
-        return resource, status_code
-    else:
-        return _post_request(resource, headers, payload, base_url)
+    return _post_request(resource, headers, payload, base_url)
 
 
 def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):
@@ -269,6 +267,24 @@ def calibre_to_json(dc, db_file='metadata.db'):
         #     book[k] = dateutil.parser.parse(book[k]).strftime("%a, %d %b %04Y %H:%M:%S GMT")
         books_list.append(book)
     return books_list
+
+
+def post_items(dc, db_file='metadata.db'):
+
+    def __temp(books):
+        headers = {'Library-Secret': dc['local_config']['Library-Secret']}
+        add_item('books', headers, books)
+
+    books = calibre_to_json(dc)
+
+    uploader = Uploader(__temp)
+    uploader.start()
+
+    for books_chunk in chunks(books, 1000):
+        uploader.queue.put(books_chunk)
+
+    uploader.wait()
+    uploader.finish()
 
 
 def save_file(dc):

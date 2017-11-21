@@ -14,33 +14,36 @@ RESOURCE_METHODS = ['GET', 'POST']
 
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 ITEM_URL = 'regex("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}")'
+
 CACHE_CONTROL = 'max-age=20'
 CACHE_CONTROL = ''
 CACHE_EXPIRES = 20
 IF_MATCH = False
+
 PAGINATION_DEFAULT = 12
 PAGINATION_LIMIT = 1000
+
 X_DOMAINS = '*'
 BANDWIDTH_SAVER = True
 SCHEMA_ENDPOINT = "schema"
 XML = False
-EMBEDDED = True
+EMBEDDING = True
+
+BULK_ENABLED = True
 
 books = {
     'item_title': 'Book',
+    'datasource': {
+        'default_sort': [('last_modified', -1)]
+    },
     'schema': {
         '_id': {'type': 'uuid'},
-        'title': {'type': 'string'},
-        'title_sort': {'type': 'string'},
         'authors': {
             'type': 'list',
             'schema': {'type': 'string'},
         },
-        'timestamp': {'type': 'string'},
         'comments': {'type': 'string'},
-        'last_modified': {'type': 'string'},
         'cover_url': {'type': 'string'},
-        'publisher': {'type': 'string'},
         'formats': {
             'type': 'list',
             'schema': {
@@ -53,11 +56,6 @@ books = {
                 }
             }
         },
-        'tags': {
-            'type': 'list',
-            'schema': {'type': 'string'}
-        },
-        'pubdate': {'type': 'string'},
         'identifiers': {
             'type': 'list',
             'schema': {'type': 'dict',
@@ -70,15 +68,9 @@ books = {
             'type': 'list',
             'schema': {'type': 'string'}
         },
-        'series_index': {'type': 'float'},
-        'librarian': {
-            'type': 'string',
-            'data_relation': {
-                'resource': 'libraries',
-                'field': 'librarian',
-            }
-        },
+        'last_modified': {'type': 'datetime'},
         'library_uuid': {
+            # 'type': 'dict',
             'type': 'uuid',
             'required': True,
             'data_relation': {
@@ -87,28 +79,22 @@ books = {
                 'embeddable': True
             },
         },
-        'presence': {
-            'type': 'string',
-            'default': 'off',
-            'data_relation': {
-                'resource': 'libraries',
-                'field': 'presence',
-            }
+        'pubdate': {'type': 'datetime'},
+        'publisher': {'type': 'string'},
+        'series_index': {'type': 'float'},
+        'tags': {
+            'type': 'list',
+            'schema': {'type': 'string'}
         },
-        'library_url': {
-            'type': 'string',
-            'default': 'off',
-            'data_relation': {
-                'resource': 'libraries',
-                'field': 'library_url',
-            }
-        }
+        'timestamp': {'type': 'string'},
+        'title': {'type': 'string'},
+        'title_sort': {'type': 'string'},
     }
 }
 
 libraries = {
     'item_title': 'Library',
-    'datasource': {'projection': {'library_secret': 0}},
+    'embedding': True,
     'schema': {
         '_id': {'type': 'uuid'},
         'librarian': {
@@ -166,12 +152,15 @@ libraries_presence = {
     'url': "libraries/<regex('.*'):presence>/books"
 }
 
-books_presence = {
-    'item_title': "Books' presence",
+libraries_presence = {
+    'item_title': "Libraries' presence",
     'item_methods': ['GET'],
-    'schema': books['schema'],
-    'datasource': {'source': 'books'},
-    'url': "books/<regex('.*'):presence>"
+    'hateoas': False,
+    'pagination': False,
+    'schema': libraries['schema'],
+    'datasource': {'source': 'libraries',
+                   'projection': {'_id': 1}},
+    'url': "libraries/<regex('.*'):presence>"
 }
 
 
@@ -247,11 +236,12 @@ tags_ngrams = {
     }
 }
 
+
 DOMAIN = {
     'books': books,
     'libraries': libraries,
     'libraries_presence': libraries_presence,
-    'books_presence': books_presence,
+    'libraries_presence': libraries_presence,
     'libraries_books_ids': libraries_books_ids,
     'librarians_books': librarians_books,
     'librarians': librarians_by_name,

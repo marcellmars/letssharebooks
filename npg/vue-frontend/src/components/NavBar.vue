@@ -4,7 +4,7 @@
                   variant="info"
                   pill
                   v-if="links.prev"
-                  @click="fetchBooks({'endpoint': links.prev.href, 'status': meta.status})">
+                  @click="flipPage('prev')">
             &lt;&lt; prev
         </b-button>
 
@@ -21,7 +21,7 @@
                   variant="info"
                   pill
                   v-if="links.next"
-                  @click="fetchBooks({'endpoint': links.next.href, 'status': meta.status})">
+                  @click="flipPage('next')">
             next &gt;&gt;
         </b-button>
     </b-button-toolbar>
@@ -35,8 +35,21 @@
             'meta'
         ],
         methods: {
-            fetchBooks(l) {
-                this.$emit('fetchBooks', l);
+            flipPage(page) {
+                let sq = {}
+                sq['resource'] = "books";
+                sq['status'] = this.meta.status;
+                if (page === "next") {
+                    sq['params'] = new Map(
+                        [["page", `${this.links.next.href.split('?')[1].split('&')[1].split('=')[1]}`]]
+                    );
+                } else if (page == "prev") {
+                    sq['params'] = new Map(
+                        [["page", `${this.links.next.href.split('?')[1].split('&')[1].split('=')[1]}`]]
+                    );
+                }
+                console.log(sq)
+                this.$emit('flipPage', sq);
             }
         }
     }

@@ -38,7 +38,9 @@
                     this.in_search = "Title"
                 }
                 let sq = {
-                    'endpoint': `books/on?where=${this.in_search.toLowerCase()}=="${e}"`,
+                    'resource': "books",
+                    'query': `"${this.in_search.toLowerCase()}": "${e}"`,
+                    'params': NaN,
                     'status': `${this.in_search.toLowerCase()}: ${e}`
                 }
                 this.$emit('atInput', sq)

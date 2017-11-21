@@ -10,7 +10,9 @@
      name: 'app',
      data() {
          return {
-             sq: {'endpoint': 'books/on',
+             sq: {'resource': 'books',
+                  'query': NaN,
+                  'params': NaN,
                   'status': 'all books'
              }
          }

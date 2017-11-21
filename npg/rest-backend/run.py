@@ -254,9 +254,9 @@ def update_books_on_updated(updates, original):
     print("@UPDATE_BOOKS_ON_UPDATED secret passed the test...")
     books = app.data.driver.db['books']
     if 'presence' in updates:
-        r = books.update_many({'library_uuid': original['_id']},
-                              {"$set": {'presence': updates['presence']}})
-        print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES set new presence in books {}".format(r.raw_result))
+        # r = books.update_many({'library_uuid': original['_id']},
+        #                       {"$set": {'presence': updates['presence']}})
+        # print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES set new presence in books {}".format(r.raw_result))
         if updates['presence'] == 'off':
             delete_4grams(original['_id'])
             print("@UPDATE_BOOKS_ON_UPDATED delete 'off' 4grams ...")
@@ -264,10 +264,10 @@ def update_books_on_updated(updates, original):
             add_4grams(original['_id'])
             print("@UPDATE_BOOKS_ON_UPDATED add 'on' 4grams ...")
 
-    for l in ['librarian', 'library_url']:
-        if l in updates:
-            r = books.update_many({'library_uuid': original['_id']},
-                                  {"$set": {l: updates[l]}})
+    # for l in ['librarian', 'library_url']:
+    #     if l in updates:
+    #         r = books.update_many({'library_uuid': original['_id']},
+    #                               {"$set": {l: updates[l]}})
 
 
 def pre_req(res, req):

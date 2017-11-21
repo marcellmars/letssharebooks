@@ -7,6 +7,7 @@ import requests
 import hmac
 import uuid
 import zlib
+import dateutil.parser
 
 from uploader import Uploader
 from shuffle_names import libranom
@@ -167,14 +168,14 @@ def calibre_to_json(dc, db_file='metadata.db'):
         'has_cover',
         'last_modified',  # `select * from books` ends here
         'library_uuid',
-        'library_url',
-        'librarian',
+        # 'library_url',
+        # 'librarian',
         '_id',
         'tags',
         'comments',
         'publisher',
         'authors',
-        'card',
+        # 'card',
         'formats',
         'cover_url',
         'identifiers',
@@ -190,8 +191,8 @@ def calibre_to_json(dc, db_file='metadata.db'):
                         book_dict,
                         book + (
                             dc['eve_payload']['_id'],  # library_uuid
-                            dc['eve_payload']['library_url'],  # library_url
-                            dc['eve_payload']['librarian'],  # librarian
+                            # dc['eve_payload']['library_url'],  # library_url
+                            # dc['eve_payload']['librarian'],  # librarian
                             str(
                                 uuid.UUID(
                                     hmac.new(dc['local_config']['Library-Secret']
@@ -202,7 +203,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
                             "",  # comments
                             "",  # publisher
                             [],  # authors
-                            {},  # card
+                            # {},  # card
                             [],  # formats
                             "{}/cover.jpg".format(book[9]),  # cover_url
                             [],  # identifiers
@@ -247,7 +248,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
     sql_formats = (frmat for frmat in cur.execute(bid_formats))
     [books[frmat[0]]['formats'].append(
         {'format': "{}".format(frmat[1].lower()),
-         'file_name': "{}.{}".format(frmat[0], frmat[1].lower()),
+         'file_name': "{}.{}".format(frmat[3], frmat[1].lower()),
          'dir_path': "{}/".format(books[frmat[0]]['path']),
          'size': frmat[2]})
      for frmat in sql_formats]
@@ -260,11 +261,12 @@ def calibre_to_json(dc, db_file='metadata.db'):
     remove_keys = ['application_id', 'isbn', 'iccn', 'card', 'path',
                    'flags', 'has_cover', 'uuid', 'author_sort']
     # modify_keys = ['timestamp', 'pubdate', 'last_modified']
+    modify_keys = ['last_modified', 'pubdate']
     for book in list(books.values()):
         for k in remove_keys:
             book.pop(k, None)
-        # for k in modify_keys:
-        #     book[k] = dateutil.parser.parse(book[k]).strftime("%a, %d %b %04Y %H:%M:%S GMT")
+        for k in modify_keys:
+            book[k] = dateutil.parser.parse(book[k]).strftime("%a, %d %b %04Y %H:%M:%S GMT")
         books_list.append(book)
     return books_list
 
@@ -275,7 +277,8 @@ def post_items(dc):
         headers = {'Library-Secret': dc['local_config']['Library-Secret']}
         add_item('books', headers, books)
 
-    books = calibre_to_json(dc)
+    books = calibre_to_json(dc)[:10000]
+    # print(json.dumps(books[10], indent=2, sort_keys=True))
 
     uploader = Uploader(__temp)
     uploader.start()

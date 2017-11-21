@@ -41,8 +41,8 @@
              class="w-100">
             <a href="#"
                class="float-left motw_link"
-               @click="searchByLibrarian(book.librarian)" >
-                catalogued by {{ book.librarian }}
+               @click="searchByLibrarian(book)" >
+                catalogued by {{ book.library_uuid.librarian }}
             </a>
         </div>
         </b-modal>
@@ -68,28 +68,32 @@
             },
             searchByAuthor(author) {
                 this.$emit('reloadSearch', {
-                    'endpoint': `books/on?where=authors=="${author}"`,
+                    'resource': "books",
+                    'query': `"authors":"${author}"`,
+                    'params': NaN,
                     'status': `author: ${author}`
                 })
             },
-            searchByLibrarian(librarian) {
+            searchByLibrarian(book) {
                 this.$emit('reloadSearch', {
-                    'endpoint': `librarians/${librarian}/books`,
-                    'status': `librarian: ${librarian}`
+                    'resource': "books",
+                    'query': `"library_uuid": "${book.library_uuid._id}"`,
+                    'params': NaN,
+                    'status': `librarian: "${book.library_uuid.librarian}"`
                 })
                 this.show_modal = false
             },
             getFormats(book) {
                 let f = '';
                 for (let frm of book['formats']) {
-                    let book_url = book.library_url + frm.dir_path + frm.file_name
+                    let book_url = book.library_uuid.library_url + frm.dir_path + frm.file_name
                     let download_stripe = `<a class="motw_link" href="${book_url}"><i class="fa fa-download"></i><i>${frm.format.toUpperCase()}</i></a>, `;
                     f += download_stripe;
                 }
                 return f.slice(0, -3)
             },
             getCover(book) {
-                return book.library_url + book.cover_url
+                return book.library_uuid.library_url + book.cover_url
             }
         },
     }

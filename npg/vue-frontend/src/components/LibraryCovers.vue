@@ -44,7 +44,7 @@
             getBooks(resource, prms, status) {
                 console.log(prms)
                 this.$http.get(resource, {
-                        params: prms
+                        url_params: prms
                     })
                     .then(response => {
                         return response.json()
@@ -58,9 +58,9 @@
             },
             librariesLive(a) {
                 let resource = a['resource']
-                let query = a['query']
+                let db_query = a['db_query']
                 let status = a['status']
-                let params = a['params']
+                let url_params = a['url_params']
                 // this.$http.get('static/data.js')
                 this.$http.get('libraries/on')
                     .then(response => {
@@ -74,15 +74,15 @@
                     })
                     .then(data => {
                         let prms = {}
-                        if (query) {
-                            prms['where'] = `{"library_uuid":{"$in": ${data}}, ${query}}`
+                        if (db_query) {
+                            prms['where'] = `{"library_uuid":{"$in": ${data}}, ${db_query}}`
                         } else {
                             prms['where'] = `{"library_uuid":{"$in": ${data}}}`
                         }
                         prms['embedded'] = `{"library_uuid": 1}`
 
-                        if (params) {
-                            params.forEach(
+                        if (url_params) {
+                            url_params.forEach(
                                 function(v, k){
                                     prms[k] = v
                             })
@@ -95,9 +95,9 @@
         mounted: function() {
             this.librariesLive({
                 'resource': 'books',
-                'query': NaN,
-                'params': NaN,
-                /* 'query': `"authors": "Karl Marx"`,*/
+                'db_query': NaN,
+                'url_params': NaN,
+                /* 'db_query': `"authors": "Karl Marx"`,*/
                 'status': 'all books'
             })
         },

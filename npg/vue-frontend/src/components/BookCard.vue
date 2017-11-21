@@ -69,16 +69,16 @@
             searchByAuthor(author) {
                 this.$emit('reloadSearch', {
                     'resource': "books",
-                    'query': `"authors":"${author}"`,
-                    'params': NaN,
+                    'db_query': `"authors":"${author}"`,
+                    'url_params': NaN,
                     'status': `author: ${author}`
                 })
             },
             searchByLibrarian(book) {
                 this.$emit('reloadSearch', {
                     'resource': "books",
-                    'query': `"library_uuid": "${book.library_uuid._id}"`,
-                    'params': NaN,
+                    'db_query': `"library_uuid": "${book.library_uuid._id}"`,
+                    'url_params': NaN,
                     'status': `librarian: "${book.library_uuid.librarian}"`
                 })
                 this.show_modal = false

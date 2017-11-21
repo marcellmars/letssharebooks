@@ -40,15 +40,14 @@
                 sq['resource'] = "books";
                 sq['status'] = this.meta.status;
                 if (page === "next") {
-                    sq['params'] = new Map(
+                    sq['url_params'] = new Map(
                         [["page", `${this.links.next.href.split('?')[1].split('&')[1].split('=')[1]}`]]
                     );
                 } else if (page == "prev") {
-                    sq['params'] = new Map(
+                    sq['url_params'] = new Map(
                         [["page", `${this.links.next.href.split('?')[1].split('&')[1].split('=')[1]}`]]
                     );
                 }
-                console.log(sq)
                 this.$emit('flipPage', sq);
             }
         }

@@ -11,8 +11,8 @@
      data() {
          return {
              sq: {'resource': 'books',
-                  'query': NaN,
-                  'params': NaN,
+                  'db_query': NaN,
+                  'url_params': NaN,
                   'status': 'all books'
              }
          }

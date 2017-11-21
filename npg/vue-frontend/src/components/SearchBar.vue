@@ -39,8 +39,8 @@
                 }
                 let sq = {
                     'resource': "books",
-                    'query': `"${this.in_search.toLowerCase()}": "${e}"`,
-                    'params': NaN,
+                    'db_query': `"${this.in_search.toLowerCase()}": "${e}"`,
+                    'url_ params': NaN,
                     'status': `${this.in_search.toLowerCase()}: ${e}`
                 }
                 this.$emit('atInput', sq)

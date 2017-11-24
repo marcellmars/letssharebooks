@@ -44,7 +44,7 @@
             getBooks(resource, prms, status) {
                 console.log(prms)
                 this.$http.get(resource, {
-                        url_params: prms
+                        params: prms
                     })
                     .then(response => {
                         return response.json()
@@ -83,9 +83,9 @@
 
                         if (url_params) {
                             url_params.forEach(
-                                function(v, k){
+                                function(v, k) {
                                     prms[k] = v
-                            })
+                                })
                         }
 
                         this.getBooks(resource, prms, status)

@@ -51,29 +51,42 @@
                     return
                 }
                 loading(true)
-                this.$http.get(
-                    `autocomplete/${this.in_search.toLowerCase()}/${search.toLowerCase()}${this.xargs}`
-                )
+
+                this.$http.get('libraries/on')
                     .then(response => {
                         return response.json()
                     })
                     .then(data => {
-                        let s = new Set(this.options)
-                        for (let d of data._items) {
-                            s.add(d[this.label])
+                        let libraries = []
+                        for (let item of data._items) {
+                            libraries.push(item._id)
                         }
-                        this.options = Array.from(s);
-                        s.clear()
-                        this.meta = data._meta;
-                        this.links = data._links;
-                        loading(false)
-                    });
+                        return JSON.stringify(libraries)
+                    })
+                    .then(data => {
+                            this.$http.get(
+                                    `autocomplete/${this.in_search.toLowerCase()}/${search.toLowerCase()}${this.xargs}?where={"library_uuid":{"$in": ${data}}}`)
+                                .then(response => {
+                                    return response.json()
+                                })
+                                .then(data => {
+                                    let s = new Set(this.options)
+                                    for (let d of data._items) {
+                                        s.add(d[this.label])
+                                    }
+                                    this.options = Array.from(s);
+                                    s.clear()
+                                    this.meta = data._meta;
+                                    this.links = data._links;
+                                    loading(false)
+                                });
+                        })
+                    }
+            },
+            components: {
+                vSelect
             }
-        },
-        components: {
-            vSelect
         }
-    }
 </script>
 
 <style scoped>

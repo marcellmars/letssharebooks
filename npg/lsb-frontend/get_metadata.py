@@ -261,12 +261,12 @@ def calibre_to_json(dc, db_file='metadata.db'):
     remove_keys = ['application_id', 'isbn', 'iccn', 'card', 'path',
                    'flags', 'has_cover', 'uuid', 'author_sort']
     # modify_keys = ['timestamp', 'pubdate', 'last_modified']
-    modify_keys = ['last_modified', 'pubdate']
+    # modify_keys = ['last_modified', 'pubdate']
     for book in list(books.values()):
         for k in remove_keys:
             book.pop(k, None)
-        for k in modify_keys:
-            book[k] = dateutil.parser.parse(book[k]).strftime("%a, %d %b %04Y %H:%M:%S GMT")
+        # for k in modify_keys:
+        #     book[k] = dateutil.parser.parse(book[k]).strftime("%a, %d %b %04Y %H:%M:%S GMT")
         books_list.append(book)
     return books_list
 
@@ -275,9 +275,11 @@ def post_items(dc):
 
     def __temp(books):
         headers = {'Library-Secret': dc['local_config']['Library-Secret']}
-        add_item('books', headers, books)
+        add_item('add_books', headers, books)
 
-    books = calibre_to_json(dc)[:10000]
+    # books = calibre_to_json(dc)[:20000]
+    books = calibre_to_json(dc)
+
     # print(json.dumps(books[10], indent=2, sort_keys=True))
 
     uploader = Uploader(__temp)

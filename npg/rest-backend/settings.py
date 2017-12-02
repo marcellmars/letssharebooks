@@ -31,8 +31,18 @@ EMBEDDING = True
 
 BULK_ENABLED = True
 
+add_books = {
+    'item_title': 'Add books',
+    'allow_unknown': True,
+    'datasource': {'source': 'books'},
+    'schema': {
+        '_id': {'type': 'uuid'}
+    }
+}
+
 books = {
     'item_title': 'Book',
+    'item_methods': ['GET'],
     'datasource': {
         'default_sort': [('last_modified', -1)]
     },
@@ -68,7 +78,7 @@ books = {
             'type': 'list',
             'schema': {'type': 'string'}
         },
-        'last_modified': {'type': 'datetime'},
+        'last_modified': {'type': 'string'},
         'library_uuid': {
             # 'type': 'dict',
             'type': 'uuid',
@@ -79,7 +89,7 @@ books = {
                 'embeddable': True
             },
         },
-        'pubdate': {'type': 'datetime'},
+        'pubdate': {'type': 'string'},
         'publisher': {'type': 'string'},
         'series_index': {'type': 'float'},
         'tags': {
@@ -238,6 +248,7 @@ tags_ngrams = {
 
 
 DOMAIN = {
+    'add_books': add_books,
     'books': books,
     'libraries': libraries,
     'libraries_presence': libraries_presence,

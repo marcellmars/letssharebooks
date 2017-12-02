@@ -14,6 +14,15 @@ from flask import request
 
 from bson import ObjectId
 
+# import time
+# def timeit(method):
+#     def timed(*args, **kw):
+#         ts = time.time()
+#         result = method(*args, **kw)
+#         te = time.time()
+#         print('{} {:.2f} ms'.format(method.__name__, (te - ts) * 1000))
+#         return result
+#     return timed
 
 # TODO: should be changed in production.
 MASTER_SECRET = "874a7f15-0c02-473e-ba2c-c1ef937b9a5c"
@@ -74,10 +83,10 @@ NGRAM_RE = re.compile('\w{4,}|\w{3}\s|\w{3}$')
 
 
 def generate_4grams(books):
-    def __add_kgrams(texts):
+    def __add_kgrams(texts, library_uuid):
         for text in texts:
             for w in NGRAM_RE.findall(text):
-                yield {'ngram': w[:4].lower(), 'val': text}
+                yield {'ngram': w[:4].lower(), 'val': text, 'library_uuid': library_uuid}
 
     authors_ngrams = app.data.driver.db['authors_ngrams']
     titles_ngrams = app.data.driver.db['titles_ngrams']
@@ -87,9 +96,9 @@ def generate_4grams(books):
     ac_titles = []
     ac_tags = []
     for book in books:
-        ac_titles.extend(__add_kgrams([book['title']]))
-        ac_authors.extend(__add_kgrams(book['authors']))
-        ac_tags.extend(__add_kgrams(book['tags']))
+        ac_titles.extend(__add_kgrams([book['title']], book['library_uuid']))
+        ac_authors.extend(__add_kgrams(book['authors'], book['library_uuid']))
+        ac_tags.extend(__add_kgrams(book['tags'], book['library_uuid']))
 
     return [
         ('authors', authors_ngrams, ac_authors),
@@ -139,9 +148,10 @@ def delete_4grams(library_uuid):
 
     for _, coll, lst in generate_4grams(books):
         try:
-            for l in lst:
-                r = coll.delete_one(l)
-                print("@DELETE 4 GRAMS: {}, {}".format(l, r.raw_result))
+            coll.remove(lst)
+            # for l in lst:
+                # r = coll.delete_one(l)
+                # print("@DELETE 4 GRAMS: {}, {}".format(l, r.raw_result))
         except Exception as e:
             print(e)
     print("FINISHED DELETING 4GRAMS!")
@@ -258,11 +268,12 @@ def update_books_on_updated(updates, original):
         #                       {"$set": {'presence': updates['presence']}})
         # print("@UPDATE_BOOKS_ON_UPDATED_LIBRARIES set new presence in books {}".format(r.raw_result))
         if updates['presence'] == 'off':
-            delete_4grams(original['_id'])
-            print("@UPDATE_BOOKS_ON_UPDATED delete 'off' 4grams ...")
+            pass
+            # delete_4grams(original['_id'])
+            # print("@UPDATE_BOOKS_ON_UPDATED delete 'off' 4grams ...")
         elif updates['presence'] == 'on':
             add_4grams(original['_id'])
-            print("@UPDATE_BOOKS_ON_UPDATED add 'on' 4grams ...")
+            # print("@UPDATE_BOOKS_ON_UPDATED add 'on' 4grams ...")
 
     # for l in ['librarian', 'library_url']:
     #     if l in updates:

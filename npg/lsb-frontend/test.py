@@ -66,9 +66,9 @@ def main():
     # assert db.books.find({'presence': 'on'}).count() == 17
 
     assert edit_library(off, dc) == ('libraries', 200)
-    assert db.authors_ngrams.count() == 0
-    assert db.titles_ngrams.count() == 0
-    assert db.tags_ngrams.count() == 0
+    # assert db.authors_ngrams.count() == 0
+    # assert db.titles_ngrams.count() == 0
+    # assert db.tags_ngrams.count() == 0
     assert db.books.find({'presence': 'on'}).count() == 0
 
     assert edit_library(on, dc2) == ('libraries', 200)
@@ -78,9 +78,9 @@ def main():
     # assert db.books.find({'presence': 'on'}).count() == 24
 
     assert edit_library(off, dc2) == ('libraries', 200)
-    assert db.authors_ngrams.count() == 0
-    assert db.titles_ngrams.count() == 0
-    assert db.tags_ngrams.count() == 0
+    # assert db.authors_ngrams.count() == 0
+    # assert db.titles_ngrams.count() == 0
+    # assert db.tags_ngrams.count() == 0
     assert db.books.find({'presence': 'on'}).count() == 0
 
     assert edit_library(on, dc) == ('libraries', 200)

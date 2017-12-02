@@ -31,7 +31,6 @@
             return {
                 // books: LIBRARY.books.add
                 books: [],
-                libraries: [],
                 links: {
                     'next': false,
                     'prev': false
@@ -67,10 +66,11 @@
                         return response.json()
                     })
                     .then(data => {
+                        let libraries = []
                         for (let item of data._items) {
-                            this.libraries.push(item._id)
+                            libraries.push(item._id)
                         }
-                        return JSON.stringify(this.libraries)
+                        return JSON.stringify(libraries)
                     })
                     .then(data => {
                         let prms = {}

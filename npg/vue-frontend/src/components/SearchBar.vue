@@ -1,9 +1,9 @@
 <template>
     <b-button-toolbar justify>
         <b-dropdown variant="danger" right :text="in_search" >
-            <b-dropdown-item @click="in_search='Authors'">Authors</b-dropdown-item>
-            <b-dropdown-item @click="in_search='Titles'">Titles</b-dropdown-item>
-            <b-dropdown-item @click="in_search='Tags'">Tags</b-dropdown-item>
+            <b-dropdown-item @click="in_search='Authors';options=[];ph=''">Authors</b-dropdown-item>
+            <b-dropdown-item @click="in_search='Titles';options=[];ph=''">Titles</b-dropdown-item>
+            <b-dropdown-item @click="in_search='Tags';options=[];ph=''">Tags</b-dropdown-item>
         </b-dropdown>
         <b-col>
             <v-select
@@ -13,7 +13,7 @@
                 :on-search="getOptions"
                 :options="options"
                 maxHeight="18em"
-                placeholder="Search MotW">
+                :placeholder="ph">
             </v-select>
         </b-col>
         <b-button variant="danger">Search</b-button>
@@ -27,9 +27,14 @@
         data() {
             return {
                 options: [],
-                xargs: '?max_results=500',
+                categories: {
+                    'authors': new Set(),
+                    'titles': new Set(),
+                    'tags': new Set()
+                },
                 label: 'val',
                 in_search: "Authors",
+                ph: "Search MotW"
             }
         },
         methods: {
@@ -46,6 +51,7 @@
                 this.$emit('atInput', sq)
             },
             getOptions(search, loading) {
+                this.options = Array.from(this.categories[this.in_search.toLowerCase()]);
                 if (search.length != 4) {
                     loading(false)
                     return
@@ -64,29 +70,34 @@
                         return JSON.stringify(libraries)
                     })
                     .then(data => {
-                            this.$http.get(
-                                    `autocomplete/${this.in_search.toLowerCase()}/${search.toLowerCase()}${this.xargs}?where={"library_uuid":{"$in": ${data}}}`)
-                                .then(response => {
-                                    return response.json()
-                                })
-                                .then(data => {
-                                    let s = new Set(this.options)
-                                    for (let d of data._items) {
-                                        s.add(d[this.label])
+                        console.log(data)
+                        this.$http.get(
+                                `autocomplete/${this.in_search.toLowerCase()}/${search.toLowerCase()}`, {
+                                    params: {
+                                        'where': `{"library_uuid": {"$in": ${data}}}`,
+                                        'max_results': 500
                                     }
-                                    this.options = Array.from(s);
-                                    s.clear()
-                                    this.meta = data._meta;
-                                    this.links = data._links;
-                                    loading(false)
-                                });
-                        })
-                    }
-            },
-            components: {
-                vSelect
+                                })
+                            .then(response => {
+                                return response.json()
+                            })
+                            .then(data => {
+                                let c = this.in_search.toLowerCase()
+                                for (let d of data._items) {
+                                    this.categories[c].add(d[this.label])
+                                }
+                                this.options = Array.from(this.categories[c]);
+                                this.meta = data._meta;
+                                this.links = data._links;
+                                loading(false)
+                            });
+                    })
             }
+        },
+        components: {
+            vSelect
         }
+    }
 </script>
 
 <style scoped>

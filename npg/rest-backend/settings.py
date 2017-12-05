@@ -42,7 +42,7 @@ add_books = {
 
 books = {
     'item_title': 'Book',
-    'item_methods': ['GET'],
+    'item_methods': ['GET', 'DELETE'],
     'datasource': {
         'default_sort': [('last_modified', -1)]
     },
@@ -189,8 +189,8 @@ authors_ngrams = {
     'item_methods': ['GET'],
     'max_results': 5000,
     'url': 'autocomplete/authors/<regex(".*"):ngram>',
-    # 'hateoas': False,
-    # 'pagination': False,
+    'hateoas': False,
+    'pagination': False,
     'datasource': {
         'projection': {'val': 1}
     },
@@ -210,8 +210,8 @@ titles_ngrams = {
     'item_methods': ['GET'],
     'max_results': 5000,
     'url': 'autocomplete/titles/<regex(".*"):ngram>',
-    # 'hateoas': False,
-    # 'pagination': False,
+    'hateoas': False,
+    'pagination': False,
     'datasource': {
         'projection': {'val': 1}
     },
@@ -231,8 +231,8 @@ tags_ngrams = {
     'item_methods': ['GET'],
     'max_results': 5000,
     'url': 'autocomplete/tags/<regex(".*"):ngram>',
-    # 'hateoas': False,
-    # 'pagination': False,
+    'hateoas': False,
+    'pagination': False,
     'datasource': {
         'projection': {'val': 1}
     },

@@ -75,7 +75,7 @@
                                 `autocomplete/${this.in_search.toLowerCase()}/${search.toLowerCase()}`, {
                                     params: {
                                         'where': `{"library_uuid": {"$in": ${data}}}`,
-                                        'max_results': 500
+                                        'max_results': 5000
                                     }
                                 })
                             .then(response => {

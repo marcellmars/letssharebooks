@@ -21,7 +21,7 @@ CACHE_EXPIRES = 20
 IF_MATCH = False
 
 PAGINATION_DEFAULT = 12
-PAGINATION_LIMIT = 1000
+PAGINATION_LIMIT = 5000
 
 X_DOMAINS = '*'
 BANDWIDTH_SAVER = True
@@ -187,6 +187,7 @@ librarians_by_name = {
 authors_ngrams = {
     'item_title': 'Ngram',
     'item_methods': ['GET'],
+    'max_results': 5000,
     'url': 'autocomplete/authors/<regex(".*"):ngram>',
     # 'hateoas': False,
     # 'pagination': False,
@@ -207,7 +208,7 @@ authors_ngrams = {
 titles_ngrams = {
     'item_title': 'Ngram',
     'item_methods': ['GET'],
-    'max_results': 100,
+    'max_results': 5000,
     'url': 'autocomplete/titles/<regex(".*"):ngram>',
     # 'hateoas': False,
     # 'pagination': False,
@@ -228,7 +229,7 @@ titles_ngrams = {
 tags_ngrams = {
     'item_title': 'Ngram',
     'item_methods': ['GET'],
-    'max_results': 100,
+    'max_results': 5000,
     'url': 'autocomplete/tags/<regex(".*"):ngram>',
     # 'hateoas': False,
     # 'pagination': False,

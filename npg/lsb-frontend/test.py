@@ -24,9 +24,9 @@ def clear_db(db):
     db.authors_ngrams.drop()
     db.titles_ngrams.drop()
     db.tags_ngrams.drop()
-    db.authors_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
-    db.titles_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
-    db.tags_ngrams.create_index([('ngram', 1), ('val', 1)], unique=True)
+    db.authors_ngrams.create_index([('ngram', 1), ('val', 1)])
+    db.titles_ngrams.create_index([('ngram', 1), ('val', 1)])
+    db.tags_ngrams.create_index([('ngram', 1), ('val', 1)])
 
 
 def main():

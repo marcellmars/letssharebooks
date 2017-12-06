@@ -39,17 +39,4 @@
 ## Mongodb notes
 > this will sort ngrams with largest number of candidates/authors:
 
-db.authors_ngrams.aggregate([{$group: {
-                                       _id:'$ngram',
-                                       vals: {'$push': '$val'}}
-                                       },
-                             {$project: {
-                                          count: {
-                                                  $size: "$vals"
-                                                  }
-                                         }
-                                       },
-                             {$sort: {
-                                       'count': -1
-                                       }
-                                       }])
+db.authors_ngrams.aggregate([{$group: {_id:'$ngram', vals: {'$push': '$val'}}}, {$project: {count: {$size: "$vals"}}}, {$sort: {'count': -1}}])

@@ -57,11 +57,11 @@ app = Eve(json_encoder=UUIDEncoder, validator=UUIDValidator)
 
 with app.app_context():
     app.data.driver.db.authors_ngrams.create_index(
-        [('ngram', 1), ('val', 1)], unique=True)
+        [('ngram', 1), ('val', 1)])
     app.data.driver.db.titles_ngrams.create_index(
-        [('ngram', 1), ('val', 1)], unique=True)
+        [('ngram', 1), ('val', 1)])
     app.data.driver.db.tags_ngrams.create_index(
-        [('ngram', 1), ('val', 1)], unique=True)
+        [('ngram', 1), ('val', 1)])
 
 
 def check_library_secret(library_uuid):
@@ -135,10 +135,11 @@ def add_4grams(library_uuid=None, book_id=None, book_items=None):
 
     for _, coll, lst in generate_4grams(b):
         try:
+            # import pdb;pdb.set_trace()
             r = coll.insert_many(lst, ordered=False)
-            print("@ADDING 4 GRAMS: {}, {}".format(lst, r.raw_result))
+            print("@ADDING 4 GRAMS...")
         except Exception as e:
-            print(e)
+            print("@ADD_4GRAMS EXCEPTION: {}".format(e.details))
 
     print("FINISHED ADDING 4GRAMS!")
 
@@ -228,11 +229,10 @@ app.on_insert_libraries += check_insert_libraries
 app.on_update_libraries += check_update_libraries
 app.on_delete_item_libraries += cleanup_library
 
-app.on_update_books += check_update_books
-app.on_deleted_item_books += check_deleted_item_books
-
 app.on_insert_add_ooks += check_insert_books
 app.on_inserted_add_books += insert_ngrams
+app.on_update_add_books += check_update_books
+app.on_deleted_item_add_books += check_deleted_item_books
 
 
 if __name__ == '__main__':

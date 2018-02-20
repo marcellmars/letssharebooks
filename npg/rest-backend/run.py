@@ -50,7 +50,7 @@ if 'PORT' in os.environ:
     host = '0.0.0.0'
 else:
     port = 5000
-    host = '127.0.0.1'
+    host = '192.168.88.241'
 
 
 app = Eve(json_encoder=UUIDEncoder, validator=UUIDValidator)
@@ -237,4 +237,4 @@ app.on_deleted_item_add_books += check_deleted_item_books
 
 if __name__ == '__main__':
     # before running it in production check threaded=True and how to run it with uwsgi
-    app.run(host=host, port=port, threaded=True, debug=True)
+    app.run(host="0.0.0.0", port=port, threaded=True, debug=True)

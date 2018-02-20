@@ -27,7 +27,7 @@
         <b-modal v-model="show_modal"
                  size="lg"
                  no-fade
-                 :title="book.title"
+                 :title="getModalHeader(book)"
                  header-bg-variant="danger"
                  footer-bg-variant="danger"
                  header-text-variant="white"
@@ -65,6 +65,13 @@
                 } else {
                     return `${author}, `
                 }
+            },
+            getModalHeader(book) {
+                let authors = ""
+                for (let author of book.authors) {
+                    authors += this.getEndComma(author)
+                }
+                return `"${book.title}" by ${authors}`
             },
             searchByAuthor(author) {
                 this.$emit('reloadSearch', {

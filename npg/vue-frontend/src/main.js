@@ -16,7 +16,7 @@ import "bootstrap/dist/css/bootstrap.css";
 Vue.component('library-covers', LibraryCovers);
 Vue.component('search-bar', SearchBar);
 
-Vue.http.options.root = 'http://localhost:5000';
+Vue.http.options.root = 'http://192.168.88.241:5000';
 
 new Vue({
     el: "#app",

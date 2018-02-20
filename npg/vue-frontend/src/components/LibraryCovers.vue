@@ -3,11 +3,11 @@
         <nav-bar :links="links"
                  :bookresults="bookresults"
                  :meta="meta"
-                 @flipPage="librariesLive($event)">
+                 @flipPage="getLibraries($event)">
         </nav-bar>
 
         <b-card-group>
-            <book-card @reloadSearch="librariesLive($event)"
+            <book-card @reloadSearch="getLibraries($event)"
                        v-for="book in books"
                        :book="book">
             </book-card>
@@ -16,7 +16,7 @@
         <nav-bar :links="links"
                  :bookresults="bookresults"
                  :meta="meta"
-                 @flipPage="librariesLive($event)">
+                 @flipPage="getLibraries($event)">
         </nav-bar>
     </div>
 </template>
@@ -55,7 +55,7 @@
                         this.meta['status'] = status
                     });
             },
-            librariesLive(a) {
+            getLibraries(a) {
                 let resource = a['resource']
                 let db_query = a['db_query']
                 let status = a['status']
@@ -93,7 +93,7 @@
             }
         },
         mounted: function() {
-            this.librariesLive({
+            this.getLibraries({
                 'resource': 'books',
                 'db_query': NaN,
                 'url_params': NaN,
@@ -103,7 +103,7 @@
         },
         watch: {
             reloadSearch: function(val, oldVal) {
-                this.librariesLive(val)
+                this.getLibraries(val)
             }
         },
         components: {

@@ -1,39 +1,40 @@
-FROM librarian/motw
+FROM php:7.1-fpm-alpine
 
-MAINTAINER Marcell Mars "https://github.com/marcellmars"
+# docker-entrypoint.sh dependencies
+RUN apk add --no-cache \
+# in theory, docker-entrypoint.sh is POSIX-compliant, but priority is a working, consistent image
+                bash \
+# BusyBox sed is not sufficient for some of our sed expressions
+                sed
 
-#---- this is convenient setup with cache for local development ---------------
-# RUN echo 'Acquire::http::Proxy "http://172.17.42.1:3142";' >> /etc/apt/apt.conf.d/01proxy
+# install the PHP extensions we need
+RUN set -ex; \
+        \
+        apk add --no-cache --virtual .build-deps \
+                libjpeg-turbo-dev \
+                libpng-dev \
+        ; \
+        \
+        docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
+        docker-php-ext-install gd mysqli opcache; \
+        \
+        runDeps="$( \
+                scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
+                        | tr ',' '\n' \
+                        | sort -u \
+                        | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:"
+$1 }' \
+        )"; \
+        apk add --virtual .wordpress-phpexts-rundeps $runDeps; \
+        apk del .build-deps
 
-RUN apt-get update \
-    && apt-get -y install php5-curl \
-                          php5-gd \
-                          php5-intl \
-                          php-pear \
-                          php-mail \
-                          php5-imagick \
-                          php5-imap \
-                          php5-mcrypt \
-                          php5-memcache \
-                          php5-ming \
-                          php5-ps \
-                          php5-pspell \
-                          php5-recode \
-                          php5-snmp \
-                          php5-sqlite \
-                          php5-tidy \
-                          php5-xmlrpc \
-                          php5-xsl \
-                          php5-fpm \
-                          php5-mysql
-
-# php-fpm config from https://github.com/eugeneware/docker-wordpress-nginx/blob/master/Dockerfile
-RUN sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" /etc/php5/fpm/php.ini \
-    && sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" /etc/php5/fpm/php.ini \
-    && sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php5/fpm/php-fpm.conf \
-    && sed -i -e "s/^listen .*/listen = 0.0.0.0:9000/g" /etc/php5/fpm/pool.d/www.conf \
-    && find /etc/php5/cli/conf.d/ -name "*.ini" -exec sed -i -re 's/^(\s*)#(.*)/\1;\2/g' {} \; \
-    && rm /etc/php5/mods-available/snmp.ini
-
-ADD php5.conf /etc/supervisor/conf.d/
-ADD dnsmasq.local /etc/dnsmasq.d/local
+# set recommended PHP.ini settings
+# see https://secure.php.net/manual/en/opcache.installation.php
+RUN { \
+                echo 'opcache.memory_consumption=128'; \
+                echo 'opcache.interned_strings_buffer=8'; \
+                echo 'opcache.max_accelerated_files=4000'; \
+                echo 'opcache.revalidate_freq=2'; \
+                echo 'opcache.fast_shutdown=1'; \
+                echo 'opcache.enable_cli=1'; \
+        } > /usr/local/etc/php/conf.d/opcache-recommended.ini

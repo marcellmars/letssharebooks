@@ -13,23 +13,29 @@ db:
 
 php5:
   build: php5
-  container_name: php5
-  entrypoint: /usr/local/bin/supervisord
+  # container_name: php5
+  # entrypoint: /usr/local/bin/supervisord
   volumes: 
       - ${MOTW_WORDPRESS_HOME}/mu.memoryoftheworld.org/:/var/www/mu.memoryoftheworld.org
       - ${MOTW_MEDIAWIKI_HOME}/mediawiki/:/var/www/mediawiki
+      - ${MOTW_MEDIAWIKI_HOME}/mediawiki2/:/var/www/mediawiki2
   expose:
       - "9000"
   links:
-      - db
+      - db:mysql
 
-# couchdb:
-#   build: couchdb
-#   container_name: couchdb
-#   entrypoint: /usr/local/bin/supervisord
-#   expose:
-#     - "5984"
-#   dns: ["127.0.0.1"]
+etherpad:
+  image: tvelocity/etherpad-lite
+  container_name: etherpad
+  environment:
+    # ETHERPAD_TITLE: "Pad of the World"
+    ETHERPAD_DB_PASSWORD: "password_change_me"
+    ETHERPAD_DB_USER: "wp_admin"
+    ETHERPAD_ADMIN_PASSWORD: "password_change_me"
+  expose:
+    - "9001"
+  links:
+    - db:mysql
 
 rsync:
   build: rsync
@@ -40,6 +46,9 @@ rsync:
   volumes:
     - ${MOTW_HOME}/letssharebooks/memoryoftheworld/rsync/rsync.d/:/etc/rsync.d/
     - ${RSYNC_DIRECTORY}/rzynk/:/var/data/rzynk/
+    - /lockers/bubu/ubu/media/:/var/data/ubu/
+    - /lockers/bubu/ubu/:/var/data/ubuweb/
+    - /lockers/hmmmmm/donations/slowrotation/Eb-ext/:/var/data/slowrotation/
 
 sshd:
     build: ssh
@@ -52,9 +61,9 @@ sshd:
     dns: ["127.0.0.1"]
 
 mongodb:
-    build: mongodb
+    image: mongo
     container_name: mongodb
-    entrypoint: /usr/bin/mongod
+    # entrypoint: /usr/bin/mongod
     #--------------------------------------------------------------------------
     #- in production this will make mongodb permanent at host -----------------
     volumes:

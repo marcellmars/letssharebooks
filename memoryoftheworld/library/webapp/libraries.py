@@ -268,10 +268,9 @@ def add_to_library(db, catalog):
         # embed library_uuid to every book
         book['library_uuid'] = catalog['library_uuid']
         try:
-            db.books.update({'uuid': book['uuid']},
-                            utils.remove_dots_from_dict(book),
-                            upsert=True,
-                            multi=False)
+            db.books.update_one({'uuid': book['uuid']},
+                                {'$set': utils.remove_dots_from_dict(book)},
+                                upsert=True)
             # collect (uuid, last_modified) for catalog entry
             books_uuids.append((book['uuid'], book['last_modified']))
             LOG.info('>>> Added book {}'.format(book['uuid']))
@@ -280,10 +279,9 @@ def add_to_library(db, catalog):
                       .format(book['uuid']),
                       exc_info=True)
     # update catalog metadata collection
-    db.catalog.update({'library_uuid': catalog['library_uuid']},
-                      {'$pushAll': {'books': books_uuids}},
-                      upsert=True,
-                      multi=False)
+    db.catalog.update_one({'library_uuid': catalog['library_uuid']},
+                          {'$set': {'books': books_uuids}},
+                          upsert=True)
 
 # ------------------------------------------------------------------------------
 

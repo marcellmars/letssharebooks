@@ -28,7 +28,7 @@ def ensure_all_indexes(db):
     Create some indexes
     '''
     logging.info('Ensuring db indexes.')
-    db.books.ensure_index([('uuid', 1), ('library_uuid', 1)])
+    db.books.ensure_index([('uuid', 1), ('library_uuid', 1), ('last_modified', 1)])
 
 #------------------------------------------------------------------------------
 

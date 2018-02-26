@@ -39,6 +39,7 @@ PUBLIC_BOOK_FIELDS = {
     'library_uuid': 1,
     'prefix_url': 1,
     'cover_url': 1,
+    'last_modified': 1
     }
 
 # book fields for book in the modal window
@@ -261,27 +262,36 @@ def add_to_library(db, catalog):
     :param db: database connection
     :param catalog: uploaded catalog
     '''
-    LOG.info('>>> Adding books ({})'.format(len(catalog['books']['add'])))
+    LOG.info('>>> Adding books {} to {}'.format(len(catalog['books']['add']),
+                                                catalog['library_uuid']))
     books_uuids = []  # will hold inserted books' uuids
+    books = []
+
     # add each book to the db.books collection
     for book in catalog['books']['add']:
         # embed library_uuid to every book
         book['library_uuid'] = catalog['library_uuid']
-        try:
-            db.books.update_one({'uuid': book['uuid']},
-                                {'$set': utils.remove_dots_from_dict(book)},
-                                upsert=True)
-            # collect (uuid, last_modified) for catalog entry
-            books_uuids.append((book['uuid'], book['last_modified']))
-            LOG.info('>>> Added book {}'.format(book['uuid']))
-        except Exception:
-            LOG.error('error in book update ({})'
-                      .format(book['uuid']),
-                      exc_info=True)
-    # update catalog metadata collection
+        book = utils.remove_dots_from_dict(book)
+        books_uuids.append((book['uuid'], book['last_modified']))
+        books.append(book)
+
+    db.books.insert_many(books, ordered=False)
+    LOG.info('>>> Added books {} to {}'.format(len(catalog['books']['add']),
+                                               catalog['library_uuid']))
     db.catalog.update_one({'library_uuid': catalog['library_uuid']},
                           {'$set': {'books': books_uuids}},
                           upsert=True)
+    # try:
+        #     db.books.update_one({'uuid': book['uuid']},
+        #                         {'$set': utils.remove_dots_from_dict(book)},
+        #                         upsert=True)
+        #     # collect (uuid, last_modified) for catalog entry
+        # LOG.info('>>> Added book {}'.format(book['uuid']))
+        # except Exception:
+        #     LOG.error('error in book update ({})'
+        #               .format(book['uuid']),
+        #               exc_info=True)
+    # update catalog metadata collection
 
 # ------------------------------------------------------------------------------
 
@@ -367,7 +377,7 @@ def get_books(db, last_id, query={}):
         elif q_property == 'pubdate':
             # validate entered date, but query as string
             try:
-                _date = datetime.strptime(q_text, '%Y-%m-%d')
+                date = datetime.strptime(q_text, '%Y-%m-%d')
                 q[q_property] = {'$regex': '^{}.*'.format(q_text),
                                  '$options': 'i'}
             except Exception as e:
@@ -410,7 +420,7 @@ def get_books(db, last_id, query={}):
 
     # fetch final cursor
     LOG.debug('>>> FINAL QUERY: {}'.format(q))
-    dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('_id', -1)
+    dbb = db.books.find(q, PUBLIC_BOOK_FIELDS).sort('last_modified', -1)
 
     # do infinite loading
     books = list(dbb.limit(settings.ITEMS_PER_PAGE))
@@ -540,7 +550,10 @@ def add_portable(db, portable_url):
     '''
     LOG.info('>>> Registering portable {}'.format(portable_url))
     try:
-        libjs = requests.get(portable_url + '/static/data.js').text.strip()
+        headers = {"Accept-Encoding": "gzip"}
+        libjs = requests.get(portable_url + '/static/data.js',
+                             headers=headers,
+                             stream=True).text.strip()
         # remove javascript wrapper around json
         libjson = libjs[libjs.find('{'):-1]
         catalog = simplejson.loads(libjson)
@@ -575,15 +588,13 @@ def remove_portable(db, url):
     '''
     Removes registered portable library with given lib_uuid
     '''
-    q = {'portable': True, 'portable_url': url}
+    q = {'portable_url': url}
     portable_cat = db.catalog.find_one(q)
     if portable_cat:
-        remove_from_library(
-            db, portable_cat['library_uuid'], portable_cat['books'])
-        db.catalog.remove(q)
+        db.books.remove({'library_uuid': portable_cat['library_uuid']})
+        db.catalog.remove({'library_uuid': portable_cat['library_uuid']})
         return utils.ser2json('Library removed.')
     else:
-        return utils.ser2json('Portable not found')
-    return utils.ser2json('Error while removing portable...')
+        return utils.ser2json('Portable not found or doomed.')
 
 # ------------------------------------------------------------------------------

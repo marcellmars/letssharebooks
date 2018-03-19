@@ -1,28 +1,27 @@
 <template>
     <b-container class="app" fluid>
-        <search-bar @atInput="reloadSearch($event)"/>
-        <library-covers :reloadSearch="sq"/>
+        <search-bar @atInput="reloadSearch($event)" />
+        <library-covers :reloadSearch="sq" />
     </b-container>
 </template>
 
 <script>
- export default {
-     name: 'app',
-     data() {
-         return {
-             sq: {'resource': 'books',
-                  'db_query': NaN,
-                  'url_params': NaN,
-                  'status': 'all books'
-             }
-         }
-     },
-     methods: {
-         reloadSearch(e) {
-             this.sq = e
-         }
-     }
- }
+    export default {
+        name: 'app',
+        data() {
+            return {
+                sq: {
+                    'endpoint': 'books',
+                    'status': 'all books'
+                }
+            }
+        },
+        methods: {
+            reloadSearch(e) {
+                this.sq = e
+            }
+        }
+    }
 </script>
 
 <style>

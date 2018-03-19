@@ -11,12 +11,14 @@
                 @input="atInput($event)"
                 :debounce="250"
                 :on-search="getOptions"
+                @on-change="getQuery($event)"
                 :options="options"
                 maxHeight="18em"
+                resetOnOptionsChange="true"
                 :placeholder="ph">
             </v-select>
         </b-col>
-        <b-button variant="danger">Search</b-button>
+        <b-button variant="danger" @click="search">Search</b-button>
     </b-button-toolbar>
 </template>
 
@@ -27,71 +29,56 @@
         data() {
             return {
                 options: [],
+                query: "",
                 categories: {
                     'authors': new Set(),
                     'titles': new Set(),
                     'tags': new Set()
                 },
-                label: 'val',
                 in_search: "Authors",
                 ph: "Search MotW"
             }
         },
         methods: {
-            atInput(e) {
-                if (this.in_search === "Titles") {
-                    this.in_search = "Title"
-                }
+            search() {
                 let sq = {
-                    'resource': "books",
-                    'db_query': `"${this.in_search.toLowerCase()}": "${e}"`,
-                    'url_ params': NaN,
+                    'endpoint': `search/${this.in_search.toLowerCase()}/${this.query.toLowerCase()}`,
+                    'status': `${this.in_search.toLowerCase()}: ${this.query.toLowerCase()}`
+                }
+                this.$emit('atInput', sq)
+            },
+            atInput(e) {
+                let sq = {
+                    'endpoint': `search/${this.in_search.toLowerCase()}/${e}`,
                     'status': `${this.in_search.toLowerCase()}: ${e}`
                 }
                 this.$emit('atInput', sq)
             },
             getOptions(search, loading) {
+                console.log(search);
+                this.query = search;
                 this.options = Array.from(this.categories[this.in_search.toLowerCase()]);
+                this.options.sort()
                 if (search.length != 4) {
                     loading(false)
                     return
                 }
                 loading(true)
-
-                this.$http.get('libraries/on')
+                this.$http.get(
+                        `autocomplete/${this.in_search.toLowerCase()}/${search.toLowerCase()}`
+                    )
                     .then(response => {
                         return response.json()
                     })
                     .then(data => {
-                        let libraries = []
-                        for (let item of data._items) {
-                            libraries.push(item._id)
+                        let c = this.in_search.toLowerCase()
+                        for (let d of data._items) {
+                            this.categories[c].add(d)
                         }
-                        return JSON.stringify(libraries)
-                    })
-                    .then(data => {
-                        console.log(data)
-                        this.$http.get(
-                                `autocomplete/${this.in_search.toLowerCase()}/${search.toLowerCase()}`, {
-                                    params: {
-                                        'where': `{"library_uuid": {"$in": ${data}}}`,
-                                        'max_results': 5000
-                                    }
-                                })
-                            .then(response => {
-                                return response.json()
-                            })
-                            .then(data => {
-                                let c = this.in_search.toLowerCase()
-                                for (let d of data._items) {
-                                    this.categories[c].add(d[this.label])
-                                }
-                                this.options = Array.from(this.categories[c]);
-                                this.meta = data._meta;
-                                this.links = data._links;
-                                loading(false)
-                            });
-                    })
+                        this.options = Array.from(this.categories[c]);
+                        this.options.sort();
+                        loading(false)
+                    });
             }
         },
         components: {

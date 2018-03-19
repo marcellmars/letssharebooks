@@ -34,15 +34,29 @@
                  footer-text-variant="white">
             <img :src="getCover(book)"
                  class="float-right"
-                 width="33%">
-        </img>
-        <div v-html="book.comments"></div>
-        <div slot="modal-footer"
-             class="w-100">
+                 width="33%"></img>
+            <div class="key_par">Title:
+                <span class="val_par">{{ book.title }}</span>
+            </div>
+
+            <div class="key_par">Authors:
+            <a href="#"
+                v-for="author in book.authors"
+                @click="searchByAuthor(author)"
+                v-text="getEndComma(author)">
+            </a>
+            </div>
+            <div class="key_par">Publisher:
+                <span class="val_par">{{ book.publisher }}</span>
+            </div>
+            <div class="key_par">Description:</div>
+            <div v-html="book.comments"></div>
+            <div slot="modal-footer"
+                 class="w-100">
             <a href="#"
                class="float-left motw_link"
-               @click="searchByLibrarian(book)" >
-                catalogued by {{ book.library_uuid.librarian }}
+               @click="searchByLibrarian(book.librarian)" >
+                catalogued by {{ book.librarian }}
             </a>
         </div>
         </b-modal>
@@ -75,32 +89,28 @@
             },
             searchByAuthor(author) {
                 this.$emit('reloadSearch', {
-                    'resource': "books",
-                    'db_query': `"authors":"${author}"`,
-                    'url_params': NaN,
+                    'endpoint': `search/authors/${author}`,
                     'status': `author: ${author}`
                 })
             },
-            searchByLibrarian(book) {
+            searchByLibrarian(librarian) {
                 this.$emit('reloadSearch', {
-                    'resource': "books",
-                    'db_query': `"library_uuid": "${book.library_uuid._id}"`,
-                    'url_params': NaN,
-                    'status': `librarian: "${book.library_uuid.librarian}"`
+                    'endpoint': `search/librarian/${librarian}`,
+                    'status': `librarian: ${librarian}`
                 })
                 this.show_modal = false
             },
             getFormats(book) {
                 let f = '';
                 for (let frm of book['formats']) {
-                    let book_url = book.library_uuid.library_url + frm.dir_path + frm.file_name
+                    let book_url = book.library_url + frm.dir_path + frm.file_name
                     let download_stripe = `<a class="motw_link" href="${book_url}"><i class="fa fa-download"></i><i>${frm.format.toUpperCase()}</i></a>, `;
                     f += download_stripe;
                 }
                 return f.slice(0, -3)
             },
             getCover(book) {
-                return book.library_uuid.library_url + book.cover_url
+                return book.library_url + book.cover_url
             }
         },
     }
@@ -142,5 +152,13 @@
         width: 100%;
         position: absolute;
         bottom: 0;
+    }
+
+    .key_par {
+        font-weight: bold;
+    }
+
+    .val_par {
+        font-weight: normal;
     }
 </style>

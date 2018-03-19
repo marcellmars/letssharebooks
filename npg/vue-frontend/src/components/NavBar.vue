@@ -4,7 +4,7 @@
                   variant="info"
                   pill
                   v-if="links.prev"
-                  @click="flipPage('prev')">
+                  @click="fetchBooks({'endpoint': links.prev.href, 'status': meta.status})">
             &lt;&lt; prev
         </b-button>
 
@@ -12,8 +12,8 @@
                   class="col"
                   variant="warning"
                   pill>
-            {{ bookresults * (meta.page - 1) }}-
-            {{ Math.min(meta.page * bookresults, meta.total) }} of {{ meta.total }}
+            {{ meta.max_results * (meta.page - 1) }}-
+            {{ Math.min(meta.page * meta.max_results, meta.total) }} of {{ meta.total }}
             ({{ meta.status }})
         </b-button>
 
@@ -21,34 +21,25 @@
                   variant="info"
                   pill
                   v-if="links.next"
-                  @click="flipPage('next')">
+                  @click="fetchBooks({'endpoint': links.next.href, 'status': meta.status})">
             next &gt;&gt;
         </b-button>
     </b-button-toolbar>
 </template>
 
 <script>
-    export default {
-        props: [
-            'links',
-            'bookresults',
-            'meta'
-        ],
-        methods: {
-            flipPage(page) {
-                let sq = {}
-                sq['resource'] = "books";
-                sq['status'] = this.meta.status;
-                if (page === "next") {
-                    sq['url_params'] = new Map(
-                        [["page", `${this.links.next.href.split('?')[1].split('&')[1].split('=')[1]}`]]
-                    );
-                } else if (page == "prev") {
-                    sq['url_params'] = new Map(
-                        [["page", `${this.links.next.href.split('?')[1].split('&')[1].split('=')[1]}`]]
-                    );
-                }
-                this.$emit('flipPage', sq);
+export default {
+    props: [
+        'links',
+        'meta'
+    ],
+    methods: {
+        fetchBooks(l) {
+            document.querySelectorAll(".card").forEach(
+                function(n) {
+                    n.firstElementChild.src="data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+                })
+            this.$emit('fetchBooks', l);
             }
         }
     }

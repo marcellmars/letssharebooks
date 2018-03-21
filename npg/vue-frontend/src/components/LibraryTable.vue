@@ -24,6 +24,7 @@
     import BookModal from './BookModal.vue'
 
     export default {
+        props: ['reloadSearch'],
         data: function() {
             return {
                 // books: LIBRARY.books.add

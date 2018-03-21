@@ -1,8 +1,8 @@
 <template>
     <b-container class="app" fluid>
         <search-bar @atInput="reloadSearch($event)" />
-        <library-covers :reloadSearch="sq" />
-        <!-- <library-table :reloadSearch="sq" /> -->
+        <!-- <library-covers :reloadSearch="sq" /> -->
+        <library-table :reloadSearch="sq" />
     </b-container>
 </template>
 

@@ -72,7 +72,6 @@
                     'endpoint': `search/librarian/${librarian}`,
                     'status': `librarian: ${librarian}`
                 })
-                this.show_modal = false
             },
             getFormats(book) {
                 let f = '';

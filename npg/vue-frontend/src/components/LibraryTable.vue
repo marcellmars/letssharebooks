@@ -90,7 +90,11 @@
             },
             rowClicked(item, row, event) {
                 this.book = item;
-                this.show_modal = true;
+                if (event['path'][1].querySelectorAll('a').length == 0) {
+                    this.show_modal = false;
+                } else {
+                    this.show_modal = true;
+                }
             }
         },
         mounted: function() {

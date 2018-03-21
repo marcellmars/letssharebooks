@@ -1,41 +1,48 @@
 <template>
     <div class="col col-xl-2 col-lg-3 col-md-4 col-sm-6 cols-12">
-        <b-card overlay
-                class="h-100"
-                :img-src="getCover(book)"
-                :img-alt="book.title"
-                text-variant="white">
-            <b-card-body class="card-title">
+        <b-modal v-model="show_modal"
+                 size="lg"
+                 no-fade
+                 :title="getModalHeader(book)"
+                 header-bg-variant="danger"
+                 footer-bg-variant="danger"
+                 header-text-variant="white"
+                 footer-text-variant="white">
+            <img :src="getCover(book)"
+                 class="float-right"
+                 width="33%"></img>
+            <div class="key_par">Title:
+                <span class="val_par">{{ book.title }}</span>
+            </div>
+
+            <div class="key_par">Authors:
                 <a href="#"
-                   @click="titleClick(book)"
-                   class="motw_link">
-                    {{ book.title }}
-                </a>
-            </b-card-body>
-            <b-card-body class="card-subtitle">
-                <a href="#"
-                   class="motw_link"
                    v-for="author in book.authors"
                    @click="searchByAuthor(author)"
                    v-text="getEndComma(author)">
                 </a>
-            </b-card-body>
-            <div class="card-text"
-                 v-html="getFormats(book)">
             </div>
-        </b-card>
+            <div class="key_par">Publisher:
+                <span class="val_par">{{ book.publisher }}</span>
+            </div>
+            <div class="key_par">Description:</div>
+            <div v-html="book.comments"></div>
+            <div slot="modal-footer"
+                 class="w-100">
+                <a href="#" class="float-left motw_link"
+                   @click="searchByLibrarian(book.librarian)" >
+                    catalogued by {{ book.librarian }}
+                </a>
+            </div>
+        </b-modal>
     </div>
 </template>
 
 <script>
     import 'font-awesome/css/font-awesome.css'
-
     export default {
-        props: ['book'],
+        props: ['book', 'show_modal'],
         methods: {
-            titleClick(book) {
-                this.$emit('titleClick', book)
-            },
             getEndComma(author) {
                 if (author === this.book.authors[this.book.authors.length - 1]) {
                     return author
@@ -45,6 +52,10 @@
             },
             getModalHeader(book) {
                 let authors = ""
+                if (book.hasOwnProperty('authors') === false) {
+                    return
+                }
+
                 for (let author of book.authors) {
                     authors += this.getEndComma(author)
                 }
@@ -75,7 +86,7 @@
             getCover(book) {
                 return book.library_url + book.cover_url
             }
-        },
+        }
     }
 </script>
 

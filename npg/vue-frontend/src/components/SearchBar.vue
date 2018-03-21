@@ -6,16 +6,15 @@
             <b-dropdown-item @click="in_search='Tags';options=[];ph=''">Tags</b-dropdown-item>
         </b-dropdown>
         <b-col>
-            <v-select
-                class="vselect"
-                @input="atInput($event)"
-                :debounce="250"
-                :on-search="getOptions"
-                @on-change="getQuery($event)"
-                :options="options"
-                maxHeight="18em"
-                resetOnOptionsChange="true"
-                :placeholder="ph">
+            <v-select class="vselect"
+                      @input="atInput($event)"
+                      :debounce="250"
+                      :on-search="getOptions"
+                      @on-change="getQuery($event)"
+                      :options="options"
+                      maxHeight="18em"
+                      resetOnOptionsChange
+                      :placeholder="ph">
             </v-select>
         </b-col>
         <b-button variant="danger" @click="search">Search</b-button>

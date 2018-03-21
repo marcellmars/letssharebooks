@@ -2,6 +2,7 @@
     <b-container class="app" fluid>
         <search-bar @atInput="reloadSearch($event)" />
         <library-covers :reloadSearch="sq" />
+        <!-- <library-table :reloadSearch="sq" /> -->
     </b-container>
 </template>
 
@@ -48,5 +49,21 @@
 
     .motw_link:hover {
         text-decoration: underline;
+    }
+
+    .motw_table_link,
+    .motw_table_link:hover,
+    .motw_table_link:visited {
+        color: #2c3e50;
+        text-decoration: none;
+    }
+
+    .motw_table_link:hover {
+        text-decoration: underline;
+    }
+
+
+    .btitle {
+        font-size: 1.1em;
     }
 </style>

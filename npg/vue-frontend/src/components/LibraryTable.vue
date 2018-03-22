@@ -39,12 +39,13 @@
                         label: 'Title',
                     },
                     'pubdate': {
-                        label: 'Published',
+                        label: 'Year',
                         formatter: 'publishedYear'
                     },
                     'formats': {
                         label: 'Download',
-                        formatter: 'getFormats'
+                        formatter: 'getFormats',
+                        tdClass: 'formats-download'
                     }
 
                 },
@@ -75,6 +76,10 @@
                     });
             },
             authorsCommaSpace(t) {
+                if (t.length > 3) {
+                    t = t.slice(0, 3)
+                    t.push("et al.")
+                }
                 return t.join(',<br/>')
             },
             publishedYear(d) {
@@ -84,18 +89,14 @@
                 let f = '';
                 for (let frm of book['formats']) {
                     let book_url = book.library_url + frm.dir_path + frm.file_name
-                    let download_stripe = `<a class="motw_table_link" href="${book_url}"><i class="fa fa-download"></i><i>${frm.format.toUpperCase()}</i></a><br/>`;
+                    let download_stripe = `<a class="motw_table_link" href="${book_url}">.${frm.format }</a>, `;
                     f += download_stripe;
                 }
                 return f.slice(0, -3)
             },
             rowClicked(item, row, event) {
                 this.book = item;
-                if (event['path'][1].querySelectorAll('a').length == 0) {
-                    this.show_modal = false;
-                } else {
-                    this.show_modal = true;
-                }
+                this.show_modal = true;
             }
         },
         mounted: function() {

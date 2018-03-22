@@ -5,6 +5,7 @@
                 :img-src="getCover(book)"
                 :img-alt="book.title"
                 text-variant="white">
+            <div class="book-header">
             <b-card-body class="card-title">
                 <a href="#"
                    @click="titleClick(book)"
@@ -20,6 +21,7 @@
                    v-text="getEndComma(author)">
                 </a>
             </b-card-body>
+            </div>
             <div class="card-text"
                  v-html="getFormats(book)">
             </div>
@@ -109,6 +111,10 @@
 
     .card-subtitle {
         font-style: italic;
+    }
+
+    .book-header {
+        margin: 0.5em 0 0 0
     }
 
     .card-text {

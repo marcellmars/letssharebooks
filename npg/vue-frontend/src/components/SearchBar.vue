@@ -1,7 +1,7 @@
 <template>
     <b-button-toolbar justify>
         <b-dropdown variant="danger" right :text="in_search" >
-            <b-dropdown-item @click="in_search='Authors';options=[];ph=''">Authors</b-dropdown-item>
+            <b-dropdown-item class="search" @click="in_search='Authors';options=[];ph=''">Authors</b-dropdown-item>
             <b-dropdown-item @click="in_search='Titles';options=[];ph=''">Titles</b-dropdown-item>
             <b-dropdown-item @click="in_search='Tags';options=[];ph=''">Tags</b-dropdown-item>
         </b-dropdown>

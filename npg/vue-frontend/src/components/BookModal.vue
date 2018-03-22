@@ -11,25 +11,41 @@
             <img :src="getCover(book)"
                  class="float-right"
                  width="33%"></img>
+
             <div class="key_par">Title:
                 <span class="val_par">{{ book.title }}</span>
             </div>
 
             <div class="key_par">Authors:
+                <span v-for="author in book.authors">
                 <a href="#"
-                   v-for="author in book.authors"
-                   @click="searchByAuthor(author)"
-                   v-text="getEndComma(author)">
-                </a>
+                   class="motw_table_link"
+                   @click="searchByAuthor(author)">{{ author }}</a><span v-text="getEndComma(author)"></span>
+                </span>
             </div>
-            <div class="key_par">Publisher:
-                <span class="val_par">{{ book.publisher }}</span>
+
+            <div class="key_par" v-if="book.publisher">Publisher:
+                <a href="#"
+                   class="motw_table_link"
+                   @click="searchByPublisher(book.publisher)">{{ book.publisher }}</a>
             </div>
-            <div class="key_par">Description:</div>
-            <div v-html="book.comments"></div>
+
+            <div class="key_par" v-if="book.pubdate">Year:
+                <span class="val_par">{{ book.pubdate.slice(0,4) }}</span>
+            </div>
+
+            <div class="key_par" v-if="book.formats">Download:
+                <span class="val_par" v-html="getFormats(book)"></span>
+            </div>
+          
+            <div class="key_par" v-if="book.comments">Description:
+                <span class="val_par" v-html="cleanHtml(book.comments)"></span>
+            </div>
+
             <div slot="modal-footer"
                  class="w-100">
-                <a href="#" class="float-left motw_link"
+                <a href="#"
+                   class="float-left motw_link"
                    @click="searchByLibrarian(book.librarian)" >
                     catalogued by {{ book.librarian }}
                 </a>
@@ -39,27 +55,35 @@
 </template>
 
 <script>
-    import 'font-awesome/css/font-awesome.css'
+    import 'font-awesome/css/font-awesome.css';
+    import sanitizeHtml from "sanitize-html";
+
     export default {
         props: ['book', 'show_modal'],
         methods: {
+            cleanHtml(html_text) {
+                return sanitizeHtml(html_text, {
+                    allowedTags: ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'ul', 'strong', 'br', 'div', 'p']
+                });
+            },
             getEndComma(author) {
                 if (author === this.book.authors[this.book.authors.length - 1]) {
-                    return author
+                    return
                 } else {
-                    return `${author}, `
+                    return ", "
                 }
             },
             getModalHeader(book) {
-                let authors = ""
                 if (book.hasOwnProperty('authors') === false) {
                     return
                 }
-
-                for (let author of book.authors) {
-                    authors += this.getEndComma(author)
+                let authors = book.authors
+                if (authors.length > 3) {
+                    authors = book.authors.slice(0, 3)
+                    authors.push("et al.")
                 }
-                return `"${book.title}" by ${authors}`
+
+                return `"${book.title}" by ${authors.join(', ')}`
             },
             searchByAuthor(author) {
                 this.$emit('reloadSearch', {
@@ -73,11 +97,18 @@
                     'status': `librarian: ${librarian}`
                 })
             },
+            searchByPublisher(publisher) {
+                this.$emit('reloadSearch', {
+                    'endpoint': `search/publisher/${publisher}`,
+                    'status': `publisher: ${publisher}`
+                })
+            },
+
             getFormats(book) {
                 let f = '';
                 for (let frm of book['formats']) {
                     let book_url = book.library_url + frm.dir_path + frm.file_name
-                    let download_stripe = `<a class="motw_link" href="${book_url}"><i class="fa fa-download"></i><i>${frm.format.toUpperCase()}</i></a>, `;
+                    let download_stripe = `<a class="motw_table_link" href="${book_url}">.${frm.format}</a>, `;
                     f += download_stripe;
                 }
                 return f.slice(0, -3)
@@ -129,6 +160,7 @@
 
     .key_par {
         font-weight: bold;
+        padding-bottom: 0.5em;
     }
 
     .val_par {

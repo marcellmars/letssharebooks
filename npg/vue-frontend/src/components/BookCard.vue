@@ -1,5 +1,5 @@
 <template>
-    <div class="col col-xl-2 col-lg-3 col-md-4 col-sm-6 cols-12">
+    <div class="col col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12">
         <b-card overlay
                 class="h-100"
                 :img-src="getCover(book)"

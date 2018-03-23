@@ -3,14 +3,15 @@
         <b-modal v-model="show_modal"
                  size="lg"
                  no-fade
+                 lazy
+                 centered
                  :title="getModalHeader(book)"
-                 header-bg-variant="danger"
-                 footer-bg-variant="danger"
+                 header-bg-variant="motwred"
+                 footer-bg-variant="motwred"
                  header-text-variant="white"
                  footer-text-variant="white">
             <img :src="getCover(book)"
-                 class="float-right"
-                 width="33%"></img>
+                 class="float-right ml-3 mb-2 col-6"></img>
 
             <div class="key_par">Title:
                 <span class="val_par">{{ book.title }}</span>
@@ -39,13 +40,13 @@
             </div>
           
             <div class="key_par" v-if="book.comments">Description:
-                <span class="val_par" v-html="cleanHtml(book.comments)"></span>
+                <span class="val_par text-justify" v-html="cleanHtml(book.comments)"></span>
             </div>
 
             <div slot="modal-footer"
                  class="w-100">
                 <a href="#"
-                   class="float-left motw_link"
+                   class="float-left motw_table_link librarian_link"
                    @click="searchByLibrarian(book.librarian)" >
                     catalogued by {{ book.librarian }}
                 </a>
@@ -64,7 +65,7 @@
             cleanHtml(html_text) {
                 return sanitizeHtml(html_text, {
                     allowedTags: ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'ul', 'strong', 'br', 'div', 'p']
-                });
+                }).replace('**', '');
             },
             getEndComma(author) {
                 if (author === this.book.authors[this.book.authors.length - 1]) {
@@ -165,5 +166,9 @@
 
     .val_par {
         font-weight: normal;
+    }
+
+    .librarian_link {
+        color: white;
     }
 </style>

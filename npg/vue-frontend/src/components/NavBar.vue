@@ -1,28 +1,24 @@
 <template>
-    <b-button-toolbar justify>
-        <b-button class="col left-arrow"
+    <b-button-toolbar justify clearfix>
+        <b-button class="float-left"
                   variant="link"
                   pill
                   v-if="links.prev"
-                  @click="fetchBooks({'endpoint': links.prev.href, 'status': meta.status})">
-            &lt;&lt; previous page
-        </b-button>
+                  @click="fetchBooks({'endpoint': links.prev.href, 'status': meta.status})">&lt;&lt; prev page&nbsp;&nbsp;&nbsp;&nbsp</b-button>
 
         <b-button disabled
-                  class="col status"
-                  variant="secondary"
+                  class="col status mw-100"
+                  variant="text-muted"
                   pill>
             {{ meta.max_results * (meta.page - 1)}}-{{Math.min(meta.page * meta.max_results, meta.total) }} of {{ meta.total }}
             ({{ meta.status }})
         </b-button>
 
-        <b-button class="col right-arrow"
+        <b-button class="float-right"
                   variant="link"
                   pill
                   v-if="links.next"
-                  @click="fetchBooks({'endpoint': links.next.href, 'status': meta.status})">
-            next page &gt;&gt;
-        </b-button>
+                  @click="fetchBooks({'endpoint': links.next.href, 'status': meta.status})">&nbsp;&nbsp;&nbsp;&nbsp;next page &gt;&gt;</b-button>
     </b-button-toolbar>
 </template>
 
@@ -47,19 +43,21 @@
 <style scoped>
     .right-arrow {
         font-weight: bold;
-        text-align: right;
+        text-align: right !important;
     }
 
     .left-arrow {
         font-weight: bold;
-        text-align: left;
+        text-align: left !important;
     }
 
     .status {
+        color: black;
+        /* font-weight: bold; */
         border-top: 0.5em solid white;
         border-bottom: 0.5em solid white;
         border-left: 0px solid white;
-        border-right : 0px solid white;
+        border-right: 0px solid white;
         padding-top: 0.1em;
     }
 </style>

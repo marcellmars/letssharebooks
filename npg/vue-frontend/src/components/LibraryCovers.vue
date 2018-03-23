@@ -8,7 +8,7 @@
                     :book="book"
                     @reloadSearch="fetchBooks($event)">
         </book-modal>
-        <b-card-group>
+        <b-card-group d-block>
             <book-card @reloadSearch="fetchBooks($event)"
                        @titleClick="titleClick"
                        v-for="b in books"

@@ -33,17 +33,17 @@
                     'authors': {
                         label: 'Authors',
                         formatter: 'authorsCommaSpace',
-                        tdClass: 'btitle'
+                        tdClass: 'btitle w-25'
                     },
                     'title': {
                         label: 'Title',
                     },
                     'pubdate': {
                         label: 'Year',
-                        formatter: 'publishedYear'
+                        formatter: 'publishedYear',
                     },
                     'formats': {
-                        label: 'Download',
+                        label: 'File',
                         formatter: 'getFormats',
                         tdClass: 'formats-download'
                     }
@@ -83,7 +83,7 @@
                 return t.join(',<br/>')
             },
             publishedYear(d) {
-                return `${d}`.slice(0, 4)
+                return `${d}`.slice(0, 4) + '&nbsp;'
             },
             getFormats(key, value, book) {
                 let f = '';
@@ -118,4 +118,7 @@
 </script>
 
 <style scoped>
+ .table:hover {
+     cursor: pointer;
+ }
 </style>

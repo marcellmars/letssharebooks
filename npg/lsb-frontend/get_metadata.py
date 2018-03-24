@@ -18,7 +18,7 @@ API_ROOT = "http://localhost:5000/"
 
 dc = {
     'local_config': {
-        'calibre_path': os.path.expanduser("~/CalibreLibraries/slowrotation/"),
+        'calibre_path': "/media/m/Maxtor/motw_calibre_libraries/biopolitics/",
         # 'calibre_path': os.path.expanduser("~/CalibreLibraries/FooBar/"),
         'jsonfile': '/tmp/books_{}.json'.format('EzraAbbot'),
         'Library-Secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'
@@ -26,21 +26,21 @@ dc = {
     'eve_payload': {
         'librarian': 'Ezra Abbot',
         '_id': '800fe078-9aea-4327-a4a3-eaf8cd63491f',
-        'library_url': 'http://slowrotation.memoryoftheworld.org/'
+        'library_url': 'http://biopolitics.memoryoftheworld.org/'
         # 'library_url': 'http://localhost:2017/'
     }
 }
 
 dc2 = {
     'local_config': {
-        'calibre_path': os.path.expanduser("~/CalibreLibraries/Economics/"),
+        'calibre_path': "/media/m/Maxtor/motw_calibre_libraries/economics/",
         'jsonfile': '/tmp/books_{}.json'.format('AndrewElbakyan'),
         'Library-Secret': '0f4c02a4-b95a-48cb-9fc2-04e850cb620a'
     },
     'eve_payload': {
         'librarian': 'Andrew Elbakyan',
         '_id': 'dde67a22-8076-4906-b277-564652f90717',
-        'library_url': 'http://localhost:2018/',
+        'library_url': 'http://economics.memoryoftheworld.org/',
         'presence': 'off'
     }
 }

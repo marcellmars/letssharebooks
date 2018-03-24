@@ -304,7 +304,7 @@ def save_file(dc):
 
 
 def save_zip_file(dc):
-    with open(dc['local_config']['jsonfile'] + ".zip", "w") as f:
+    with open(dc['local_config']['jsonfile'] + ".zip", "wb") as f:
         payload = json.dumps(calibre_to_json(dc))
         zpayload = zlib.compress(payload.encode('utf-8'))
         f.write(zpayload)

@@ -50,7 +50,8 @@ if 'PORT' in os.environ:
     host = '0.0.0.0'
 else:
     port = 5000
-    host = '192.168.88.241'
+    # host = '192.168.88.241'
+    host = '0.0.0.0'
 
 
 app = Eve(json_encoder=UUIDEncoder, validator=UUIDValidator)

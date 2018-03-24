@@ -98,9 +98,9 @@ def main():
     assert test_invalid_secret(dc) == ('libraries', 403)
 
     # delete 'Art Power' book
-    art_power = db.books.find_one({'title': 'Art Power'})['_id']
-    headers = {'Library-Secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'}
-    delete_item('books', headers, art_power)
+    # art_power = db.books.find_one({'title': 'Art Power'})['_id']
+    # headers = {'Library-Secret': '76a33991-d703-48d9-8a03-dfb3e4b69ec3'}
+    # delete_item('books', headers, art_power)
     # assert db.books.find({'presence': 'on'}).count() == 40
     # assert db.titles_ngrams.find({'val': 'Art Power'}).count() == 0
     # assert db.authors_ngrams.find({'val': 'Boris Groys'}).count() == 2

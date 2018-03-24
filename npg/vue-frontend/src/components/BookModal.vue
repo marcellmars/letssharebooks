@@ -11,7 +11,7 @@
                  header-text-variant="white"
                  footer-text-variant="white">
             <img :src="getCover(book)"
-                 class="float-right ml-3 mb-2 col-6"></img>
+                 class="float-right pr-0 ml-2 mb-2 col-6"></img>
 
             <div class="key_par">Title:
                 <span class="val_par">{{ book.title }}</span>

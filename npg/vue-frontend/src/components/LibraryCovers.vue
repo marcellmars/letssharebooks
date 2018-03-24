@@ -6,10 +6,10 @@
         </nav-bar>
         <book-modal :show_modal="show_modal"
                     :book="book"
-                    @reloadSearch="fetchBooks($event)">
+                    @searchQuery="fetchBooks($event)">
         </book-modal>
         <b-card-group d-block>
-            <book-card @reloadSearch="fetchBooks($event)"
+            <book-card @searchQuery="fetchBooks($event)"
                        @titleClick="titleClick"
                        v-for="b in books"
                        :book="b"
@@ -29,7 +29,7 @@
     import NavBar from './NavBar.vue'
 
     export default {
-        props: ['reloadSearch'],
+        props: ['searchQuery'],
         data: function() {
             return {
                 show_modal: false,
@@ -52,9 +52,9 @@
                 this.show_modal = false;
                 let endpoint = a['endpoint']
                 let status = a['status']
-                // this.$http.get('static/data.js')
                 this.$http.get(endpoint)
                     .then(response => {
+                        console.log(response);
                         return response.json()
                     })
                     .then(data => {
@@ -66,13 +66,10 @@
             },
         },
         mounted: function() {
-            this.fetchBooks({
-                'endpoint': 'books',
-                'status': 'all books'
-            })
+            this.fetchBooks(this.searchQuery)
         },
         watch: {
-            reloadSearch: function(val, oldVal) {
+            searchQuery: function(val, oldVal) {
                 this.fetchBooks(val)
             }
         },

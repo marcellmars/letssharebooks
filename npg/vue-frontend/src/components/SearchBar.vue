@@ -1,6 +1,6 @@
 <template>
     <b-button-toolbar justify>
-        <b-dropdown variant="disabled" right :text="in_search" >
+        <b-dropdown variant="disabled"right :text="in_search" >
             <b-dropdown-item class="search" @click="in_search='Authors';options=[];ph=''">Authors</b-dropdown-item>
             <b-dropdown-item @click="in_search='Titles';options=[];ph=''">Titles</b-dropdown-item>
             <b-dropdown-item @click="in_search='Tags';options=[];ph=''">Tags</b-dropdown-item>
@@ -17,7 +17,7 @@
                       :placeholder="ph">
             </v-select>
         </b-col>
-        <b-button variant="motwred" @click="search">Search</b-button>
+        <b-button variant="motwred" @click="search" class="font-weight-bold ">SEARCH</b-button>
     </b-button-toolbar>
 </template>
 
@@ -94,10 +94,12 @@
         padding-right: 0px;
         padding-left: 0px;
     }
-
-    a {
-        color: black;
-        font-weight: bold;
-        text-decoration: none;
-    }
+ /*  */
+ a,
+ .dropdown-item {
+     border: 0px solid white;
+ /* color: black; */
+ /* font-weight: bold; */
+ /* text-decoration: none; */
+ }
 </style>

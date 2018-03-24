@@ -13,16 +13,18 @@
                       @on-change="getQuery($event)"
                       :options="options"
                       maxHeight="18em"
-                      resetOnOptionsChange
                       :placeholder="ph">
             </v-select>
         </b-col>
-        <b-button variant="motwred" @click="search" class="font-weight-bold ">SEARCH</b-button>
+        <b-button variant="motwred" @click="search" class="motw-home font-weight-bold ">SEARCH</b-button>
     </b-button-toolbar>
 </template>
 
 <script>
     import vSelect from "vue-select";
+    import {
+        eventBus
+    } from '../main';
 
     export default {
         data() {
@@ -40,21 +42,23 @@
         },
         methods: {
             search() {
-                let sq = {
+                this.$store.state.searchQuery = {
                     'endpoint': `search/${this.in_search.toLowerCase()}/${this.query.toLowerCase()}`,
                     'status': `${this.in_search.toLowerCase()}: ${this.query.toLowerCase()}`
                 }
-                this.$emit('atInput', sq)
+                eventBus.$emit('reloadSearch')
             },
             atInput(e) {
-                let sq = {
+                if (e.toLowerCase() == "null") {
+                    return
+                }
+                this.$store.state.searchQuery = {
                     'endpoint': `search/${this.in_search.toLowerCase()}/${e}`,
                     'status': `${this.in_search.toLowerCase()}: ${e}`
                 }
-                this.$emit('atInput', sq)
+                eventBus.$emit('reloadSearch')
             },
             getOptions(search, loading) {
-                console.log(search);
                 this.query = search;
                 this.options = Array.from(this.categories[this.in_search.toLowerCase()]);
                 this.options.sort()
@@ -94,12 +98,12 @@
         padding-right: 0px;
         padding-left: 0px;
     }
- /*  */
- a,
- .dropdown-item {
-     border: 0px solid white;
- /* color: black; */
- /* font-weight: bold; */
- /* text-decoration: none; */
- }
+
+    a,
+    .dropdown-item {
+        border: 0px solid white;
+        /* color: black; */
+        /* font-weight: bold; */
+        /* text-decoration: none; */
+    }
 </style>

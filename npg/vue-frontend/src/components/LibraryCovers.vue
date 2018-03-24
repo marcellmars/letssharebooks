@@ -2,14 +2,14 @@
     <div>
         <nav-bar :links="links"
                  :meta="meta"
-                 @fetchBooks="fetchBooks($event)">
+                 @fetchBooks="fetchBooks()">
         </nav-bar>
         <book-modal :show_modal="show_modal"
                     :book="book"
-                    @searchQuery="fetchBooks($event)">
+                    @searchQuery="fetchBooks()">
         </book-modal>
         <b-card-group d-block>
-            <book-card @searchQuery="fetchBooks($event)"
+            <book-card @searchQuery="fetchBooks()"
                        @titleClick="titleClick"
                        v-for="b in books"
                        :book="b"
@@ -18,7 +18,7 @@
         </b-card-group>
         <nav-bar :links="links"
                  :meta="meta"
-                 @fetchBooks="fetchBooks($event)">
+                 @fetchBooks="fetchBooks()">
         </nav-bar>
     </div>
 </template>
@@ -27,13 +27,15 @@
     import BookCard from './BookCard.vue'
     import BookModal from './BookModal.vue'
     import NavBar from './NavBar.vue'
+    import {
+    eventBus
+    } from '../main';
 
     export default {
         props: ['searchQuery'],
         data: function() {
             return {
                 show_modal: false,
-                // books: LIBRARY.books.add
                 books: [],
                 links: {
                     'next': false,
@@ -48,13 +50,12 @@
                 this.book = book;
                 this.show_modal = true;
             },
-            fetchBooks(a) {
+            fetchBooks() {
                 this.show_modal = false;
-                let endpoint = a['endpoint']
-                let status = a['status']
+                let endpoint = this.$store.state.searchQuery['endpoint']
+                let status = this.$store.state.searchQuery['status']
                 this.$http.get(endpoint)
                     .then(response => {
-                        console.log(response);
                         return response.json()
                     })
                     .then(data => {
@@ -65,13 +66,8 @@
                     });
             },
         },
-        mounted: function() {
-            this.fetchBooks(this.searchQuery)
-        },
-        watch: {
-            searchQuery: function(val, oldVal) {
-                this.fetchBooks(val)
-            }
+        beforeMount() {
+            eventBus.$on('reloadSearch', () => this.fetchBooks());
         },
         components: {
             BookCard,

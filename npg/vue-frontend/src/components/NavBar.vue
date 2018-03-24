@@ -4,7 +4,7 @@
                   variant="link"
                   pill
                   v-if="links.prev"
-                  @click="fetchBooks({'endpoint': links.prev.href, 'status': meta.status})">&lt;&lt; prev page&nbsp;&nbsp;&nbsp;&nbsp</b-button>
+                  @click="fetchBooks({'endpoint': links.prev.href, 'status': meta.status}, false)">&lt;&lt; prev page&nbsp;&nbsp;&nbsp;&nbsp</b-button>
 
         <b-button disabled
                   class="col status mw-100"
@@ -18,25 +18,32 @@
                   variant="link"
                   pill
                   v-if="links.next"
-                  @click="fetchBooks({'endpoint': links.next.href, 'status': meta.status})">&nbsp;&nbsp;&nbsp;&nbsp;next page &gt;&gt;</b-button>
+                  @click="fetchBooks({'endpoint': links.next.href, 'status': meta.status}, true)">&nbsp;&nbsp;&nbsp;&nbsp;next page &gt;&gt;</b-button>
     </b-button-toolbar>
 </template>
 
 <script>
+    import {
+        eventBus
+    } from '../main';
+
     export default {
         props: [
             'links',
             'meta'
         ],
         methods: {
-            fetchBooks(l) {
-                document.querySelectorAll(".card").forEach(
-                    function(n) {
-                        n.firstElementChild.src = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-                    })
-                this.$emit('fetchBooks', l);
-            }
+            fetchBooks(searchQuery, reload) {
+                /* if (reload) {*/
+                /* document.querySelectorAll(".card").forEach(*/
+                /* function(n) {*/
+                /* n.firstElementChild.src = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";*/
+                /* })*/
+                /* }*/
+            this.$store.state.searchQuery = searchQuery;
+            eventBus.$emit('reloadSearch');
         }
+    }
     }
 </script>
 

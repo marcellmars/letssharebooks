@@ -58,6 +58,9 @@
 <script>
     import 'font-awesome/css/font-awesome.css';
     import sanitizeHtml from "sanitize-html";
+    import {
+        eventBus
+    } from '../main';
 
     export default {
         props: ['book', 'show_modal'],
@@ -87,22 +90,25 @@
                 return `"${book.title}" by ${authors.join(', ')}`
             },
             searchByAuthor(author) {
-                this.$emit('reloadSearch', {
+                this.$store.state.searchQuery = {
                     'endpoint': `search/authors/${author}`,
                     'status': `author: ${author}`
-                })
+                }
+                eventBus.$emit('reloadSearch')
             },
             searchByLibrarian(librarian) {
-                this.$emit('reloadSearch', {
+                this.$store.state.searchQuery = {
                     'endpoint': `search/librarian/${librarian}`,
                     'status': `librarian: ${librarian}`
-                })
+                }
+                eventBus.$emit('reloadSearch')
             },
             searchByPublisher(publisher) {
-                this.$emit('reloadSearch', {
+                this.$store.state.searchQuery = {
                     'endpoint': `search/publisher/${publisher}`,
                     'status': `publisher: ${publisher}`
-                })
+                }
+                eventBus.$emit('reloadSearch')
             },
 
             getFormats(book) {

@@ -31,6 +31,9 @@
 
 <script>
     import 'font-awesome/css/font-awesome.css'
+    import {
+    eventBus
+    } from '../main';
 
     export default {
         props: ['book'],
@@ -53,16 +56,18 @@
                 return `"${book.title}" by ${authors}`
             },
             searchByAuthor(author) {
-                this.$emit('reloadSearch', {
+                this.$store.state.searchQuery = {
                     'endpoint': `search/authors/${author}`,
                     'status': `author: ${author}`
-                })
+                }
+                eventBus.$emit('reloadSearch')
             },
             searchByLibrarian(librarian) {
-                this.$emit('reloadSearch', {
+                this.$store.state.searchQuery = {
                     'endpoint': `search/librarian/${librarian}`,
                     'status': `librarian: ${librarian}`
-                })
+                }
+                eventBus.$emit('reloadSearch')
                 this.show_modal = false
             },
             getFormats(book) {

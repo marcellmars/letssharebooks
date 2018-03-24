@@ -1,59 +1,62 @@
 <template>
     <b-container class="app" fluid>
-        <motw-header @switchView="table=!table;" :show="show"></motw-header>
-        <search-bar @atInput="reloadSearch($event)" />
-        <library-covers v-if="!table"  :searchQuery="sq" />
-        <library-table v-if="table" :searchQuery="sq" />
+        <motw-header @allBooks="allBooks()"
+                     @switchView="table=!table;"
+                     :show="show"></motw-header>
+        <search-bar />
+        <library-covers v-show="!table" />
+        <library-table v-show="table"  />
     </b-container>
 </template>
 
 <script>
-export default {
-    name: 'app',
-    data() {
-        return {
-            counter: 0,
-            table: true,
-            show: "covers",
-            sq: {
-                'endpoint': 'books',
-                'status': 'all books'
+    import {
+        eventBus
+    } from '../main';
+
+    export default {
+        name: 'app',
+        data() {
+            return {
+                table: true,
+                show: "covers",
             }
-        }
-    },
-    methods: {
-        reloadSearch(e) {
-            this.sq = e
-        }
-    },
-    watch: {
-        table: function(val, oldVal) {
-            if (val) {
-                this.show = 'covers'
-            } else {
-                this.show = 'list';
+        },
+        methods: {
+            allBooks() {
+                this.$store.state.searchQuery = {
+                    'endpoint': 'books',
+                    'status': 'all books'
+                }
+                eventBus.$emit('reloadSearch')
             }
-        }
-    },
-    mounted: function() {
-        this.counter ++;
-        console.log(this.counter)
-        let loadPortable = document.createElement('script')
-        loadPortable.setAttribute('rel', 'prefetch')
-        loadPortable.setAttribute('src', 'static/data.js')
-        loadPortable.async = false;
-        var _this = this
-        document.head.appendChild(loadPortable)
-        loadPortable.onload = function() {
-            console.log(bkz)
-            _this.sq = {
-                'endpoint': 'books',
-                'status': 'all books'
+        },
+        watch: {
+            table: function(val, oldVal) {
+                if (val) {
+                    this.show = 'covers'
+                } else {
+                    this.show = 'list';
+                }
+                eventBus.$emit('reloadSearch');
             }
-            _this.reloadSearch(_this.sq)
+        },
+        mounted: function() {
+            let loadPortable = document.createElement('script')
+            loadPortable.setAttribute('rel', 'prefetch')
+            loadPortable.setAttribute('src', 'static/data.js')
+            loadPortable.async = false;
+            var _this = this
+            document.head.appendChild(loadPortable)
+            loadPortable.onload = function() {
+                _this.$store.state.searchQuery = {
+                    'endpoint': 'books',
+                    'status': 'all books'
+                }
+                eventBus.$emit('reloadSearch')
+            }
         }
     }
-}
 </script>
 
 <style lang="scss">

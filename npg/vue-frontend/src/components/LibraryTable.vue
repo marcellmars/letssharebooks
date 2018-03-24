@@ -1,20 +1,17 @@
 <template>
     <div>
-        <nav-bar :links="links"
-                 :meta="meta"
-                 @fetchBooks="fetchBooks()">
+        <nav-bar :links="shelf.links"
+                 :meta="shelf.meta">
         </nav-bar>
-        <book-modal :show_modal="show_modal"
-                    :book="book"
-                    @reloadSearch="fetchBooks()" />
-        <b-table :items="books"
+        <book-modal :book="book" />
+        <b-table :items="shelf.books"
                  :fields="fields"
                  @row-clicked="rowClicked"
                  striped
                  hover
                  small>         
         </b-table>
-        <nav-bar :links="links" :meta="meta" @fetchBooks="fetchBooks()">
+        <nav-bar :links="shelf.links" :meta="shelf.meta"">
         </nav-bar>
     </div>
 </template>
@@ -27,10 +24,10 @@
     } from '../main';
 
     export default {
-        props: ['searchQuery'],
+        props: ['searchQuery',
+                'shelf'],
         data: function() {
             return {
-                books: [],
                 fields: {
                     'authors': {
                         label: 'Authors',
@@ -56,26 +53,10 @@
                     'prev': false
                 },
                 meta: {},
-                show_modal: false,
                 book: {}
             }
         },
         methods: {
-            fetchBooks() {
-                this.show_modal = false;
-                let endpoint = this.$store.state.searchQuery['endpoint']
-                let status = this.$store.state.searchQuery['status']
-                this.$http.get(endpoint)
-                    .then(response => {
-                        return response.json()
-                    })
-                    .then(data => {
-                        this.books = data._items;
-                        this.meta = data._meta;
-                        this.links = data._links;
-                        this.meta['status'] = status
-                    });
-            },
             authorsCommaSpace(t) {
                 if (t.length > 3) {
                     t = t.slice(0, 3)
@@ -97,11 +78,8 @@
             },
             rowClicked(item, row, event) {
                 this.book = item;
-                this.show_modal = true;
+                this.$store.state.showModal = true;
             }
-        },
-        beforeMount() {
-            eventBus.$on('reloadSearch', () => this.fetchBooks())
         },
         components: {
             NavBar,

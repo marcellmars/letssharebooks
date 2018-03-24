@@ -2,7 +2,9 @@ import Vue from "vue";
 
 import BootstrapVue from 'bootstrap-vue';
 import VueResource from 'vue-resource';
-import { store } from './store/store';
+import {
+    store
+} from './store/store';
 
 import App from './components/App.vue';
 import MotwHeader from './components/MotwHeader.vue';

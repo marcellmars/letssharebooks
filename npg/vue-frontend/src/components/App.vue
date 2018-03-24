@@ -4,8 +4,8 @@
                      @switchView="table=!table;"
                      :show="show"></motw-header>
         <search-bar />
-        <library-covers v-show="!table" />
-        <library-table v-show="table"  />
+        <library-covers v-if="!table" :shelf="shelf" />
+        <library-table v-if="table"  :shelf="shelf" />
     </b-container>
 </template>
 
@@ -20,9 +20,32 @@
             return {
                 table: true,
                 show: "covers",
+                shelf: {
+                    books: [],
+                    links: {
+                        'next': false,
+                        'prev': false
+                    },
+                    meta: {}
+                }
             }
         },
         methods: {
+            fetchBooks() {
+                this.$store.state.showModal = false
+                let endpoint = this.$store.state.searchQuery['endpoint']
+                let status = this.$store.state.searchQuery['status']
+                this.$http.get(endpoint)
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(data => {
+                        this.shelf.books = data._items;
+                        this.shelf.meta = data._meta;
+                        this.shelf.links = data._links;
+                        this.shelf.meta['status'] = status
+                    });
+            },
             allBooks() {
                 this.$store.state.searchQuery = {
                     'endpoint': 'books',
@@ -55,6 +78,9 @@
                 }
                 eventBus.$emit('reloadSearch')
             }
+        },
+        created() {
+            eventBus.$on('reloadSearch', this.fetchBooks)
         }
     }
 </script>

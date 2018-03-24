@@ -102,8 +102,5 @@
     a,
     .dropdown-item {
         border: 0px solid white;
-        /* color: black; */
-        /* font-weight: bold; */
-        /* text-decoration: none; */
     }
 </style>

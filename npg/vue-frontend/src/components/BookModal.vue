@@ -1,6 +1,6 @@
 <template>
     <div class="col col-xl-2 col-lg-3 col-md-4 col-sm-6 cols-12">
-        <b-modal v-model="show_modal"
+        <b-modal v-model="$store.state.showModal"
                  size="lg"
                  no-fade
                  lazy
@@ -63,7 +63,7 @@
     } from '../main';
 
     export default {
-        props: ['book', 'show_modal'],
+        props: ['book'],
         methods: {
             cleanHtml(html_text) {
                 return sanitizeHtml(html_text, {

@@ -3,7 +3,6 @@
         <nav-bar :links="shelf.links"
                  :meta="shelf.meta">
         </nav-bar>
-        <book-modal :book="book" />
         <b-table :items="shelf.books"
                  :fields="fields"
                  @row-clicked="rowClicked"
@@ -18,14 +17,14 @@
 
 <script>
     import NavBar from './NavBar.vue'
-    import BookModal from './BookModal.vue'
     import {
         eventBus
     } from '../main';
 
     export default {
         props: ['searchQuery',
-                'shelf'],
+            'shelf',
+        ],
         data: function() {
             return {
                 fields: {
@@ -79,11 +78,12 @@
             rowClicked(item, row, event) {
                 this.book = item;
                 this.$store.state.showModal = true;
+                this.$store.state.singleBook = false;
+                this.$router.push('/book/' + item['_id'])
             }
         },
         components: {
-            NavBar,
-            BookModal
+            NavBar
         }
     }
 </script>

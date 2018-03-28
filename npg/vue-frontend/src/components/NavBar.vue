@@ -24,7 +24,7 @@
 
 <script>
     import {
-        eventBus
+        eventBus,
     } from '../main';
 
     export default {
@@ -34,16 +34,16 @@
         ],
         methods: {
             fetchBooks(searchQuery, reload) {
-                /* if (reload) {*/
-                /* document.querySelectorAll(".card").forEach(*/
-                /* function(n) {*/
-                /* n.firstElementChild.src = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";*/
-                /* })*/
-                /* }*/
-            this.$store.state.searchQuery = searchQuery;
-            eventBus.$emit('reloadSearch');
+                if (reload) {
+                    document.querySelectorAll(".card").forEach(
+                        function(n) {
+                            n.firstElementChild.src = "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+                        })
+                }
+                this.$store.state.searchQuery = searchQuery;
+                eventBus.$emit('reloadSearch');
+            }
         }
-    }
     }
 </script>
 

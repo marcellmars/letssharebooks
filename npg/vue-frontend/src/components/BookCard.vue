@@ -30,60 +30,59 @@
 </template>
 
 <script>
-    import 'font-awesome/css/font-awesome.css'
-    import {
-    eventBus
-    } from '../main';
+ import {
+     eventBus
+ } from '../main';
 
-    export default {
-        props: ['book'],
-        methods: {
-            titleClick(book) {
-                this.$emit('titleClick', book)
-            },
-            getEndComma(author) {
-                if (author === this.book.authors[this.book.authors.length - 1]) {
-                    return author
-                } else {
-                    return `${author}, `
-                }
-            },
-            getModalHeader(book) {
-                let authors = ""
-                for (let author of book.authors) {
-                    authors += this.getEndComma(author)
-                }
-                return `"${book.title}" by ${authors}`
-            },
-            searchByAuthor(author) {
-                this.$store.state.searchQuery = {
-                    'endpoint': `search/authors/${author}`,
-                    'status': `author: ${author}`
-                }
-                eventBus.$emit('reloadSearch')
-            },
-            searchByLibrarian(librarian) {
-                this.$store.state.searchQuery = {
-                    'endpoint': `search/librarian/${librarian}`,
-                    'status': `librarian: ${librarian}`
-                }
-                eventBus.$emit('reloadSearch')
-                this.show_modal = false
-            },
-            getFormats(book) {
-                let f = '';
-                for (let frm of book['formats']) {
-                    let book_url = book.library_url + frm.dir_path + frm.file_name
-                    let download_stripe = `<a class="motw_link" href="${book_url}"><i class="fa fa-download"></i><i>${frm.format.toUpperCase()}</i></a>, `;
-                    f += download_stripe;
-                }
-                return f.slice(0, -3)
-            },
-            getCover(book) {
-                return book.library_url + book.cover_url
-            }
-        },
-    }
+ export default {
+     props: ['book'],
+     methods: {
+         titleClick(book) {
+             this.$emit('titleClick', book)
+         },
+         getEndComma(author) {
+             if (author === this.book.authors[this.book.authors.length - 1]) {
+                 return author
+             } else {
+                 return `${author}, `
+             }
+         },
+         getModalHeader(book) {
+             let authors = ""
+             for (let author of book.authors) {
+                 authors += this.getEndComma(author)
+             }
+             return `"${book.title}" by ${authors}`
+         },
+         searchByAuthor(author) {
+             this.$store.state.searchQuery = {
+                 'endpoint': `/search/authors/${author}`,
+                 'status': `author: ${author}`
+             }
+             eventBus.$emit('reloadSearch')
+         },
+         searchByLibrarian(librarian) {
+             this.$store.state.searchQuery = {
+                 'endpoint': `/search/librarian/${librarian}`,
+                 'status': `librarian: ${librarian}`
+             }
+             eventBus.$emit('reloadSearch')
+             this.show_modal = false
+         },
+         getFormats(book) {
+             let f = '';
+             for (let frm of book['formats']) {
+                 let book_url = book.library_url + frm.dir_path + frm.file_name
+                 let download_stripe = `<a class="motw_link" href="${book_url}"><img src="static/download.svg" class="download-disk" /><i>${frm.format.toUpperCase()}</i></a>, `;
+                 f += download_stripe;
+             }
+             return f.slice(0, -3)
+         },
+         getCover(book) {
+             return book.library_url + book.cover_url
+         }
+     },
+ }
 </script>
 
 <style scoped>
@@ -134,5 +133,11 @@
 
     .val_par {
         font-weight: normal;
+    }
+
+    .darrow {
+        text-decoration: underline;
+        font-weight: bold;
+        font-size: 3em;
     }
 </style>

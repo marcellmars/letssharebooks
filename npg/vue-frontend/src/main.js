@@ -1,4 +1,5 @@
-import Vue from "vue";
+import Vue from 'vue';
+import VueRouter from 'vue-router';
 
 import BootstrapVue from 'bootstrap-vue';
 import VueResource from 'vue-resource';
@@ -12,6 +13,7 @@ import LibraryCovers from './components/LibraryCovers.vue';
 import LibraryTable from './components/LibraryTable.vue';
 import SearchBar from './components/SearchBar.vue';
 
+Vue.use(VueRouter);
 Vue.use(VueResource);
 Vue.use(BootstrapVue);
 
@@ -23,12 +25,18 @@ Vue.component('library-covers', LibraryCovers);
 Vue.component('library-table', LibraryTable);
 Vue.component('search-bar', SearchBar);
 
-Vue.http.options.root = 'http://192.168.0.11:2018';
+Vue.http.options.root = 'http://localhost:2018';
 
 export const eventBus = new Vue();
+
+import { routes } from './router.js';
+export const router = new VueRouter({
+    routes
+});
 
 new Vue({
     el: "#app",
     store,
+    router,
     render: h => h(App)
 });

@@ -6,6 +6,7 @@ Vue.use(Vuex);
 export const store = new Vuex.Store({
     state: {
         searchQuery: {},
-        showModal: false
+        showModal: false,
+        singleBook: true
     }
 })

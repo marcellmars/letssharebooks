@@ -5,6 +5,7 @@
                  no-fade
                  lazy
                  centered
+                 @hidden="$emit('modalHidden')"
                  :title="getModalHeader(book)"
                  header-bg-variant="motwred"
                  footer-bg-variant="motwred"
@@ -91,21 +92,21 @@
             },
             searchByAuthor(author) {
                 this.$store.state.searchQuery = {
-                    'endpoint': `search/authors/${author}`,
+                    'endpoint': `/search/authors/${author}`,
                     'status': `author: ${author}`
                 }
                 eventBus.$emit('reloadSearch')
             },
             searchByLibrarian(librarian) {
                 this.$store.state.searchQuery = {
-                    'endpoint': `search/librarian/${librarian}`,
+                    'endpoint': `/search/librarian/${librarian}`,
                     'status': `librarian: ${librarian}`
                 }
                 eventBus.$emit('reloadSearch')
             },
             searchByPublisher(publisher) {
                 this.$store.state.searchQuery = {
-                    'endpoint': `search/publisher/${publisher}`,
+                    'endpoint': `/search/publisher/${publisher}`,
                     'status': `publisher: ${publisher}`
                 }
                 eventBus.$emit('reloadSearch')

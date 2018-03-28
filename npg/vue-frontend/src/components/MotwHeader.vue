@@ -36,7 +36,7 @@
     .motw-home:hover {
         color: white;
         text-decoration: underline;
-        border: 0.9em solid #c00;
+        border: 0.9em solid red;
     }
 
     .motw-bookmark {
@@ -54,7 +54,7 @@
         color: white;
         height: 0;
         padding: 0 1.2em 0 0;
-        border: 0.9em solid #c00;
+        border: 0.9em solid re;
         line-height: 0.2em;
         border-right-color: transparent;
         font-size: 1.1em;

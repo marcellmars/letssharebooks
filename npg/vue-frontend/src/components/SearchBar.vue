@@ -1,7 +1,7 @@
 <template>
     <b-button-toolbar justify>
-        <b-dropdown variant="disabled"right :text="in_search" >
-            <b-dropdown-item class="search" @click="in_search='Authors';options=[];ph=''">Authors</b-dropdown-item>
+        <b-dropdown variant="disabled" :text="in_search" >
+            <b-dropdown-item @click="in_search='Authors';options=[];ph=''">Authors</b-dropdown-item>
             <b-dropdown-item @click="in_search='Titles';options=[];ph=''">Titles</b-dropdown-item>
             <b-dropdown-item @click="in_search='Tags';options=[];ph=''">Tags</b-dropdown-item>
         </b-dropdown>
@@ -16,7 +16,7 @@
                       :placeholder="ph">
             </v-select>
         </b-col>
-        <b-button variant="motwred" @click="search" class="motw-home font-weight-bold ">SEARCH</b-button>
+        <b-button variant="motwred" @click="search" class="search font-weight-bold ">SEARCH</b-button>
     </b-button-toolbar>
 </template>
 
@@ -43,7 +43,7 @@
         methods: {
             search() {
                 this.$store.state.searchQuery = {
-                    'endpoint': `search/${this.in_search.toLowerCase()}/${this.query.toLowerCase()}`,
+                    'endpoint': `/search/${this.in_search.toLowerCase()}/${this.query.toLowerCase()}`,
                     'status': `${this.in_search.toLowerCase()}: ${this.query.toLowerCase()}`
                 }
                 eventBus.$emit('reloadSearch')
@@ -53,7 +53,7 @@
                     return
                 }
                 this.$store.state.searchQuery = {
-                    'endpoint': `search/${this.in_search.toLowerCase()}/${e}`,
+                    'endpoint': `/search/${this.in_search.toLowerCase()}/${e}`,
                     'status': `${this.in_search.toLowerCase()}: ${e}`
                 }
                 eventBus.$emit('reloadSearch')
@@ -99,8 +99,11 @@
         padding-left: 0px;
     }
 
-    a,
+    .search {
+        font-size: 1.1em;
+    }
+
     .dropdown-item {
-        border: 0px solid white;
+        outline-color: white
     }
 </style>

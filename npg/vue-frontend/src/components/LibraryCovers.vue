@@ -19,7 +19,6 @@
 
 <script>
     import BookCard from './BookCard.vue'
-    import BookModal from './BookModal.vue'
     import NavBar from './NavBar.vue'
     import {
         eventBus
@@ -37,11 +36,12 @@
             titleClick(book) {
                 this.book = book;
                 this.$store.state.showModal = true;
+                this.$store.state.singleBook = false;
+                this.$router.push('/book/' + book['_id'])
             },
         },
         components: {
             BookCard,
-            BookModal,
             NavBar
         }
     }

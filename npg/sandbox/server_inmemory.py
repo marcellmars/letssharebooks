@@ -53,6 +53,13 @@ def hateoas(l, request, title="books"):
         p = 0
 
     books = l[p*motw.hateoas.max_results:(p+1)*motw.hateoas.max_results]
+    books = [{k:v for (k, v) in b.items() if k in ['_id',
+                                                   'authors',
+                                                   'pubdate',
+                                                   'title',
+                                                   'formats',
+                                                   'library_url',
+                                                   'cover_url']} for b in books]
     r = {
         "_items": books,
         "_links": {
@@ -66,15 +73,15 @@ def hateoas(l, request, title="books"):
             },
             "prev": {
                 "title": "previous page",
-                "href": "{}?page={}".format(request.path[1:], p)
+                "href": "{}?page={}".format(request.path, p)
             },
             "next": {
                 "title": "next page",
-                "href": "{}?page={}".format(request.path[1:], p+2)
+                "href": "{}?page={}".format(request.path, p+2)
             },
             "last": {
                 "title": "last page",
-                "href": "{}?page={}".format(request.path[1:], last_p)
+                "href": "{}?page={}".format(request.path, last_p)
             }
         },
         "_meta": {
@@ -185,7 +192,7 @@ def autocomplete(request, field, sq):
     if field in ['titles', 'publisher']:
         if field == 'titles':
             field = 'title'
-            if sq in ['the ']:
+            if unq(sq.lower()) in ['the ']:
                 return json({})
         r = [b[field] for b in motw.library['books']
              if unq(sq.lower()) in b[field].lower()]

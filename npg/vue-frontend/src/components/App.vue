@@ -1,5 +1,6 @@
 <template>
     <b-container class="app" fluid>
+        <loading-spinner-modal v-if="loading" />
         <motw-header @allBooks="allBooks()"
                      @switchView="table=!table;"
                      :show="show"></motw-header>
@@ -19,8 +20,9 @@
         name: 'app',
         data() {
             return {
+                loading: true,
                 table: true,
-                show: "covers",
+                show: "show covers",
                 shelf: {
                     books: [],
                     links: {
@@ -44,6 +46,9 @@
                 this.$store.state.showModal = false
                 let endpoint = this.$store.state.searchQuery['endpoint'].substring(1)
                 let status = this.$store.state.searchQuery['status']
+                this.loading = true;
+                let show_p = this.show
+                this.show = "loading..."
                 this.$http.get(endpoint)
                     .then(response => {
                         return response.json()
@@ -56,6 +61,10 @@
                         this.$router.push({
                             'path': "/" + endpoint
                         })
+                    })
+                    .then(() => {
+                        this.show = show_p
+                        this.loading = false;
                     });
             },
             allBooks() {
@@ -69,9 +78,9 @@
         watch: {
             table: function(val, oldVal) {
                 if (val) {
-                    this.show = 'covers'
+                    this.show = 'show covers'
                 } else {
-                    this.show = 'list';
+                    this.show = 'show list';
                 }
                 eventBus.$emit('reloadSearch');
             }

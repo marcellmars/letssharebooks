@@ -1,6 +1,7 @@
 <template>
     <div class="col col-xl-2 col-lg-3 col-md-4 col-sm-6 cols-12">
         <b-modal v-model="$store.state.showModal"
+                 ref="bookModal"
                  size="lg"
                  no-fade
                  lazy
@@ -95,21 +96,21 @@
                     'endpoint': `/search/authors/${author}`,
                     'status': `author: ${author}`
                 }
-                eventBus.$emit('reloadSearch')
+                this.$refs.bookModal.hide()
             },
             searchByLibrarian(librarian) {
                 this.$store.state.searchQuery = {
                     'endpoint': `/search/librarian/${librarian}`,
                     'status': `librarian: ${librarian}`
                 }
-                eventBus.$emit('reloadSearch')
+                this.$refs.bookModal.hide()
             },
             searchByPublisher(publisher) {
                 this.$store.state.searchQuery = {
                     'endpoint': `/search/publisher/${publisher}`,
                     'status': `publisher: ${publisher}`
                 }
-                eventBus.$emit('reloadSearch')
+                this.$refs.bookModal.hide()
             },
 
             getFormats(book) {

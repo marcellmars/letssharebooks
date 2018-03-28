@@ -12,6 +12,7 @@ import MotwHeader from './components/MotwHeader.vue';
 import LibraryCovers from './components/LibraryCovers.vue';
 import LibraryTable from './components/LibraryTable.vue';
 import SearchBar from './components/SearchBar.vue';
+import LoadingSpinnerModal from './components/LoadingSpinnerModal.vue';
 
 Vue.use(VueRouter);
 Vue.use(VueResource);
@@ -24,6 +25,7 @@ Vue.component('motw-header', MotwHeader);
 Vue.component('library-covers', LibraryCovers);
 Vue.component('library-table', LibraryTable);
 Vue.component('search-bar', SearchBar);
+Vue.component('loading-spinner-modal', LoadingSpinnerModal);
 
 Vue.http.options.root = 'http://localhost:2018';
 

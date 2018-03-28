@@ -3,7 +3,6 @@
         <nav-bar :links="shelf.links"
                  :meta="shelf.meta">
         </nav-bar>
-        <book-modal :book="book" />
         <b-card-group d-block>
             <book-card @titleClick="titleClick"
                        v-for="b in shelf.books"

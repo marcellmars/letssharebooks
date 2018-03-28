@@ -5,7 +5,7 @@
            @click="$emit('allBooks')">LIBRARY</a>
         <b-button pill
                   variant="link"
-                  @click="$emit('switchView')">show {{ show }}</b-button>
+                  @click="$emit('switchView')">{{ show }}</b-button>
         <a class="motw-bookmark  align-text-middle float-right"
            href="https://wwww.memoryoftheworld.org">MEMORY OF THE WORLD</a>
     </b-button-toolbar>

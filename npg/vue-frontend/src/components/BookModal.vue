@@ -96,6 +96,7 @@
                     'endpoint': `/search/authors/${author}`,
                     'status': `author: ${author}`
                 }
+                this.$store.state.singleBook = false;
                 this.$refs.bookModal.hide()
             },
             searchByLibrarian(librarian) {
@@ -103,6 +104,7 @@
                     'endpoint': `/search/librarian/${librarian}`,
                     'status': `librarian: ${librarian}`
                 }
+                this.$store.state.singleBook = false;
                 this.$refs.bookModal.hide()
             },
             searchByPublisher(publisher) {
@@ -110,6 +112,7 @@
                     'endpoint': `/search/publisher/${publisher}`,
                     'status': `publisher: ${publisher}`
                 }
+                this.$store.state.singleBook = false;
                 this.$refs.bookModal.hide()
             },
 

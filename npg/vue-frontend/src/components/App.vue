@@ -48,7 +48,7 @@
                 let status = this.$store.state.searchQuery['status']
                 this.loading = true;
                 let show_p = this.show
-                this.show = "loading..."
+                this.show = "loading" + Array(Math.floor(Math.random() * 4 + 3)).join(".")
                 this.$http.get(endpoint)
                     .then(response => {
                         return response.json()
@@ -93,6 +93,9 @@
             var _this = this
             document.head.appendChild(loadPortable)
             loadPortable.onload = function() {
+                /* data.js should say if it is portable or not*/
+                /* if yes then this app should take care of all calls*/
+                /* if not than rest api server*/
                 eventBus.$emit('reloadSearch')
             }
         },

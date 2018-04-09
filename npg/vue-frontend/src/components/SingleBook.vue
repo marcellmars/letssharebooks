@@ -36,6 +36,7 @@
                 .then(data => {
                     this.book = data
                     this.$store.state.showModal = true
+                    this.$router.push('/book/' + data['_id'])
                 })
         },
         components: {

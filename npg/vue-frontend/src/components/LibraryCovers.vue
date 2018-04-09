@@ -34,8 +34,8 @@
         methods: {
             titleClick(book) {
                 this.book = book;
-                this.$store.state.showModal = true;
                 this.$store.state.singleBook = false;
+                this.$store.state.showModal = true;
                 this.$router.push('/book/' + book['_id'])
             },
         },

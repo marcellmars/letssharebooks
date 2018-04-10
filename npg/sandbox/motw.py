@@ -4,7 +4,10 @@ import json
 
 library = sortedcontainers.SortedDict()
 library['books'] = []
+books_indexes = {}
 indexed_by = sortedcontainers.SortedDict()
+indexed_by_title = sortedcontainers.SortedDict()
+indexed_by_pubdate = sortedcontainers.SortedDict()
 
 
 def load_collections():

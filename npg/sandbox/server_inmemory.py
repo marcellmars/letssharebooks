@@ -133,7 +133,6 @@ def add_books(bookson, request):
     books = rjson.loads(bookson,
                         datetime_mode=rjson.DM_ISO8601)
 
-    t = time.time()
     new_book_ids = set((book['_id'] for book in books))
     old_books_ids = set((book['_id'] for book in motw.library['books']))
     ids_to_add = set(new_book_ids - old_books_ids)
@@ -144,31 +143,11 @@ def add_books(bookson, request):
     motw.library['books'].sort(key=itemgetter('last_modified'),
                                reverse=True)
 
-    # generate indexes by (default) last_modified, title, pubdate
-    motw.books_indexes = {
-        b['_id']: i for i, b in enumerate(motw.library['books'])
-    }
+    for i, b in enumerate(motw.library['books']):
+        motw.books_indexes['_id'] = i
+        motw.indexed_by_title.update({b['title_sort'] + b['_id']: i})
+        motw.indexed_by_pubdate.update({str(b['pubdate']) + b['_id']: i})
 
-    # _ids = set((book['_id'] for book in motw.library['books']))
-    # motw.indexed_by['last_modified'] = (
-    #     motw.books_indexes[_id] for _id in _ids
-    # )
-
-    motw.library['books'].sort(key=itemgetter('title_sort'))
-    _ids = set((book['_id'] for book in motw.library['books']))
-    motw.indexed_by['title'] = (
-        motw.books_indexes[_id] for _id in _ids
-    )
-
-    print("{} seconds".format(round(time.time() - t, 3)))
-    motw.library['books'].sort(key=itemgetter('pubdate'))
-    _ids = set((book['_id'] for book in motw.library['books']))
-    motw.indexed_by['pubdate'] = (
-        motw.books_indexes[_id] for _id in _ids
-    )
-
-    motw.library['books'].sort(key=itemgetter('last_modified'),
-                               reverse=True)
     return True
 
 

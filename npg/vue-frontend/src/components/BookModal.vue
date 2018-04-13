@@ -181,5 +181,6 @@
 
     .librarian_link {
         color: white;
+        font-weight: bold;
     }
 </style>

@@ -150,4 +150,8 @@
         width: 6%;
         padding-bottom: 0.3em;
     }
+
+    .modal-title {
+        font-weight: bold;
+    }
 </style>

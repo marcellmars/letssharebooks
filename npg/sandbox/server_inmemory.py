@@ -5,6 +5,7 @@ import time
 import re
 import zlib
 from signal import signal, SIGINT
+from asgiref.sync import sync_to_async
 
 from operator import itemgetter
 from setproctitle import setproctitle
@@ -117,7 +118,8 @@ def check_library_secret(library_uuid, library_secret):
         abort(403)
 
 
-def add_books(bookson, request):
+@sync_to_async
+def validate_books(bookson, request):
     encoding_header = (request.headers.get('library-encoding') or
                        request.headers.get('Library-Encoding'))
 
@@ -127,11 +129,17 @@ def add_books(bookson, request):
         except zlib.error as e:
             abort(422, "Unzipping JSON failed...")
 
-    if not validate_rjson(bookson):
+    if validate_rjson(bookson):
+        return bookson
+    else:
         abort(422, "AddBooks of JSON didn't validate.")
 
+
+@sync_to_async
+def add_books(bookson, request):
     books = rjson.loads(bookson,
                         datetime_mode=rjson.DM_ISO8601)
+    del bookson
 
     new_book_ids = set((book['_id'] for book in books))
     old_books_ids = set((book['_id'] for book in motw.library['books']))
@@ -142,13 +150,21 @@ def add_books(bookson, request):
 
     motw.library['books'].sort(key=itemgetter('last_modified'),
                                reverse=True)
-
-    for i, b in enumerate(motw.library['books']):
-        motw.books_indexes['_id'] = i
-        motw.indexed_by_title.update({b['title_sort'] + b['_id']: i})
-        motw.indexed_by_pubdate.update({str(b['pubdate']) + b['_id']: i})
-
     return True
+
+
+@sync_to_async
+def update_indexes():
+    for i, b in enumerate(motw.library['books']):
+        motw.books_indexes[b['_id']] = i
+        motw.indexed_by_title.update(
+            {
+                b['title_sort'] + b['_id']: i
+            })
+        motw.indexed_by_pubdate.update(
+            {
+                str(b['pubdate']) + b['_id']: i
+            })
 
 
 class AddBooks(HTTPMethodView):
@@ -163,9 +179,11 @@ class AddBooks(HTTPMethodView):
         result = b''
         while True:
             body = await request.stream.get()
-            print(".", end="")
             if body is None:
-                if add_books(result, request):
+                bookson = await validate_books(result, request)
+                if bookson:
+                    if await add_books(bookson, request):
+                        await update_indexes()
                     return text("OK")
                 abort(422, "AddBooks failed!")
             result += body
@@ -286,10 +304,8 @@ async def load_collections(request):
     for collection in motw.collections:
         with open("motw_collections/{}.json".format(collection)) as f:
             js = f.read()
-            t = time.time()
             if add_books(js, request):
-                time_spent = round(time.time() - t, 3)
-                print("{} added in {} seconds.".format(collection, time_spent))
+                print("added!")
             else:
                 abort(422, "Adding books from {} failed!".format(collection))
     return text("OK")

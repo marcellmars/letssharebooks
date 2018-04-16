@@ -4,6 +4,7 @@ import json
 
 library = sortedcontainers.SortedDict()
 library['books'] = []
+library['collectionids'] = []
 books_indexes = {}
 indexed_by = sortedcontainers.SortedDict()
 indexed_by_title = sortedcontainers.SortedDict()

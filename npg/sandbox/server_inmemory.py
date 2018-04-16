@@ -111,7 +111,7 @@ def hateoas(l, request, title="books"):
 
 def check_library_secret(library_uuid, library_secret):
     ret = True if (library_secret == motw.master_secret or
-                   library_secret == motw.load_collections()) else False
+                   library_secret in motw.load_collections()[library_uuid]) else False
     if ret:
         return ret
     else:
@@ -139,15 +139,24 @@ def validate_books(bookson, request):
 def add_books(bookson, request):
     books = rjson.loads(bookson,
                         datetime_mode=rjson.DM_ISO8601)
-    del bookson
-
+    library_uuid = books[0]['library_uuid']
     new_book_ids = set((book['_id'] for book in books))
     old_books_ids = set((book['_id'] for book in motw.library['books']))
     ids_to_add = set(new_book_ids - old_books_ids)
 
+    if not old_books_ids:
+        motw.library['books'] += rjson.load("motw_cache/{}".format(library_uuid))
+
     motw.library['books'] += [book for book in books
                               if book['_id'] in ids_to_add]
 
+    t = time.time()
+    with open("motw_cache/{}".format(library_uuid), "w") as f:
+        f.write(rjson.dumps((book for book in books
+                             if book['library_uuid'] == library_uuid)))
+    print("written in {} seconds.".format(round(time.time() - t, 3)))
+    del bookson
+    del books
     motw.library['books'].sort(key=itemgetter('last_modified'),
                                reverse=True)
     return True
@@ -199,13 +208,31 @@ def library(request, verb, library_uuid):
             abort(422)
 
         if verb == 'add':
-            if library_uuid not in motw.library['collections']:
-                motw.library['collections']['library_uuid'] = library_secret
+            if library_uuid not in motw.library['collectionids']:
+                motw.library['collectionids'][library_uuid] = library_secret
+                with open("motw_cache/{}".format(library_uuid), "w") as f:
+                    f.write(rjson.dumps([]))
                 motw.library.dump_collections()
+                return text("{} added. Let's share books.".format(library_uuid))
         elif verb == 'remove':
                 if check_library_secret(library_uuid, library_secret):
-                    del motw.library['collections']['library_uuid']
+                    del motw.library['collectionids'][library_uuid]
                     motw.library.dump_collections()
+        elif verb == 'bookids':
+                if check_library_secret(library_uuid, library_secret):
+                    bookids = [book['_id'] for book in motw.library['books']
+                               if library_uuid == book['library_uuid']]
+                    if bookids == []:
+                        try:
+                            bookids = [book['_id'] for book
+                                       in rjson.load("motw_cache/{}".format(library_uuid))]
+                        except:
+                            bookids = []
+                    return json(bookids)
+
+
+
+
 
     except Exception as e:
         abort(404, e)

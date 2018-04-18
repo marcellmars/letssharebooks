@@ -8,7 +8,7 @@ import hmac
 import uuid
 import zlib
 import dateutil.parser
-import bleach
+# import bleach
 import time
 
 from uploader import Uploader
@@ -225,7 +225,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
     # bleach.sanitizer.ALLOWED_TAGS:
     # ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i',
     #  'li', 'ol', 'strong', 'ul']
-    allowed_tags = bleach.sanitizer.ALLOWED_TAGS + ['p', 'div', 'br', 'pre']
+    # allowed_tags = bleach.sanitizer.ALLOWED_TAGS + ['p', 'div', 'br', 'pre']
     sql_comments = (comment for comment in cur.execute(bid_comments))
     [books[comment[0]].update(
         # {

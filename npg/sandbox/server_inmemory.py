@@ -4,6 +4,7 @@ import os
 import time
 import re
 import zlib
+import pickle
 from signal import signal, SIGINT
 from asgiref.sync import sync_to_async
 
@@ -31,6 +32,7 @@ app = Sanic()
 CORS(app)
 app.config.REQUEST_MAX_SIZE = 1000000000
 
+motw.library['collectionids'] = motw.load_collections()
 
 # - SANIC/rapidjson
 
@@ -139,32 +141,27 @@ def validate_books(bookson, request):
 def add_books(bookson, request):
     books = rjson.loads(bookson,
                         datetime_mode=rjson.DM_ISO8601)
-    library_uuid = books[0]['library_uuid']
+    fb = books[0]
+    library_uuid = fb['library_uuid']
+    library_url = fb['library_url']
     new_book_ids = set((book['_id'] for book in books))
     old_books_ids = set((book['_id'] for book in motw.library['books']))
-    ids_to_add = set(new_book_ids - old_books_ids)
 
     if not old_books_ids:
-        motw.library['books'] += rjson.load("motw_cache/{}".format(library_uuid))
+        motw.library['books'] += pickle.load(open("motw_cache/{}"
+                                                  .format(library_uuid), 'rb'))
+        old_books_ids = set((book['_id'] for book in motw.library['books']))
 
+    ids_to_add = set(new_book_ids - old_books_ids)
     motw.library['books'] += [book for book in books
                               if book['_id'] in ids_to_add]
 
     t = time.time()
-    with open("motw_cache/{}".format(library_uuid), "w") as f:
-        f.write(rjson.dumps((book for book in books
-                             if book['library_uuid'] == library_uuid)))
-    print("written in {} seconds.".format(round(time.time() - t, 3)))
-    del bookson
-    del books
-    motw.library['books'].sort(key=itemgetter('last_modified'),
-                               reverse=True)
-    return True
-
-
-@sync_to_async
-def update_indexes():
+    bs = []
     for i, b in enumerate(motw.library['books']):
+        if b['library_uuid'] == library_uuid:
+            b['library_url'] = library_url
+            bs += b
         motw.books_indexes[b['_id']] = i
         motw.indexed_by_title.update(
             {
@@ -174,6 +171,13 @@ def update_indexes():
             {
                 str(b['pubdate']) + b['_id']: i
             })
+    with open("motw_cache/{}".format(library_uuid), "wb") as f:
+        pickle.dump(bs, f)
+
+    print("index/url written in {} seconds.".format(round(time.time() - t, 3)))
+    motw.library['books'].sort(key=itemgetter('last_modified'),
+                               reverse=True)
+    return True
 
 
 class AddBooks(HTTPMethodView):
@@ -192,50 +196,48 @@ class AddBooks(HTTPMethodView):
                 bookson = await validate_books(result, request)
                 if bookson:
                     if await add_books(bookson, request):
-                        await update_indexes()
-                    return text("OK")
+                        return text("Books added...")
                 abort(422, "AddBooks failed!")
             result += body
 
 
 @app.route('/library/<verb>/<library_uuid>')
 def library(request, verb, library_uuid):
-    try:
-        library_secret = (request.headers.get('Library-Secret') or
-                          request.headers.get('library-secret'))
-        r = re.match("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}", library_secret)
-        if not r or verb not in ['add', 'remove']:
-            abort(422)
+    library_secret = (request.headers.get('Library-Secret') or
+                        request.headers.get('library-secret'))
+    r = re.match("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}", library_secret)
+    if not r or verb not in ['add', 'remove', 'bookids']:
+        abort(422, "Wrong verb, ha!")
 
-        if verb == 'add':
-            if library_uuid not in motw.library['collectionids']:
-                motw.library['collectionids'][library_uuid] = library_secret
-                with open("motw_cache/{}".format(library_uuid), "w") as f:
-                    f.write(rjson.dumps([]))
-                motw.library.dump_collections()
-                return text("{} added. Let's share books.".format(library_uuid))
-        elif verb == 'remove':
-                if check_library_secret(library_uuid, library_secret):
-                    del motw.library['collectionids'][library_uuid]
-                    motw.library.dump_collections()
-        elif verb == 'bookids':
-                if check_library_secret(library_uuid, library_secret):
-                    bookids = [book['_id'] for book in motw.library['books']
-                               if library_uuid == book['library_uuid']]
-                    if bookids == []:
-                        try:
-                            bookids = [book['_id'] for book
-                                       in rjson.load("motw_cache/{}".format(library_uuid))]
-                        except:
-                            bookids = []
-                    return json(bookids)
+    if verb == 'add':
+        if library_uuid not in motw.library['collectionids']:
+            motw.library['collectionids'] = {library_uuid: library_secret}
+            with open("motw_cache/{}".format(library_uuid), 'wb') as f:
+                pickle.dump([], f)
+            motw.dump_collections(motw.library['collectionids'])
+            return text("{} added. Let's share books...".format(library_uuid))
+        else:
+            abort(422, "Library already added.")
+    elif verb == 'remove' and library_uuid in motw.library['collectionids']:
+            if check_library_secret(library_uuid, library_secret):
+                del motw.library['collectionids'][library_uuid]
+                motw.dump_collections(motw.library['collectionids'])
+            return text("{} removed.".format(library_uuid))
+    elif verb == 'bookids' and library_uuid in motw.library['collectionids']:
+        if check_library_secret(library_uuid, library_secret):
+            bookids = [book['_id'] for book in motw.library['books']
+                        if library_uuid == book['library_uuid']]
+            if bookids == []:
+                try:
+                    bookids = [book['_id'] for book
+                                in rjson.load("motw_cache/{}".format(library_uuid))]
+                except Exception as e:
+                    print("No cache + {}".format(e))
+                    bookids = []
+            return json(bookids)
+    elif library_uuid not in motw.library['collectionids']:
+            abort(404, "{} doesn't exist.".format(library_uuid))
 
-
-
-
-
-    except Exception as e:
-        abort(404, e)
 
 
 @app.route('/memory')
@@ -332,7 +334,7 @@ async def load_collections(request):
         with open("motw_collections/{}.json".format(collection)) as f:
             js = f.read()
             if add_books(js, request):
-                print("added!")
+                print("Books added!")
             else:
                 abort(422, "Adding books from {} failed!".format(collection))
     return text("OK")

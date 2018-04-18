@@ -12,7 +12,7 @@ indexed_by_pubdate = sortedcontainers.SortedDict()
 
 
 def load_collections():
-    return json.load('motw_collections.json')
+    return json.load(open('motw_collections.json'))
 
 
 def dump_collections(c):

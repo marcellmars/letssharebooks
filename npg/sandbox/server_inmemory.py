@@ -182,6 +182,8 @@ def add_books(bookson):
     for i, b in enumerate(motw.library['books']):
         if b['library_uuid'] == library_uuid:
             b['library_url'] = library_url
+            if 'series' not in b:
+                b['series'] = ""
             bs += b
         motw.books_indexes[b['_id']] = i
         motw.indexed_by_title.update(
@@ -297,8 +299,9 @@ def search(request, field, q):
                      'title',
                      'titles',
                      'publisher',
+                     'series',
                      'library_uuid',
-                     'comments',
+                     'abstract',
                      'librarian']:
             if field == 'titles':
                 field = 'title'

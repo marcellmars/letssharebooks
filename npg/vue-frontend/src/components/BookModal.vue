@@ -33,6 +33,12 @@
                    @click="searchByPublisher(book.publisher)">{{ book.publisher }}</a>
             </div>
 
+            <div class="key_par" v-if="book.series">Series:
+                <a href="#"
+                   class="motw_table_link"
+                   @click="searchBySeries(book.series)">{{ book.series }}</a>
+            </div>
+
             <div class="key_par" v-if="book.pubdate">Year:
                 <span class="val_par">{{ book.pubdate.slice(0,4) }}</span>
             </div>
@@ -58,69 +64,77 @@
 </template>
 
 <script>
-    import 'font-awesome/css/font-awesome.css';
-    import sanitizeHtml from "sanitize-html";
-    import {
-        eventBus
-    } from '../main';
+import 'font-awesome/css/font-awesome.css';
+import sanitizeHtml from "sanitize-html";
+import {
+    eventBus
+} from '../main';
 
-    export default {
-        props: ['book'],
-        methods: {
-            cleanHtml(html_text) {
-                return sanitizeHtml(html_text, {
-                    allowedTags: ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'ul', 'strong', 'br', 'div', 'p']
-                }).replace('**', '');
-            },
-            getEndComma(author) {
-                if (author === this.book.authors[this.book.authors.length - 1]) {
-                    return
-                } else {
-                    return ", "
-                }
-            },
-            getModalHeader(book) {
-                if (book.hasOwnProperty('authors') === false) {
-                    return
-                }
-                let authors = book.authors
-                if (authors.length > 3) {
-                    authors = book.authors.slice(0, 3)
-                    authors.push("et al.")
-                }
-
-                return `"${book.title}" by ${authors.join(', ')}`
-            },
-            searchByAuthor(author) {
-                this.$store.state.searchQuery = {
-                    'endpoint': `/search/authors/${author}`,
-                    'status': `author: ${author}`
-                }
-                this.$store.state.singleBook = false;
-                this.$refs.bookModal.hide()
-            },
-            searchByLibrarian(librarian) {
-                this.$store.state.searchQuery = {
-                    'endpoint': `/search/librarian/${librarian}`,
-                    'status': `librarian: ${librarian}`
-                }
-                this.$store.state.singleBook = false;
-                this.$refs.bookModal.hide()
-            },
-            searchByPublisher(publisher) {
-                this.$store.state.searchQuery = {
-                    'endpoint': `/search/publisher/${publisher}`,
-                    'status': `publisher: ${publisher}`
-                }
-                this.$store.state.singleBook = false;
-                this.$refs.bookModal.hide()
-            },
-
-            getFormats(book) {
-                let f = '';
-                for (let frm of book['formats']) {
-                    let book_url = book.library_url + frm.dir_path + frm.file_name
-                    let download_stripe = `<a class="motw_table_link" href="${book_url}">.${frm.format}</a>, `;
+export default {
+    props: ['book'],
+    methods: {
+        cleanHtml(html_text) {
+            return sanitizeHtml(html_text, {
+                allowedTags: ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'ul', 'strong', 'br', 'div', 'p']
+            }).replace('**', '');
+        },
+        getEndComma(author) {
+            if (author === this.book.authors[this.book.authors.length - 1]) {
+                return
+            } else {
+                return ", "
+            }
+        },
+        getModalHeader(book) {
+            if (book.hasOwnProperty('authors') === false) {
+                return
+            }
+            let authors = book.authors
+            if (authors.length > 3) {
+                authors = book.authors.slice(0, 3)
+                authors.push("et al.")
+            }
+            
+            return `"${book.title}" by ${authors.join(', ')}`
+        },
+        searchByAuthor(author) {
+            this.$store.state.searchQuery = {
+                'endpoint': `/search/authors/${author}`,
+                'status': `author: ${author}`
+            }
+            this.$store.state.singleBook = false;
+            this.$refs.bookModal.hide()
+        },
+        searchByLibrarian(librarian) {
+            this.$store.state.searchQuery = {
+                'endpoint': `/search/librarian/${librarian}`,
+                'status': `librarian: ${librarian}`
+            }
+            this.$store.state.singleBook = false;
+            this.$refs.bookModal.hide()
+        },
+        searchByPublisher(publisher) {
+            this.$store.state.searchQuery = {
+                'endpoint': `/search/publisher/${publisher}`,
+                'status': `publisher: ${publisher}`
+            }
+            this.$store.state.singleBook = false;
+            this.$refs.bookModal.hide()
+        },
+        searchBySeries(series) {
+            this.$store.state.searchQuery = {
+                'endpoint': `/search/series/${series}`,
+                'status': `series: ${series}`
+            }
+            this.$store.state.singleBook = false;
+            this.$refs.bookModal.hide()
+        },
+        
+        getFormats(book) {
+            let f = '';
+            for (let frm of book['formats']) {
+                let book_url = book.library_url + frm.dir_path + frm.file_name
+                let download_stripe = `<a class="motw_table_link" href="${book_url}">.${frm.format}</a>, `;
                     f += download_stripe;
                 }
                 return f.slice(0, -3)

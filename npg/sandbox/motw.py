@@ -47,11 +47,21 @@ collections = [
     "tamoneki",
 ]
 
+remove_schema = {
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "MotW Books to remove",
+    "description": "A List of books to be removed from MotW",
+    "type": "array",
+    "items": {
+        "type": "string",
+        "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+}
 
 collection_schema = {
-    "$schema": "http://json-schema.org/draft-06/schema#",
-    "title": "MotW Collection",
-    "description": "A Collection for Memory of the World catalog",
+    # "$schema": "http://json-schema.org/draft-06/schema#",
+    # "title": "MotW Collection",
+    # "description": "A Collection for Memory of the World catalog",
     "type": "array",
     "items": {
         "type": "object",
@@ -62,7 +72,6 @@ collection_schema = {
                          "timestamp",
                          "tags",
                          "authors",
-                         "series_index",
                          "publisher",
                          "pubdate",
                          "library_uuid",
@@ -71,10 +80,12 @@ collection_schema = {
                          "identifiers",
                          "formats",
                          "cover_url",
-                         "comments",
+                         "abstract",
                          "authors"],
-            "_id": {"type": "string",
-                     "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"},
+            "_id": {
+                "type": "string",
+                "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+            },
             "authors": {
                 "type": "array",
                 "items": {
@@ -82,9 +93,10 @@ collection_schema = {
                     "maximum": 200
                 }
             },
-            "comments": {
+            "abstract": {
                 "type": "string",
-                "maximum": 10000},
+                "maximum": 10000
+            },
             "cover_url": {
                 "type": "string",
                 "maximum": 1000
@@ -134,7 +146,6 @@ collection_schema = {
                     "maximum": 100
                 }
             },
-            # "last_modified": {"type": "date-time"},
             "last_modified": {
                 "type": "string",
                 "maximum": 100
@@ -146,13 +157,9 @@ collection_schema = {
                 "type": "string",
                 "maximum": 100
             },
-            # "pubdate": {"type": "date"},
             "publisher": {
                 "type": "string",
                 "maximum": 100
-            },
-            "series_index": {
-                "type": "number"
             },
             "tags": {
                 "type": "array",
@@ -160,11 +167,6 @@ collection_schema = {
                     "type": "string",
                     "maximum": 100
                 }
-            },
-            # "timestamp": {"type": "date-time"},
-            "timestamp": {
-                "type": "string",
-                "maximum": 100
             },
             "title": {
                 "type": "string",

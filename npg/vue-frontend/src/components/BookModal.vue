@@ -41,8 +41,8 @@
                 <span class="val_par" v-html="getFormats(book)"></span>
             </div>
           
-            <div class="key_par" v-if="book.comments">Description:
-                <span class="val_par text-justify" v-html="cleanHtml(book.comments)"></span>
+            <div class="key_par" v-if="book.abstract">Abstract:
+                <span class="val_par text-justify" v-html="cleanHtml(book.abstract)"></span>
             </div>
 
             <div slot="modal-footer"

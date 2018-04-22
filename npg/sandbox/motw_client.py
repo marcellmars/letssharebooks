@@ -25,6 +25,6 @@ def bookids(library_uuid, library_secret):
 
 def add_books(library_uuid, library_secret, payload):
     headers = {'Library-Secret': library_secret}
-    return requests.post("{}/add-books".format(HOST_API),
+    return requests.post("{}/books/add/{}".format(HOST_API, library_uuid),
                          headers=headers,
                          data=payload)

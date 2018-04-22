@@ -176,7 +176,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
         'librarian',
         '_id',
         'tags',
-        'comments',
+        'abstract',
         'publisher',
         'authors',
         # 'card',
@@ -233,11 +233,15 @@ def calibre_to_json(dc, db_file='metadata.db'):
         #                              strip=True,
         #                              tags=allowed_tags)
         # })
-        {'comments': comment[1][:10000]})
+        {'abstract': comment[1][:10000]})
      for comment in sql_comments]
     sql_publishers = (publisher for publisher in cur.execute(bid_publishers))
     [books[publisher[0]].update({'publisher': publisher[1][:100]})
      for publisher in sql_publishers]
+
+    sql_series = (series for series in cur.execute(bid_series))
+    [books[series[0]].update({'series': series[1][:100]})
+     for series in sql_series]
 
     sql_authors = (author for author in cur.execute(bid_authors))
     [books[author[0]]['authors'].append(author[1][:200]) for author in sql_authors]
@@ -262,9 +266,9 @@ def calibre_to_json(dc, db_file='metadata.db'):
 
     books_list = []
     remove_keys = ['application_id', 'isbn', 'iccn', 'path',
-                   'flags', 'has_cover', 'uuid', 'author_sort']
+                   'flags', 'has_cover', 'uuid', 'author_sort',
+                   'timestamp', 'series_index']
     # modify_keys = ['timestamp', 'pubdate', 'last_modified']
-    # modify_keys = ['last_modified', 'pubdate']
     for book in list(books.values()):
         for k in remove_keys:
             book.pop(k, None)

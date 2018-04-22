@@ -37,16 +37,6 @@ motw.library['collectionids'] = motw.load_collections()
 # - SANIC/rapidjson
 
 
-def validate_rjson(js):
-    v = rjson.Validator(rjson.dumps(motw.collection_schema))
-    try:
-        v(js)
-        return True
-    except ValueError as e:
-        print(e)
-        return False
-
-
 def hateoas(l, request, title="books"):
     r = {}
     try:
@@ -121,29 +111,58 @@ def check_library_secret(library_uuid, library_secret):
 
 
 @sync_to_async
-def validate_books(bookson, request):
-    encoding_header = (request.headers.get('library-encoding') or
-                       request.headers.get('Library-Encoding'))
-
-    if encoding_header == 'zlib':
+def validate_books(bookson, schema, enc_zlib):
+    if enc_zlib:
         try:
             bookson = zlib.decompress(bookson).decode('utf-8')
         except zlib.error as e:
             abort(422, "Unzipping JSON failed...")
 
-    if validate_rjson(bookson):
+    validate = rjson.Validator(rjson.dumps(schema))
+    try:
+        validate(bookson)
         return bookson
-    else:
-        abort(422, "AddBooks of JSON didn't validate.")
+    except ValueError as e:
+        print(e)
+        abort(422, "JSON didn't validate.")
 
 
 @sync_to_async
-def add_books(bookson, request):
+def remove_books(bookson, request):
+    books = rjson.loads(bookson)
+    if books == []:
+        return True
+
+    fb = books[0]
+    library_uuid = fb['library_uuid']
+
+    old_books_ids = set((book['_id'] for book in motw.library['books']))
+    if not old_books_ids:
+        motw.library['books'] += pickle.load(open("motw_cache/{}"
+                                                  .format(library_uuid), 'rb'))
+        old_books_ids = set((book['_id'] for book in motw.library['books']))
+
+    for book in books:
+        if book['_id'] in old_books_ids:
+            del motw.library['books'][motw.books_indexes[book['_id']]]
+
+
+@sync_to_async
+def add_books(bookson):
+
     books = rjson.loads(bookson,
                         datetime_mode=rjson.DM_ISO8601)
+    if books == []:
+        return True
+
     fb = books[0]
     library_uuid = fb['library_uuid']
     library_url = fb['library_url']
+
+    library_uuid_check = list(set([book['library_uuid'] for book in books]))
+    if len(library_uuid_check) != 1 or library_uuid_check[0] != library_uuid:
+        return False
+
     new_book_ids = set((book['_id'] for book in books))
     old_books_ids = set((book['_id'] for book in motw.library['books']))
 
@@ -155,6 +174,8 @@ def add_books(bookson, request):
     ids_to_add = set(new_book_ids - old_books_ids)
     motw.library['books'] += [book for book in books
                               if book['_id'] in ids_to_add]
+    motw.library['books'].sort(key=itemgetter('last_modified'),
+                               reverse=True)
 
     t = time.time()
     bs = []
@@ -175,36 +196,56 @@ def add_books(bookson, request):
         pickle.dump(bs, f)
 
     print("index/url written in {} seconds.".format(round(time.time() - t, 3)))
-    motw.library['books'].sort(key=itemgetter('last_modified'),
-                               reverse=True)
     return True
 
 
 class AddBooks(HTTPMethodView):
 
-    def get(self, request):
+    def get(self, request, verb, library_uuid):
         assert request.stream is None
         return text('Here you should upload, no?')
 
     @stream_decorator
-    async def post(self, request):
+    async def post(self, request, verb, library_uuid):
+        library_secret = (request.headers.get('Library-Secret') or
+                          request.headers.get('library-secret'))
+        encoding_header = (request.headers.get('library-encoding') or
+                           request.headers.get('Library-Encoding'))
+        enc_zlib = False
+        if encoding_header == 'zlib':
+            enc_zlib = True
+
+        check_library_secret(library_uuid, library_secret)
+
         assert isinstance(request.stream, asyncio.Queue)
         result = b''
         while True:
             body = await request.stream.get()
             if body is None:
-                bookson = await validate_books(result, request)
-                if bookson:
-                    if await add_books(bookson, request):
-                        return text("Books added...")
-                abort(422, "AddBooks failed!")
+                if verb == 'add':
+                    bookson = await validate_books(result,
+                                                   motw.collection_schema,
+                                                   enc_zlib)
+                    if bookson:
+                        if await add_books(bookson):
+                            return text("Books added...")
+                elif verb == 'remove:':
+                    bookson = await validate_books(result,
+                                                   motw.remove_schema,
+                                                   enc_zlib)
+
+                    if bookson:
+                        if await remove_books(bookson, request):
+                            return text("Books removed...")
+
+                abort(422, "{}-ing books failed!".format(verb))
             result += body
 
 
 @app.route('/library/<verb>/<library_uuid>')
 def library(request, verb, library_uuid):
     library_secret = (request.headers.get('Library-Secret') or
-                        request.headers.get('library-secret'))
+                      request.headers.get('library-secret'))
     r = re.match("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}", library_secret)
     if not r or verb not in ['add', 'remove', 'bookids']:
         abort(422, "Wrong verb, ha!")
@@ -237,7 +278,6 @@ def library(request, verb, library_uuid):
             return json(bookids)
     elif library_uuid not in motw.library['collectionids']:
             abort(404, "{} doesn't exist.".format(library_uuid))
-
 
 
 @app.route('/memory')
@@ -340,7 +380,7 @@ async def load_collections(request):
     return text("OK")
 
 
-app.add_route(AddBooks.as_view(), '/add-books')
+app.add_route(AddBooks.as_view(), '/books/<verb>/<library_uuid>')
 
 asyncio.set_event_loop(uvloop.new_event_loop())
 server = app.create_server(host="0.0.0.0", port=2018)

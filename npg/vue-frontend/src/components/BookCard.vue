@@ -17,7 +17,7 @@
                 <a href="#"
                    class="motw_link"
                    v-for="author in book.authors"
-                   @click="searchByAuthor(author)"
+                   @click="search('authors', author)"
                    v-text="getEndComma(author)">
                 </a>
             </b-card-body>
@@ -54,20 +54,12 @@
              }
              return `"${book.title}" by ${authors}`
          },
-         searchByAuthor(author) {
+         search(field, query) {
              this.$store.state.searchQuery = {
-                 'endpoint': `/search/authors/${author}`,
-                 'status': `author: ${author}`
+                 'endpoint': `/search/${field}/${query}`,
+                 'status': `${field}: ${query}`
              }
              eventBus.$emit('reloadSearch')
-         },
-         searchByLibrarian(librarian) {
-             this.$store.state.searchQuery = {
-                 'endpoint': `/search/librarian/${librarian}`,
-                 'status': `librarian: ${librarian}`
-             }
-             eventBus.$emit('reloadSearch')
-             this.show_modal = false
          },
          getFormats(book) {
              let f = '';

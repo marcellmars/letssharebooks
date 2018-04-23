@@ -23,20 +23,20 @@
                 <span v-for="author in book.authors">
                 <a href="#"
                    class="motw_table_link"
-                   @click="searchByAuthor(author)">{{ author }}</a><span v-text="getEndComma(author)"></span>
+                   @click="search('authors', author)">{{ author }}</a><span v-text="getEndComma(author)"></span>
                 </span>
             </div>
 
             <div class="key_par" v-if="book.publisher">Publisher:
                 <a href="#"
                    class="motw_table_link"
-                   @click="searchByPublisher(book.publisher)">{{ book.publisher }}</a>
+                   @click="search('publisher', book.publisher)">{{ book.publisher }}</a>
             </div>
 
             <div class="key_par" v-if="book.series">Series:
                 <a href="#"
                    class="motw_table_link"
-                   @click="searchBySeries(book.series)">{{ book.series }}</a>
+                   @click="search('series', book.series)">{{ book.series }}</a>
             </div>
 
             <div class="key_par" v-if="book.pubdate">Year:
@@ -55,7 +55,7 @@
                  class="w-100">
                 <a href="#"
                    class="float-left motw_table_link librarian_link"
-                   @click="searchByLibrarian(book.librarian)" >
+                   @click="search('librarian', book.librarian)" >
                     catalogued by {{ book.librarian }}
                 </a>
             </div>
@@ -97,39 +97,14 @@ export default {
             
             return `"${book.title}" by ${authors.join(', ')}`
         },
-        searchByAuthor(author) {
+        search(field, query) {
             this.$store.state.searchQuery = {
-                'endpoint': `/search/authors/${author}`,
-                'status': `author: ${author}`
+                'endpoint': `/search/${field}/${query}`,
+                'status': `${field}: ${query}`
             }
             this.$store.state.singleBook = false;
             this.$refs.bookModal.hide()
         },
-        searchByLibrarian(librarian) {
-            this.$store.state.searchQuery = {
-                'endpoint': `/search/librarian/${librarian}`,
-                'status': `librarian: ${librarian}`
-            }
-            this.$store.state.singleBook = false;
-            this.$refs.bookModal.hide()
-        },
-        searchByPublisher(publisher) {
-            this.$store.state.searchQuery = {
-                'endpoint': `/search/publisher/${publisher}`,
-                'status': `publisher: ${publisher}`
-            }
-            this.$store.state.singleBook = false;
-            this.$refs.bookModal.hide()
-        },
-        searchBySeries(series) {
-            this.$store.state.searchQuery = {
-                'endpoint': `/search/series/${series}`,
-                'status': `series: ${series}`
-            }
-            this.$store.state.singleBook = false;
-            this.$refs.bookModal.hide()
-        },
-        
         getFormats(book) {
             let f = '';
             for (let frm of book['formats']) {

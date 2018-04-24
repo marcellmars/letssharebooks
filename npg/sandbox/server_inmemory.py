@@ -150,15 +150,11 @@ def remove_books(rookson, library_uuid):
 
 
 @sync_to_async
-def add_books(bookson):
+def add_books(bookson, library_uuid):
     books = rjson.loads(bookson,
                         datetime_mode=rjson.DM_ISO8601)
     if books == []:
         return True
-
-    fb = books[0]
-    library_uuid = fb['library_uuid']
-    library_url = fb['library_url']
 
     library_uuid_check = list(set([book['library_uuid'] for book in books]))
     if len(library_uuid_check) != 1 or library_uuid_check[0] != library_uuid:
@@ -179,6 +175,7 @@ def add_books(bookson):
                                reverse=True)
     t = time.time()
     bs = []
+    library_url = books[0]['library_url']
     for i, b in enumerate(motw.library['books']):
         if b['library_uuid'] == library_uuid:
             b['library_url'] = library_url
@@ -230,7 +227,7 @@ class AddBooks(HTTPMethodView):
                                                    motw.collection_schema,
                                                    enc_zlib)
                     if bookson:
-                        if await add_books(bookson):
+                        if await add_books(bookson, library_uuid):
                             return text("Books added...")
                 elif verb == 'remove:':
                     bookson = await validate_books(result,

@@ -49,7 +49,7 @@ collections = [
 
 remove_schema = {
     "$schema": "http://json-schema.org/draft-06/schema#",
-    "title": "MotW Books to remove",
+    "title": "MotW Books to be removed",
     "description": "A List of books to be removed from MotW",
     "type": "array",
     "items": {
@@ -58,30 +58,33 @@ remove_schema = {
     }
 }
 
+
 collection_schema = {
-    # "$schema": "http://json-schema.org/draft-06/schema#",
-    # "title": "MotW Collection",
-    # "description": "A Collection for Memory of the World catalog",
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "MotW Collection",
+    "description": "A Book Collection for Memory of the World catalog",
     "type": "array",
     "items": {
         "type": "object",
         "properties": {
-            "required": ["_id",
-                         "title",
-                         "title_sort",
-                         "timestamp",
-                         "tags",
-                         "authors",
-                         "publisher",
-                         "pubdate",
-                         "library_uuid",
-                         "last_modified",
-                         "languages",
-                         "identifiers",
-                         "formats",
-                         "cover_url",
-                         "abstract",
-                         "authors"],
+            "required": [
+                "_id",
+                "title",
+                "title_sort",
+                "timestamp",
+                "tags",
+                "authors",
+                "publisher",
+                "pubdate",
+                "library_uuid",
+                "last_modified",
+                "languages",
+                "identifiers",
+                "formats",
+                "cover_url",
+                "abstract",
+                "authors"
+            ],
             "_id": {
                 "type": "string",
                 "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"

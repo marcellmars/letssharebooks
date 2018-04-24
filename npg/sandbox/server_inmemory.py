@@ -51,7 +51,6 @@ def hateoas(l, request, title="books"):
     elif p < 0:
         p = 0
 
-    books = l[p*motw.hateoas.max_results:(p+1)*motw.hateoas.max_results]
     books = [{k: v for (k, v) in b.items() if k in ['_id',
                                                     'authors',
                                                     'pubdate',
@@ -59,7 +58,8 @@ def hateoas(l, request, title="books"):
                                                     'formats',
                                                     'library_url',
                                                     'cover_url']}
-             for b in books]
+             for b in l[p*motw.hateoas.max_results:(p+1)*motw.hateoas.max_results]]
+
     r = {
         "_items": books,
         "_links": {
@@ -128,28 +128,29 @@ def validate_books(bookson, schema, enc_zlib):
 
 
 @sync_to_async
-def remove_books(bookson, request):
-    books = rjson.loads(bookson)
-    if books == []:
+def remove_books(rookson, library_uuid):
+    bookids = rjson.loads(rookson)
+    if bookids == []:
         return True
 
-    fb = books[0]
-    library_uuid = fb['library_uuid']
+    for bookid in bookids:
+        if bookid in motw.books_indexes:
+            book = motw.library['books'].pop([motw.books_indexes[bookid]])
+            motw.indexed_by_title.pop(["{}{}".format(book['title_sort'],
+                                                     bookid)],
+                                      None)
+            motw.indexed_by_pubdate.pop(["{}{}".format(str(book['pubdate']),
+                                                       bookid)],
+                                        None)
 
-    old_books_ids = set((book['_id'] for book in motw.library['books']))
-    if not old_books_ids:
-        motw.library['books'] += pickle.load(open("motw_cache/{}"
-                                                  .format(library_uuid), 'rb'))
-        old_books_ids = set((book['_id'] for book in motw.library['books']))
-
-    for book in books:
-        if book['_id'] in old_books_ids:
-            del motw.library['books'][motw.books_indexes[book['_id']]]
+    with open("motw_cache/{}".format(library_uuid), "wb") as f:
+        pickle.dump([book for book in motw.library['books']
+                     if book['library_uuid'] == library_uuid],
+                    f)
 
 
 @sync_to_async
 def add_books(bookson):
-
     books = rjson.loads(bookson,
                         datetime_mode=rjson.DM_ISO8601)
     if books == []:
@@ -167,8 +168,8 @@ def add_books(bookson):
     old_books_ids = set((book['_id'] for book in motw.library['books']))
 
     if not old_books_ids:
-        motw.library['books'] += pickle.load(open("motw_cache/{}"
-                                                  .format(library_uuid), 'rb'))
+        with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
+            motw.library['books'] += pickle.load(f)
         old_books_ids = set((book['_id'] for book in motw.library['books']))
 
     ids_to_add = set(new_book_ids - old_books_ids)
@@ -176,7 +177,6 @@ def add_books(bookson):
                               if book['_id'] in ids_to_add]
     motw.library['books'].sort(key=itemgetter('last_modified'),
                                reverse=True)
-
     t = time.time()
     bs = []
     for i, b in enumerate(motw.library['books']):
@@ -198,6 +198,7 @@ def add_books(bookson):
         pickle.dump(bs, f)
 
     print("index/url written in {} seconds.".format(round(time.time() - t, 3)))
+
     return True
 
 
@@ -237,7 +238,7 @@ class AddBooks(HTTPMethodView):
                                                    enc_zlib)
 
                     if bookson:
-                        if await remove_books(bookson, request):
+                        if await remove_books(bookson, library_uuid):
                             return text("Books removed...")
 
                 abort(422, "{}-ing books failed!".format(verb))
@@ -248,7 +249,8 @@ class AddBooks(HTTPMethodView):
 def library(request, verb, library_uuid):
     library_secret = (request.headers.get('Library-Secret') or
                       request.headers.get('library-secret'))
-    r = re.match("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}", library_secret)
+    r = re.match("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}",
+                 library_secret)
     if not r or verb not in ['add', 'remove', 'bookids']:
         abort(422, "Wrong verb, ha!")
 
@@ -268,12 +270,14 @@ def library(request, verb, library_uuid):
             return text("{} removed.".format(library_uuid))
     elif verb == 'bookids' and library_uuid in motw.library['collectionids']:
         if check_library_secret(library_uuid, library_secret):
-            bookids = [book['_id'] for book in motw.library['books']
-                        if library_uuid == book['library_uuid']]
+            bookids = ["{}{}".format(book['_id'], book['last_modified'])
+                       for book in motw.library['books']
+                       if library_uuid == book['library_uuid']]
             if bookids == []:
                 try:
-                    bookids = [book['_id'] for book
-                                in rjson.load("motw_cache/{}".format(library_uuid))]
+                    with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
+                        bookids = ["{}{}".format(book['_id'], book['last_modified'])
+                                   for book in pickle.load(f)]
                 except Exception as e:
                     print("No cache + {}".format(e))
                     bookids = []
@@ -285,10 +289,7 @@ def library(request, verb, library_uuid):
 @app.route('/memory')
 async def get_memory(request):
     proc = psutil.Process(os.getpid())
-    return json({"memory": "{}".format(
-        round(proc.memory_full_info().rss/1000000.,
-              2)),
-    })
+    return json({"memory": "{}".format(round(proc.memory_full_info().rss/1000000., 2))})
 
 
 @app.route('/search/<field>/<q>')
@@ -309,20 +310,14 @@ def search(request, field, q):
                          if unq(q).lower() in b[field].lower()],
                         request,
                         title)
-            # h = hateoas([
-            #     motw.library['books'][i] for i in motw.indexed_by['title']
-            #     if unq(q).lower() in motw.library['books'][i][field].lower()],
-            #             request,
-            #             title
-            # )
-            return rs.raw(h)
+            return rs.raw(h, content_type='application/json')
 
         elif field in ['authors', 'languages', 'tags', '']:
             h = hateoas([b for b in motw.library['books']
                          if unq(q).lower() in " ".join(b[field]).lower()],
                         request,
                         title)
-            return rs.raw(h)
+            return rs.raw(h, content_type='application/json')
 
     except Exception as e:
         abort(404, e)
@@ -352,13 +347,8 @@ def autocomplete(request, field, sq):
 @app.route('/books')
 def books(request):
     h = hateoas([b for b in motw.library['books']],
-                request,
-                title="books")
-    # h = hateoas([motw.library['books'][i] for i in motw.indexed_by['title'],
-    #             request,
-    #             title="books")
-
-    return rs.raw(h, headers={'Content-type': 'application/json'})
+                request)
+    return rs.raw(h, content_type='application/json')
 
 
 @app.route('/book/<book_id>')
@@ -366,21 +356,10 @@ def book(request, book_id):
     try:
         return rs.raw(rjson.dumps(
             motw.library['books'][motw.books_indexes[book_id]],
-            datetime_mode=rjson.DM_ISO8601).encode())
+            datetime_mode=rjson.DM_ISO8601).encode(),
+                      content_type='application/json')
     except Exception as e:
         abort(404, e)
-
-
-@app.route('/initial-load')
-async def load_collections(request):
-    for collection in motw.collections:
-        with open("motw_collections/{}.json".format(collection)) as f:
-            js = f.read()
-            if add_books(js, request):
-                print("Books added!")
-            else:
-                abort(422, "Adding books from {} failed!".format(collection))
-    return text("OK")
 
 
 app.add_route(AddBooks.as_view(), '/books/<verb>/<library_uuid>')

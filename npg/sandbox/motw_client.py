@@ -28,3 +28,8 @@ def add_books(library_uuid, library_secret, payload):
     return requests.post("{}/books/add/{}".format(HOST_API, library_uuid),
                          headers=headers,
                          data=payload)
+def remove_books(library_uuid, library_secret, payload):
+    headers = {'Library-Secret': library_secret}
+    return requests.post("{}/books/remove/{}".format(HOST_API, library_uuid),
+                         headers=headers,
+                         data=payload)

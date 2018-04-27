@@ -127,26 +127,48 @@ def validate_books(bookson, schema, enc_zlib):
         abort(422, "JSON didn't validate.")
 
 
+def update_indices(i, b):
+        motw.books_indices[b['_id']] = i
+        motw.indexed_by_title.update(
+            {
+                b['title_sort'] + b['_id']: i
+            })
+        motw.indexed_by_pubdate.update(
+            {
+                str(b['pubdate']) + b['_id']: i
+            })
+
+
 @sync_to_async
 def remove_books(rookson, library_uuid):
     bookids = rjson.loads(rookson)
     if bookids == []:
         return True
-
+    indices = []
     for bookid in bookids:
-        if bookid in motw.books_indexes:
-            book = motw.library['books'].pop([motw.books_indexes[bookid]])
-            motw.indexed_by_title.pop(["{}{}".format(book['title_sort'],
-                                                     bookid)],
+        if bookid in motw.books_indices:
+            i = motw.books_indices[bookid]
+            book = motw.library['books'][i]
+            indices.append(i)
+            del motw.books_indices[bookid]
+            motw.indexed_by_title.pop("{}{}".format(book['title_sort'],
+                                                    bookid),
                                       None)
-            motw.indexed_by_pubdate.pop(["{}{}".format(str(book['pubdate']),
-                                                       bookid)],
+            motw.indexed_by_pubdate.pop("{}{}".format(str(book['pubdate']),
+                                                      bookid),
                                         None)
+    indices.sort(reverse=True)
+    for i in indices:
+        del motw.library['books'][i]
+
+    for i, b in enumerate(motw.library['books']):
+        update_indices(i, b)
 
     with open("motw_cache/{}".format(library_uuid), "wb") as f:
         pickle.dump([book for book in motw.library['books']
                      if book['library_uuid'] == library_uuid],
                     f)
+    return True
 
 
 @sync_to_async
@@ -182,15 +204,8 @@ def add_books(bookson, library_uuid):
             if 'series' not in b:
                 b['series'] = ""
             bs += b
-        motw.books_indexes[b['_id']] = i
-        motw.indexed_by_title.update(
-            {
-                b['title_sort'] + b['_id']: i
-            })
-        motw.indexed_by_pubdate.update(
-            {
-                str(b['pubdate']) + b['_id']: i
-            })
+        update_indices(i, b)
+
     with open("motw_cache/{}".format(library_uuid), "wb") as f:
         pickle.dump(bs, f)
 
@@ -229,7 +244,7 @@ class AddBooks(HTTPMethodView):
                     if bookson:
                         if await add_books(bookson, library_uuid):
                             return text("Books added...")
-                elif verb == 'remove:':
+                elif verb == 'remove':
                     bookson = await validate_books(result,
                                                    motw.remove_schema,
                                                    enc_zlib)
@@ -267,13 +282,13 @@ def library(request, verb, library_uuid):
             return text("{} removed.".format(library_uuid))
     elif verb == 'bookids' and library_uuid in motw.library['collectionids']:
         if check_library_secret(library_uuid, library_secret):
-            bookids = ["{}{}".format(book['_id'], book['last_modified'])
+            bookids = ["{}___{}".format(book['_id'], book['last_modified'])
                        for book in motw.library['books']
                        if library_uuid == book['library_uuid']]
             if bookids == []:
                 try:
                     with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
-                        bookids = ["{}{}".format(book['_id'], book['last_modified'])
+                        bookids = ["{}___{}".format(book['_id'], book['last_modified'])
                                    for book in pickle.load(f)]
                 except Exception as e:
                     print("No cache + {}".format(e))
@@ -352,7 +367,7 @@ def books(request):
 def book(request, book_id):
     try:
         return rs.raw(rjson.dumps(
-            motw.library['books'][motw.books_indexes[book_id]],
+            motw.library['books'][motw.books_indices[book_id]],
             datetime_mode=rjson.DM_ISO8601).encode(),
                       content_type='application/json')
     except Exception as e:

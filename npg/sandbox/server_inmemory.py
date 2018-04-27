@@ -8,7 +8,6 @@ import pickle
 from signal import signal, SIGINT
 from asgiref.sync import sync_to_async
 
-from operator import itemgetter
 from setproctitle import setproctitle
 from urllib.parse import unquote_plus as unq
 
@@ -132,7 +131,7 @@ def remove_books(rookson, library_uuid):
     bookids = rjson.loads(rookson)
     if bookids == []:
         return True
-
+    # t = time.time()
     for bookid in bookids:
         book = motw.books.pop(bookid, None)
         motw.indexed_by_time.pop(
@@ -149,6 +148,8 @@ def remove_books(rookson, library_uuid):
         pickle.dump([book for book in motw.books.values()
                      if book['library_uuid'] == library_uuid],
                     f)
+
+    # print("books removed in {} seconds.".format(round(time.time() - t, 3)))
     return True
 
 
@@ -174,6 +175,10 @@ def add_books(bookson, library_uuid):
     for b in books:
         if b['_id'] not in ids_to_add:
             continue
+
+        if 'series' not in b:
+            b['series'] = ""
+
         motw.books.update(
             {
                 b['_id']: b

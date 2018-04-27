@@ -127,45 +127,26 @@ def validate_books(bookson, schema, enc_zlib):
         abort(422, "JSON didn't validate.")
 
 
-def update_indices(i, b):
-        motw.books_indices[b['_id']] = i
-        motw.indexed_by_title.update(
-            {
-                b['title_sort'] + b['_id']: i
-            })
-        motw.indexed_by_pubdate.update(
-            {
-                str(b['pubdate']) + b['_id']: i
-            })
-
-
 @sync_to_async
 def remove_books(rookson, library_uuid):
     bookids = rjson.loads(rookson)
     if bookids == []:
         return True
-    indices = []
-    for bookid in bookids:
-        if bookid in motw.books_indices:
-            i = motw.books_indices[bookid]
-            book = motw.library['books'][i]
-            indices.append(i)
-            del motw.books_indices[bookid]
-            motw.indexed_by_title.pop("{}{}".format(book['title_sort'],
-                                                    bookid),
-                                      None)
-            motw.indexed_by_pubdate.pop("{}{}".format(str(book['pubdate']),
-                                                      bookid),
-                                        None)
-    indices.sort(reverse=True)
-    for i in indices:
-        del motw.library['books'][i]
 
-    for i, b in enumerate(motw.library['books']):
-        update_indices(i, b)
+    for bookid in bookids:
+        book = motw.books.pop(bookid, None)
+        motw.indexed_by_time.pop(
+            "{}{}".format(book['last_modified'], bookid),
+            None)
+        motw.indexed_by_title.pop(
+            "{}{}".format(book['title_sort'], bookid),
+            None)
+        motw.indexed_by_pubdate.pop(
+            "{}{}".format(book['pubdate'], bookid),
+            None)
 
     with open("motw_cache/{}".format(library_uuid), "wb") as f:
-        pickle.dump([book for book in motw.library['books']
+        pickle.dump([book for book in motw.books.values()
                      if book['library_uuid'] == library_uuid],
                     f)
     return True
@@ -177,40 +158,55 @@ def add_books(bookson, library_uuid):
                         datetime_mode=rjson.DM_ISO8601)
     if books == []:
         return True
-
     library_uuid_check = list(set([book['library_uuid'] for book in books]))
     if len(library_uuid_check) != 1 or library_uuid_check[0] != library_uuid:
         return False
 
     new_book_ids = set((book['_id'] for book in books))
-    old_books_ids = set((book['_id'] for book in motw.library['books']))
+    old_books_ids = motw.books.keys()
 
     if not old_books_ids:
         with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
-            motw.library['books'] += pickle.load(f)
-        old_books_ids = set((book['_id'] for book in motw.library['books']))
+            motw.books.update(pickle.load(f))
+        old_books_ids = motw.books.keys()
 
     ids_to_add = set(new_book_ids - old_books_ids)
-    motw.library['books'] += [book for book in books
-                              if book['_id'] in ids_to_add]
-    motw.library['books'].sort(key=itemgetter('last_modified'),
-                               reverse=True)
-    t = time.time()
-    bs = []
+    for b in books:
+        if b['_id'] not in ids_to_add:
+            continue
+        motw.books.update(
+            {
+                b['_id']: b
+            }
+        )
+        motw.indexed_by_time.update(
+            {
+                str(b['last_modified']) + b['_id']: b['_id']
+            })
+        motw.indexed_by_title.update(
+            {
+                b['title_sort'] + b['_id']: b['_id']
+            })
+        motw.indexed_by_pubdate.update(
+            {
+                str(b['pubdate']) + b['_id']: b['_id']
+            })
+
     library_url = books[0]['library_url']
-    for i, b in enumerate(motw.library['books']):
+    bs = {}
+    for b in motw.books.values():
         if b['library_uuid'] == library_uuid:
-            b['library_url'] = library_url
-            if 'series' not in b:
-                b['series'] = ""
-            bs += b
-        update_indices(i, b)
+            b.update(
+                {
+                    'library_url': library_url
+                }
+            )
+            bs.update(b)
 
     with open("motw_cache/{}".format(library_uuid), "wb") as f:
         pickle.dump(bs, f)
 
-    print("index/url written in {} seconds.".format(round(time.time() - t, 3)))
-
+    # print("index/url written in {} seconds.".format(round(time.time() - t, 3)))
     return True
 
 
@@ -283,7 +279,7 @@ def library(request, verb, library_uuid):
     elif verb == 'bookids' and library_uuid in motw.library['collectionids']:
         if check_library_secret(library_uuid, library_secret):
             bookids = ["{}___{}".format(book['_id'], book['last_modified'])
-                       for book in motw.library['books']
+                       for book in motw.books.values()
                        if library_uuid == book['library_uuid']]
             if bookids == []:
                 try:
@@ -301,6 +297,7 @@ def library(request, verb, library_uuid):
 @app.route('/memory')
 async def get_memory(request):
     proc = psutil.Process(os.getpid())
+    import ipdb;ipdb.set_trace()
     return json({"memory": "{}".format(round(proc.memory_full_info().rss/1000000., 2))})
 
 
@@ -318,14 +315,14 @@ def search(request, field, q):
                      'librarian']:
             if field == 'titles':
                 field = 'title'
-            h = hateoas([b for b in motw.library['books']
+            h = hateoas([b for b in motw.books.values()
                          if unq(q).lower() in b[field].lower()],
                         request,
                         title)
             return rs.raw(h, content_type='application/json')
 
         elif field in ['authors', 'languages', 'tags', '']:
-            h = hateoas([b for b in motw.library['books']
+            h = hateoas([b for b in motw.books.values()
                          if unq(q).lower() in " ".join(b[field]).lower()],
                         request,
                         title)
@@ -345,10 +342,10 @@ def autocomplete(request, field, sq):
             field = 'title'
             if unq(sq.lower()) in ['the ']:
                 return json({})
-        r = [b[field] for b in motw.library['books']
+        r = [b[field] for b in motw.books.values()
              if unq(sq.lower()) in b[field].lower()]
     elif field in ['authors', 'tags']:
-        for bf in [b[field] for b in motw.library['books']]:
+        for bf in [b[field] for b in motw.books.values()]:
             for f in bf:
                 if unq(sq.lower()) in f.lower():
                     r.add(f)
@@ -358,7 +355,8 @@ def autocomplete(request, field, sq):
 
 @app.route('/books')
 def books(request):
-    h = hateoas([b for b in motw.library['books']],
+    # h = hateoas([b for b in motw.books.values()],
+    h = hateoas([motw.books[bid] for bid in reversed(motw.indexed_by_time.values())],
                 request)
     return rs.raw(h, content_type='application/json')
 
@@ -367,7 +365,7 @@ def books(request):
 def book(request, book_id):
     try:
         return rs.raw(rjson.dumps(
-            motw.library['books'][motw.books_indices[book_id]],
+            motw.books[book_id],
             datetime_mode=rjson.DM_ISO8601).encode(),
                       content_type='application/json')
     except Exception as e:

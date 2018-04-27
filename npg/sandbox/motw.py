@@ -3,10 +3,9 @@ import collections
 import json
 
 library = sortedcontainers.SortedDict()
-library['books'] = []
+books = sortedcontainers.SortedDict()
 library['collectionids'] = []
-books_indices = {}
-indexed_by = sortedcontainers.SortedDict()
+indexed_by_time = sortedcontainers.SortedDict()
 indexed_by_title = sortedcontainers.SortedDict()
 indexed_by_pubdate = sortedcontainers.SortedDict()
 

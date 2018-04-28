@@ -7,7 +7,7 @@ import zlib
 import pickle
 from signal import signal, SIGINT
 from asgiref.sync import sync_to_async
-
+import sortedcontainers
 from setproctitle import setproctitle
 from urllib.parse import unquote_plus as unq
 
@@ -101,8 +101,9 @@ def hateoas(l, request, title="books"):
 
 
 def check_library_secret(library_uuid, library_secret):
+    secret = motw.load_collections()[library_uuid]['secret']
     ret = True if (library_secret == motw.master_secret or
-                   library_secret in motw.load_collections()[library_uuid]) else False
+                   library_secret == secret) else False
     if ret:
         return ret
     else:
@@ -128,26 +129,19 @@ def validate_books(bookson, schema, enc_zlib):
 
 @sync_to_async
 def remove_books(rookson, library_uuid):
+    pickled_books = sortedcontainers.SortedDict()
     bookids = rjson.loads(rookson)
     if bookids == []:
         return True
     # t = time.time()
+    with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
+        pickled_books.update(pickle.load(f))
+
     for bookid in bookids:
-        book = motw.books.pop(bookid, None)
-        motw.indexed_by_time.pop(
-            "{}{}".format(book['last_modified'], bookid),
-            None)
-        motw.indexed_by_title.pop(
-            "{}{}".format(book['title_sort'], bookid),
-            None)
-        motw.indexed_by_pubdate.pop(
-            "{}{}".format(book['pubdate'], bookid),
-            None)
+        pickled_books.pop(bookid, None)
 
     with open("motw_cache/{}".format(library_uuid), "wb") as f:
-        pickle.dump([book for book in motw.books.values()
-                     if book['library_uuid'] == library_uuid],
-                    f)
+        pickle.dump(pickled_books, f)
 
     # print("books removed in {} seconds.".format(round(time.time() - t, 3)))
     return True
@@ -155,6 +149,7 @@ def remove_books(rookson, library_uuid):
 
 @sync_to_async
 def add_books(bookson, library_uuid):
+    pickled_books = sortedcontainers.SortedDict()
     books = rjson.loads(bookson,
                         datetime_mode=rjson.DM_ISO8601)
     if books == []:
@@ -164,12 +159,9 @@ def add_books(bookson, library_uuid):
         return False
 
     new_book_ids = set((book['_id'] for book in books))
-    old_books_ids = motw.books.keys()
-
-    if not old_books_ids:
-        with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
-            motw.books.update(pickle.load(f))
-        old_books_ids = motw.books.keys()
+    with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
+        pickled_books.update(pickle.load(f))
+        old_books_ids = pickled_books.keys()
 
     ids_to_add = set(new_book_ids - old_books_ids)
     for b in books:
@@ -179,37 +171,14 @@ def add_books(bookson, library_uuid):
         if 'series' not in b:
             b['series'] = ""
 
-        motw.books.update(
+        pickled_books.update(
             {
                 b['_id']: b
             }
         )
-        motw.indexed_by_time.update(
-            {
-                str(b['last_modified']) + b['_id']: b['_id']
-            })
-        motw.indexed_by_title.update(
-            {
-                b['title_sort'] + b['_id']: b['_id']
-            })
-        motw.indexed_by_pubdate.update(
-            {
-                str(b['pubdate']) + b['_id']: b['_id']
-            })
-
-    library_url = books[0]['library_url']
-    bs = {}
-    for b in motw.books.values():
-        if b['library_uuid'] == library_uuid:
-            b.update(
-                {
-                    'library_url': library_url
-                }
-            )
-            bs.update(b)
 
     with open("motw_cache/{}".format(library_uuid), "wb") as f:
-        pickle.dump(bs, f)
+        pickle.dump(pickled_books, f)
 
     # print("index/url written in {} seconds.".format(round(time.time() - t, 3)))
     return True
@@ -264,37 +233,99 @@ def library(request, verb, library_uuid):
                       request.headers.get('library-secret'))
     r = re.match("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}",
                  library_secret)
-    if not r or verb not in ['add', 'remove', 'bookids']:
+    if not r or verb not in ['add', 'remove', 'bookids', 'on', 'off']:
         abort(422, "Wrong verb, ha!")
 
     if verb == 'add':
         if library_uuid not in motw.library['collectionids']:
-            motw.library['collectionids'] = {library_uuid: library_secret}
+            motw.library['collectionids'] = {
+                library_uuid: {
+                    'secret': library_secret,
+                    'state': 'off'
+                    }
+            }
             with open("motw_cache/{}".format(library_uuid), 'wb') as f:
-                pickle.dump([], f)
+                pickle.dump({}, f)
             motw.dump_collections(motw.library['collectionids'])
             return text("{} added. Let's share books...".format(library_uuid))
         else:
             abort(422, "Library already added.")
-    elif verb == 'remove' and library_uuid in motw.library['collectionids']:
-            if check_library_secret(library_uuid, library_secret):
-                del motw.library['collectionids'][library_uuid]
-                motw.dump_collections(motw.library['collectionids'])
-            return text("{} removed.".format(library_uuid))
+
+    if not check_library_secret(library_uuid, library_secret):
+        abort(401)
+
+    if verb == 'remove' and library_uuid in motw.library['collectionids']:
+        with open("motw_cache/{}".format(library_uuid), 'rb') as f:
+            if len(pickle.load(f)) != 0:
+                abort(422, "{} has still some books. Remove them first."
+                      .format(library_uuid))
+        del motw.library['collectionids'][library_uuid]
+        motw.dump_collections(motw.library['collectionids'])
+        return text("{} removed.".format(library_uuid))
+
+    elif verb == 'on' and library_uuid in motw.library['collectionids']:
+        if motw.collections[library_uuid]['state'] == 'on':
+            abort(422, '{} is already online.'.format(library_uuid))
+
+        with open("motw_cache/{}".format(library_uuid), 'rb') as f:
+            motw.books.update(pickle.load(f))
+            for b in motw.books.values():
+                motw.indexed_by_time.update(
+                    {
+                        str(b['last_modified']) + b['_id']: b['_id']
+                    })
+                motw.indexed_by_title.update(
+                    {
+                        b['title_sort'] + b['_id']: b['_id']
+                    })
+                motw.indexed_by_pubdate.update(
+                    {
+                        str(b['pubdate']) + b['_id']: b['_id']
+                    })
+        motw.collections[library_uuid]['state'] = 'on'
+        motw.dump_collections(motw.library['collectionids'])
+        return text("{} is back online.".format(library_uuid))
+
+    elif verb == 'off' and library_uuid in motw.library['collectionids']:
+        if motw.collections[library_uuid]['state'] == 'off':
+            abort(422, '{} is not online.'.format(library_uuid))
+
+        bookids = []
+        for b in motw.books.values():
+            if b['library_uuid'] == library_uuid:
+                bookid = b['_id']
+                bookids += bookid
+                book = motw.books[bookid]
+                motw.indexed_by_time.pop(
+                    "{}{}".format(book['last_modified'], bookid),
+                    None)
+                motw.indexed_by_title.pop(
+                    "{}{}".format(book['title_sort'], bookid),
+                    None)
+                motw.indexed_by_pubdate.pop(
+                    "{}{}".format(book['pubdate'], bookid),
+                    None)
+
+        for bookid in bookids:
+            del motw.books[bookid]
+
+        motw.collections[library_uuid]['state'] = 'off'
+        motw.dump_collections(motw.library['collectionids'])
+        return text("{} is now offline.".format(library_uuid))
+
     elif verb == 'bookids' and library_uuid in motw.library['collectionids']:
-        if check_library_secret(library_uuid, library_secret):
-            bookids = ["{}___{}".format(book['_id'], book['last_modified'])
-                       for book in motw.books.values()
-                       if library_uuid == book['library_uuid']]
-            if bookids == []:
-                try:
-                    with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
-                        bookids = ["{}___{}".format(book['_id'], book['last_modified'])
-                                   for book in pickle.load(f)]
-                except Exception as e:
-                    print("No cache + {}".format(e))
-                    bookids = []
-            return json(bookids)
+        bookids = ["{}___{}".format(book['_id'], book['last_modified'])
+                    for book in motw.books.values()
+                    if library_uuid == book['library_uuid']]
+        if bookids == []:
+            try:
+                with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
+                    bookids = ["{}___{}".format(book['_id'], book['last_modified'])
+                                for book in pickle.load(f)]
+            except Exception as e:
+                print("No cache + {}".format(e))
+                bookids = []
+        return json(bookids)
     elif library_uuid not in motw.library['collectionids']:
             abort(404, "{} doesn't exist.".format(library_uuid))
 

@@ -1,6 +1,7 @@
 import rapidjson as rjson
 import psutil
 import os
+import sys
 import time
 import re
 import zlib
@@ -31,19 +32,33 @@ app = Sanic()
 CORS(app)
 app.config.REQUEST_MAX_SIZE = 1000000000
 
-motw.library['collectionids'] = motw.load_collections()
+motw.libraries = motw.load_libraries()
 
 # - SANIC/rapidjson
 
 
+def add_library_url(book):
+    book.update({
+        'library_url': motw.libraries[book['library_uuid']]['url']
+    })
+    return book
+
+
 def hateoas(l, request, title="books"):
+    max_results = motw.hateoas.max_results
+    if 'max_results' in request.args:
+        try:
+            max_results = min(120, abs(int(request.args['max_results'][0])))
+        except Exception as e:
+            print("messy max_results was sent: {}".format(e))
+
     r = {}
     try:
         p = int(request.args['page'][0]) - 1
     except:
         p = 0
 
-    last_p = int(len(l)/motw.hateoas.max_results + 1)
+    last_p = int(len(l)/max_results + 1)
 
     if p > last_p:
         p = last_p
@@ -55,12 +70,11 @@ def hateoas(l, request, title="books"):
                                                     'pubdate',
                                                     'title',
                                                     'formats',
-                                                    'library_url',
+                                                    'library_uuid',
                                                     'cover_url']}
-             for b in l[p*motw.hateoas.max_results:(p+1)*motw.hateoas.max_results]]
-
+             for b in l[p*max_results:(p+1)*max_results]]
     r = {
-        "_items": books,
+        "_items": [add_library_url(book) for book in books],
         "_links": {
             "parent": {
                 "title": "Memory of the World Library",
@@ -85,7 +99,7 @@ def hateoas(l, request, title="books"):
         },
         "_meta": {
             "page": p+1,
-            "max_results": motw.hateoas.max_results,
+            "max_results": max_results,
             "total": len(l),
             "status": title
         }
@@ -101,7 +115,7 @@ def hateoas(l, request, title="books"):
 
 
 def check_library_secret(library_uuid, library_secret):
-    secret = motw.load_collections()[library_uuid]['secret']
+    secret = motw.load_libraries()[library_uuid]['secret']
     ret = True if (library_secret == motw.master_secret or
                    library_secret == secret) else False
     if ret:
@@ -184,7 +198,7 @@ def add_books(bookson, library_uuid):
     return True
 
 
-class AddBooks(HTTPMethodView):
+class Books(HTTPMethodView):
 
     def get(self, request, verb, library_uuid):
         assert request.stream is None
@@ -237,16 +251,17 @@ def library(request, verb, library_uuid):
         abort(422, "Wrong verb, ha!")
 
     if verb == 'add':
-        if library_uuid not in motw.library['collectionids']:
-            motw.library['collectionids'] = {
+        if library_uuid not in motw.libraries:
+            motw.libraries.update({
                 library_uuid: {
                     'secret': library_secret,
-                    'state': 'off'
+                    'state': 'off',
+                    'url': ''
                     }
-            }
+            })
             with open("motw_cache/{}".format(library_uuid), 'wb') as f:
                 pickle.dump({}, f)
-            motw.dump_collections(motw.library['collectionids'])
+            motw.dump_libraries(motw.libraries)
             return text("{} added. Let's share books...".format(library_uuid))
         else:
             abort(422, "Library already added.")
@@ -254,47 +269,52 @@ def library(request, verb, library_uuid):
     if not check_library_secret(library_uuid, library_secret):
         abort(401)
 
-    if verb == 'remove' and library_uuid in motw.library['collectionids']:
+    if verb == 'remove' and library_uuid in motw.libraries:
         with open("motw_cache/{}".format(library_uuid), 'rb') as f:
             if len(pickle.load(f)) != 0:
                 abort(422, "{} has still some books. Remove them first."
                       .format(library_uuid))
-        del motw.library['collectionids'][library_uuid]
-        motw.dump_collections(motw.library['collectionids'])
+        del motw.libraries[library_uuid]
+        motw.dump_libraries(motw.libraries)
         return text("{} removed.".format(library_uuid))
 
-    elif verb == 'on' and library_uuid in motw.library['collectionids']:
-        if motw.collections[library_uuid]['state'] == 'on':
+    elif verb == 'on' and library_uuid in motw.libraries:
+        t = time.time()
+        if 'url' in request.args:
+            motw.libraries[library_uuid]['url'] = request.args['url'][0]
+        elif motw.libraries[library_uuid]['state'] == 'on':
             abort(422, '{} is already online.'.format(library_uuid))
 
         with open("motw_cache/{}".format(library_uuid), 'rb') as f:
             motw.books.update(pickle.load(f))
-            for b in motw.books.values():
-                motw.indexed_by_time.update(
-                    {
-                        str(b['last_modified']) + b['_id']: b['_id']
-                    })
-                motw.indexed_by_title.update(
-                    {
-                        b['title_sort'] + b['_id']: b['_id']
-                    })
-                motw.indexed_by_pubdate.update(
-                    {
-                        str(b['pubdate']) + b['_id']: b['_id']
-                    })
-        motw.collections[library_uuid]['state'] = 'on'
-        motw.dump_collections(motw.library['collectionids'])
+        print("library ON in {} seconds.".format(round(time.time() - t, 3)))
+        for b in motw.books.values():
+            motw.indexed_by_time.update(
+                {
+                    str(b['last_modified']) + b['_id']: b['_id']
+                })
+            motw.indexed_by_title.update(
+                {
+                    b['title_sort'] + b['_id']: b['_id']
+                })
+            motw.indexed_by_pubdate.update(
+                {
+                    str(b['pubdate']) + b['_id']: b['_id']
+                })
+        motw.libraries[library_uuid]['state'] = 'on'
+        motw.dump_libraries(motw.libraries)
         return text("{} is back online.".format(library_uuid))
 
-    elif verb == 'off' and library_uuid in motw.library['collectionids']:
-        if motw.collections[library_uuid]['state'] == 'off':
+    elif verb == 'off' and library_uuid in motw.libraries:
+        t = time.time()
+        if motw.libraries[library_uuid]['state'] == 'off':
             abort(422, '{} is not online.'.format(library_uuid))
 
         bookids = []
         for b in motw.books.values():
             if b['library_uuid'] == library_uuid:
                 bookid = b['_id']
-                bookids += bookid
+                bookids.append(bookid)
                 book = motw.books[bookid]
                 motw.indexed_by_time.pop(
                     "{}{}".format(book['last_modified'], bookid),
@@ -305,35 +325,35 @@ def library(request, verb, library_uuid):
                 motw.indexed_by_pubdate.pop(
                     "{}{}".format(book['pubdate'], bookid),
                     None)
+        for bid in bookids:
+            del motw.books[bid]
 
-        for bookid in bookids:
-            del motw.books[bookid]
-
-        motw.collections[library_uuid]['state'] = 'off'
-        motw.dump_collections(motw.library['collectionids'])
+        motw.libraries[library_uuid]['state'] = 'off'
+        motw.dump_libraries(motw.libraries)
+        print("library OFF in {} seconds.".format(round(time.time() - t, 3)))
         return text("{} is now offline.".format(library_uuid))
 
-    elif verb == 'bookids' and library_uuid in motw.library['collectionids']:
+    elif verb == 'bookids' and library_uuid in motw.libraries:
         bookids = ["{}___{}".format(book['_id'], book['last_modified'])
-                    for book in motw.books.values()
-                    if library_uuid == book['library_uuid']]
+                   for book in motw.books.values()
+                   if library_uuid == book['library_uuid']]
         if bookids == []:
             try:
                 with (open("motw_cache/{}".format(library_uuid), 'rb')) as f:
                     bookids = ["{}___{}".format(book['_id'], book['last_modified'])
-                                for book in pickle.load(f)]
+                               for book in pickle.load(f)]
             except Exception as e:
                 print("No cache + {}".format(e))
                 bookids = []
         return json(bookids)
-    elif library_uuid not in motw.library['collectionids']:
+    elif library_uuid not in motw.libraries:
             abort(404, "{} doesn't exist.".format(library_uuid))
 
 
 @app.route('/memory')
 async def get_memory(request):
     proc = psutil.Process(os.getpid())
-    import ipdb;ipdb.set_trace()
+    import ipdb; ipdb.set_trace()
     return json({"memory": "{}".format(round(proc.memory_full_info().rss/1000000., 2))})
 
 
@@ -392,8 +412,10 @@ def autocomplete(request, field, sq):
 @app.route('/books')
 def books(request):
     # h = hateoas([b for b in motw.books.values()],
+    t = time.time()
     h = hateoas([motw.books[bid] for bid in reversed(motw.indexed_by_time.values())],
                 request)
+    print("get books in {} seconds.".format(round(time.time() - t, 3)))
     return rs.raw(h, content_type='application/json')
 
 
@@ -401,17 +423,17 @@ def books(request):
 def book(request, book_id):
     try:
         return rs.raw(rjson.dumps(
-            motw.books[book_id],
+            add_library_url(motw.books[book_id]),
             datetime_mode=rjson.DM_ISO8601).encode(),
                       content_type='application/json')
     except Exception as e:
         abort(404, e)
 
 
-app.add_route(AddBooks.as_view(), '/books/<verb>/<library_uuid>')
+app.add_route(Books.as_view(), '/books/<verb>/<library_uuid>')
 
 asyncio.set_event_loop(uvloop.new_event_loop())
-server = app.create_server(host="0.0.0.0", port=2018)
+server = app.create_server(host="0.0.0.0", port=sys.argv[1])
 loop = asyncio.get_event_loop()
 task = asyncio.ensure_future(server)
 

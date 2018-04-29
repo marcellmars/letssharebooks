@@ -2,25 +2,28 @@ import sortedcontainers
 import collections
 import json
 
-library = sortedcontainers.SortedDict()
+libraries = sortedcontainers.SortedDict()
 books = sortedcontainers.SortedDict()
-library['collectionids'] = []
 indexed_by_time = sortedcontainers.SortedDict()
 indexed_by_title = sortedcontainers.SortedDict()
 indexed_by_pubdate = sortedcontainers.SortedDict()
 
 
-def load_collections():
-    return json.load(open('motw_collections.json'))
-
-
-def dump_collections(c):
-    with open('motw_collections.json', 'w') as f:
+def dump_libraries(c):
+    with open('motw_libraries.json', 'w') as f:
         json.dump(c, f)
 
 
+def load_libraries():
+    try:
+        return json.load(open('motw_libraries.json'))
+    except:
+        dump_libraries({})
+        return json.load(open('motw_libraries.json'))
+
+
 Hateoas = collections.namedtuple("Hateos", "max_results")
-hateoas = Hateoas(max_results=24)
+hateoas = Hateoas(max_results=48)
 
 # in production load it from its own file or motw_config.json
 master_secret = "874a7f15-0c02-473e-ba2c-c1ef937b9a5c"

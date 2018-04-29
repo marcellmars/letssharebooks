@@ -15,9 +15,11 @@ def remove_library(library_uuid, library_secret):
     return requests.get("{}/library/remove/{}".format(HOST_API, library_uuid),
                         headers=headers)
 
-def library_on(library_uuid, library_secret):
+def library_on(library_uuid, library_secret, url=''):
     headers = {'Library-Secret': library_secret}
-    return requests.get("{}/library/on/{}".format(HOST_API, library_uuid),
+    if url:
+        url = "?url=" + url
+    return requests.get("{}/library/on/{}{}".format(HOST_API, library_uuid, url),
                         headers=headers)
 
 def library_off(library_uuid, library_secret):
@@ -39,5 +41,11 @@ def add_books(library_uuid, library_secret, payload):
 def remove_books(library_uuid, library_secret, payload):
     headers = {'Library-Secret': library_secret}
     return requests.post("{}/books/remove/{}".format(HOST_API, library_uuid),
+                         headers=headers,
+                         data=payload)
+
+def change_library_url(library_uuid, library_secret, payload):
+    headers = {'Library-Secret': library_secret}
+    return requests.post("{}/books/liburl/{}".format(HOST_API, library_uuid),
                          headers=headers,
                          data=payload)

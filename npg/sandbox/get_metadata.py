@@ -3,94 +3,17 @@
 import sqlite3
 import os
 import json
-import requests
 import hmac
 import uuid
 import zlib
-import dateutil.parser
+# import dateutil.parser
 # import bleach
 import time
 
-from uploader import Uploader
 from shuffle_names import libranon
 
 
-API_ROOT = "http://localhost:5000/"
-
-
-def get_dc(collection):
-    dc = {
-        'local_config': {
-            'calibre_path': "/media/m/Maxtor/motw_calibre_libraries/{}".format(collection),
-            # 'calibre_path': os.path.expanduser("~/CalibreLibraries/FooBar/"),
-            'jsonfile': 'motw_collections/{}.json'.format(collection),
-            'Library-Secret': str(uuid.uuid4())
-        },
-        'eve_payload': {
-            'librarian': libranon(),
-            '_id': str(uuid.uuid4()),
-            'library_url': 'http://{}.memoryoftheworld.org/'.format(collection)
-        }
-    }
-    return dc
-
-dc2 = {
-    'local_config': {
-        'calibre_path': os.path.expanduser("~/CalibreLibraries/Economics/"),
-        'jsonfile': '/tmp/books_{}.json'.format('AndrewElbakyan'),
-        'Library-Secret': '0f4c02a4-b95a-48cb-9fc2-04e850cb620a'
-    },
-    'eve_payload': {
-        'librarian': 'Andrew Elbakyan',
-        '_id': 'dde67a22-8076-4906-b277-564652f90717',
-        'library_url': 'http://localhost:2018/',
-        'presence': 'off'
-    }
-}
-
-
-def chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
-
-
-def add_item(resource, headers, payload, base_url=API_ROOT):
-    headers['Content-Type'] = 'application/json'
-    headers['Library-Encoding'] = 'zlib'
-
-    def _post_request(resource, headers, payload, base_url):
-        payload = json.dumps(payload)
-        zpayload = zlib.compress(payload.encode('utf-8'))
-        print("{} - {} = {}".format(
-            len(payload), len(zpayload), len(payload) - len(zpayload)))
-        r = requests.post(
-            "{}{}".format(base_url, resource), data=zpayload, headers=headers)
-        print("POSTed @{} with status code: {}".format(resource,
-                                                       r.status_code))
-        return resource, r.status_code
-
-    return _post_request(resource, headers, payload, base_url)
-
-
-def edit_item(resource, headers, item, item_updated, base_url=API_ROOT):
-    headers['Content-Type'] = 'application/json'
-    r = requests.patch(
-        "{}{}/{}".format(base_url, resource, item),
-        json.dumps(item_updated),
-        headers=headers)
-    print("PATCHed @{} with status code: {}".format(resource, r.status_code))
-    return resource, r.status_code
-
-
-def delete_item(resource, headers, item, base_url=API_ROOT):
-    headers['Content-Type'] = 'application/json'
-    r = requests.delete(
-        "{}{}/{}".format(base_url, resource, item), headers=headers)
-    print("deleted @{} with status code: {}".format(resource, r.status_code))
-    return resource, r.status_code
-
-
-def calibre_to_json(dc, db_file='metadata.db'):
+def calibre_to_json(library_uuid, library_secret, librarian, db_path):
     t = time.time()
     bid = '''
     select * from books
@@ -150,8 +73,7 @@ def calibre_to_json(dc, db_file='metadata.db'):
     '''
 
     conn = sqlite3.connect(
-        os.path.join(dc['local_config']['calibre_path'],
-                     db_file))
+        os.path.join(db_path))
     cur = conn.cursor()
     sql_books = (book for book in cur.execute(bid))
 
@@ -172,7 +94,6 @@ def calibre_to_json(dc, db_file='metadata.db'):
         'has_cover',
         'last_modified',  # `select * from books` ends here
         'library_uuid',
-        'library_url',
         'librarian',
         '_id',
         'tags',
@@ -194,14 +115,12 @@ def calibre_to_json(dc, db_file='metadata.db'):
                     zip(
                         book_dict,
                         book + (
-                            dc['eve_payload']['_id'],  # library_uuid
-                            dc['eve_payload']['library_url'],  # library_url
-                            dc['eve_payload']['librarian'],  # librarian
+                            library_uuid,  # library_uuid
+                            librarian,  # librarian
                             str(
                                 uuid.UUID(
-                                    hmac.new(dc['local_config']['Library-Secret']
-                                             .encode(), book[11].encode())
-                                    .hexdigest(),
+                                    hmac.new(library_secret.encode(),
+                                             book[11].encode()).hexdigest(),
                                     version=4)),
                             [],  # tags
                             "",  # comments
@@ -276,67 +195,19 @@ def calibre_to_json(dc, db_file='metadata.db'):
         #     book[k] = dateutil.parser.parse(book[k]).strftime("%a, %d %b %04Y %H:%M:%S GMT")
         books_list.append(book)
 
-    print("{} processing time: {} seconds...".format(dc['eve_payload']['library_url'],
+    print("{} processing time: {} seconds...".format(librarian,
                                                      round(time.time() - t, 3)))
     return books_list
 
 
-def post_items(dc):
-
-    def __temp(books):
-        headers = {'Library-Secret': dc['local_config']['Library-Secret']}
-        add_item('add_books', headers, books)
-
-    # books = calibre_to_json(dc)[:20000]
-    books = calibre_to_json(dc)
-
-    # print(json.dumps(books[10], indent=2, sort_keys=True))
-
-    uploader = Uploader(__temp)
-    uploader.start()
-
-    for books_chunk in chunks(books, 1000):
-        uploader.queue.put(books_chunk)
-
-    uploader.wait()
-    uploader.finish()
+def save_file(file_path, books_list):
+    with open(file_path, "w") as f:
+        json.dump(books_list, f)
 
 
-def save_file(dc):
-    with open(dc['local_config']['jsonfile'], "w") as f:
-        json.dump(calibre_to_json(dc), f)
-
-
-def save_zip_file(dc):
-    with open(dc['local_config']['jsonfile'] + ".zip", "wb") as f:
-        payload = json.dumps(calibre_to_json(dc))
-        zpayload = zlib.compress(payload.encode('utf-8'))
-        f.write(zpayload)
-
-
-def add_library(dc):
-    headers = {'Library-Secret': dc['local_config']['Library-Secret']}
-    return add_item('libraries', headers, dc['eve_payload'])
-
-
-def add_books(dc):
-    headers = {'Library-Secret': dc['local_config']['Library-Secret']}
-    return add_item('books', headers,
-                    # json.load(open(dc['local_config']['jsonfile'])))
-                    calibre_to_json(dc))
-
-
-def edit_library(item_updated, dc):
-    headers = {'Library-Secret': dc['local_config']['Library-Secret']}
-    return edit_item('libraries', headers, dc['eve_payload']['_id'],
-                     item_updated)
-
-
-def delete_library(dc):
-    headers = {'Library-Secret': dc['local_config']['Library-Secret']}
-    return delete_item('libraries', headers, dc['eve_payload']['_id'])
-
-
-def test_invalid_secret(dc):
-    headers = {'Library-Secret': '123'}
-    return delete_item('libraries', headers, dc['eve_payload']['_id'])
+def save_file(file_path, books_list, zipit=False):
+    with open(file_path, "wb") as f:
+        payload = json.dumps(books_list)
+        if zipit:
+            payload = zlib.compress(payload.encode('utf-8'))
+        f.write(payload)
